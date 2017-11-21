@@ -6,7 +6,8 @@ import os
 import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 import pkg_resources
 
-config_file = pkg_resources.resource_filename(__name__, "/config/config.yaml")
+# config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
+print(workflow.snakefile)
 print(__file__)
 print(__name__)
 print(os.getcwd())
