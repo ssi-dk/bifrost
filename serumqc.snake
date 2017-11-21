@@ -3,7 +3,7 @@ import re
 import pandas
 import sys
 import os
-import "lin/serum.py" as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
+import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
 configfile: "config/config.yaml"
 # from pytools.persistent_dict import PersistentDict
