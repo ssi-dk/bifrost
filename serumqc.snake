@@ -7,7 +7,6 @@ import lib.serum as serum  # all serum lib functions also have access to the con
 import pkg_resources
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
-workflow.snakemake
 print(workflow.snakefile)
 print(workflow.config)
 print(__file__)
