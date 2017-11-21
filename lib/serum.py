@@ -8,7 +8,7 @@ import os
 import vcf
 import pkg_resources
 
-configfile = pkg_resources.resource_strin(__name__, "congig/congif.yaml")
+configfile = pkg_resources.resource_string(__name__, "congig/congif.yaml")
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.default_flow_style = False
 with open(configfile, "r") as yaml_stream:
