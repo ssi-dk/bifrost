@@ -4,9 +4,9 @@ import pandas
 import sys
 import os
 
-
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "lib")))
 print(os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "lib")))
+print(sys.argv[0])
 import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
 configfile: "config/config.yaml"
