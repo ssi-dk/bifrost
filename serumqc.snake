@@ -4,7 +4,7 @@ import pandas
 import sys
 import os
 
-include: "lib/serumqc.py"
+include: "lib/serum.py"
 # sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "lib")))
 import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
