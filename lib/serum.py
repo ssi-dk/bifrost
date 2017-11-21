@@ -8,7 +8,7 @@ import os
 import vcf
 import pkg_resources
 
-configfile = pkg_resources.resource_string(__name__, "config/config.yaml")
+configfile = pkg_resources.resource_string(__name__, "../config/config.yaml")
 print(configfile)
 print(os.cwd())
 print(__file__)
