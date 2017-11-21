@@ -5,6 +5,7 @@ import sys
 import os
 import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
+print(os.getcwd())
 configfile: "config/config.yaml"
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
