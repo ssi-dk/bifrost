@@ -8,7 +8,7 @@ import os
 import vcf
 import pkg_resources
 
-configfile = pkg_resources.resource_string(__name__, "../config/config.yaml")
+configfile = pkg_resources.get_resource_filename(__name__, "../config/config.yaml")
 print(configfile)
 print(__name__)
 yaml = ruamel.yaml.YAML(typ='safe')
