@@ -6,10 +6,12 @@ import re
 import pandas
 import os
 import vcf
+import pkg_resources
 
+configfile = pkg_resources.resource_strin(__name__, "congig/congif.yaml")
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.default_flow_style = False
-with open(os.path.join(os.path.realpath(__file__), "config/config.yaml"), "r") as yaml_stream:
+with open(configfile, "r") as yaml_stream:
     config = yaml.load(yaml_stream)
 
 
