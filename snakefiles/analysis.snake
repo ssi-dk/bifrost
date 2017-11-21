@@ -27,7 +27,7 @@ rule run__Kraken_on_contigs:
 
 rule set_species_file:
     input:
-        check_file = "summaries/kraken_summary.yaml"
+        check_file = "summaries/contamination_reads.yaml"
     output:
         species_file = "checks/species.txt"
     run:
