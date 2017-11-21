@@ -9,7 +9,7 @@ import vcf
 
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.default_flow_style = False
-with open("config/config.yaml", "r") as yaml_stream:
+with open("/config/config.yaml", "r") as yaml_stream:
     config = yaml.load(yaml_stream)
 
 
