@@ -1,0 +1,21 @@
+rule run__link_reads:
+    """
+    Done with python instead of through shell in order to obtain basename
+    """
+    input:
+        reads = ({R1}, {R2})
+    output:
+        check = "checks/reads_linked"
+    run:
+        serum.script__link_read_files_to_cwd(input.reads, output.check)
+
+
+rule check__Minimum_reads_check:
+    message:
+        "Checking that a minimum number of reads are available"
+    input:
+        reads = ({R1}, {R2})
+    output:
+        tmp = "checks/min_read_check_pass"
+    run:
+        serum.check__minimum_reads(input.reads, output.tmp)

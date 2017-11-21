@@ -1,0 +1,16 @@
+rule run__pilon_on_bam:
+    input:
+        genome = "mapping/contigs.fasta",
+        bam = "mapping/contigs_elprep.bam",
+        index_bam = "mapping/contigs_elprep.bam.bai"
+    output:
+        folder = "variant_calling",
+        vcf = "variant_calling/contigs.vcf",
+        fasta = "variant_calling/contigs.fasta"
+    params:
+        options = "".join(config["pilon"]["options"]),
+        memory = config["global"]["memory"]
+    log:
+        "log/pilon.log"
+    shell:
+        "java -Xmx{params.memory}G -jar /tools/linuxbrew/Cellar/pilon/1.22/pilon-1.22.jar --genome {input.genome} --frags {input.bam} --outdir {output.folder} {params.options} > {log}"

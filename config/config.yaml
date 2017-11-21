@@ -1,0 +1,137 @@
+global:
+    #in Gb
+    memory: &memory "12"
+    threads: &threads "4"
+
+serum:
+    database: "/home/ssi.ad/kimn/code/serumqc/DB/species_qc_values.tsv"
+    minimum_number_of_reads: 10000
+    qc:
+        min_length: 1000
+        base_depth: 0.0
+        min_depth: 10.0
+        recommended_depth: 25.0
+        ambiguous_cutoff: 0.1
+    summarize:
+        depth_range: [1, 101]
+    read_pattern: (?P<identifier>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)(?P<read_number>_R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
+    samples_to_ignore: Undetermined
+    queues: 
+        - urgent
+        - clinical
+        - outbreak
+        - surveillance
+        - qc
+        - daytime
+        - standard
+
+kraken:
+    database: &kraken_db "/srv/data/DB/kraken/Kraken-mini_20141208/"
+    options: ["--threads ",*threads," --db ",*kraken_db," "]
+    report:
+        options: [" --db ",*kraken_db," "] 
+    names: "/srv/data/DB/kraken/Kraken-mini_20141208/taxonomy/names.dmp"
+    #report:
+    #    pattern: "(?P<proportion>[0-9]+\.[0-9]+)\t[0-9]+\t[0-9]+\t(?P<classification_level>[A-Z])\t[0-9]+\t(?P<spaces>\s*)(?P<classification_name>[a-zA-Z]+.*)"
+    #Kraken summary is not part of default kraken but used in our scripts
+    summary: 
+        cutoff_threshold: 5.0
+
+
+
+ariba:
+    database:
+      resfinder: &resfinder_db "/srv/data/DB/ariba/resfinder/"
+      virulencefinder: &virulencefinder_db "/srv/data/DB/ariba/virulencefinder/"
+      plasmidfinder: &plasmidfinder_db "/srv/data/DB/ariba/plasmidfinder/"
+      mlst:
+        Staphylococcus_aureus: "/srv/data/DB/ariba/Staphylococcus_aureus/ref_db"
+
+trimmomatic:
+    adaptors: &adaptors "/home/ssi.ad/kimn/code/serumqc/DB/adapters.fasta"
+    options: ["-threads ",*threads]
+    trim_settings: ["ILLUMINACLIP:",*adaptors,":2:30:10 LEADING:20 TRAILING:20 SLIDINGWINDOW:10:20 MINLEN:30"]
+
+#target is currently set to recommended
+bbnorm:
+    options: ["target=25 threads=",*threads," -Xmx",*memory,"g"]
+
+spades:
+    options: ["--only-assembler -t ",*threads," -m ",*memory]
+
+bwa_mem:
+    options: ["-t ",*threads]
+
+elprep:
+    options: ["--nr-of-threads ",*threads," --sorting-order coordinate --mark-duplicates --clean-sam"]
+
+samtools:
+    to_bam:
+        options: ["-@ ",*threads," -b"]
+
+pilon:
+    options: ["--changes --vcf --output contigs  --threads ",*threads]
+
+prokka:
+    options: ["--cpus ",*threads," --centre X --compliant"]
+
+quast:
+    options: ["--fast -t",*threads," "]
+
+# qc: 
+#     categories: 
+#         - sample_name
+#         - status
+#         - qc_check
+#         - supplying_lab
+#         - initials
+#         - run_name
+#         - qc_action
+#         - R1_location
+#         - R2_location
+#         - output_directory
+#         - num_of_reads
+#         - trimmed_num_of_reads
+#         - normalized_num_of_reads
+#         - read_length
+#         - mean_read_length
+#         - provided_species
+#         - detected_species_ncbi
+#         - genuses_detected
+#     labels: 
+#         "Organism":"provided_species"
+#         "Initials":"initials"
+#         "Comments":"comments"
+#         "SampleID":"sample_name"
+#         "ExperimentName":"run_name"
+#         "SupplyingLab":"supplying_lab"
+#     identifier_file:
+#         - SampleID
+#         - SupplyingLab
+#         - Organism
+#         - Priority
+#         - Initials
+#         - Comments
+#         - R1_location
+#         - R2_location
+#         - ExperimentName
+#         - output_directory
+
+
+# contig_removal_pattern=.*?(^|_)(?P<value>{}_.*?(_|$))
+# #became a little less flexible than I wanted but need all the parts to recombine so can only expand in patterns between but need groupings as are
+# read_file_pattern = 
+# #list that's comma seperated
+# samples_to_ignore = Undetermined
+
+
+
+# #for mapping between qc and identifier file
+
+
+
+# [email]
+# default_to = ngsbig@ssi.dk
+# default_from = ngsbig@ssi.dk
+# convert_paths_from_linux_to_msft = True
+# replacement_path = /srv;\\s-sdi-calc1-p

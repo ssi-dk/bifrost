@@ -1,0 +1,87 @@
+rule run__Kraken_on_reads:
+    input:
+        reads = ({R1}, {R2}),
+    output:
+        kraken_report = "contamination/kraken_report.txt"
+    params:
+        options = "".join(config["kraken"]["options"]),
+        kraken_report_options = "".join(config["kraken"]["report"]["options"])
+    log:
+        "log/kraken_on_reads.log"
+    shell:
+        "kraken {params.options} {input.reads[0]} {input.reads[1]} 2> {log} | kraken-report {params.kraken_report_options} > {output.kraken_report} 2> {log}"
+
+
+rule run__Kraken_on_contigs:
+    input:
+        contigs = "variant_calling/contigs.fasta",
+    output:
+        kraken_contigs = "contamination/kraken_contigs.txt"
+    params:
+        options = "".join(config["kraken"]["options"])
+    log:
+        "log/kraken_on_contigs.log"
+    shell:
+        "kraken {params.options} {input.contigs} > {output.kraken_contigs} 2> {log}"
+
+
+rule set_species_file:
+    input:
+        check_file = "summaries/kraken_summary.yaml"
+    output:
+        species_file = "checks/species.txt"
+    run:
+        serum.check__detect_species(input.check_file, output.species_file)
+
+
+rule run__Ariba_MLST_on_reads:
+    input:
+        reads = ({R1}, {R2})
+    output:
+        ariba_mlst = "ariba_mlst"
+    params:
+        database = config["ariba"]["database"]["mlst"]["Staphylococcus_aureus"]
+    log:
+        "log/ariba_mlst.log"
+    shell:
+        "ariba run {params.database} {input.R1} {input.R2} mlst {output.ariba_mlst} 2> {log}"
+
+
+rule run__Prokka_annotation:
+    input:
+        contigs = "variant_calling/contigs.fasta"
+    output:
+        folder = "annotations"
+    params:
+        options = config["prokka"]["options"]
+    log:
+        "log/prokka.log"
+    shell:
+        "prokka {params.options} --outdir {output.folder} {input.contigs} 2> {log}"
+
+
+rule run__Ariba_resfinder_on_reads:
+    input:
+        reads = ({R1}, {R2}),
+    output:
+        ariba_resfinder = "ariba_resfinder"
+    params:
+        database = config["ariba"]["database"]["resfinder"]
+    log:
+        "log/ariba_resfinder.log"
+    shell:
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.ariba_resfinder} 2> {log}"
+
+
+rule run__Quast_on_contigs:
+    input:
+        contigs = "variant_calling/contigs.fasta"
+    output:
+        directory = "quast",
+        quast_report = "quast/report.tsv"
+    params:
+        options = config["quast"]["options"]
+    log:
+        "log/quast.log"
+    shell:
+        "quast.py -o {output.directory} {params.options} {input.contigs} > {log}"

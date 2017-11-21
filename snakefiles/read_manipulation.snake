@@ -1,0 +1,31 @@
+rule run__Trimmomatic_on_reads:
+    message:
+        "Trimming reads"
+    input:
+        reads = ({R1}, {R2}),
+        min_read_check = "checks/min_read_check_pass"
+    params:
+        options = "".join(config["trimmomatic"]["options"]),
+        trim_settings = "".join(config["trimmomatic"]["trim_settings"])
+    output:
+        trimmed_reads = ("reads/trimmed_R1.fastq.gz", "reads/trimmed_R2.fastq.gz"),
+        unpaired_trimmed_reads = ("reads/trimmed_unpaired_R1.fastq.gz", "reads/trimmed_unpaired_R2.fastq.gz"),
+    log:
+        "log/trimmomatic.log"
+    shell:
+        "trimmomatic PE {params.options} {input.reads[0]} {input.reads[1]} {output.trimmed_reads[0]} {output.unpaired_trimmed_reads[0]} {output.trimmed_reads[1]} {output.unpaired_trimmed_reads[1]} {params.trim_settings} 2> {log}"
+
+
+rule run__BBNorm_on_trimmed_reads:
+    message:
+        "Normalizing reads for denovo assembly"
+    input:
+        trimmed_reads = ("reads/trimmed_R1.fastq.gz", "reads/trimmed_R2.fastq.gz")
+    output:
+        normalized_reads = ("reads/normalized_R1.fastq.gz", "reads/normalized_R2.fastq.gz"),
+    params:
+        options = "".join(config["bbnorm"]["options"])
+    log:
+        "log/bbnorm.log"
+    shell:
+        "bbnorm.sh in={input.trimmed_reads[0]} in2={input.trimmed_reads[1]} out={output.normalized_reads[0]} out2={output.normalized_reads[1]} {params.options} 2> {log}"
