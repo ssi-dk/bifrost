@@ -10,6 +10,7 @@ config_file = pkg_resources.resource_filename(__name__, "/config/config.yaml")
 print(__file__)
 print(__name__)
 print(os.getcwd())
+print(snakefile)
 configfile: "/tools/git.repositories/SerumQC-private/config/config.yaml"
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
