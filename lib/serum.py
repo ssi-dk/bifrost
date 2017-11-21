@@ -8,12 +8,11 @@ import os
 import vcf
 import pkg_resources
 
-configfile = pkg_resources.resource_filename(__name__, "../config/config.yaml")
-print(configfile)
-print(__name__)
+config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
+
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.default_flow_style = False
-with open(configfile, "r") as yaml_stream:
+with open(config_file, "r") as yaml_stream:
     config = yaml.load(yaml_stream)
 
 
