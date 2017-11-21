@@ -3,10 +3,12 @@ import re
 import pandas
 import sys
 import os
-import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
+
 
 print(os.getcwd())
 configfile: "config/config.yaml"
+import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
+
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={read_location} R2_reads={read_location} Sample=Test
