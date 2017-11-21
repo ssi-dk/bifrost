@@ -8,12 +8,11 @@ import pkg_resources
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
 print(workflow.snakefile)
-print(workflow.config)
 print(__file__)
 print(__name__)
 print(os.getcwd())
 print(snakefile)
-configfile: os.basepath(workflow.snakefile) + "/config/config.yaml"
+configfile: os.path.join(os.basepath(workflow.snakefile),"config/config.yaml")
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={read_location} R2_reads={read_location} Sample=Test
