@@ -6,10 +6,7 @@ import os
 import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 import pkg_resources
 
-config_file = "/tools/git.repositories/SerumQC-private/config/config.yaml"
-
-print(config_file)
-configfile: config_file
+configfile: "config/config.yaml"
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={read_location} R2_reads={read_location} Sample=Test
