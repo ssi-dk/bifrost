@@ -246,7 +246,7 @@ def check__detect_species(summarize_kraken_report_yaml, species_file):
     with open(summarize_kraken_report_yaml, "r") as yaml_stream:
         serum_db = yaml.load(yaml_stream)
     with open(species_file, "w") as outfile:
-        outfile.write(serum_db["kraken_summary"]["species_detected"] + "\n")
+        outfile.write(serum_db["contamination_reads"]["species_detected"] + "\n")
 
     return 0
 
