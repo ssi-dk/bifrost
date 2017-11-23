@@ -12,5 +12,4 @@ rule qc:
         serumqc_yaml = "summaries/serumqc.yaml"
     run:
         serum.qc_yaml(summarize_quast_yaml, serumqc_yaml)
-        pass
         # currently considering adjusting output to yaml or csv for parsing

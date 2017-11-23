@@ -32,6 +32,11 @@ def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
     return 0
 
 
+def script__kmer_reads(read_files):
+
+    return 0
+
+
 def script__link_read_files_to_cwd(read_files, check_file):
     os.symlink(read_files[0], os.path.basename(read_files[0]))
     os.symlink(read_files[1], os.path.basename(read_files[1]))
@@ -385,6 +390,28 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
         serumqc_summary = yaml.load(yaml_stream)
     serumqc_summary["read_stats"]["raw"]["R1"]
     serumqc_summary["read_stats"]["raw"]["R2"]
+
+    # sample_name
+    # status?
+    # supplying lab
+    # emails (initials)
+    # run_name
+    # qc action
+    # output directory
+    # number of reads
+    # read length
+    # detected species ncbi
+    # mlst type
+    # mlst alleles
+    # coverage base
+    # coverage compare
+    # length 
+    # contigs
+    # coverage
+    # N50
+    # N75
+    # plate name
+    # comments
 
     return 0
 
