@@ -14,7 +14,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config/config.yam
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads=~/test/data/nextseq/FHA3_S64_L555_R1_001.fastq.gz R2_reads=~/test/data/nextseq/FHA3_S64_L555_R2_001.fastq.gz Sample=Test
 # requires --config R1_reads={read_location},R2_reads={read_location}
 
-sample = str(config["Sample"])
+sample_config = str(config["Sample"])
 R1 = str(config["R1_reads"])
 R2 = str(config["R2_reads"])
 
