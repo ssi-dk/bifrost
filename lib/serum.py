@@ -369,13 +369,17 @@ def script__summarize_kraken_contigs(kraken_contigs_file, summarize_contaminatio
 def script__summarize_summaries_to_serum(yaml_files, serumqc_summary_yaml):
     """
     """
-    serumqc_summary = []
+    serumqc_summary = {}
     for file in yaml_files:
         with open(file, "r") as yaml_stream:
-            serumqc_summary.append(yaml.load(yaml_stream))
+            partial_info = (yaml.load(yaml_stream))
+            for key in partial_info:
+                if key in serumqc_summary:
+                    print("Yaml key error, serumqc key: {}".format(key))
+                serumqc_summary[key] = partial_info[key]
 
     with open(serumqc_summary_yaml, "w") as output_file:
-        yaml.dump(serumqc_summary, output_file)
+        yaml.round_trip_dump(serumqc_summary, output_file)
     # combine yaml files
     return 0
 
