@@ -379,7 +379,7 @@ def script__summarize_summaries_to_serum(yaml_files, serumqc_summary_yaml):
                 serumqc_summary[key] = partial_info[key]
 
     with open(serumqc_summary_yaml, "w") as output_file:
-        yaml.round_trip_dump(serumqc_summary, output_file)
+        yaml.dump(serumqc_summary, output_file)
     # combine yaml files
     return 0
 
