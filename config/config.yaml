@@ -8,9 +8,9 @@ serum:
   minimum_number_of_reads: 10000
   qc:
     min_length: 1000
-    base_depth: 0.0
-    min_depth: 10.0
-    recommended_depth: 25.0
+    base_depth: 0
+    min_depth: 10
+    recommended_depth: 25
     ambiguous_cutoff: 0.1
   summarize:
     depth_range: [1, 101]

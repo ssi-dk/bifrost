@@ -23,12 +23,28 @@ def check__sample_sheet():
 def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
     df = pandas.read_excel(sample_sheet_xlsx)
     item_rename_dict = {}
-    test = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
-    for i, item in enumerate(test["SampleID"].tolist()):
-        print("renaming sample {}".format(item))
-        item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", item)
+    badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
+
+    for item in badly_named_samples["SampleID"].tolist():
+        print("Renaming {} to {}".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item))))
+
+    for item in df["SampleID"].tolist():
+        item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item))
 
     df["SampleID"] = df["SampleID"].map(item_rename_dict)
+
+    duplicates = {}
+    for item in df["SampleID"].tolist():
+        if df["SampleID"].tolist().count(item) > 1:
+            print("Duplicate SampleID's exist {}".format(item))
+            duplicates[item] = df["SampleID"].tolist().count(item)
+            # duplicates have to be done on id basis
+
+    for i, row in df.iterrows():
+        if df.loc[i, "SampleID"] in duplicates:
+            df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_" * duplicates[df.loc[i, "SampleID"]]
+        duplicates[row["SampleID"]] -= 1
+
     return 0
 
 
@@ -395,6 +411,33 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     serumqc_summary["read_stats"]["raw"]["R1"]
     serumqc_summary["read_stats"]["raw"]["R2"]
 
+    # Number of reads
+    serumqc_dict["num_of_reads"] = serumqc_summary["read_stats"]["raw"]["R1"]["reads"] + serumqc_summary["read_stats"]["raw"]["R2"]["reads"]
+    serumqc_dict["read_length"] = serumqc_summary["read_stats"]["raw"]["R1"]["mode"]
+    serumqc_dict["species_detected"] = serumqc_summary["contamination_reads"]["species_detected"]
+
+    serumqc_dict["contigs"] += 0
+    total_depth = 0
+    total_length = 0
+    for contig in serumqc_summary["contig_depth"]:
+        if contig["total_length"] >= config["qc"]["min_length"]:
+            serumqc_dict["contigs"] += 1
+            total_depth += contig["total_depth"]
+            total_length += contig["total_length"]
+
+    serumqc_dict["length"] = total_length
+    serumqc_dict["coverage"] = total_depth / total_length
+    serumqc_dict["N50"] = serumqc_summary["assembly"]["N50"]
+    serumqc_dict["N75"] = serumqc_summary["assembly"]["N75"]
+
+    base_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
+    min_depth =serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
+    serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
+
+
+
+    if min_depth - base_depth > 250000:
+
     # sample_name
     # status?
     # supplying lab
@@ -409,7 +452,7 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     # mlst alleles
     # coverage base
     # coverage compare
-    # length 
+    # length
     # contigs
     # coverage
     # N50
