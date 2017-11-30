@@ -4,6 +4,13 @@ global:
   threads: &threads "4"
 
 serum:
+  samplesheet_column_mapping:
+    sample_name: "SampleID"
+    group: "SupplyingLab" 
+    emails: "Initials"
+    run_name: "ExperimentName"
+    prority: "Priority"
+
   database: "/home/ssi.ad/kimn/code/serumqc/DB/species_qc_values.tsv"
   minimum_number_of_reads: 10000
   qc:

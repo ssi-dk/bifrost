@@ -7,7 +7,7 @@ import pandas
 import os
 import vcf
 import pkg_resources
-
+import configparser #for checking miseq/nextseq samplesheets
 config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
 
 yaml = ruamel.yaml.YAML(typ='safe')
@@ -17,6 +17,8 @@ with open(config_file, "r") as yaml_stream:
 
 
 def check__sample_sheet():
+    samplesheet = configparser.
+
     return 0
 
 
@@ -40,13 +42,20 @@ def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
             duplicates[item] = df["SampleID"].tolist().count(item)
             # duplicates have to be done on id basis
 
+    ridiculous_count = 0
     for i, row in df.iterrows():
         if df.loc[i, "SampleID"] in duplicates:
-            df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_" * duplicates[df.loc[i, "SampleID"]]
-        duplicates[row["SampleID"]] -= 1
-
+            if df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]]) in df["SampleID"].tolist():
+                ridiculous_count += 1
+                df.loc[i, "SampleID"] = "VERY_BAD_SAMPLE_NAME_" + str(ridiculous_count)
+            else:
+                df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
+            duplicates[row["SampleID"]] -= 1
     return 0
 
+def script__generate_sample_values_from_robot_sample_sheet(sample_sheet_xlsx):
+
+    return 0
 
 def script__kmer_reads(read_files):
 
@@ -431,12 +440,11 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     serumqc_dict["N75"] = serumqc_summary["assembly"]["N75"]
 
     base_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
-    min_depth =serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
+    min_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
     serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
 
 
 
-    if min_depth - base_depth > 250000:
 
     # sample_name
     # status?
