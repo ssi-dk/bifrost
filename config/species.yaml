@@ -11,5 +11,12 @@ default:
   allowable_percent_unclassified: 100
   length_difference: 250000
   contig_difference: 1000
-  comment: use these values if another isn't given
+  comment: "use these values if another isn't given"
 A. baumannii:
+  min_length: 3700000
+  max_length: 4400000
+  mlst_species: "abaumannii"
+  ncbi_species: "Acinetobacter baumannii"
+A. pitti
+
+
