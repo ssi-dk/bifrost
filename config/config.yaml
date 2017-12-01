@@ -10,7 +10,6 @@ serum:
     emails: "Initials"
     run_name: "ExperimentName"
     prority: "Priority"
-
   database: "/home/ssi.ad/kimn/code/serumqc/DB/species_qc_values.tsv"
   minimum_number_of_reads: 10000
   qc:
@@ -21,7 +20,7 @@ serum:
     ambiguous_cutoff: 0.1
   summarize:
     depth_range: [1, 101]
-  read_pattern: (?P<identifier>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)(?P<read_number>_R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
+  read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
   samples_to_ignore: Undetermined
   queues: 
     - urgent
