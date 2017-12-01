@@ -36,16 +36,17 @@ def check__run_folder(run_folder, run_info_yaml):
         if sample not in config["serum"]["samples_to_ignore"]:
             if run_info[sample]["count"] > 2:
                 print("ERROR: at least one sample has more than 2 read_files associted with it, check config['serum']['read_pattern'] for read_pattern")
-                # return 1
+                return 1
             if run_info[sample]["count"] == 1:
                 print("{} SE read".format(sample))
-                # return 1
+                return 1
             else:
                 print("{} PE read".format(sample))
     # return run_info
     with open(run_info_yaml, "w") as output:
         yaml.dump(run_info, output)
 
+    return 0
 
 def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, updated_run_info_yaml):
     with open(run_info_yaml, "r") as yaml_stream:
@@ -65,7 +66,7 @@ def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, 
     for i, row in sample_sheet.iterrows():
         if config["serum"]["samplesheet_column_mapping"]["sample_name"] not in sample_sheet:
             print("ERROR: sample sheet does not have column")
-            # return 1
+            return 1
         sample_name = row[str(config["serum"]["samplesheet_column_mapping"]["sample_name"])]
         if sample_name not in run_info:
             run_info[sample_name] = {}
