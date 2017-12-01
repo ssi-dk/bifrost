@@ -17,12 +17,72 @@ with open(config_file, "r") as yaml_stream:
 
 
 def check__sample_sheet():
-    samplesheet = configparser.
+    #samplesheet = configparser.
+
+    return 0
+
+
+def check__run_folder(run_folder, run_info_yaml):
+    run_info = {}
+    for file in sorted(os.listdir(run_folder)):
+        result = re.search(config["serum"]["read_pattern"], file)
+        if result and os.path.isfile(os.path.join(run_folder, file)):
+            if result.group("sample_name") not in run_info:
+                run_info[str(result.group("sample_name"))] = {"count": 0}
+            run_info[result.group("sample_name")]["count"] += 1
+            run_info[result.group("sample_name")][result.group("paired_read_number")] = os.path.join(run_folder, file)
+
+    for sample in run_info:
+        if sample not in config["serum"]["samples_to_ignore"]:
+            if run_info[sample]["count"] > 2:
+                print("ERROR: at least one sample has more than 2 read_files associted with it, check config['serum']['read_pattern'] for read_pattern")
+                # return 1
+            if run_info[sample]["count"] == 1:
+                print("{} SE read".format(sample))
+                # return 1
+            else:
+                print("{} PE read".format(sample))
+    # return run_info
+    with open(run_info_yaml, "w") as output:
+        yaml.dump(run_info, output)
+
+
+def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, updated_run_info_yaml):
+    with open(run_info_yaml, "r") as yaml_stream:
+        run_info = yaml.load(yaml_stream)
+
+    mapped_columns = {}
+    for item in config["serum"]["samplesheet_column_mapping"]:
+        mapped_columns[config["serum"]["samplesheet_column_mapping"][item]] = item
+
+    if not os.path.isfile(sample_sheet_xlsx):
+        with open(updated_run_info_yaml, "w") as output:
+            yaml.dump(run_info, output)
+        return 0
+
+    sample_sheet = pandas.read_excel(sample_sheet_xlsx)
+
+    for i, row in sample_sheet.iterrows():
+        if config["serum"]["samplesheet_column_mapping"]["sample_name"] not in sample_sheet:
+            print("ERROR: sample sheet does not have column")
+            # return 1
+        sample_name = row[str(config["serum"]["samplesheet_column_mapping"]["sample_name"])]
+        if sample_name not in run_info:
+            run_info[sample_name] = {}
+        for column in sample_sheet:
+            if column not in mapped_columns:
+                run_info[sample_name][column] = row[column]
+            else:
+                run_info[sample_name][mapped_columns[column]] = row[column]
+
+    with open(updated_run_info_yaml, "w") as output:
+        yaml.dump(run_info, output)
 
     return 0
 
 
 def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
+    # change logic to apply to N_WGS and then used N_WGS to replace H_WGS
     df = pandas.read_excel(sample_sheet_xlsx)
     item_rename_dict = {}
     badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
@@ -53,9 +113,11 @@ def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
             duplicates[row["SampleID"]] -= 1
     return 0
 
+
 def script__generate_sample_values_from_robot_sample_sheet(sample_sheet_xlsx):
 
     return 0
+
 
 def script__kmer_reads(read_files):
 
@@ -442,9 +504,6 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     base_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
     min_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
     serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
-
-
-
 
     # sample_name
     # status?
