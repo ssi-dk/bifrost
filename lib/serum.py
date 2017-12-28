@@ -101,6 +101,8 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
                 run_info["samples"][sample]["status"] = "skipped"
             else:
                 run_info["samples"][sample]["status"] = "initialized"
+                with open(os.path.join(sample, "cmd"), "w") as command:
+                    command.write("snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={} R2_reads={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"]))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
