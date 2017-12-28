@@ -96,6 +96,11 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
     return 0
 
 
+def initialize_complete():
+    with open("init_complete", "w"):
+        pass
+
+
 def convert_run_to_status(run_dir=".", run_status="run_status.csv"):
     run_info = {}
     for directory in os.listdir(run_dir):
