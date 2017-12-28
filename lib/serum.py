@@ -155,6 +155,7 @@ def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
             else:
                 df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
             duplicates[row["SampleID"]] -= 1
+    df.to_excel(corrected_sample_sheet_xlsx)
     return 0
 
 
