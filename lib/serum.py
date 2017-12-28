@@ -9,6 +9,7 @@ import vcf
 import pkg_resources
 import configparser #for checking miseq/nextseq samplesheets
 import datetime
+import hashlib
 config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
 
 yaml = ruamel.yaml.YAML(typ='safe')
@@ -23,6 +24,14 @@ def check__sample_sheet():
     return 0
 
 
+def md5sum(file):
+    with open(file, 'rb') as fh:
+        md5sum = hashlib.md5()
+        for data in iter(lambda: fh.read(4096), b""):
+            md5sum.update(data)
+    return md5sum.hexdigest()
+
+
 def check__run_folder(run_folder, run_info_yaml="run.yaml"):
     run_info = {'samples': {}}
     for file in sorted(os.listdir(run_folder)):
@@ -32,6 +41,7 @@ def check__run_folder(run_folder, run_info_yaml="run.yaml"):
                 run_info['samples'][str(result.group("sample_name"))] = {"count": 0}
             run_info['samples'][result.group("sample_name")]["count"] += 1
             run_info['samples'][result.group("sample_name")][result.group("paired_read_number")] = os.path.join(run_folder, file)
+            run_info['samples'][result.group("sample_name")][result.group("paired_read_number")]['md5sum'] = md5sum(os.path.join(run_folder, file))
     for sample in run_info['samples']:
         if sample not in config["serum"]["samples_to_ignore"]:
             if run_info['samples'][sample]["count"] > 2:
