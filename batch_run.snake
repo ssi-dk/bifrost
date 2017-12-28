@@ -33,14 +33,16 @@ rule all:
     input:
         "set_up.txt"
 
-rule check_samplesheet:
+rule set_up_run:
     input:
         samplesheet = sample_sheet,
         run_folder
     output:
-        run_info_yaml = "run_info.yaml"
+        samplesheet = "sample_sheet.xlsx"
+        run_info_yaml = "run_status.csv"
     run:
         serum.check__robot_sample_sheet(input.samplesheet, output.samplesheet)
         serum.check__run_folder(run_folder, run_info_yaml)
         serum.check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, updated_run_info_yaml)
-
+        serum.initialize__run_from_run_info(updated_run_info_yaml)
+        serum.start_initialized_samples()

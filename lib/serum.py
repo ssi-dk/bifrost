@@ -8,6 +8,7 @@ import os
 import vcf
 import pkg_resources
 import configparser #for checking miseq/nextseq samplesheets
+import datetime
 config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
 
 yaml = ruamel.yaml.YAML(typ='safe')
@@ -23,62 +24,99 @@ def check__sample_sheet():
 
 
 def check__run_folder(run_folder, run_info_yaml):
-    run_info = {}
+    run_info = {'samples': {}}
     for file in sorted(os.listdir(run_folder)):
         result = re.search(config["serum"]["read_pattern"], file)
         if result and os.path.isfile(os.path.join(run_folder, file)):
-            if result.group("sample_name") not in run_info:
-                run_info[str(result.group("sample_name"))] = {"count": 0}
-            run_info[result.group("sample_name")]["count"] += 1
-            run_info[result.group("sample_name")][result.group("paired_read_number")] = os.path.join(run_folder, file)
-
-    for sample in run_info:
+            if result.group("sample_name") not in run_info['samples']:
+                run_info['samples'][str(result.group("sample_name"))] = {"count": 0}
+            run_info['samples'][result.group("sample_name")]["count"] += 1
+            run_info['samples'][result.group("sample_name")][result.group("paired_read_number")] = os.path.join(run_folder, file)
+    for sample in run_info['samples']:
         if sample not in config["serum"]["samples_to_ignore"]:
-            if run_info[sample]["count"] > 2:
+            if run_info['samples'][sample]["count"] > 2:
                 print("ERROR: at least one sample has more than 2 read_files associted with it, check config['serum']['read_pattern'] for read_pattern")
                 return 1
-            if run_info[sample]["count"] == 1:
+            if run_info['samples'][sample]["count"] == 1:
                 print("{} SE read".format(sample))
                 return 1
             else:
-                print("{} PE read".format(sample))
+                # print("{} PE read".format(sample))
+                pass
     # return run_info
     with open(run_info_yaml, "w") as output:
         yaml.dump(run_info, output)
-
     return 0
+
 
 def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, updated_run_info_yaml):
     with open(run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
-
     mapped_columns = {}
     for item in config["serum"]["samplesheet_column_mapping"]:
         mapped_columns[config["serum"]["samplesheet_column_mapping"][item]] = item
-
     if not os.path.isfile(sample_sheet_xlsx):
         with open(updated_run_info_yaml, "w") as output:
             yaml.dump(run_info, output)
         return 0
-
     sample_sheet = pandas.read_excel(sample_sheet_xlsx)
-
     for i, row in sample_sheet.iterrows():
         if config["serum"]["samplesheet_column_mapping"]["sample_name"] not in sample_sheet:
             print("ERROR: sample sheet does not have column")
             return 1
         sample_name = row[str(config["serum"]["samplesheet_column_mapping"]["sample_name"])]
-        if sample_name not in run_info:
-            run_info[sample_name] = {}
+        if sample_name not in run_info['samples']:
+            run_info['samples'][sample_name] = {}
         for column in sample_sheet:
-            if column not in mapped_columns:
-                run_info[sample_name][column] = row[column]
+            if isinstance(row[column], datetime.date):
+                value = row[column].isoformat()
             else:
-                run_info[sample_name][mapped_columns[column]] = row[column]
-
+                value = row[column]
+            if column not in mapped_columns:
+                run_info['samples'][sample_name][column] = value
+            else:
+                run_info['samples'][sample_name][mapped_columns[column]] = value
     with open(updated_run_info_yaml, "w") as output:
         yaml.dump(run_info, output)
+    return 0
 
+
+def initialize__run_from_run_info(updated_run_info_yaml, run_status="run_status.csv"):
+    with open(updated_run_info_yaml, "r") as yaml_stream:
+        run_info = yaml.load(yaml_stream)
+    for sample in run_info["samples"]:
+        os.makedirs(sample)
+        with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
+            if sample in config['serum']['samples_to_ignore']:
+                run_info["samples"][sample]["status"] = "skipped"
+            else:
+                run_info["samples"][sample]["status"] = "initialized"
+            yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
+    convert_run_to_status()
+    return 0
+
+
+def convert_run_to_status(run_dir=".", run_status="run_status.csv"):
+    run_info = {}
+    for directory in os.listdir(run_dir):
+        if os.path.isfile(os.path.join(directory, "sample.yaml")):
+            with open(os.path.join(directory, "sample.yaml")) as yaml_stream:
+                run_info[directory] = yaml.load(yaml_stream)['sample']
+    df = pandas.DataFrame.from_dict(run_info, orient='index')
+    df.to_csv(run_status)
+
+
+def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
+    for directory in os.listdir(run_dir):
+        if os.path.isfile(os.path.join(directory, "sample.yaml")):
+            with open(os.path.join(directory, "sample.yaml"), "r") as yaml_stream:
+                sample_info = yaml.load(yaml_stream)
+            if sample_info['sample']['status'] == 'initialized':
+                sample_info['sample']['status'] = 'starting'
+                print("running sample")
+            with open(os.path.join(directory, "sample.yaml"), "w") as yaml_stream:
+                yaml.dump(sample_info, yaml_stream)
+    convert_run_to_status()
     return 0
 
 

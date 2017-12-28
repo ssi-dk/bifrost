@@ -9,7 +9,7 @@ serum:
     group: "SupplyingLab" 
     emails: "Initials"
     run_name: "ExperimentName"
-    prority: "Priority"
+    priority: "Priority"
     species: "Organism"
   database: "/home/ssi.ad/kimn/code/serumqc/DB/species_qc_values.tsv"
   minimum_number_of_reads: 10000
@@ -84,6 +84,9 @@ prokka:
 
 quast:
   options: ["--fast -t",*threads," "]
+
+tadpole:
+  options: ["threads=",*threads," -Xmx",*memory,"g"]
 
 # qc: 
 #     categories: 

@@ -43,3 +43,21 @@ rule generateReport:
             with open("mlst/mlst_report.tsv") as mlst:
                 for line in mlst:
                     report.write(line)
+
+
+rule run__tadpole_on_trimmed_reads:
+    message:
+        "Denovo assembly of normalized reads"
+    input:
+        normalized_reads = ("reads/trimmed_R1.fastq.gz", "reads/trimmed_R2.fastq.gz")
+    output:
+        contigs = "contigs.fasta",
+        log = "log/tadpole.log"
+    params:
+        options = "".join(config["tadpole"]["options"])
+    log:
+        "log/tadpole.log"
+    shell:
+        "tadpole.py in={input.normalized_reads[0]} in2={input.normalized_reads[1]} out={output.contigs} {params.options} &> {log}"
+
+
