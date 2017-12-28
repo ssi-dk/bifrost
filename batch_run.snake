@@ -31,7 +31,7 @@ onerror:
 
 rule all:
     input:
-        "set_up.txt"
+        "run_status.csv"
 
 rule set_up_run:
     input:
