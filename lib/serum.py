@@ -99,6 +99,8 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
         with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
             if sample in config['serum']['samples_to_ignore']:
                 run_info["samples"][sample]["status"] = "skipped"
+            elif "R1" not in run_info["samples"][sample] or "R2" not in run_info["samples"][sample]:
+                run_info["samples"][sample]["status"] = "no reads"
             else:
                 run_info["samples"][sample]["status"] = "initialized"
                 with open(os.path.join(sample, "cmd"), "w") as command:
