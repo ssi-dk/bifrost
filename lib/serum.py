@@ -41,7 +41,7 @@ def check__run_folder(run_folder, run_info_yaml="run.yaml"):
                 run_info['samples'][str(result.group("sample_name"))] = {"count": 0}
             run_info['samples'][result.group("sample_name")]["count"] += 1
             run_info['samples'][result.group("sample_name")][result.group("paired_read_number")] = os.path.join(run_folder, file)
-            run_info['samples'][result.group("sample_name")][result.group("paired_read_number")]['md5sum'] = str(md5sum(os.path.join(run_folder, file)))
+            run_info['samples'][result.group("sample_name")][result.group("paired_read_number") + '_md5sum'] = md5sum(os.path.join(run_folder, file))
     for sample in run_info['samples']:
         if sample not in config["serum"]["samples_to_ignore"]:
             if run_info['samples'][sample]["count"] > 2:
@@ -56,7 +56,7 @@ def check__run_folder(run_folder, run_info_yaml="run.yaml"):
     # return run_info
     with open(run_info_yaml, "w") as output:
         yaml.dump(run_info, output)
-    return 0
+        return 0
 
 
 def check__combine_sample_sheet_with_run_info(sample_sheet_xlsx, run_info_yaml="run.yaml", updated_run_info_yaml="run.yaml"):
