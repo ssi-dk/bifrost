@@ -43,7 +43,7 @@ rule set_up_run:
     run:
         serum.check__robot_sample_sheet(input.samplesheet, output.samplesheet)
         serum.check__run_folder(input.run_folder)
-        serum.check__combine_sample_sheet_with_run_info(output.sample_sheet)
+        serum.check__combine_sample_sheet_with_run_info(output.samplesheet)
         serum.initialize__run_from_run_info()
         serum.start_initialized_samples()
         serum.initialize_complete()
