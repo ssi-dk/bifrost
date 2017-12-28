@@ -99,12 +99,12 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
         with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
             if sample in config['serum']['samples_to_ignore']:
                 run_info["samples"][sample]["status"] = "skipped"
-            elif "R1" not in run_info["samples"][sample] or "R2" not in run_info["samples"][sample]:
+            elif "R1" not in run_info["samples"][sample] and "R2" not in run_info["samples"][sample]:
                 run_info["samples"][sample]["status"] = "no reads"
             else:
                 run_info["samples"][sample]["status"] = "initialized"
                 with open(os.path.join(sample, "cmd"), "w") as command:
-                    command.write("snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={} R2_reads={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"]))
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"]), os.path.join(sample, "sample.yaml"))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
