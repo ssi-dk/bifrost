@@ -23,7 +23,7 @@ def check__sample_sheet():
     return 0
 
 
-def check__run_folder(run_folder, run_info_yaml):
+def check__run_folder(run_folder, run_info_yaml="run.yaml"):
     run_info = {'samples': {}}
     for file in sorted(os.listdir(run_folder)):
         result = re.search(config["serum"]["read_pattern"], file)
@@ -49,7 +49,7 @@ def check__run_folder(run_folder, run_info_yaml):
     return 0
 
 
-def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, updated_run_info_yaml):
+def check__combine_sample_sheet_with_run_info(sample_sheet_xlsx, run_info_yaml="run.yaml", updated_run_info_yaml="run.yaml"):
     with open(run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
     mapped_columns = {}
@@ -81,7 +81,7 @@ def check__combine_sample_sheet_with_run_info(run_info_yaml, sample_sheet_xlsx, 
     return 0
 
 
-def initialize__run_from_run_info(updated_run_info_yaml, run_status="run_status.csv"):
+def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="run_status.csv"):
     with open(updated_run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
     for sample in run_info["samples"]:
