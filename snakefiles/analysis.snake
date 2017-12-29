@@ -40,7 +40,7 @@ rule run__Ariba_MLST_on_reads:
     output:
         ariba_mlst = "ariba_mlst"
     params:
-        database = config["ariba"]["database"]["mlst"]["Staphylococcus_aureus"]
+        database = config["ariba"]["database"]["mlst"]["Staphylococcus_aureus"],
         options = "".join(config["ariba"]["options"])
     log:
         "log/ariba_mlst.log"
@@ -67,7 +67,7 @@ rule run__Ariba_resfinder_on_reads:
     output:
         ariba_resfinder = "ariba_resfinder"
     params:
-        database = config["ariba"]["database"]["resfinder"]
+        database = config["ariba"]["database"]["resfinder"],
         options = "".join(config["ariba"]["options"])
     log:
         "log/ariba_resfinder.log"
