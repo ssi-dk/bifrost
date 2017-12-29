@@ -53,6 +53,7 @@ ariba:
     plasmidfinder: &plasmidfinder_db "/srv/data/DB/ariba/plasmidfinder/"
     mlst:
       Staphylococcus_aureus: "/srv/data/DB/ariba/Staphylococcus_aureus/ref_db"
+  options: ["--noclean"]
 
 trimmomatic:
   adaptors: &adaptors "/home/ssi.ad/kimn/code/serumqc/DB/adapters.fasta"

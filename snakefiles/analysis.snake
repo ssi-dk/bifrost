@@ -41,10 +41,11 @@ rule run__Ariba_MLST_on_reads:
         ariba_mlst = "ariba_mlst"
     params:
         database = config["ariba"]["database"]["mlst"]["Staphylococcus_aureus"]
+        options = "".join(config["ariba"]["options"])
     log:
         "log/ariba_mlst.log"
     shell:
-        "ariba run {params.database} {input.R1} {input.R2} mlst {output.ariba_mlst} 2> {log}"
+        "ariba {params.options} run {params.database} {input.R1} {input.R2} mlst {output.ariba_mlst} &> {log}"
 
 
 rule run__Prokka_annotation:
@@ -53,11 +54,11 @@ rule run__Prokka_annotation:
     output:
         folder = "annotations"
     params:
-        options = config["prokka"]["options"]
+        options = "".join(config["prokka"]["options"])
     log:
         "log/prokka.log"
     shell:
-        "prokka {params.options} --outdir {output.folder} {input.contigs} 2> {log}"
+        "prokka {params.options} --outdir {output.folder} {input.contigs} &> {log}"
 
 
 rule run__Ariba_resfinder_on_reads:
@@ -67,10 +68,11 @@ rule run__Ariba_resfinder_on_reads:
         ariba_resfinder = "ariba_resfinder"
     params:
         database = config["ariba"]["database"]["resfinder"]
+        options = "".join(config["ariba"]["options"])
     log:
         "log/ariba_resfinder.log"
     shell:
-        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.ariba_resfinder} 2> {log}"
+        "ariba {params.options} run {params.database} {input.reads[0]} {input.reads[1]} {output.ariba_resfinder} &> {log}"
 
 
 rule run__Quast_on_contigs:
@@ -80,8 +82,8 @@ rule run__Quast_on_contigs:
         directory = "quast",
         quast_report = "quast/report.tsv"
     params:
-        options = config["quast"]["options"]
+        options = "".join(config["quast"]["options"])
     log:
         "log/quast.log"
     shell:
-        "quast.py -o {output.directory} {params.options} {input.contigs} > {log}"
+        "quast.py -o {output.directory} {params.options} {input.contigs} &> {log}"
