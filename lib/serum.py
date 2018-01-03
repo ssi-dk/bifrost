@@ -551,6 +551,8 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     total_depth = 0
     total_length = 0
     for contig in serumqc_summary["contig_depth"]:
+        print(contig["total_length"], type(contig["total_length"]))
+        print(config["serum"]["qc"]["min_length"], type(config["serum"]["qc"]["min_length"]))
         if contig["total_length"] >= config["serum"]["qc"]["min_length"]:
             serumqc_dict["contigs"] += 1
             total_depth += contig["total_depth"]
