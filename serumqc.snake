@@ -58,5 +58,5 @@ rule all:
         "mapping/contigs_elprep.sam",
         "mapping/contigs_elprep.bam",
         "mapping/contigs_elprep.bam.bai",
-        "mapping/contigs.depth"
+        "mapping/contigs.depth",
         "summaries/serumqc.yaml"
