@@ -569,15 +569,15 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     with open("sample.yaml", "r") as yaml_stream:
         sample_info = yaml.load(yaml_stream)
     # Change all these to pull config value
-    serumqc_dict["sample_name"] = sample_info["sample_name"]
+    serumqc_dict["sample_name"] = sample_info["sample"]["sample_name"]
     serumqc_dict["status"] = "QC"
-    serumqc_dict["group"] = sample_info["group"]
-    serumqc_dict["emails"] = sample_info["emails"]
-    serumqc_dict["run_name"] = sample_info["run_name"]
+    serumqc_dict["group"] = sample_info["sample"]["group"]
+    serumqc_dict["emails"] = sample_info["sample"]["emails"]
+    serumqc_dict["run_name"] = sample_info["sample"]["run_name"]
     serumqc_dict["output_directory"] = os.getcwd()
-    serumqc_dict["PlateName"] = sample_info["PlateName"]
-    serumqc_dict["Comments"] = sample_info["Comments"]
-    serumqc_dict["species"] = sample_info["Species"]
+    serumqc_dict["PlateName"] = sample_info["sample"]["PlateName"]
+    serumqc_dict["Comments"] = sample_info["sample"]["Comments"]
+    serumqc_dict["species"] = sample_info["sample"]["Species"]
 
     # qc action
     # mlst type
