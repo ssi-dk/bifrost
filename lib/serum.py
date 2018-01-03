@@ -563,7 +563,7 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
 
     serumqc_dict["base_depth"] = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
     serumqc_dict["min_depth"] = serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
-    serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
+    serumqc_dict["rec_depth"] = serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
 
     # cases for contamination
     with open("sample.yaml", "r") as yaml_stream:
