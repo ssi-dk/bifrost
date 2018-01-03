@@ -111,6 +111,7 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
 
 
 def initialize_complete():
+    # run samples track id's and add collector 
     with open("init_complete", "w"):
         pass
 
@@ -560,33 +561,32 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     serumqc_dict["N50"] = serumqc_summary["assembly"]["N50"]
     serumqc_dict["N75"] = serumqc_summary["assembly"]["N75"]
 
-    base_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
-    min_depth = serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
+    serumqc_dict["base_depth"] = serumqc_summary["binned_depth"][config["serum"]["qc"]["base_depth"]]
+    serumqc_dict["min_depth"] = serumqc_summary["binned_depth"][config["serum"]["qc"]["min_depth"]]
     serumqc_summary["binned_depth"][config["serum"]["qc"]["recommended_depth"]]
 
-    # sample_name
-    # status?
-    # supplying lab
-    # emails (initials)
-    # run_name
+    # cases for contamination
+    with open("sample.yaml", "r") as yaml_stream:
+        sample_info = yaml.load(yaml_stream)
+    # Change all these to pull config value
+    serumqc_dict["sample_name"] = sample_info["sample_name"]
+    serumqc_dict["status"] = "QC"
+    serumqc_dict["group"] = sample_info["group"]
+    serumqc_dict["emails"] = sample_info["emails"]
+    serumqc_dict["run_name"] = sample_info["run_name"]
+    serumqc_dict["output_directory"] = os.getcwd()
+    serumqc_dict["PlateName"] = sample_info["PlateName"]
+    serumqc_dict["Comments"] = sample_info["Comments"]
+    serumqc_dict["species"] = sample_info["Species"]
+
     # qc action
-    # output directory
-    # number of reads
-    # read length
-    # detected species ncbi
     # mlst type
     # mlst alleles
-    # coverage base
-    # coverage compare
-    # length
-    # contigs
-    # coverage
-    # N50
-    # N75
-    # plate name
-    # comments
+    with open(serumqc_yaml, "w") as output_file:
+        yaml.dump(serumqc_dict, output_file)
 
     return 0
+
 
 def format_contigs():
     # todo
