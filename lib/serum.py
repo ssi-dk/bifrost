@@ -577,7 +577,7 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     serumqc_dict["output_directory"] = os.getcwd()
     serumqc_dict["PlateName"] = sample_info["sample"]["PlateName"]
     serumqc_dict["Comments"] = sample_info["sample"]["Comments"]
-    serumqc_dict["species"] = sample_info["sample"]["Species"]
+    serumqc_dict["species"] = sample_info["sample"]["species"]
 
     # qc action
     # mlst type
