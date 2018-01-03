@@ -1,15 +1,8 @@
 rule qc:
     input:
-        summarize_quast_yaml = "summaries/quast.yaml",
-        kraken_contigs_summary = "summaries/kraken_contigs.yaml",
-        insert_deviation_summary = "summaries/insert_deviation.yaml",
-        ambiguous_snp_summary = "summaries/ambiguous_snp.yaml",
-        binned_depth_summary = "summaries/binned_depth.yaml",
-        contig_depth_summary = "summaries/contig_depth.yaml",
-        kraken_summary = "summaries/kraken_summary.yaml",
-        read_stats_summary = "summaries/read_stats.yaml",
+        summarize_qc_yaml = "summaries/serumqc_info.yaml"
     output:
         serumqc_yaml = "summaries/serumqc.yaml"
     run:
-        serum.qc_yaml(summarize_quast_yaml, serumqc_yaml)
+        serum.qc_yaml(summarize_qc_yaml, serumqc_yaml)
         # currently considering adjusting output to yaml or csv for parsing
