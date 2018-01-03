@@ -547,7 +547,7 @@ def qc_yaml(serumqc_summary_yaml, serumqc_yaml):
     serumqc_dict["read_length"] = serumqc_summary["read_stats"]["raw"]["R1"]["mode"]
     serumqc_dict["species_detected"] = serumqc_summary["contamination_reads"]["species_detected"]
 
-    serumqc_dict["contigs"] += 0
+    serumqc_dict["contigs"] = 0
     total_depth = 0
     total_length = 0
     for contig in serumqc_summary["contig_depth"]:
