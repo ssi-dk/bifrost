@@ -53,8 +53,8 @@ rule run__bbduk_adapter_trimming_and_filtering:
         bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append
         pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true
         pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true
-        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10
-        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25
+        filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10
+        filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25
         sketch.pl in=contigs.fa out=contigs.sketch
         """
 
