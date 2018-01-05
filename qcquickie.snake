@@ -55,6 +55,6 @@ rule run__bbduk_adapter_trimming_and_filtering:
         pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true
         filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10
         filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25
-        sketch.pl in=contigs.fa out=contigs.sketch
+        sketch.sh in=contigs.fa out=contigs.sketch
         """
 
