@@ -41,21 +41,23 @@ rule run__bbduk_adapter_trimming_and_filtering:
     output:
         contigs = "contigs.sketch"
     params:
-        options = "".join(config["tadpole"]["options"])
+        options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
     log:
         "log/tadpole.log"
     shell:
-        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered_adaptertrimmed.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> {log}"
-        "bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> {log}"
-        "tadpole.sh in=merged_unmerged.fq out=contigs.fa &>> {log}"
-        "cat merged.fq unmerged.fq > merged_unmerged.fq"
-        "bbmap.sh ref=contigs.fa in=merged_unmerged.fq out=contigs.sam &>> {log}"
-        "pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true &>> {log}"
-        "pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true &>> {log}"
-        "awk -F $'\t' '{sum += $12} END {print sum}' contigs_min.pileup &>> {log}"
-        "awk -F $'\t' '{sum += $12} END {print sum}' contigs_rec.pileup &>> {log}"
-        "filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> {log}"
-        "filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> {log}"
-        "sketch.pl in=contigs.fa out=contigs.sketch &>> {log}"
+        """
+        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered_adaptertrimmed.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> {log}
+        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> {log}
+        tadpole.sh in=merged_unmerged.fq out=contigs.fa &>> {log}
+        cat merged.fq unmerged.fq > merged_unmerged.fq
+        bbmap.sh ref=contigs.fa in=merged_unmerged.fq out=contigs.sam &>> {log}
+        pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true &>> {log}
+        pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true &>> {log}
+        awk -F $'\t' '{sum += $12} END {print sum}' contigs_min.pileup &>> {log}
+        awk -F $'\t' '{sum += $12} END {print sum}' contigs_rec.pileup &>> {log}
+        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> {log}
+        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> {log}
+        sketch.pl in=contigs.fa out=contigs.sketch &>> {log}
+        """
 
