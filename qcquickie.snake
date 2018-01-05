@@ -54,8 +54,8 @@ rule run__bbduk_adapter_trimming_and_filtering:
         bbmap.sh ref=contigs.fa in=merged_unmerged.fq out=contigs.sam &>> {log}
         pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true &>> {log}
         pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true &>> {log}
-        awk -F $'\t' '\{sum += $12\} END \{print sum\}' contigs_min.pileup &>> {log}
-        awk -F $'\t' '\{sum += $12\} END \{print sum\}' contigs_rec.pileup &>> {log}
+        # awk -F $'\t' '\{sum += $12\} END \{print sum\}' contigs_min.pileup &>> {log}
+        # awk -F $'\t' '\{sum += $12\} END \{print sum\}' contigs_rec.pileup &>> {log}
         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> {log}
         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> {log}
         sketch.pl in=contigs.fa out=contigs.sketch &>> {log}
