@@ -49,7 +49,7 @@ rule run__bbduk_adapter_trimming_and_filtering:
         """
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq
-        tadpole.sh in=merged_unmerged.fq out=contigs.fa
+        tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa
         bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append
         pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true
         pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true
