@@ -23,12 +23,7 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
-rule all:
-    input:
-        "qcquickie/contigs.sketch"
-
-
-rule run__bbduk_adapter_trimming_and_filtering:
+rule run__qcquickie:
     message:
         "Denovo assembly of normalized reads"
     input:
@@ -39,18 +34,18 @@ rule run__bbduk_adapter_trimming_and_filtering:
         options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
     log:
-        "log/tadpole.log"
+        "qcquickie/qcquickie.log"
     shell:
         """
         cd qcquickie
-        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14
-        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq
-        tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa
-        bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append
-        pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true
-        pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true
-        filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10
-        filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25
-        sketch.sh in=contigs.fa out=contigs.sketch
+        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
+        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> qcquickie.log
+        tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa &>> qcquickie.log
+        bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append &>> qcquickie.log
+        pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true &>> qcquickie.log
+        pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true &>> qcquickie.log
+        filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10 &>> qcquickie.log
+        filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25 &>> qcquickie.log
+        sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
         cd ..
         """
