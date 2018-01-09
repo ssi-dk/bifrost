@@ -42,7 +42,6 @@ rule run__bbduk_adapter_trimming_and_filtering:
         "log/tadpole.log"
     shell:
         """
-        mkdir qcquickie
         cd qcquickie
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq
