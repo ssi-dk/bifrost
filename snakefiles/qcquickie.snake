@@ -29,7 +29,7 @@ rule run__qcquickie:
     input:
         reads = (R1, R2)
     output:
-        contigs = "qcquickie/contigs.sketch"
+        contigs = "qcquickie_done"
     params:
         options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
@@ -49,4 +49,5 @@ rule run__qcquickie:
         filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25 &>> qcquickie.log
         sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
         cd ..
+        touch qcquickie_done
         """

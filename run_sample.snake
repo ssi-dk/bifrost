@@ -29,18 +29,18 @@ onerror:
 
 rule all:
     input:
-        "qcquickie_status.txt"
+        "qcquickie_done"
 
-rule run__snake_qcquickie:
-    message:
-        "qcquickie"
-    input:
-        reads = (R1, R2),
-        sample = sample
-    output:
-        "qcquickie_status.txt"
-    shell:
-        "snakemake -s ~/git.repositories/SerumQC-private/snakefiles/qcquickie.snake --config R1_reads={input.reads[0]} R2_reads={input.reads[1]} Sample={input.sample}"
+# rule run__snake_qcquickie:
+#     message:
+#         "qcquickie"
+#     input:
+#         reads = (R1, R2),
+#         sample = sample
+#     output:
+#         "qcquickie_done"
+#     shell:
+#         "snakemake -s ~/git.repositories/SerumQC-private/snakefiles/qcquickie.snake --config R1_reads={input.reads[0]} R2_reads={input.reads[1]} Sample={input.sample}"
 
 rule run__snake_assembly:
     message:
