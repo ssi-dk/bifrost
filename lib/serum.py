@@ -105,13 +105,15 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
                 run_info["samples"][sample]["status"] = "initialized"
                 with open(os.path.join(sample, "cmd"), "w") as command:
                     command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
+                with open(os.path.join(sample, "cmd_qcquickie"), "w") as command:
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
 
 
 def initialize_complete():
-    # run samples track id's and add collector 
+    # run samples track id's and add collector
     with open("init_complete", "w"):
         pass
 

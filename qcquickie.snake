@@ -25,11 +25,6 @@ onerror:
 
 rule all:
     input:
-        # analysis/rule run__Kraken_on_reads
-        # analysis/set_species_file
-        # analysis/run__Ariba_MLST_on_reads
-        # analysis/run__Ariba_resfinder_on_reads
-        # summarize/script__summarize_kraken_report
         "contigs.sketch"
 
 
@@ -39,7 +34,7 @@ rule run__bbduk_adapter_trimming_and_filtering:
     input:
         reads = (R1, R2)
     output:
-        contigs = "contigs.sketch"
+        contigs = "qc_quickie/contigs.sketch"
     params:
         options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
@@ -47,6 +42,8 @@ rule run__bbduk_adapter_trimming_and_filtering:
         "log/tadpole.log"
     shell:
         """
+        mkdir qc_quickie
+        cd qc_quickie
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq
         tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa
@@ -56,5 +53,5 @@ rule run__bbduk_adapter_trimming_and_filtering:
         filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10
         filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25
         sketch.sh in=contigs.fa out=contigs.sketch
+        cd ..
         """
-
