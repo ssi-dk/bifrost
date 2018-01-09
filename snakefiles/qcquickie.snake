@@ -14,12 +14,12 @@ R2 = config["R2_reads"],
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
-    output = ["status.txt"]
+    output = ["qcquickie_status.txt"]
     with open(output[0], "w") as status:
         status.write("Success")
 onerror:
     print("Workflow error")
-    output = ["status.txt"]
+    output = ["qcquickie_status.txt"]
     with open(output[0], "w") as status:
         status.write("Failure")
 

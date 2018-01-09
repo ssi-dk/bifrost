@@ -47,3 +47,4 @@ rule set_up_run:
         serum.initialize__run_from_run_info()
         serum.start_initialized_samples()
         serum.initialize_complete()
+        # post steps
