@@ -25,7 +25,7 @@ onerror:
 
 rule all:
     input:
-        "contigs.sketch"
+        "qcquickie/contigs.sketch"
 
 
 rule run__bbduk_adapter_trimming_and_filtering:
@@ -34,7 +34,7 @@ rule run__bbduk_adapter_trimming_and_filtering:
     input:
         reads = (R1, R2)
     output:
-        contigs = "qc_quickie/contigs.sketch"
+        contigs = "qcquickie/contigs.sketch"
     params:
         options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
@@ -42,8 +42,8 @@ rule run__bbduk_adapter_trimming_and_filtering:
         "log/tadpole.log"
     shell:
         """
-        mkdir qc_quickie
-        cd qc_quickie
+        mkdir qcquickie
+        cd qcquickie
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq
         tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa
