@@ -22,14 +22,14 @@ log_folder = "log/"
 if not os.path.isdir(log_folder):
     os.mkdir(log_folder)
 
-include: "snakefiles/checks.snake"
-include: "snakefiles/read_manipulation.snake"
-include: "snakefiles/assembly.snake"
-include: "snakefiles/read_mapping.snake"
-include: "snakefiles/variant_calling.snake"
-include: "snakefiles/analysis.snake"
-include: "snakefiles/summarize.snake"
-include: "snakefiles/qc.snake"
+include: "snakefiles/serumqc/checks.snake"
+include: "snakefiles/serumqc/read_manipulation.snake"
+include: "snakefiles/serumqc/assembly.snake"
+include: "snakefiles/serumqc/read_mapping.snake"
+include: "snakefiles/serumqc/variant_calling.snake"
+include: "snakefiles/serumqc/analysis.snake"
+include: "snakefiles/serumqc/summarize.snake"
+include: "snakefiles/serumqc/qc.snake"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")

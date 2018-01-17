@@ -1,15 +1,32 @@
-rule run__SPAdes_on_normailized_reads:
+import re
+import pandas
+# from pytools.persistent_dict import PersistentDict
+# size estimation from kmers as well with jellyfish?
+# storage = PersistentDict("qcquickie_storage")
+# alternative is to do a quick qc on basepairs followed by a more rigorous assembly
+
+configfile: os.path.join(os.path.dirname(workflow.snakefile), "config/config.yaml")
+# requires --config R1_reads={read_location},R2_reads={read_location}
+sample = config["Sample"]
+R1 = config["R1_reads"],
+R2 = config["R2_reads"],
+
+rule run__assembly:
     message:
-        "Denovo assembly of normalized reads"
+        "Denovo assembly of reads"
     input:
-        normalized_reads = ("reads/normalized_R1.fastq.gz", "reads/normalized_R2.fastq.gz")
+        reads = (R1, R2)
     output:
-        folder = "assembly",
-        contigs = "assembly/contigs.fasta",
-        log = "log/spades.log"
-    params:
-        options = "".join(config["spades"]["options"])
+        "assembly_done"
     log:
-        "log/spades.log"
+        "qcquickie/qcquickie.log"
     shell:
-        "spades.py -1 {input.normalized_reads[0]} -2 {input.normalized_reads[1]} -o {output.folder} {params.options} > {log}"
+        # make sure to overwrite k values with merged reads
+        """
+        cd assembly
+        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
+        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> qcquickie.log
+        spades.py -s merged.fq unmerged.fq -o spades
+        cd ..
+        touch assembly_done
+        """
