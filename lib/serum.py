@@ -94,21 +94,26 @@ def check__combine_sample_sheet_with_run_info(sample_sheet_xlsx, run_info_yaml="
 def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="run_status.csv"):
     with open(updated_run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
-    for sample in run_info["samples"]:
-        os.makedirs(sample)
-        with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
-            if sample in config['serum']['samples_to_ignore']:
-                run_info["samples"][sample]["status"] = "skipped"
-            elif not ("R1" in run_info["samples"][sample] and "R2" in run_info["samples"][sample]):
-                run_info["samples"][sample]["status"] = "no reads"
-            else:
-                run_info["samples"][sample]["status"] = "initialized"
-                with open(os.path.join(sample, "cmd"), "w") as command:
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
-                with open(os.path.join(sample, "cmd_qcquickie"), "w") as command:
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
-            yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
-    convert_run_to_status()
+    with open("run_cmd.sh", "w") as run_cmd:
+        cwd = os.path.getcwd()
+        for sample in run_info["samples"]:
+            os.makedirs(sample)
+            with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
+                if sample in config['serum']['samples_to_ignore']:
+                    run_info["samples"][sample]["status"] = "skipped"
+                elif not ("R1" in run_info["samples"][sample] and "R2" in run_info["samples"][sample]):
+                    run_info["samples"][sample]["status"] = "no reads"
+                else:
+                    run_info["samples"][sample]["status"] = "initialized"
+                    with open(os.path.join(sample, "cmd"), "w") as command:
+                        command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
+                    with open(os.path.join(sample, "cmd_qcquickie"), "w") as command:
+                        command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
+                        run_cmd.write("cd {}\n".format(sample))
+                        run_cmd.write("srun snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={} \n".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
+                        run_cmd.writelines("cd {}\n".format(cwd))
+                yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
+        convert_run_to_status()
     return 0
 
 
