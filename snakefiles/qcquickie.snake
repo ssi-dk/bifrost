@@ -39,6 +39,8 @@ rule run__qcquickie:
         """
         cd qcquickie
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
+        kraken -db /srv/data/DB/kraken/minikraken_20171019_8GB/ --fastq-input filtered.fq | kraken-report -db /srv/data/DB/kraken/minikraken_20171019_8GB/ > mini.report &>> kraken.log
+        python /tools/git.repositories/Bracken/est_abundance.py -i mini.report -k /srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt -o bracken.txt &>> kraken.log
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> qcquickie.log
         tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa &>> qcquickie.log
         bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append &>> qcquickie.log
