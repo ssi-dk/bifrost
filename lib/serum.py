@@ -137,10 +137,10 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
                 if sample_info['sample']['status'] == 'initialized':
                     sample_info['sample']['status'] = 'starting'
                     if os.path.isfile(os.path.join(directory, "cmd.sh")):
-                    with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
-                        run_cmd.write("cd {}\n".format(directory))
-                        run_cmd.write(sample_cmd.readlines())
-                        run_cmd.writelines("cd {}\n".format(run_dir))
+                        with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
+                            run_cmd.write("cd {}\n".format(directory))
+                            run_cmd.write(sample_cmd.readlines())
+                            run_cmd.writelines("cd {}\n".format(run_dir))
 
                     print("running sample")
                 with open(os.path.join(directory, "sample.yaml"), "w") as yaml_stream:
