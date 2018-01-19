@@ -129,7 +129,7 @@ def convert_run_to_status(run_dir=".", run_status="run_status.csv"):
 
 
 def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
-    with open("run_cmd.sh", "w+x") as run_cmd:
+    with open("run_cmd.sh", "w") as run_cmd:
         for directory in os.listdir(run_dir):
             if os.path.isfile(os.path.join(directory, "sample.yaml")):
                 with open(os.path.join(directory, "sample.yaml"), "r") as yaml_stream:
