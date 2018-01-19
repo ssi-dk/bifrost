@@ -8,6 +8,7 @@ import os
 import vcf
 import pkg_resources
 import configparser #for checking miseq/nextseq samplesheets
+import subprocess
 import datetime
 import hashlib
 config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
@@ -94,24 +95,18 @@ def check__combine_sample_sheet_with_run_info(sample_sheet_xlsx, run_info_yaml="
 def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="run_status.csv"):
     with open(updated_run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
-    with open("run_cmd.sh", "w") as run_cmd:
-        cwd = os.getcwd()
-        for sample in run_info["samples"]:
-            os.makedirs(sample)
-            with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
-                if sample in config['serum']['samples_to_ignore']:
-                    run_info["samples"][sample]["status"] = "skipped"
-                elif not ("R1" in run_info["samples"][sample] and "R2" in run_info["samples"][sample]):
-                    run_info["samples"][sample]["status"] = "no reads"
-                else:
-                    run_info["samples"][sample]["status"] = "initialized"
-                    with open(os.path.join(sample, "cmd"), "w") as command:
-                        command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
-                    with open(os.path.join(sample, "cmd_qcquickie"), "w") as command:
-                        command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
-                        run_cmd.write("cd {}\n".format(sample))
-                        run_cmd.write("srun snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={} \n".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
-                        run_cmd.writelines("cd {}\n".format(cwd))
+
+    for sample in run_info["samples"]:
+        os.makedirs(sample)
+        with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
+            if sample in config['serum']['samples_to_ignore']:
+                run_info["samples"][sample]["status"] = "skipped"
+            elif not ("R1" in run_info["samples"][sample] and "R2" in run_info["samples"][sample]):
+                run_info["samples"][sample]["status"] = "no reads"
+            else:
+                run_info["samples"][sample]["status"] = "initialized"
+                with open(os.path.join(sample, "cmd.sh"), "w") as command:
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
                 yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
         convert_run_to_status()
     return 0
@@ -134,15 +129,21 @@ def convert_run_to_status(run_dir=".", run_status="run_status.csv"):
 
 
 def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
-    for directory in os.listdir(run_dir):
-        if os.path.isfile(os.path.join(directory, "sample.yaml")):
-            with open(os.path.join(directory, "sample.yaml"), "r") as yaml_stream:
-                sample_info = yaml.load(yaml_stream)
-            if sample_info['sample']['status'] == 'initialized':
-                sample_info['sample']['status'] = 'starting'
-                print("running sample")
-            with open(os.path.join(directory, "sample.yaml"), "w") as yaml_stream:
-                yaml.dump(sample_info, yaml_stream)
+    with open("run_cmd.sh", "w+x") as run_cmd:
+        for directory in os.listdir(run_dir):
+            if os.path.isfile(os.path.join(directory, "sample.yaml")):
+                with open(os.path.join(directory, "sample.yaml"), "r") as yaml_stream:
+                    sample_info = yaml.load(yaml_stream)
+                if sample_info['sample']['status'] == 'initialized':
+                    sample_info['sample']['status'] = 'starting'
+                    with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
+                        run_cmd.write("cd {}\n".format(directory))
+                        run_cmd.write(sample_cmd.readlines())
+                        run_cmd.writelines("cd {}\n".format(run_dir))
+
+                    print("running sample")
+                with open(os.path.join(directory, "sample.yaml"), "w") as yaml_stream:
+                    yaml.dump(sample_info, yaml_stream)
     convert_run_to_status()
     return 0
 
