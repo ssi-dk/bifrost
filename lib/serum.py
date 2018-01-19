@@ -139,7 +139,7 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
                     if os.path.isfile(os.path.join(directory, "cmd.sh")):
                         with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
                             run_cmd.write("cd {}\n".format(directory))
-                            run_cmd.write(sample_cmd.readlines())
+                            run_cmd.write(sample_cmd.read())
                             run_cmd.writelines("cd {}\n".format(run_dir))
 
                     print("running sample")
