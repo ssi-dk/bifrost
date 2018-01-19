@@ -95,7 +95,7 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
     with open(updated_run_info_yaml, "r") as yaml_stream:
         run_info = yaml.load(yaml_stream)
     with open("run_cmd.sh", "w") as run_cmd:
-        cwd = os.path.getcwd()
+        cwd = os.getcwd()
         for sample in run_info["samples"]:
             os.makedirs(sample)
             with open(os.path.join(sample, "sample.yaml"), "w") as sample_yaml:
