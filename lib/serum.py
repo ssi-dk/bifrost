@@ -106,7 +106,7 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
             else:
                 run_info["samples"][sample]["status"] = "initialized"
                 with open(os.path.join(sample, "cmd.sh"), "w") as command:
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}\n".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/serumqc/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}\n".format(run_info["samples"][sample]["R1"], run_info["samples"][sample]["R2"], os.path.join(sample, "sample.yaml")))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
