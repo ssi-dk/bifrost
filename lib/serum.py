@@ -140,7 +140,7 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
                         with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
                             run_cmd.write("cd {}\n".format(directory))
                             run_cmd.write(sample_cmd.read())
-                            run_cmd.writelines("cd {}\n".format(run_dir))
+                            run_cmd.writelines("cd {}\n".format(os.path.realpath(run_dir)))
 
                     print("running sample")
                 with open(os.path.join(directory, "sample.yaml"), "w") as yaml_stream:
