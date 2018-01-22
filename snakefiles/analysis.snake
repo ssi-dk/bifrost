@@ -19,7 +19,7 @@ rule run__analysis:
     output:
         "assembly_done"
     log:
-        "qcquickie/qcquickie.log"
+        "assembly/assembly.log"
     shell:
         """
         mkdir analysis
