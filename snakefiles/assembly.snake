@@ -24,9 +24,9 @@ rule run__assembly:
         """
         mkdir assembly
         cd assembly
-        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> {log}
-        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> {log}
-        spades.py -k 21,33,55,77 -s merged.fq unmerged.fq -o spades &>> {log}
+        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> assembly.log
+        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> assembly.log
+        spades.py -k 21,33,55,77 -s merged.fq unmerged.fq -o spades &>> assembly.log
         mv spades/contigs.fasta spades_contigs.fasta
         cd ..
         touch assembly_done
