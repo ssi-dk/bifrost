@@ -33,8 +33,6 @@ rule run__qcquickie:
     params:
         options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
-    log:
-        "qcquickie/qcquickie.log"
     shell:
         """
         mkdir qcquickie
