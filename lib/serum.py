@@ -159,7 +159,7 @@ def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
         print("Renaming {} to {}".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item))))
 
     for item in df["SampleID"].tolist():
-        item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item.strip()))
+        item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())
 
     df["SampleID"] = df["SampleID"].map(item_rename_dict)
 
