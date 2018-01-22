@@ -20,8 +20,6 @@ rule run__assembly:
         "assembly_done"
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
-    log:
-        "assembly/assembly.log"
     shell:
         """
         mkdir assembly
