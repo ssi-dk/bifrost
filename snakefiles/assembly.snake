@@ -21,7 +21,6 @@ rule run__assembly:
     log:
         "qcquickie/qcquickie.log"
     shell:
-        # make sure to overwrite k values with merged reads
         """
         cd assembly
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log

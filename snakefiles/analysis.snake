@@ -21,7 +21,6 @@ rule run__analysis:
     log:
         "qcquickie/qcquickie.log"
     shell:
-        # make sure to overwrite k values with merged reads
         """
         cd analysis
         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_res --noclean
