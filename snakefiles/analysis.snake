@@ -22,6 +22,7 @@ rule run__analysis:
         "qcquickie/qcquickie.log"
     shell:
         """
+        mkdir analysis
         cd analysis
         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_res --noclean
         ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmid --noclean

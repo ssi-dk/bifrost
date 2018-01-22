@@ -24,6 +24,7 @@ rule run__assembly:
         "assembly/assembly.log"
     shell:
         """
+        mkdir assembly
         cd assembly
         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> {log}
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> {log}
