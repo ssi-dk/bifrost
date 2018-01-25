@@ -43,10 +43,9 @@ rule run__qcquickie:
         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> qcquickie.log
         tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa &>> qcquickie.log
         bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append &>> qcquickie.log
-        pileup.sh in=contigs.sam out=contigs_min.pileup covwindow=1 covwindowavg=10 overwrite=true &>> qcquickie.log
-        pileup.sh in=contigs.sam out=contigs_rec.pileup covwindow=1 covwindowavg=25 overwrite=true &>> qcquickie.log
-        filterbycoverage.sh in=contigs.fa cov=contigs_min.pileup minc=10 &>> qcquickie.log
-        filterbycoverage.sh in=contigs.fa cov=contigs_rec.pileup minc=25 &>> qcquickie.log
+        pileup.sh in=contigs.sam basecov=contigs.cov out=contigs.pileup &>> qcquickie.log
+        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> qcquickie.log
+        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> qcquickie.log
         sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
         cd ..
         touch qcquickie_done
