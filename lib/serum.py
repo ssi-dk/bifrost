@@ -344,7 +344,7 @@ def script__summarize_kraken_report(kraken_report_file, summarize_contamination_
 
 def script__summarize_depth(depth_file, summarize_contig_depth_yaml, summarize_binned_depth_yaml):
     """
-
+    Break this into 2 functions
     """
     depth_dict = {}
     with open(depth_file, "r") as input_file:
