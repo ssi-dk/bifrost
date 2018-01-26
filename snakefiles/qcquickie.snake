@@ -31,7 +31,6 @@ onerror:
 
 rule all:
     input:
-        folder_name,
         "contigs.pileup"
         "bracken.txt"
 
@@ -68,7 +67,6 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
         reads = (R1, R2)
     output:
         filtered_reads = "filtered.fastq"
