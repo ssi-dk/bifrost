@@ -17,7 +17,6 @@ yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 
-folder_name = "qcquickie"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -33,8 +32,8 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "contigs.pileup"),
-        os.path.join(folder_name, "bracken.txt")
+        "contigs.pileup"
+        "bracken.txt"
 
 
 # rule run__qcquickie:
@@ -65,13 +64,6 @@ rule all:
 #         touch qcquickie_done
 #         """
 
-rule setup:
-    output:
-        dir = folder_name
-    shell:
-        "mkdir {output}"
-
-
 rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
@@ -79,11 +71,11 @@ rule setup__filter_reads_with_bbduk:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "filtered.fastq"
     params:
         adapters = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
     log:
-        os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
+        "setup__filter_reads_with_bbduk.log"
     shell:
         "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
@@ -92,13 +84,13 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     message:
         "Running step: {rule}"
     input:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "filtered.fastq"
     output:
-        kraken_report = os.path.join(folder_name, "kraken_report.txt")
+        kraken_report = "kraken_report.txt"
     params:
         db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
     log:
-        os.path.join(folder_name, "contaminant_check__classify_reads_kraken_minikraken_db.log")
+        "contaminant_check__classify_reads_kraken_minikraken_db.log"
     shell:
         "kraken -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
@@ -107,11 +99,11 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     message:
         "Running step: {rule}"
     input:
-        os.path.join(folder_name, "kraken_report.txt")
+        "kraken_report.txt"
     output:
-        os.path.join(folder_name, "bracken.txt")
+        "bracken.txt"
     log:
-        os.path.join(folder_name, "contaminant_check__determine_species_bracken_on_minikraken_results.log")
+        "contaminant_check__determine_species_bracken_on_minikraken_results.log"
     params:
         kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
     shell:
@@ -122,12 +114,12 @@ rule assembly_check__combine_reads_with_bbmerge:
     message:
         "Running step: {rule}"
     input:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "filtered.fastq"
     output:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "merged.fastq",
+        unmerged_reads = "unmerged.fastq"
     log:
-        os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
+        "assembly_check__combine_reads_with_bbmerge.log"
     shell:
         "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
@@ -136,27 +128,27 @@ rule assembly_check__quick_assembly_with_tadpole:
     message:
         "Running step: {rule}"
     input:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "merged.fastq",
+        unmerged_reads = "unmerged.fastq"
     output:
-        contigs = os.path.join(folder_name, "contigs.fasta")
+        contigs = "contigs.fasta"
     log:
-        os.path.join(folder_name, "assembly_check__quick_assembly_with_tadpole.log")
+        "assembly_check__quick_assembly_with_tadpole.log"
     shell:
-        "tadpole.sh in={inmput.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
+        "tadpole.sh in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
 
 
 rule assembly_check__map_reads_to_assembly_with_bbwrap:
     message:
         "Running step: {rule}"
     input:
-        contigs = os.path.join(folder_name, "contigs.fasta"),
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        contigs = "contigs.fasta",
+        merged_reads = "merged.fastq",
+        unmerged_reads = "unmerged.fastq"
     output:
-        mapped = os.path.join(folder_name, "contigs.sam")
+        mapped = "contigs.sam"
     log:
-        os.path.join(folder_name, "assembly_check__map_reads_to_assembly_with_bbwrap.log")
+        "assembly_check__map_reads_to_assembly_with_bbwrap.log"
     shell:
         "bbwrap.sh ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
 
@@ -165,11 +157,11 @@ rule assembly_check__pileup_on_mapped_reads:
     message:
         "Running step: {rule}"
     input:
-        mapped = os.path.join(folder_name, "contigs.sam")
+        mapped = "contigs.sam"
     output:
-        coverage = os.path.join(folder_name, "contigs.cov"),
-        pileup = os.path.join(folder_name, "contigs.pileup")
+        coverage = "contigs.cov",
+        pileup = "contigs.pileup"
     log:
-        os.path.join(folder_name, "assembly_check__pileup_on_mapped_reads.log")
+        "assembly_check__pileup_on_mapped_reads.log"
     shell:
         "pileup.sh in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
