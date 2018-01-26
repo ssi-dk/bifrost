@@ -166,7 +166,7 @@ rule assembly_check__pileup_on_mapped_reads:
     input:
         mapped = os.path.join(folder_name, "contigs.sam")
     output:
-        coverage = os.path.join(folder_name, "contigs.cov")
+        coverage = os.path.join(folder_name, "contigs.cov"),
         pileup = os.path.join(folder_name, "contigs.pileup")
     log:
         os.path.join(folder_name, "{rule}.log")
