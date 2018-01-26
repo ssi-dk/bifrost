@@ -83,7 +83,7 @@ rule setup__filter_reads_with_bbduk:
     params:
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
     shell:
         "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
@@ -98,7 +98,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     params:
         db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "contaminant_check__classify_reads_kraken_minikraken_db.log")
     shell:
         "kraken -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
@@ -111,7 +111,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     output:
         os.path.join(folder_name, "bracken.txt")
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "contaminant_check__determine_species_bracken_on_minikraken_results.log")
     params:
         kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
     shell:
@@ -127,7 +127,7 @@ rule assembly_check__combine_reads_with_bbmerge:
         merged_reads = os.path.join(folder_name, "merged.fastq"),
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
     shell:
         "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
@@ -141,7 +141,7 @@ rule assembly_check__quick_assembly_with_tadpole:
     output:
         contigs = os.path.join(folder_name, "contigs.fasta")
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "assembly_check__quick_assembly_with_tadpole.log")
     shell:
         "tadpole.sh in={inmput.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
 
@@ -156,7 +156,7 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
     output:
         mapped = os.path.join(folder_name, "contigs.sam")
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "assembly_check__map_reads_to_assembly_with_bbwrap.log")
     shell:
         "bbwrap.sh ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
 
@@ -170,6 +170,6 @@ rule assembly_check__pileup_on_mapped_reads:
         coverage = os.path.join(folder_name, "contigs.cov"),
         pileup = os.path.join(folder_name, "contigs.pileup")
     log:
-        os.path.join(folder_name, "{rule}.log")
+        os.path.join(folder_name, "assembly_check__pileup_on_mapped_reads.log")
     shell:
         "pileup.sh in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
