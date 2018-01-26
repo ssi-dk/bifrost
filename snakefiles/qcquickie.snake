@@ -81,7 +81,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
-        adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
+        adapters = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
     log:
         os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
     shell:
