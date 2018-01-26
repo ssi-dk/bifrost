@@ -11,6 +11,12 @@ sample = config["Sample"]
 R1 = config["R1_reads"],
 R2 = config["R2_reads"],
 
+yaml = ruamel.yaml.YAML(typ='safe')
+yaml.default_flow_style = False
+with open(sample, "r") as yaml_stream:
+    config_sample = yaml.load(yaml_stream)
+
+folder_name = "qcquickie"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -23,30 +29,146 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure\n")
 
-rule run__qcquickie:
-    message:
-        "QC quickie"
+rule all:
     input:
+        folder_name,
+        os.path.join(folder_name, "contigs.pileup"),
+        os.path.join(folder_name, "bracken.txt")
+
+
+# rule run__qcquickie:
+#     message:
+#         "QC quickie"
+#     input:
+#         reads = (R1, R2)
+#     output:
+#         "qcquickie_done"
+#     params:
+#         options = "".join(config["tadpole"]["options"]),
+#         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
+#     shell:
+#         """
+#         mkdir qcquickie
+#         cd qcquickie
+#         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fastq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
+#         kraken -db /srv/data/DB/kraken/minikraken_20171019_8GB/ --fastq-input filtered.fastq 2> kraken.log | kraken-report -db /srv/data/DB/kraken/minikraken_20171019_8GB/ 1> mini.report 2> kraken.log
+#         python /tools/git.repositories/Bracken/est_abundance.py -i mini.report -k /srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt -o bracken.txt &>> kraken.log
+#         bbmerge.sh in=filtered.fastq out=merged.fastq outu=unmerged.fastq &>> qcquickie.log
+#         tadpole.sh in=merged.fastq,unmerged.fastq out=contigs.fa &>> qcquickie.log
+#         bbwrap.sh ref=contigs.fa in=merged.fastq,unmerged.fastq out=contigs.sam append &>> qcquickie.log
+#         pileup.sh in=contigs.sam basecov=contigs.cov out=contigs.pileup &>> qcquickie.log
+#         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> qcquickie.log
+#         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> qcquickie.log
+#         sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
+#         cd ..
+#         touch qcquickie_done
+#         """
+
+rule setup:
+    output:
+        dir = folder_name
+    shell:
+        "mkdir {output}"
+
+
+rule setup__filter_reads_with_bbduk:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = folder_name,
         reads = (R1, R2)
     output:
-        "qcquickie_done"
+        filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
-        options = "".join(config["tadpole"]["options"]),
         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
+    log:
+        os.path.join(folder_name, "{rule}.log")
     shell:
-        """
-        mkdir qcquickie
-        cd qcquickie
-        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
-        kraken -db /srv/data/DB/kraken/minikraken_20171019_8GB/ --fastq-input filtered.fq | kraken-report -db /srv/data/DB/kraken/minikraken_20171019_8GB/ 1> mini.report 2> kraken.log
-        python /tools/git.repositories/Bracken/est_abundance.py -i mini.report -k /srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt -o bracken.txt &>> kraken.log
-        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> qcquickie.log
-        tadpole.sh in=merged.fq,unmerged.fq out=contigs.fa &>> qcquickie.log
-        bbwrap.sh ref=contigs.fa in=merged.fq,unmerged.fq out=contigs.sam append &>> qcquickie.log
-        pileup.sh in=contigs.sam basecov=contigs.cov out=contigs.pileup &>> qcquickie.log
-        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> qcquickie.log
-        filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> qcquickie.log
-        sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
-        cd ..
-        touch qcquickie_done
-        """
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+
+
+rule contaminant_check__classify_reads_kraken_minikraken_db:
+    message:
+        "Running step: {rule}"
+    input:
+        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+    output:
+        kraken_report = os.path.join(folder_name, "kraken_report.txt")
+    params:
+        db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    shell:
+        "kraken -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
+
+
+rule contaminant_check__determine_species_bracken_on_minikraken_results:
+    message:
+        "Running step: {rule}"
+    input:
+        os.path.join(folder_name, "kraken_report.txt")
+    output:
+        os.path.join(folder_name, "bracken.txt")
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    params:
+        kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+    shell:
+        "est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}"
+
+
+rule assembly_check__combine_reads_with_bbmerge:
+    message:
+        "Running step: {rule}"
+    input:
+        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+    output:
+        merged_reads = os.path.join(folder_name, "merged.fastq"),
+        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    shell:
+        "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+
+
+rule assembly_check__quick_assembly_with_tadpole:
+    message:
+        "Running step: {rule}"
+    input:
+        merged_reads = os.path.join(folder_name, "merged.fastq"),
+        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    output:
+        contigs = os.path.join(folder_name, "contigs.fasta")
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    shell:
+        "tadpole.sh in={inmput.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
+
+
+rule assembly_check__map_reads_to_assembly_with_bbwrap:
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = os.path.join(folder_name, "contigs.fasta"),
+        merged_reads = os.path.join(folder_name, "merged.fastq"),
+        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    output:
+        mapped = os.path.join(folder_name, "contigs.sam")
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    shell:
+        "bbwrap.sh ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
+
+
+rule assembly_check__pileup_on_mapped_reads:
+    message:
+        "Running step: {rule}"
+    input:
+        mapped = os.path.join(folder_name, "contigs.sam")
+    output:
+        coverage = os.path.join(folder_name, "contigs.cov")
+        pileup = os.path.join(folder_name, "contigs.pileup")
+    log:
+        os.path.join(folder_name, "{rule}.log")
+    shell:
+        "pileup.sh in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
