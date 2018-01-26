@@ -349,14 +349,15 @@ def script__summarize_depth(depth_file, summarize_contig_depth_yaml, summarize_b
     depth_dict = {}
     with open(depth_file, "r") as input_file:
         for line in input_file:
-            contig = line.split("\t")[0]
-            depth = int(line.split("\t")[2].strip())
-            if contig not in depth_dict:
-                depth_dict[contig] = {}
-            if depth in depth_dict[contig]:
-                depth_dict[contig][depth] += 1
-            else:
-                depth_dict[contig][depth] = 1
+            if line[0] != "#":
+                contig = line.split("\t")[0]
+                depth = int(line.split("\t")[2].strip())
+                if contig not in depth_dict:
+                    depth_dict[contig] = {}
+                if depth in depth_dict[contig]:
+                    depth_dict[contig][depth] += 1
+                else:
+                    depth_dict[contig][depth] = 1
 
     contig_depth_summary_dict = {}
     for contig in depth_dict:

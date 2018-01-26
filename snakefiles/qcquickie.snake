@@ -4,6 +4,7 @@ import ruamel.yaml
 
 import pkg_resources
 import sys
+print(os.path.join(os.path.dirname(workflow.snakefile), "../)"))
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../)"))
 
 import lib.serum as serum
