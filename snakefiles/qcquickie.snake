@@ -1,6 +1,10 @@
 import re
 import pandas
 import ruamel.yaml
+
+import pkg_resources
+sys.path.append(pkg_resources.resource_filename(workflow.snakefile, "../)"))
+
 import lib.serum as serum
 # from pytools.persistent_dict import PersistentDict
 # size estimation from kmers as well with jellyfish?
@@ -34,7 +38,7 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "contigs.pileup"),
+        os.path.join(folder_name, "contigs.bin.cov"),
         os.path.join(folder_name, "bracken.txt")
 
 
