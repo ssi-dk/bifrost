@@ -107,9 +107,9 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     message:
         "Running step: {rule}"
     input:
-        os.path.join(folder_name, "kraken_report.txt")
+        kraken_report = os.path.join(folder_name, "kraken_report.txt")
     output:
-        os.path.join(folder_name, "bracken.txt")
+        bracken = os.path.join(folder_name, "bracken.txt")
     log:
         os.path.join(folder_name, "contaminant_check__determine_species_bracken_on_minikraken_results.log")
     params:
