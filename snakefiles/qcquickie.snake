@@ -31,7 +31,7 @@ onerror:
 
 rule all:
     input:
-        "contigs.pileup"
+        "contigs.pileup",
         "bracken.txt"
 
 
