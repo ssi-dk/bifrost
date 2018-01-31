@@ -35,7 +35,7 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "ariba_resfinder")
+        os.path.join(folder_name, "ariba_resfinder"),
         os.path.join(folder_name, "species.cmd")
 
 # rule run__analysis:
