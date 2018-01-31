@@ -72,7 +72,7 @@ rule check_species_processes_to_run:
         species = os.path.join(folder_name, "species.cmd")
     run:
         with open(output.species, "w") as output:
-            output.write(config_sample["sample"]["species"]+"\n")
+            output.write(config_sample["sample"]["species"] + "\n")
 
 
 rule ariba__resfinder:
