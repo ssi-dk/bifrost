@@ -31,3 +31,5 @@ rule run__assembly:
         cd ..
         touch assembly_done
         """
+
+

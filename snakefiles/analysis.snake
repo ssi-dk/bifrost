@@ -1,9 +1,12 @@
 import re
 import pandas
-# from pytools.persistent_dict import PersistentDict
-# size estimation from kmers as well with jellyfish?
-# storage = PersistentDict("qcquickie_storage")
-# alternative is to do a quick qc on basepairs followed by a more rigorous assembly
+import ruamel.yaml
+
+import pkg_resources
+import sys
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../"))
+
+import lib.serum as serum
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config/config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -11,21 +14,83 @@ sample = config["Sample"]
 R1 = config["R1_reads"],
 R2 = config["R2_reads"],
 
-rule run__analysis:
-    message:
-        "Denovo assembly of reads"
+yaml = ruamel.yaml.YAML(typ='safe')
+yaml.default_flow_style = False
+with open(sample, "r") as yaml_stream:
+    config_sample = yaml.load(yaml_stream)
+
+folder_name = "analysis"
+# my understanding is all helps specify final output
+onsuccess:
+    print("Workflow complete")
+    output = ["analysis_status.txt"]
+    with open(output[0], "w") as status:
+        status.write("Success\n")
+onerror:
+    print("Workflow error")
+    output = ["analysis_status.txt"]
+    with open(output[0], "w") as status:
+        status.write("Failure\n")
+
+rule all:
     input:
+        folder_name,
+        os.path.join(folder_name, "ariba_resfinder")
+
+# rule run__analysis:
+#     message:
+#         "Denovo assembly of reads"
+#     input:
+#         reads = (R1, R2)
+#     output:
+#         "assembly_done"
+#     log:
+#         "assembly/assembly.log"
+#     shell:
+#         """
+#         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_res --noclean
+#         ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmid --noclean
+#         cd ..
+#         touch analysis_done
+#         """
+
+
+rule setup:
+    output:
+        dir = folder_name
+    shell:
+        "mkdir {output}"
+
+
+# rule check_species_processes_to_run:
+#     input:
+#         config_sample
+#     run:
+#         config_sample
+
+
+rule ariba__resfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = folder_name,
         reads = (R1, R2)
     output:
-        "assembly_done"
+        resfinder = os.path.join(folder_name, "ariba_resfinder")
     log:
-        "assembly/assembly.log"
+        os.path.join(folder_name, "ariba__resfinder.log")
     shell:
-        """
-        mkdir analysis
-        cd analysis
-        ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_res --noclean
-        ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmid --noclean
-        cd ..
-        touch analysis_done
-        """
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}"
+
+
+# rule assembly_check__bin_coverage:
+#     message:
+#         "Running step: {rule}"
+#     input:
+#         coverage = os.path.join(folder_name, "contigs.cov")
+#     output:
+#         contig_depth_yaml = os.path.join(folder_name, "contigs.sum.cov"),
+#         binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
+#     run:
+#         serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
+
