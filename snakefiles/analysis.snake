@@ -82,7 +82,8 @@ rule ariba__resfinder:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        resfinder = os.path.join(folder_name, "ariba_resfinder", "report.tsv")
+        resfinder = os.path.join(folder_name, "ariba_resfinder"),
+        resfinder_report = os.path.join(folder_name, "ariba_resfinder", "report.tsv")
     log:
         os.path.join(folder_name, "ariba__resfinder.log")
     shell:
@@ -96,7 +97,8 @@ rule ariba__plasmidfinder:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv")
+        plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder"),
+        plasmidfinder_report = os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv")
     log:
         os.path.join(folder_name, "ariba__plasmidfinder.log")
     shell:
@@ -110,7 +112,8 @@ rule ariba__mlst:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        mlst = os.path.join(folder_name, "ariba_mlst", "report.tsv")
+        mlst = os.path.join(folder_name, "ariba_mlst"),
+        mlst_report = os.path.join(folder_name, "ariba_mlst", "report.tsv")
     log:
         os.path.join(folder_name, "ariba__mlst.log")
     shell:
