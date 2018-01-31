@@ -89,7 +89,7 @@ rule ariba__resfinder:
         "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}"
 
 
-rule ariba__resfinder:
+rule ariba__plasmidfinder:
     message:
         "Running step: {rule}"
     input:
@@ -98,7 +98,7 @@ rule ariba__resfinder:
     output:
         plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv")
     log:
-        os.path.join(folder_name, "ariba__resfinder.log")
+        os.path.join(folder_name, "ariba__plasmidfinder.log")
     shell:
         "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}"
 
