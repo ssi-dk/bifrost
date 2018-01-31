@@ -87,7 +87,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
-        adapters = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
+        adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
     log:
         os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
     shell:
@@ -102,7 +102,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     output:
         kraken_report = os.path.join(folder_name, "kraken_report.txt")
     params:
-        db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+        db = "~/DB/kraken/minikraken_20171019_8GB/"
     log:
         os.path.join(folder_name, "contaminant_check__classify_reads_kraken_minikraken_db.log")
     shell:
@@ -119,7 +119,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     log:
         os.path.join(folder_name, "contaminant_check__determine_species_bracken_on_minikraken_results.log")
     params:
-        kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+        kmer_dist = "~/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
     shell:
         "est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}"
 
