@@ -1,9 +1,12 @@
 import re
 import pandas
-# from pytools.persistent_dict import PersistentDict
-# size estimation from kmers as well with jellyfish?
-# storage = PersistentDict("qcquickie_storage")
-# alternative is to do a quick qc on basepairs followed by a more rigorous assembly
+import ruamel.yaml
+
+import pkg_resources
+import sys
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../"))
+
+import lib.serum as serum
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config/config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -11,25 +14,95 @@ sample = config["Sample"]
 R1 = config["R1_reads"],
 R2 = config["R2_reads"],
 
-rule run__assembly:
-    message:
-        "Denovo assembly of reads"
+yaml = ruamel.yaml.YAML(typ='safe')
+yaml.default_flow_style = False
+with open(sample, "r") as yaml_stream:
+    config_sample = yaml.load(yaml_stream)
+
+folder_name = "assembly"
+# my understanding is all helps specify final output
+onsuccess:
+    print("Workflow complete")
+    output = ["assembly_status.txt"]
+    with open(output[0], "w") as status:
+        status.write("Success\n")
+onerror:
+    print("Workflow error")
+    output = ["assembly_status.txt"]
+    with open(output[0], "w") as status:
+        status.write("Failure\n")
+
+rule all:
     input:
+        folder_name,
+        os.path.join(folder_name, "spades")
+
+
+# rule run__assembly:
+#     message:
+#         "Denovo assembly of reads"
+#     input:
+#         reads = (R1, R2)
+#     output:
+#         "assembly_done"
+#     params:
+#         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
+#     shell:
+#         """
+#         mkdir assembly
+#         cd assembly
+#         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> assembly.log
+#         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> assembly.log
+#         spades.py -k 21,33,55,77 -s merged.fq --s1 unmerged.fq -o spades &>> assembly.log
+#         mv spades/contigs.fasta spades_contigs.fasta
+#         cd ..
+#         touch assembly_done
+#         """
+
+rule setup:
+    output:
+        dir = folder_name
+    shell:
+        "mkdir {output}"
+
+
+rule setup__filter_reads_with_bbduk:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = folder_name,
         reads = (R1, R2)
     output:
-        "assembly_done"
+        filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
+    log:
+        os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
     shell:
-        """
-        mkdir assembly
-        cd assembly
-        bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> assembly.log
-        bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> assembly.log
-        spades.py -k 21,33,55,77 -s merged.fq --s1 unmerged.fq -o spades &>> assembly.log
-        mv spades/contigs.fasta spades_contigs.fasta
-        cd ..
-        touch assembly_done
-        """
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
 
+rule assembly_check__combine_reads_with_bbmerge:
+    message:
+        "Running step: {rule}"
+    input:
+        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+    output:
+        merged_reads = os.path.join(folder_name, "merged.fastq"),
+        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    log:
+        os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
+    shell:
+        "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+
+
+rule assembly__spades:
+    input:
+        merged_reads = os.path.join(folder_name, "merged.fastq"),
+        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    output:
+        assembly = os.path.join(folder_name, "spades")
+    log:
+        os.path.join(folder_name, "assembly__spades.log")
+    shell:
+        "spades.py -k 21,33,55,77 -s {input.merged_reads} --s1 {input.unmerged_reads} -o {output.assembly} &> {log}"

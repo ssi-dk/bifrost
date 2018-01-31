@@ -40,23 +40,6 @@ rule all:
         os.path.join(folder_name, "ariba_mlst_report.tsv"),
         os.path.join(folder_name, "species.cmd")
 
-# rule run__analysis:
-#     message:
-#         "Denovo assembly of reads"
-#     input:
-#         reads = (R1, R2)
-#     output:
-#         "assembly_done"
-#     log:
-#         "assembly/assembly.log"
-#     shell:
-#         """
-#         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_res --noclean
-#         ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmid --noclean
-#         cd ..
-#         touch analysis_done
-#         """
-
 
 rule setup:
     output:
@@ -125,5 +108,5 @@ rule ariba__mlst:
     shell:
         """
         ariba run /srv/data/DB/ariba/mlst/Staphylococcus_aureus/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}
-        mv {output.mlst}/report.tsv {output.mlst_report}
+        mv {output.mlst}/mlst_report.tsv {output.mlst_report}
         """
