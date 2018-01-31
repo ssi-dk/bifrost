@@ -35,9 +35,9 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "ariba_resfinder", "report.tsv"),
-        os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv"),
-        os.path.join(folder_name, "ariba_mlst", "report.tsv"),
+        os.path.join(folder_name, "ariba_resfinder"),
+        os.path.join(folder_name, "ariba_plasmidfinder"),
+        os.path.join(folder_name, "ariba_mlst"),
         os.path.join(folder_name, "species.cmd")
 
 # rule run__analysis:
