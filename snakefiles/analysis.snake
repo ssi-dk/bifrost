@@ -36,6 +36,7 @@ rule all:
     input:
         folder_name,
         os.path.join(folder_name, "ariba_resfinder")
+        os.path.join(folder_name, "species.cmd")
 
 # rule run__analysis:
 #     message:
@@ -62,11 +63,14 @@ rule setup:
         "mkdir {output}"
 
 
-# rule check_species_processes_to_run:
-#     input:
-#         config_sample
-#     run:
-#         config_sample
+rule check_species_processes_to_run:
+    input:
+        dir = folder_name
+    output:
+        species = os.path.join(folder_name, "species.cmd")
+    run:
+        with open(output.species, "w") as output:
+            output.write(config_sample["species"])
 
 
 rule ariba__resfinder:
