@@ -35,7 +35,9 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "ariba_resfinder"),
+        os.path.join(folder_name, "ariba_resfinder", "report.tsv"),
+        os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv"),
+        os.path.join(folder_name, "ariba_mlst", "report.tsv"),
         os.path.join(folder_name, "species.cmd")
 
 # rule run__analysis:
@@ -70,7 +72,7 @@ rule check_species_processes_to_run:
         species = os.path.join(folder_name, "species.cmd")
     run:
         with open(output.species, "w") as output:
-            output.write(config_sample["sample"]["species"])
+            output.write(config_sample["sample"]["species"]+"\n")
 
 
 rule ariba__resfinder:
@@ -80,21 +82,36 @@ rule ariba__resfinder:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        resfinder = os.path.join(folder_name, "ariba_resfinder")
+        resfinder = os.path.join(folder_name, "ariba_resfinder", "report.tsv:")
     log:
         os.path.join(folder_name, "ariba__resfinder.log")
     shell:
         "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}"
 
 
-# rule assembly_check__bin_coverage:
-#     message:
-#         "Running step: {rule}"
-#     input:
-#         coverage = os.path.join(folder_name, "contigs.cov")
-#     output:
-#         contig_depth_yaml = os.path.join(folder_name, "contigs.sum.cov"),
-#         binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
-#     run:
-#         serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
+rule ariba__resfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = folder_name,
+        reads = (R1, R2)
+    output:
+        plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv")
+    log:
+        os.path.join(folder_name, "ariba__resfinder.log")
+    shell:
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}"
 
+
+rule ariba__mlst:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = folder_name,
+        reads = (R1, R2)
+    output:
+        mlst = os.path.join(folder_name, "ariba_mlst", "report.tsv")
+    log:
+        os.path.join(folder_name, "ariba__mlst.log")
+    shell:
+        "ariba run /srv/data/DB/ariba/mlst/Staphylococcus_aureus/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}"
