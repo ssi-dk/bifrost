@@ -35,9 +35,9 @@ onerror:
 rule all:
     input:
         folder_name,
-        os.path.join(folder_name, "ariba_resfinder", "report.tsv"),
-        os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv"),
-        os.path.join(folder_name, "ariba_mlst", "report.tsv"),
+        os.path.join(folder_name, "ariba_resfinder_report.tsv"),
+        os.path.join(folder_name, "ariba_plasmidfinder_report.tsv"),
+        os.path.join(folder_name, "ariba_mlst_report.tsv"),
         os.path.join(folder_name, "species.cmd")
 
 # rule run__analysis:
@@ -83,11 +83,14 @@ rule ariba__resfinder:
         reads = (R1, R2)
     output:
         resfinder = os.path.join(folder_name, "ariba_resfinder"),
-        resfinder_report = os.path.join(folder_name, "ariba_resfinder", "report.tsv")
+        resfinder_report = os.path.join(folder_name, "ariba_resfinder_report.tsv")
     log:
         os.path.join(folder_name, "ariba__resfinder.log")
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}"
+        """
+        ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}
+        mv {output.resfinder}/report.tsv {output.resfinder_report}
+        """
 
 
 rule ariba__plasmidfinder:
@@ -98,11 +101,14 @@ rule ariba__plasmidfinder:
         reads = (R1, R2)
     output:
         plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder"),
-        plasmidfinder_report = os.path.join(folder_name, "ariba_plasmidfinder", "report.tsv")
+        plasmidfinder_report = os.path.join(folder_name, "ariba_plasmidfinder_report.tsv")
     log:
         os.path.join(folder_name, "ariba__plasmidfinder.log")
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}"
+        """
+        ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}
+        mv {output.plasmidfinder}/report.tsv {output.plasmidfinder_report}
+        """
 
 
 rule ariba__mlst:
@@ -113,8 +119,11 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         mlst = os.path.join(folder_name, "ariba_mlst"),
-        mlst_report = os.path.join(folder_name, "ariba_mlst", "report.tsv")
+        mlst_report = os.path.join(folder_name, "ariba_mlst_report.tsv")
     log:
         os.path.join(folder_name, "ariba__mlst.log")
     shell:
-        "ariba run /srv/data/DB/ariba/mlst/Staphylococcus_aureus/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}"
+        """
+        ariba run /srv/data/DB/ariba/mlst/Staphylococcus_aureus/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}
+        mv {output.mlst}/report.tsv {output.mlst_report}
+        """
