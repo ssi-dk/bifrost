@@ -78,8 +78,11 @@ rule setup__filter_reads_with_bbduk:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
     log:
         os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
-    shell:
-        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+    run:
+        if os.path.isfile("qc_quickie/filtered.fastq"):
+            shell("ln -s qc_quickie/filtered.fastq {}".format(output.filtered_reads))
+        else:
+            shell("bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}")
 
 
 rule assembly_check__combine_reads_with_bbmerge:
@@ -93,7 +96,11 @@ rule assembly_check__combine_reads_with_bbmerge:
     log:
         os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
     shell:
-        "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+        if os.path.isfile("qc_quickie/merged.fastq") and os.path.isfile("qc_quickie/unmerged.fastq"):
+            shell("ln -s qc_quickie/merged.fastq {}".format(output.merged_reads))
+            shell("ln -s qc_quickie/unmerged.fastq {}".format(output.unmerged_reads))
+        else:
+            "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
 
 rule assembly__spades:
