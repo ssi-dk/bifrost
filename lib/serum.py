@@ -142,8 +142,8 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
                     sample_info = yaml.load(yaml_stream)
                 if sample_info['sample']['status'] == 'initialized':
                     sample_info['sample']['status'] = 'starting'
-                    if os.path.isfile(os.path.join(directory, "cmd.sh")):
-                        with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
+                    if os.path.isfile(os.path.join(directory, "cmd_qcquickie.sh")):
+                        with open(os.path.join(directory, "cmd_qcquickie.sh"), "r") as sample_cmd:
                             run_cmd.write("cd {}\n".format(directory))
                             #sbatch -D . -c 12 --mem=23G -J 'remove_human_on_{}' -p {} --wrap=\"
                             run_cmd.write("sbatch cmd_qcquickie.sh\n")
