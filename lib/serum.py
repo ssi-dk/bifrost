@@ -105,8 +105,14 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
                 run_info["samples"][sample]["status"] = "no reads"
             else:
                 run_info["samples"][sample]["status"] = "initialized"
-                with open(os.path.join(sample, "cmd.sh"), "w") as command:
+                with open(os.path.join(sample, "cmd_qcquickie.sh"), "w") as command:
+                    command.write("#!/bin/sh\n")
+                    command.write("#SBATCH --mem={}G --time=00-00:15 -p project -c {} -J 'qcquickie_{}'\n".format(config['global']['memory'], config['global']['threads'], sample))
                     command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
+                with open(os.path.join(sample, "cmd_analysis.sh"), "w") as command:
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/analysis.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
+                with open(os.path.join(sample, "cmd_assembly.sh"), "w") as command:
+                    command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/assembly.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
@@ -139,7 +145,10 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
                     if os.path.isfile(os.path.join(directory, "cmd.sh")):
                         with open(os.path.join(directory, "cmd.sh"), "r") as sample_cmd:
                             run_cmd.write("cd {}\n".format(directory))
-                            run_cmd.write(sample_cmd.read())
+                            #sbatch -D . -c 12 --mem=23G -J 'remove_human_on_{}' -p {} --wrap=\"
+                            run_cmd.write("sbatch cmd_qcquickie.sh\n")
+                            # run_cmd.write("bash cmd_analysis.sh\n")
+                            # run_cmd.write("bash cmd_assembly.sh\n")
                             run_cmd.writelines("cd {}\n".format(os.path.realpath(run_dir)))
 
                     print("running sample")
