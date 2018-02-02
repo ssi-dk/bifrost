@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import gzip
-import ruamel.yaml
+from ruamel.yaml import YAML
 import statistics
 import re
 import pandas
@@ -13,7 +13,7 @@ import datetime
 import hashlib
 config_file = pkg_resources.resource_filename(__name__, "../config/config.yaml")
 
-yaml = ruamel.yaml.YAML(typ='safe')
+yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 with open(config_file, "r") as yaml_stream:
     config = yaml.load(yaml_stream)
