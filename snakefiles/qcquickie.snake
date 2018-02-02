@@ -40,7 +40,8 @@ rule all:
     input:
         folder_name,
         os.path.join(folder_name, "contigs.bin.cov"),
-        os.path.join(folder_name, "bracken.txt")
+        os.path.join(folder_name, "bracken.txt"),
+        os.path.join(folder_name, "contaminantion_check.txt")
 
 
 # rule run__qcquickie:
@@ -121,7 +122,10 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     params:
         kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
     shell:
-        "est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}"
+        """
+        est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}
+        sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
+        """
 
 
 rule assembly_check__combine_reads_with_bbmerge:
@@ -192,3 +196,39 @@ rule assembly_check__bin_coverage:
     run:
         serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
 
+
+rule contaminant_check__declare_contamination:
+    message:
+        "Running step: {rule}"
+    input:
+        bracken = os.path.join(folder_name, "bracken.txt")
+    output:
+        contaminantion_check = os.path.join(folder_name, "contaminantion_check.txt")
+    run:
+        with open(output.contaminantion_check, "w") as contaminantion_check:
+            df = pandas.read_table(input.bracken)
+            if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
+                contaminantion_check.write("No contaminant detected\n")
+            else:
+                contaminantion_check.write("Contaminant found or Error")
+
+
+rule contaminant_check__declare_contamination:
+    message:
+        "Running step: {rule}"
+    input:
+        binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
+    output:
+        size_check = os.path.join(folder_name, "size_check.txt")
+    run:
+        if "species" not in config_sample["sample"]:
+            species = "default"
+
+        with open(sample, "r") as yaml_stream:
+            config_sample = yaml.load(yaml_stream)
+        with open(output.size_check, "w") as contaminantion_check:
+            df = pandas.read_csv("binned_depth_yaml.txt", delimiter="\t")
+            if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
+                contaminantion_check.write("No contaminant detected\n")
+            else:
+                contaminantion_check.write("Contaminant found or Error")
