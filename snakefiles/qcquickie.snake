@@ -211,24 +211,3 @@ rule contaminant_check__declare_contamination:
                 contaminantion_check.write("No contaminant detected\n")
             else:
                 contaminantion_check.write("Contaminant found or Error")
-
-
-rule contaminant_check__declare_contamination:
-    message:
-        "Running step: {rule}"
-    input:
-        binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
-    output:
-        size_check = os.path.join(folder_name, "size_check.txt")
-    run:
-        if "species" not in config_sample["sample"]:
-            species = "default"
-
-        with open(sample, "r") as yaml_stream:
-            config_sample = yaml.load(yaml_stream)
-        with open(output.size_check, "w") as contaminantion_check:
-            df = pandas.read_csv("binned_depth_yaml.txt", delimiter="\t")
-            if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
-                contaminantion_check.write("No contaminant detected\n")
-            else:
-                contaminantion_check.write("Contaminant found or Error")
