@@ -38,6 +38,7 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure\n")
 
+
 rule all:
     input:
         folder_name,
@@ -45,35 +46,6 @@ rule all:
         os.path.join(folder_name, "bracken.txt"),
         os.path.join(folder_name, "contaminantion_check.txt")
 
-# rule_order:
-
-# rule run__qcquickie:
-#     message:
-#         "QC quickie"
-#     input:
-#         reads = (R1, R2)
-#     output:
-#         "qcquickie_done"
-#     params:
-#         options = "".join(config["tadpole"]["options"]),
-#         adapter = "/tools/git.repositories/SerumQC-private/DB/adapters.fasta"
-#     shell:
-#         """
-#         mkdir qcquickie
-#         cd qcquickie
-#         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fastq ref={params.adapter} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> qcquickie.log
-#         kraken -db /srv/data/DB/kraken/minikraken_20171019_8GB/ --fastq-input filtered.fastq 2> kraken.log | kraken-report -db /srv/data/DB/kraken/minikraken_20171019_8GB/ 1> mini.report 2> kraken.log
-#         python /tools/git.repositories/Bracken/est_abundance.py -i mini.report -k /srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt -o bracken.txt &>> kraken.log
-#         bbmerge.sh in=filtered.fastq out=merged.fastq outu=unmerged.fastq &>> qcquickie.log
-#         tadpole.sh in=merged.fastq,unmerged.fastq out=contigs.fa &>> qcquickie.log
-#         bbwrap.sh ref=contigs.fa in=merged.fastq,unmerged.fastq out=contigs.sam append &>> qcquickie.log
-#         pileup.sh in=contigs.sam basecov=contigs.cov out=contigs.pileup &>> qcquickie.log
-#         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=10 &>> qcquickie.log
-#         filterbycoverage.sh in=contigs.fa cov=contigs.pileup minc=25 &>> qcquickie.log
-#         sketch.sh in=contigs.fa out=contigs.sketch &>> qcquickie.log
-#         cd ..
-#         touch qcquickie_done
-#         """
 
 rule setup:
     output:
