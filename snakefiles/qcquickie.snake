@@ -96,7 +96,7 @@ rule setup__filter_reads_with_bbduk:
     benchmark:
         "benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "bbduk.sh global_threads={global_threads} -Xmx{global_memory}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+        "bbduk.sh threads={global_threads} -Xmx{global_memory}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
 
 rule contaminant_check__classify_reads_kraken_minikraken_db:
@@ -145,7 +145,7 @@ rule assembly_check__combine_reads_with_bbmerge:
     log:
         os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
     shell:
-        "bbmerge.sh global_threads={global_threads} -Xmx{global_memory}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+        "bbmerge.sh threads={global_threads} -Xmx{global_memory}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
 
 rule assembly_check__quick_assembly_with_tadpole:
@@ -159,7 +159,7 @@ rule assembly_check__quick_assembly_with_tadpole:
     log:
         os.path.join(folder_name, "assembly_check__quick_assembly_with_tadpole.log")
     shell:
-        "tadpole.sh global_threads={global_threads} -Xmx{global_memory}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
+        "tadpole.sh threads={global_threads} -Xmx{global_memory}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
 
 
 rule assembly_check__map_reads_to_assembly_with_bbwrap:
@@ -174,7 +174,7 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
     log:
         os.path.join(folder_name, "assembly_check__map_reads_to_assembly_with_bbwrap.log")
     shell:
-        "bbwrap.sh global_threads={global_threads} -Xmx{global_memory}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
+        "bbwrap.sh threads={global_threads} -Xmx{global_memory}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
 
 
 rule assembly_check__pileup_on_mapped_reads:
@@ -188,7 +188,7 @@ rule assembly_check__pileup_on_mapped_reads:
     log:
         os.path.join(folder_name, "assembly_check__pileup_on_mapped_reads.log")
     shell:
-        "pileup.sh global_threads={global_threads} -Xmx{global_memory}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
+        "pileup.sh threads={global_threads} -Xmx{global_memory}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
 
 
 rule assembly_check__bin_coverage:
