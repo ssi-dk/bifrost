@@ -38,7 +38,6 @@ rule set_up_run:
     input:
         run_folder = run_folder
     output:
-        samplesheet = "sample_sheet.xlsx",
         run_info_yaml = "init_complete"
     params:
         samplesheet = sample_sheet
