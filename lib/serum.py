@@ -161,7 +161,8 @@ def start_initialized_samples(run_dir=".", run_status="run_status.csv"):
 def check__robot_sample_sheet(sample_sheet_xlsx, corrected_sample_sheet_xlsx):
     # change logic to apply to N_WGS and then used N_WGS to replace H_WGS
     if not os.path.isfile(sample_sheet_xlsx):
-        return 0
+        with open(corrected_sample_sheet_xlsx, "w"):
+            return 0
 
     df = pandas.read_excel(sample_sheet_xlsx)
     item_rename_dict = {}
