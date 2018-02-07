@@ -32,6 +32,8 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
+ruleorder: check__provided_sample_info > set_up_run
+
 rule all:
     input:
         "init_complete"
@@ -61,7 +63,7 @@ rule check__provided_sample_info:
         run_folder = run_folder
     output:
         samplesheet = "sample_sheet.xlsx",
-        run_info_yaml = touch("check_provided_sample_info")
+        check = touch("check_provided_sample_info")
     params:
         samplesheet = sample_sheet
     threads:
