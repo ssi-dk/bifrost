@@ -76,8 +76,14 @@ rule setup__filter_reads_with_bbduk:
         filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
+        os.path.join(folder_name, "log/setup__filter_reads_with_bbduk.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/setup__filter_reads_with_bbduk.benchmark")
     run:
         if os.path.isfile("qc_quickie/filtered.fastq"):
             shell("ln -s qc_quickie/filtered.fastq {}".format(output.filtered_reads))
@@ -93,8 +99,14 @@ rule assembly_check__combine_reads_with_bbmerge:
     output:
         merged_reads = os.path.join(folder_name, "merged.fastq"),
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
+        os.path.join(folder_name, "log/assembly_check__combine_reads_with_bbmerge.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
     shell:
         if os.path.isfile("qc_quickie/merged.fastq") and os.path.isfile("qc_quickie/unmerged.fastq"):
             shell("ln -s qc_quickie/merged.fastq {}".format(output.merged_reads))
@@ -109,8 +121,14 @@ rule assembly__spades:
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
     output:
         assembly = os.path.join(folder_name, "spades")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly__spades.log")
+        os.path.join(folder_name, "log/assembly__spades.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly__spades.benchmark")
     shell:
         "spades.py -k 21,33,55,77 -s {input.merged_reads} --s1 {input.unmerged_reads} -o {output.assembly} &> {log}"
 
