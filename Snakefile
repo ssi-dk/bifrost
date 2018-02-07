@@ -69,7 +69,7 @@ rule check__provided_sample_info:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/check__provided_sample_info.log")
+        "log/check__provided_sample_info.log"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/check_provided_sample_info.py")
 
