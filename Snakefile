@@ -3,6 +3,7 @@ import re
 import pandas
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
 import lib.serum as serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 import pkg_resources
 
