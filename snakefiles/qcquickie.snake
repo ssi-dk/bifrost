@@ -218,8 +218,6 @@ rule assembly_check__bin_coverage:
         os.path.join(folder_name, "benchmarks/assembly_check__bin_coverage.benchmark")
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
-    #run:
-        #serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
 
 
 rule contaminant_check__declare_contamination:
