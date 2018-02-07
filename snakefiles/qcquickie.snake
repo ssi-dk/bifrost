@@ -18,7 +18,7 @@ sample = config["Sample"]
 R1 = config["R1_reads"]
 R2 = config["R2_reads"]
 global_threads = config["global"]["threads"]
-global_memory = config["global"]["memory"]
+global_memory_in_GB = config["global"]["memory"]
 
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.default_flow_style = False
@@ -45,6 +45,7 @@ rule all:
         os.path.join(folder_name, "bracken.txt"),
         os.path.join(folder_name, "contaminantion_check.txt")
 
+# rule_order:
 
 # rule run__qcquickie:
 #     message:
@@ -91,12 +92,16 @@ rule setup__filter_reads_with_bbduk:
         filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "setup__filter_reads_with_bbduk.log")
+        os.path.join(folder_name, "log/setup__filter_reads_with_bbduk.log")
     benchmark:
-        "benchmarks/setup__filter_reads_with_bbduk.benchmark"
+        os.path.join(folder_name, "benchmarks/setup__filter_reads_with_bbduk.benchmark")
     shell:
-        "bbduk.sh threads={global_threads} -Xmx{global_memory}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
 
 rule contaminant_check__classify_reads_kraken_minikraken_db:
@@ -108,12 +113,16 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
         kraken_report = os.path.join(folder_name, "kraken_report.txt")
     params:
         db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "contaminant_check__classify_reads_kraken_minikraken_db.log")
+        os.path.join(folder_name, "log/contaminant_check__classify_reads_kraken_minikraken_db.log")
     benchmark:
-        "benchmarks/setup__filter_reads_with_bbduk.benchmark"
+        os.path.join(folder_name, "benchmarks/contaminant_check__classify_reads_kraken_minikraken_db.benchmark")
     shell:
-        "kraken --threads {global_threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
 
 rule contaminant_check__determine_species_bracken_on_minikraken_results:
@@ -123,10 +132,16 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         kraken_report = os.path.join(folder_name, "kraken_report.txt")
     output:
         bracken = os.path.join(folder_name, "bracken.txt")
-    log:
-        os.path.join(folder_name, "contaminant_check__determine_species_bracken_on_minikraken_results.log")
     params:
         kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/contaminant_check__determine_species_bracken_on_minikraken_results.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/contaminant_check__determine_species_bracken_on_minikraken_results.benchmark")
     shell:
         """
         est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}
@@ -142,10 +157,16 @@ rule assembly_check__combine_reads_with_bbmerge:
     output:
         merged_reads = os.path.join(folder_name, "merged.fastq"),
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly_check__combine_reads_with_bbmerge.log")
+        os.path.join(folder_name, "log/assembly_check__combine_reads_with_bbmerge.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
     shell:
-        "bbmerge.sh threads={global_threads} -Xmx{global_memory}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+        "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
 
 rule assembly_check__quick_assembly_with_tadpole:
@@ -156,10 +177,16 @@ rule assembly_check__quick_assembly_with_tadpole:
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
     output:
         contigs = os.path.join(folder_name, "contigs.fasta")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly_check__quick_assembly_with_tadpole.log")
+        os.path.join(folder_name, "log/assembly_check__quick_assembly_with_tadpole.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__quick_assembly_with_tadpole.benchmark")
     shell:
-        "tadpole.sh threads={global_threads} -Xmx{global_memory}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
+        "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
 
 
 rule assembly_check__map_reads_to_assembly_with_bbwrap:
@@ -171,10 +198,16 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
         unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
     output:
         mapped = os.path.join(folder_name, "contigs.sam")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly_check__map_reads_to_assembly_with_bbwrap.log")
+        os.path.join(folder_name, "log/assembly_check__map_reads_to_assembly_with_bbwrap.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__map_reads_to_assembly_with_bbwrap.benchmark")
     shell:
-        "bbwrap.sh threads={global_threads} -Xmx{global_memory}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
+        "bbwrap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
 
 
 rule assembly_check__pileup_on_mapped_reads:
@@ -185,10 +218,16 @@ rule assembly_check__pileup_on_mapped_reads:
     output:
         coverage = os.path.join(folder_name, "contigs.cov"),
         pileup = os.path.join(folder_name, "contigs.pileup")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "assembly_check__pileup_on_mapped_reads.log")
+        os.path.join(folder_name, "log/assembly_check__pileup_on_mapped_reads.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__pileup_on_mapped_reads.benchmark")
     shell:
-        "pileup.sh threads={global_threads} -Xmx{global_memory}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
+        "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
 
 
 rule assembly_check__bin_coverage:
@@ -199,6 +238,14 @@ rule assembly_check__bin_coverage:
     output:
         contig_depth_yaml = os.path.join(folder_name, "contigs.sum.cov"),
         binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/assembly_check__bin_coverage.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/assembly_check__bin_coverage.benchmark")
     run:
         serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
 
@@ -210,6 +257,14 @@ rule contaminant_check__declare_contamination:
         bracken = os.path.join(folder_name, "bracken.txt")
     output:
         contaminantion_check = os.path.join(folder_name, "contaminantion_check.txt")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/contaminant_check__declare_contamination.log")
+    benchmark:
+        os.path.join(folder_name, "benchmarks/contaminant_check__declare_contamination.benchmark")
     run:
         with open(output.contaminantion_check, "w") as contaminantion_check:
             df = pandas.read_table(input.bracken)
