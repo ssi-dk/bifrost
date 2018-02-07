@@ -61,7 +61,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = os.path.join(folder_name, "filtered.fastq")
     params:
-        adapters = os.path.join(os.path.dirname(workflow.snakefile), "../lib/adapters.fasta")
+        adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
         global_threads
     resources:
