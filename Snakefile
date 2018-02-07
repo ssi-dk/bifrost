@@ -38,7 +38,7 @@ rule all:
 rule set_up_run:
     input:
         run_folder = run_folder,
-        "check_provided_sample_info"
+        check_provided_sample_info = "check_provided_sample_info"
     output:
         samplesheet = "sample_sheet.xlsx",
         run_info_yaml = "init_complete"
