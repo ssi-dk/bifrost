@@ -108,11 +108,11 @@ def initialize__run_from_run_info(updated_run_info_yaml="run.yaml", run_status="
                 with open(os.path.join(sample, "cmd_qcquickie.sh"), "w") as command:
                     command.write("#!/bin/sh\n")
                     command.write("#SBATCH --mem={}G --time=00-00:15 -p project -c {} -J 'qcquickie_{}'\n".format(config['global']['memory'], config['global']['threads'], sample))
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
+                    command.write("snakemake --cores {} -s ~/git.repositories/SerumQC-private/snakefiles/qcquickie.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
                 with open(os.path.join(sample, "cmd_analysis.sh"), "w") as command:
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/analysis.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
+                    command.write("snakemake --cores {} -s ~/git.repositories/SerumQC-private/snakefiles/analysis.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
                 with open(os.path.join(sample, "cmd_assembly.sh"), "w") as command:
-                    command.write("snakemake -s ~/git.repositories/SerumQC-private/snakefiles/assembly.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
+                    command.write("snakemake --cores {} -s ~/git.repositories/SerumQC-private/snakefiles/assembly.snake --config R1_reads={} R2_reads={} Sample={}\n".format(os.path.realpath(run_info["samples"][sample]["R1"]), os.path.realpath(run_info["samples"][sample]["R2"]), "sample.yaml"))
             yaml.dump({"sample": run_info["samples"][sample]}, sample_yaml)
     convert_run_to_status()
     return 0
