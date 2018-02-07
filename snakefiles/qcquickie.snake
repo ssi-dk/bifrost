@@ -113,7 +113,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     benchmark:
         "benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "kraken --global_threads {global_threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "kraken --threads {global_threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
 
 rule contaminant_check__determine_species_bracken_on_minikraken_results:
