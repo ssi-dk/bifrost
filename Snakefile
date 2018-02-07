@@ -17,7 +17,8 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
 run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
-
+global_threads = config["global"]["threads"]
+global_memory_in_GB = config["global"]["memory"]
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -36,20 +37,41 @@ rule all:
 
 rule set_up_run:
     input:
-        run_folder = run_folder
+        run_folder = run_folder,
+        "check_provided_sample_info"
     output:
         samplesheet = "sample_sheet.xlsx",
         run_info_yaml = "init_complete"
     params:
         samplesheet = sample_sheet
     run:
-        serum.check__robot_sample_sheet(params.samplesheet, output.samplesheet)
         serum.check__run_folder(input.run_folder)
         serum.check__combine_sample_sheet_with_run_info(output.samplesheet)
         serum.initialize__run_from_run_info()
         serum.start_initialized_samples()
         serum.initialize_complete()
         # post steps
+
+
+rule check__provided_sample_info:
+    message:
+        "Running step: {rule}"
+    input:
+        run_folder = run_folder
+    output:
+        samplesheet = "sample_sheet.xlsx",
+        run_info_yaml = touch("check_provided_sample_info")
+    params:
+        samplesheet = sample_sheet
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/check__provided_sample_info.log")
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/check_provided_sample_info.py")
+
 
 rule qcquickie_samples:
     input:
