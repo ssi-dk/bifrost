@@ -7,7 +7,7 @@ import lib.serum as serum  # all serum lib functions also have access to the con
 import pkg_resources
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "config/config.yaml")
+configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # from pytools.persistent_dict import PersistentDict
 # storage = PersistentDict("qcquickie_storage")
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads={read_location} R2_reads={read_location} Sample=Test
@@ -50,3 +50,8 @@ rule set_up_run:
         serum.start_initialized_samples()
         serum.initialize_complete()
         # post steps
+
+rule qcquickie_samples:
+    input:
+        run_config = "run.yaml",
+        cmd_qcquickie = expand({sample}/cmd_qcquickie.sh, sample=config["samples"])

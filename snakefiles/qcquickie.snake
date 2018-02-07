@@ -12,7 +12,7 @@ import lib.serum as serum
 # storage = PersistentDict("qcquickie_storage")
 # alternative is to do a quick qc on basepairs followed by a more rigorous assembly
 
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config/config.yaml")
+configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
 R1 = config["R1_reads"]
@@ -218,8 +218,10 @@ rule assembly_check__bin_coverage:
         os.path.join(folder_name, "log/assembly_check__bin_coverage.log")
     benchmark:
         os.path.join(folder_name, "benchmarks/assembly_check__bin_coverage.benchmark")
-    run:
-        serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
+    script:
+        "scripts/summarize_depth.py"
+    #run:
+        #serum.script__summarize_depth(input.coverage, output.contig_depth_yaml, output.binned_depth_yaml)
 
 
 rule contaminant_check__declare_contamination:
