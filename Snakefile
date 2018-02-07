@@ -72,9 +72,3 @@ rule check__provided_sample_info:
         "log/check__provided_sample_info.log"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/check_provided_sample_info.py")
-
-
-rule qcquickie_samples:
-    input:
-        run_config = "run.yaml",
-        cmd_qcquickie = expand({sample}/cmd_qcquickie.sh, sample=config["samples"])
