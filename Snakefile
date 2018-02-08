@@ -19,6 +19,7 @@ run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
+global run_config
 folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:
@@ -32,11 +33,11 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
-ruleorder: setup > initialize_run
+ruleorder: setup > initialize_run > set_run_info > print_run
 
 rule all:
     input:
-        os.path.join(folder_name, "initialize_run")
+        os.path.join(folder_name, "print_run")
 
 
 rule setup:
@@ -64,3 +65,41 @@ rule initialize_run:
         os.path.join(folder_name, "log/initialize_run.log")
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
+
+
+rule set_run_info:
+    message:
+        "Running step: {rule}"
+    input:
+        run_config = "run.yaml"
+    output:
+        check = touch(os.path.join(folder_name, "set_run_info"))
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/set_run_info.log")
+    run:
+        yaml = ruamel.yaml.YAML(typ='safe')
+        yaml.default_flow_style = False
+        with open(input.run_config, "r") as yaml_stream:
+            run_config = yaml.load(yaml_stream)
+
+rule print_run:
+    message:
+        "Running step: {rule}"
+    input:
+        os.path.join(folder_name, "set_run_info")
+    output:
+        check = touch(os.path.join(folder_name, "print_run"))
+    params:
+        samplesheet = sample_sheet
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        os.path.join(folder_name, "log/print_run.log")
+    run:
+        print(run_config)
