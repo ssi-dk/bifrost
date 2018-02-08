@@ -5,7 +5,6 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
 import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
-import pkg_resources
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
@@ -20,6 +19,7 @@ run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
+folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -32,38 +32,28 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
-ruleorder: check__provided_sample_info > set_up_run
+ruleorder: setup > check__provided_sample_info > check__run_folder set_up_run >
 
 rule all:
     input:
-        "init_complete"
+        "initialize_run"
 
-rule set_up_run:
-    input:
-        run_folder = run_folder,
-        check_provided_sample_info = "check_provided_sample_info"
+
+rule setup:
     output:
-        samplesheet = "sample_sheet.xlsx",
-        run_info_yaml = "init_complete"
-    params:
-        samplesheet = sample_sheet
-    run:
-        serum.check__run_folder(input.run_folder)
-        serum.check__combine_sample_sheet_with_run_info(output.samplesheet)
-        serum.initialize__run_from_run_info()
-        serum.start_initialized_samples()
-        serum.initialize_complete()
-        # post steps
+        dir = folder_name
+    shell:
+        "mkdir {output}"
 
 
-rule check__provided_sample_info:
+rule initialize_run:
     message:
         "Running step: {rule}"
     input:
         run_folder = run_folder
     output:
         samplesheet = "sample_sheet.xlsx",
-        check = touch("check_provided_sample_info")
+        check = touch(os.path.join(folder_name, "initialize_run"))
     params:
         samplesheet = sample_sheet
     threads:
@@ -71,6 +61,6 @@ rule check__provided_sample_info:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "log/check__provided_sample_info.log"
+        os.path.join(folder_name, "log/initialize_run.log")
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/check_provided_sample_info.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
