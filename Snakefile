@@ -88,5 +88,5 @@ rule print_run:
         memory_in_GB = global_memory_in_GB
     log:
         os.path.join(folder_name, "log/print_run.log")
-    shell:
+    run:
         print(input.samples)
