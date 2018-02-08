@@ -69,14 +69,7 @@ rule initialize_run:
 
 
 def get_sample_names(wildcards):
-    samples = []
-    yaml = YAML(typ='safe')
-    yaml.default_flow_style = False
-    with open("run.yaml", "r") as yaml_stream:
-        run_config = yaml.load(yaml_stream)
-        for sample in run_config['samples']:
-            samples.append(sample)
-    return samples
+    return [directory for directory in os.listdir if os.path.isdir(directory)]
 
 
 rule print_run:
@@ -96,4 +89,4 @@ rule print_run:
     log:
         os.path.join(folder_name, "log/print_run.log")
     run:
-        print(get_sample_names)
+        print(input.samples)
