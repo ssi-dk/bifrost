@@ -21,14 +21,13 @@ yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 
-folder_name = "qcquickie"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
     config_sample["sample"]["status"] = "qcquickie_completed_successfully"
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    shell("rm contigs.cov contigs.sam filtered.fastq merged.fastq unmerged.fastq")
+
 
 onerror:
     print("Workflow error")
@@ -39,15 +38,15 @@ onerror:
 
 rule all:
     input:
-        folder_name,
-        os.path.join(folder_name, "contigs.bin.cov"),
-        os.path.join(folder_name, "species.txt"),
-        os.path.join(folder_name, "contaminantion_check.txt")
+        "qcquickie",
+        "qcquickie/contigs.bin.cov",
+        "qcquickie/species.txt",
+        "qcquickie/contaminantion_check.txt"
 
 
 rule setup:
     output:
-        dir = folder_name
+        dir = "qcquickie"
     shell:
         "mkdir {output}"
 
@@ -56,10 +55,10 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
+        dir = "qcquickie",
         reads = (R1, R2)
     output:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "qcquickie/filtered.fastq"
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -67,9 +66,9 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/setup__filter_reads_with_bbduk.log")
+        "qcquickie/log/setup__filter_reads_with_bbduk.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/setup__filter_reads_with_bbduk.benchmark")
+        "qcquickie/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
@@ -78,9 +77,9 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     message:
         "Running step: {rule}"
     input:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "qcquickie/filtered.fastq"
     output:
-        kraken_report = os.path.join(folder_name, "kraken_report.txt")
+        kraken_report = "qcquickie/kraken_report.txt"
     params:
         db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
     threads:
@@ -88,9 +87,9 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/contaminant_check__classify_reads_kraken_minikraken_db.log")
+        "qcquickie/log/contaminant_check__classify_reads_kraken_minikraken_db.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/contaminant_check__classify_reads_kraken_minikraken_db.benchmark")
+        "qcquickie/benchmarks/contaminant_check__classify_reads_kraken_minikraken_db.benchmark"
     shell:
         "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
@@ -99,9 +98,9 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     message:
         "Running step: {rule}"
     input:
-        kraken_report = os.path.join(folder_name, "kraken_report.txt")
+        kraken_report = "qcquickie/kraken_report.txt"
     output:
-        bracken = os.path.join(folder_name, "bracken.txt")
+        bracken = "qcquickie/bracken.txt"
     params:
         kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
     threads:
@@ -109,9 +108,9 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/contaminant_check__determine_species_bracken_on_minikraken_results.log")
+        "qcquickie/log/contaminant_check__determine_species_bracken_on_minikraken_results.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/contaminant_check__determine_species_bracken_on_minikraken_results.benchmark")
+        "qcquickie/benchmarks/contaminant_check__determine_species_bracken_on_minikraken_results.benchmark"
     shell:
         """
         est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}
@@ -123,18 +122,18 @@ rule assembly_check__combine_reads_with_bbmerge:
     message:
         "Running step: {rule}"
     input:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "qcquickie/filtered.fastq"
     output:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "qcquickie/merged.fastq",
+        unmerged_reads = "qcquickie/unmerged.fastq"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__combine_reads_with_bbmerge.log")
+        "qcquickie/log/assembly_check__combine_reads_with_bbmerge.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
+        "qcquickie/benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark"
     shell:
         "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
 
@@ -143,18 +142,18 @@ rule assembly_check__quick_assembly_with_tadpole:
     message:
         "Running step: {rule}"
     input:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "qcquickie/merged.fastq",
+        unmerged_reads = "qcquickie/unmerged.fastq"
     output:
-        contigs = os.path.join(folder_name, "contigs.fasta")
+        contigs = "qcquickie/contigs.fasta"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__quick_assembly_with_tadpole.log")
+        "qcquickie/log/assembly_check__quick_assembly_with_tadpole.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__quick_assembly_with_tadpole.benchmark")
+        "qcquickie/benchmarks/assembly_check__quick_assembly_with_tadpole.benchmark"
     shell:
         "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
 
@@ -163,19 +162,19 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
     message:
         "Running step: {rule}"
     input:
-        contigs = os.path.join(folder_name, "contigs.fasta"),
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        contigs = "qcquickie/contigs.fasta",
+        merged_reads = "qcquickie/merged.fastq",
+        unmerged_reads = "qcquickie/unmerged.fastq"
     output:
-        mapped = os.path.join(folder_name, "contigs.sam")
+        mapped = "qcquickie/contigs.sam"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__map_reads_to_assembly_with_bbwrap.log")
+        "qcquickie/log/assembly_check__map_reads_to_assembly_with_bbwrap.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__map_reads_to_assembly_with_bbwrap.benchmark")
+        "qcquickie/benchmarks/assembly_check__map_reads_to_assembly_with_bbwrap.benchmark"
     shell:
         "bbwrap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
 
@@ -184,18 +183,18 @@ rule assembly_check__pileup_on_mapped_reads:
     message:
         "Running step: {rule}"
     input:
-        mapped = os.path.join(folder_name, "contigs.sam")
+        mapped = "qcquickie/contigs.sam"
     output:
-        coverage = os.path.join(folder_name, "contigs.cov"),
-        pileup = os.path.join(folder_name, "contigs.pileup")
+        coverage = "qcquickie/contigs.cov",
+        pileup = "qcquickie/contigs.pileup"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__pileup_on_mapped_reads.log")
+        "qcquickie/log/assembly_check__pileup_on_mapped_reads.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__pileup_on_mapped_reads.benchmark")
+        "qcquickie/benchmarks/assembly_check__pileup_on_mapped_reads.benchmark"
     shell:
         "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
 
@@ -204,18 +203,18 @@ rule assembly_check__bin_coverage:
     message:
         "Running step: {rule}"
     input:
-        coverage = os.path.join(folder_name, "contigs.cov")
+        coverage = "qcquickie/contigs.cov"
     output:
-        contig_depth_yaml = os.path.join(folder_name, "contigs.sum.cov"),
-        binned_depth_yaml = os.path.join(folder_name, "contigs.bin.cov")
+        contig_depth_yaml = "qcquickie/contigs.sum.cov",
+        binned_depth_yaml = "qcquickie/contigs.bin.cov"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__bin_coverage.log")
+        "qcquickie/log/assembly_check__bin_coverage.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__bin_coverage.benchmark")
+        "qcquickie/benchmarks/assembly_check__bin_coverage.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
 
@@ -224,17 +223,17 @@ rule contaminant_check__declare_contamination:
     message:
         "Running step: {rule}"
     input:
-        bracken = os.path.join(folder_name, "bracken.txt")
+        bracken = "qcquickie/bracken.txt"
     output:
-        contaminantion_check = os.path.join(folder_name, "contaminantion_check.txt")
+        contaminantion_check = "qcquickie/contaminantion_check.txt"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/contaminant_check__declare_contamination.log")
+        "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/contaminant_check__declare_contamination.benchmark")
+        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         with open(output.contaminantion_check, "w") as contaminantion_check:
             df = pandas.read_table(input.bracken)
@@ -248,17 +247,17 @@ rule species_check__set_species:
     message:
         "Running step: {rule}"
     input:
-        bracken = os.path.join(folder_name, "bracken.txt"),
+        bracken = "qcquickie/bracken.txt",
     output:
-        species = os.path.join(folder_name, "species.txt")
+        species = "qcquickie/species.txt"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/contaminant_check__declare_contamination.log")
+        "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/contaminant_check__declare_contamination.benchmark")
+        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         with open(output.species, "w") as species_file:
             if "species" in config_sample["sample"]:
@@ -272,18 +271,26 @@ rule species_check__check_sizes:
     message:
         "Running step: {rule}"
     input:
-        contig_depth_yaml = os.path.join(folder_name, "contigs.sum.cov"),
-        species = os.path.join(folder_name, "species.txt")
+        contig_depth_yaml = "qcquickie/contigs.sum.cov",
+        species = "qcquickie/species.txt"
     output:
-        size_check = os.path.join(folder_name, "size_check.txt")
+        size_check = "qcquickie/size_check.txt"
+    params:
+        species_db = os.path.join(os.path.dirname(workflow.snakefile), "../resources/species_qc_values.tsv")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/contaminant_check__declare_contamination.log")
+        "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/contaminant_check__declare_contamination.benchmark")
+        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open(output.size_check, "w") as species_file:
+        with open(input.species, "r") as species_file:
+            species = species_file.readline.strip()
+            df = pandas.read_table(params.species_db)
+            if not df[df["ncbi_species"] == species].empty:
+                with open(output.size_check, "w") as size_check:
+                    size_check.write("{}\n".format(df[df["ncbi_species"] == species]["min_length"]))
+                    size_check.write("{}\n".format(df[df["ncbi_species"] == species]["max_length"]))
             pass
