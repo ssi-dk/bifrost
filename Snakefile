@@ -37,7 +37,7 @@ ruleorder: setup > initialize_run > print_run
 
 rule all:
     input:
-        "{sample_folder}/qcquickie/"
+        os.path.join(folder_name, "print_run")
 
 
 rule setup:
@@ -79,7 +79,7 @@ rule print_run:
         samples = get_sample_names,
         run_config = "run.yaml"
     output:
-        "{sample_folder}/qcquickie/"
+        check = touch(os.path.join(folder_name, "print_run"))
     params:
         samplesheet = sample_sheet
     threads:
@@ -88,5 +88,5 @@ rule print_run:
         memory_in_GB = global_memory_in_GB
     log:
         os.path.join(folder_name, "log/print_run.log")
-    run:
+    shell:
         print(input.samples)
