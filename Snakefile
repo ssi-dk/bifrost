@@ -83,7 +83,8 @@ rule print_run:
     message:
         "Running step: {rule}"
     input:
-        get_sample_names
+        samples = get_sample_names,
+        run_config = "run.yaml"
     output:
         check = touch(os.path.join(folder_name, "print_run"))
     params:
