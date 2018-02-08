@@ -32,7 +32,7 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
-ruleorder: setup > check__provided_sample_info > check__run_folder set_up_run >
+ruleorder: setup > initialize_run
 
 rule all:
     input:
