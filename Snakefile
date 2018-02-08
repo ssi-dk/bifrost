@@ -69,7 +69,7 @@ rule initialize_run:
 
 
 def get_sample_names(wildcards):
-    return [directory for directory in os.listdir() if os.path.isdir(directory)]
+    return [directory for directory in os.listdir() if os.path.isdir(directory) and os.path.isfile(os.path.join(directory, "sample.yaml"))]
 
 
 rule print_run:
