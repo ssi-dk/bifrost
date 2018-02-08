@@ -1,6 +1,6 @@
 import re
 import pandas
-import ruamel.yaml
+from ruamel.yaml import YAML
 import sys
 
 # from pytools.persistent_dict import PersistentDict
@@ -16,7 +16,7 @@ R2 = config["R2_reads"]
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 
-yaml = ruamel.yaml.YAML(typ='safe')
+yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)

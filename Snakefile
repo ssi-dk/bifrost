@@ -3,6 +3,7 @@ import re
 import pandas
 import sys
 import os
+from ruamel.yaml import YAML
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
 import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
@@ -82,10 +83,10 @@ rule set_run_info:
     log:
         os.path.join(folder_name, "log/set_run_info.log")
     run:
-        yaml = ruamel.yaml.YAML(typ='safe')
+        yaml = YAML(typ='safe')
         yaml.default_flow_style = False
         with open(input.run_config, "r") as yaml_stream:
-            run_config = yaml.load(yaml_stream)
+            config = yaml.load(yaml_stream)
 
 rule print_run:
     message:
