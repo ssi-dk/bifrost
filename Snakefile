@@ -33,7 +33,7 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure")
 
-ruleorder: setup > initialize_run > set_run_info > print_run
+ruleorder: setup > initialize_run > print_run
 
 rule all:
     input:
