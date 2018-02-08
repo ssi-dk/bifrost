@@ -21,6 +21,7 @@ sample_sheet = str(config["sample_sheet"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 global run_config
+run_config = {}
 folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:
