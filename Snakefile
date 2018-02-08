@@ -76,7 +76,7 @@ rule set_run_info:
     input:
         run_config_yaml = "run.yaml"
     output:
-        check = touch(os.path.join(folder_name, "set_run_info"))
+        check = os.path.join(folder_name, "set_run_info")
     threads:
         global_threads
     resources:
@@ -88,6 +88,8 @@ rule set_run_info:
         yaml.default_flow_style = False
         with open(input.run_config_yaml, "r") as yaml_stream:
             run_config = yaml.load(yaml_stream)
+        with open(os.path.join(folder_name, "set_run_info"), "w") as outfile:
+            pass
 
 rule print_run:
     message:
