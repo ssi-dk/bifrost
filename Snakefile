@@ -36,7 +36,7 @@ ruleorder: setup > initialize_run
 
 rule all:
     input:
-        "initialize_run"
+        os.path.join(folder_name, "initialize_run")
 
 
 rule setup:
