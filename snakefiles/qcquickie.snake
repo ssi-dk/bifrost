@@ -262,6 +262,7 @@ rule species_check__set_species:
             if "species" in config_sample["sample"]:
                 species_file.write(config["sample"]["species"] + "\n")
             else:
+                df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
 
 
