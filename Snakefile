@@ -20,8 +20,6 @@ run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
-global run_config
-run_config = {}
 folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:
@@ -70,33 +68,22 @@ rule initialize_run:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 
 
-rule set_run_info:
-    message:
-        "Running step: {rule}"
-    input:
-        run_config_yaml = "run.yaml"
-    output:
-        check = os.path.join(folder_name, "set_run_info")
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        os.path.join(folder_name, "log/set_run_info.log")
-    run:
-        yaml = YAML(typ='safe')
-        yaml.default_flow_style = False
-        with open(input.run_config_yaml, "r") as yaml_stream:
-            run_config = yaml.load(yaml_stream)
-            print(run_config)
-        with open(os.path.join(folder_name, "set_run_info"), "w") as outfile:
-            pass
+def get_sample_names(wildcards):
+    samples = []
+    yaml = YAML(typ='safe')
+    yaml.default_flow_style = False
+    with open("run.yaml", "r") as yaml_stream:
+        run_config = yaml.load(yaml_stream)
+        for sample in run_config['samples']:
+            samples.append(sample)
+    return samples
+
 
 rule print_run:
     message:
         "Running step: {rule}"
     input:
-        os.path.join(folder_name, "set_run_info")
+        get_sample_names
     output:
         check = touch(os.path.join(folder_name, "print_run"))
     params:
@@ -108,4 +95,4 @@ rule print_run:
     log:
         os.path.join(folder_name, "log/print_run.log")
     run:
-        print(run_config)
+        print(get_sample_names)
