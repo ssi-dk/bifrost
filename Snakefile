@@ -88,6 +88,7 @@ rule set_run_info:
         yaml.default_flow_style = False
         with open(input.run_config_yaml, "r") as yaml_stream:
             run_config = yaml.load(yaml_stream)
+            print(run_config)
         with open(os.path.join(folder_name, "set_run_info"), "w") as outfile:
             pass
 
