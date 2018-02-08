@@ -56,7 +56,7 @@ rule initialize_run:
         run_folder = run_folder
     output:
         samplesheet = "sample_sheet.xlsx",
-        run_config = "run.yaml",
+        run_config_yaml = "run.yaml",
         check = touch(os.path.join(folder_name, "initialize_run"))
     params:
         samplesheet = sample_sheet
@@ -74,7 +74,7 @@ rule set_run_info:
     message:
         "Running step: {rule}"
     input:
-        run_config = "run.yaml"
+        run_config_yaml = "run.yaml"
     output:
         check = touch(os.path.join(folder_name, "set_run_info"))
     threads:
@@ -86,8 +86,8 @@ rule set_run_info:
     run:
         yaml = YAML(typ='safe')
         yaml.default_flow_style = False
-        with open(input.run_config, "r") as yaml_stream:
-            config = yaml.load(yaml_stream)
+        with open(input.run_config_yaml, "r") as yaml_stream:
+            run_config = yaml.load(yaml_stream)
 
 rule print_run:
     message:
