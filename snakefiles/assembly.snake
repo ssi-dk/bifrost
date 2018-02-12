@@ -131,4 +131,5 @@ rule assembly__spades:
 
 #quast
 #prokka
+#probably re add mapping steps as well
 
