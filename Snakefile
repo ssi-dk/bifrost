@@ -53,7 +53,7 @@ rule initialize_run:
     input:
         run_folder = run_folder
     output:
-        samplesheet = "sample_sheet.xlsx",
+        samplesheet = "sample_sheet.tsv",
         run_config_yaml = "run.yaml",
         check = touch(os.path.join(folder_name, "initialize_run"))
     params:
