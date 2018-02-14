@@ -84,8 +84,8 @@ rule setup__filter_reads_with_bbduk:
     benchmark:
         os.path.join(folder_name, "benchmarks/setup__filter_reads_with_bbduk.benchmark")
     run:
-        if os.path.isfile("qc_quickie/filtered.fastq"):
-            shell("ln -s qc_quickie/filtered.fastq {}".format(output.filtered_reads))
+        if os.path.isfile("qcquickie/filtered.fastq"):
+            shell("ln -s qcquickie/filtered.fastq {}".format(output.filtered_reads))
         else:
             shell("bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}")
 
@@ -107,9 +107,9 @@ rule assembly_check__combine_reads_with_bbmerge:
     benchmark:
         os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
     run:
-        if os.path.isfile("qc_quickie/merged.fastq") and os.path.isfile("qc_quickie/unmerged.fastq"):
-            shell("ln -s qc_quickie/merged.fastq {}".format(output.merged_reads))
-            shell("ln -s qc_quickie/unmerged.fastq {}".format(output.unmerged_reads))
+        if os.path.isfile("qcquickie/merged.fastq") and os.path.isfile("qcquickie/unmerged.fastq"):
+            shell("ln -s qcquickie/merged.fastq {}".format(output.merged_reads))
+            shell("ln -s qcquickie/unmerged.fastq {}".format(output.unmerged_reads))
         else:
             shell("bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}")
 
