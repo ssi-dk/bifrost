@@ -6,7 +6,7 @@ import pkg_resources
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../"))
 
-import lib.serum as serum
+import scripts.serum as serum
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config/config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
