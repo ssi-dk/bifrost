@@ -104,12 +104,12 @@ rule assembly_check__combine_reads_with_bbmerge:
         os.path.join(folder_name, "log/assembly_check__combine_reads_with_bbmerge.log")
     benchmark:
         os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
-    shell:
+    run:
         if os.path.isfile("qc_quickie/merged.fastq") and os.path.isfile("qc_quickie/unmerged.fastq"):
             shell("ln -s qc_quickie/merged.fastq {}".format(output.merged_reads))
             shell("ln -s qc_quickie/unmerged.fastq {}".format(output.unmerged_reads))
         else:
-            "bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+            shell("bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}")
 
 
 rule assembly__spades:
