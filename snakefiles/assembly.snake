@@ -18,7 +18,7 @@ yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 
-folder_name = "assembly"
+
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -33,8 +33,8 @@ onerror:
 
 rule all:
     input:
-        folder_name,
-        os.path.join(folder_name, "spades")
+        "assembly",
+        "assembly/spades"
 
 
 # rule run__assembly:
@@ -60,7 +60,7 @@ rule all:
 
 rule setup:
     output:
-        dir = folder_name
+        dir = "assembly"
     shell:
         "mkdir {output}"
 
@@ -69,10 +69,10 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
+        dir = "assembly",
         reads = (R1, R2)
     output:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "assembly/filtered.fastq"
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -80,9 +80,9 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/setup__filter_reads_with_bbduk.log")
+        "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/setup__filter_reads_with_bbduk.benchmark")
+        "assembly/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     run:
         if os.path.isfile("qcquickie/filtered.fastq"):
             shell("ln -s {} {}".format(os.path.realpath("qcquickie/filtered.fastq"), output.filtered_reads))
@@ -94,18 +94,18 @@ rule assembly_check__combine_reads_with_bbmerge:
     message:
         "Running step: {rule}"
     input:
-        filtered_reads = os.path.join(folder_name, "filtered.fastq")
+        filtered_reads = "assembly/filtered.fastq"
     output:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "assembly/merged.fastq",
+        unmerged_reads = "assembly/unmerged.fastq"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly_check__combine_reads_with_bbmerge.log")
+        "assembly/log/assembly_check__combine_reads_with_bbmerge.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark")
+        "assembly/benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark"
     run:
         if os.path.isfile("qcquickie/merged.fastq") and os.path.isfile("qcquickie/unmerged.fastq"):
             shell("ln -s {} {}".format(os.path.realpath("qcquickie/merged.fastq"), output.merged_reads))
@@ -116,22 +116,109 @@ rule assembly_check__combine_reads_with_bbmerge:
 
 rule assembly__spades:
     input:
-        merged_reads = os.path.join(folder_name, "merged.fastq"),
-        unmerged_reads = os.path.join(folder_name, "unmerged.fastq")
+        merged_reads = "assembly/merged.fastq",
+        unmerged_reads = "assembly/unmerged.fastq"
     output:
-        assembly = os.path.join(folder_name, "spades")
+        assembly = "assembly/spades"
+        contigs = "assembly/spades/contigs.fasta"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "log/assembly__spades.log")
+        "assembly/log/assembly__spades.log"
     benchmark:
-        os.path.join(folder_name, "benchmarks/assembly__spades.benchmark")
+        "assembly/benchmarks/assembly__spades.benchmark"
     shell:
-        "spades.py -k 21,33,55,77 -s {input.merged_reads} --s1 {input.unmerged_reads} -o {output.assembly} &> {log}"
+        "spades.py -k 21,33,55,77 -s {input.merged_reads} --12 {input.unmerged_reads} -o {output.assembly} --careful &> {log}"
 
-#quast
+
+#stats.sh
+rule post_assembly__stats:
+    input:
+        contigs = "assembly/spades/contigs.fasta"
+    output:
+        stats = touch("assembly/post_assermbly__stats")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/post_assembly__stats.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__stats.benchmark"
+    shell:
+        "stats.sh {input.contigs} &> {log}"
+
+
+rule post_assembly__mapping:
+    input:
+        contigs = "assembly/spades/contigs.fasta"
+        filtered_reads = "assembly/filtered.fastq"
+    output:
+        mapped = "assembly/contigs.sam"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/post_assembly__mapping.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__mapping.benchmark"
+    shell:
+        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered_reads} out={output.mapped} &> {log}"
+
+
+rule post_assembly__pileup:
+    input:
+        mapped = "assembly/contigs.pileup"
+    output:
+        coverage = "assembly/contigs.cov",
+        pileup = "assembly/contigs.pileup"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/post_assembly__pileup.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__pileup.benchmark"
+    shell:
+        "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
+
+
+rule post_assembly__call_variants:
+    input:
+        contigs = "assembly/contigs.fasta"
+        mapped = "assembly/contigs.pileup"
+    output:
+        variants = "assembly/contigs.vcf"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/post_assembly__call_variants.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__call_variants.benchmark"
+    shell:
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 rarity=0.0 clearfilters"
+
+
+rule post_assembly__annotate:
+    input:
+        contigs = "assembly/contigs.fasta"
+        mapped = "assembly/contigs.pileup"
+    output:
+        variants = "assembly/contigs.vcf"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/post_assembly__call_variants.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__call_variants.benchmark"
 #prokka
 #probably re add mapping steps as well
 

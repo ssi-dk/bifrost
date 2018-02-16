@@ -41,6 +41,7 @@ rule all:
         "qcquickie",
         "qcquickie/contigs.bin.cov",
         "qcquickie/species.txt",
+        "qcquickie/contigs.vcf",
         "qcquickie/contaminantion_check.txt"
 
 
@@ -117,7 +118,6 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
         """
 
-
 rule assembly_check__combine_reads_with_bbmerge:
     message:
         "Running step: {rule}"
@@ -163,8 +163,7 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
         "Running step: {rule}"
     input:
         contigs = "qcquickie/contigs.fasta",
-        merged_reads = "qcquickie/merged.fastq",
-        unmerged_reads = "qcquickie/unmerged.fastq"
+        filtered = "qcquickie/filtered.fastq"
     output:
         mapped = "qcquickie/contigs.sam"
     threads:
@@ -176,7 +175,7 @@ rule assembly_check__map_reads_to_assembly_with_bbwrap:
     benchmark:
         "qcquickie/benchmarks/assembly_check__map_reads_to_assembly_with_bbwrap.benchmark"
     shell:
-        "bbwrap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.merged_reads},{input.unmerged_reads} out={output.mapped} append &> {log}"
+        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} &> {log}"
 
 
 rule assembly_check__pileup_on_mapped_reads:
@@ -218,6 +217,24 @@ rule assembly_check__bin_coverage:
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
 
+
+rule assembly_check__call_variants:
+    message:
+        "Running step: {rule}"
+    input:
+        coverage = "qcquickie/contigs.cov"
+    output:
+        contig_depth_yaml = "qcquickie/contigs.vcf"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "qcquickie/log/assembly_check__call_variants.log"
+    benchmark:
+        "qcquickie/benchmarks/assembly_check__call_variants.benchmark"
+    shell:
+        "call"
 
 rule contaminant_check__declare_contamination:
     message:
