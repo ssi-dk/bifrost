@@ -34,7 +34,8 @@ onerror:
 rule all:
     input:
         "assembly",
-        "assembly/spades"
+        "assembly/prokka",
+        "assembly/contigs.vcf"
 
 
 # rule run__assembly:
@@ -204,21 +205,20 @@ rule post_assembly__call_variants:
     shell:
         "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 rarity=0.0 clearfilters"
 
+#filtervcf.sh or some other summary file
 
 rule post_assembly__annotate:
     input:
         contigs = "assembly/contigs.fasta"
-        mapped = "assembly/contigs.pileup"
     output:
-        variants = "assembly/contigs.vcf"
+        prokka = "assembly/prokka"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "assembly/log/post_assembly__call_variants.log"
+        "assembly/log/post_assembly__annotate.log"
     benchmark:
-        "assembly/benchmarks/post_assembly__call_variants.benchmark"
-#prokka
-#probably re add mapping steps as well
-
+        "assembly/benchmarks/post_assembly__annotate.benchmark"
+    shell:
+        "prokka --centre X --compliant --outdir {output.prokka} {input.contigs}"
