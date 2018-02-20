@@ -222,19 +222,20 @@ rule assembly_check__call_variants:
     message:
         "Running step: {rule}"
     input:
-        coverage = "qcquickie/contigs.cov"
+        contigs = "qcquickie/contigs.fasta"
+        mapped = "qcquickie/contigs.sam"
     output:
-        contig_depth_yaml = "qcquickie/contigs.vcf"
+        variants = "qcquickie/contigs.vcf"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/assembly_check__call_variants.log"
+        "qcquickie/log/post_assembly__call_variants.log"
     benchmark:
-        "qcquickie/benchmarks/assembly_check__call_variants.benchmark"
+        "qcquickie/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "call"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 rarity=0.0 clearfilters"
 
 rule contaminant_check__declare_contamination:
     message:
