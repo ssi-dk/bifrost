@@ -222,8 +222,8 @@ rule assembly_check__call_variants:
     message:
         "Running step: {rule}"
     input:
-        contigs = "qcquickie/contigs.fasta"
-        mapped = "qcquickie/contigs.sam"
+        contigs = "qcquickie/contigs.fasta",
+        mapped = "qcquickie/contigs.sam",
     output:
         variants = "qcquickie/contigs.vcf"
     threads:
