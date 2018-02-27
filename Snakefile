@@ -18,6 +18,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
 run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
+parition = str(config["partition"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 folder_name = "run_info"
@@ -57,7 +58,8 @@ rule initialize_run:
         run_config_yaml = "run.yaml",
         check = touch(os.path.join(folder_name, "initialize_run"))
     params:
-        samplesheet = sample_sheet
+        samplesheet = sample_sheet,
+        parition = partition,
     threads:
         global_threads
     resources:
