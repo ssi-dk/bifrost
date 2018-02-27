@@ -59,7 +59,7 @@ rule initialize_run:
         check = touch(os.path.join(folder_name, "initialize_run"))
     params:
         samplesheet = sample_sheet,
-        parition = partition,
+        partition = partition,
     threads:
         global_threads
     resources:
