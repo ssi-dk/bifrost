@@ -18,7 +18,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
 run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
-parition = str(config["partition"])
+partition = str(config["partition"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 folder_name = "run_info"
