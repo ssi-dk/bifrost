@@ -27,7 +27,11 @@ onsuccess:
     config_sample["sample"]["status"] = "qcquickie_completed_successfully"
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-
+    shell("rm *.fastq")
+    shell("rm *.sam")
+    shell("rm *.cov")
+    shell("rm *.vcf")
+    shell("rm raw_contigs.fasta")
 
 onerror:
     print("Workflow error")
