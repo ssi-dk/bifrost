@@ -172,7 +172,7 @@ rule post_assembly__mapping:
 
 rule post_assembly__pileup:
     input:
-        mapped = "assembly/contigs.pileup"
+        mapped = "assembly/contigs.sam"
     output:
         coverage = "assembly/contigs.cov",
         pileup = "assembly/contigs.pileup"
