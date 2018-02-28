@@ -154,8 +154,8 @@ rule post_assembly__stats:
 
 rule post_assembly__mapping:
     input:
-        contigs = "assembly/spades/contigs.fasta"
-        filtered_reads = "assembly/filtered.fastq"
+        contigs = "assembly/spades/contigs.fasta",
+        filtered_reads = "assembly/filtered.fastq",
     output:
         mapped = "assembly/contigs.sam"
     threads:
@@ -190,10 +190,10 @@ rule post_assembly__pileup:
 
 rule post_assembly__call_variants:
     input:
-        contigs = "assembly/contigs.fasta"
-        mapped = "assembly/contigs.pileup"
+        contigs = "assembly/contigs.fasta",
+        mapped = "assembly/contigs.pileup",
     output:
-        variants = "assembly/contigs.vcf"
+        variants = "assembly/contigs.vcf",
     threads:
         global_threads
     resources:
