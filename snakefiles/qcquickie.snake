@@ -28,9 +28,9 @@ onsuccess:
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
     shell("rm qcquickie/*.fastq")
-    shell("rm qcquickie/*.sam")
-    shell("rm qcquickie/*.cov")
-    shell("rm qcquickie/*.vcf")
+    shell("rm qcquickie/contigs.sam")
+    shell("rm qcquickie/contigs.cov")
+    shell("rm qcquickie/contigs.vcf")
     shell("rm qcquickie/raw_contigs.fasta")
 
 onerror:
