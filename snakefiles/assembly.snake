@@ -120,8 +120,8 @@ rule assembly__spades:
         merged_reads = "assembly/merged.fastq",
         unmerged_reads = "assembly/unmerged.fastq"
     output:
-        assembly = "assembly/spades"
-        contigs = "assembly/spades/contigs.fasta"
+        assembly = "assembly/spades",
+        contigs = "assembly/spades/contigs.fasta",
     threads:
         global_threads
     resources:
