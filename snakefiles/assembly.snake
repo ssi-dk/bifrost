@@ -145,7 +145,6 @@ rule assembly__skesa:
     input:
         filtered_reads = "assembly/filtered.fastq",
     output:
-        assembly = "assembly/spades",
         contigs = "assembly/contigs.fasta",
     threads:
         global_threads
@@ -156,7 +155,7 @@ rule assembly__skesa:
     benchmark:
         "assembly/benchmarks/assembly__skesa.benchmark"
     shell:
-        "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.assembly} &> {log}"
+        "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} &> {log}"
 
 
 rule post_assembly__stats:
