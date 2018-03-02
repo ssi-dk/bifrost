@@ -322,8 +322,8 @@ rule species_check__set_species:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         with open(output.species, "w") as species_file:
-            if "species" in config_sample["sample"]:
-                species_file.write(config["sample"]["species"] + "\n")
+            if "provided_species" in config_sample["sample"]:
+                species_file.write(config["sample"]["provided_species"] + "\n")
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
