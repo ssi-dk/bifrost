@@ -254,4 +254,4 @@ rule post_assembly__annotate:
     benchmark:
         "assembly/benchmarks/post_assembly__annotate.benchmark"
     shell:
-        "prokka --centre X --compliant --outdir {output.prokka} {input.contigs}"
+        "prokka --centre XXX --compliant --outdir {output.prokka} {input.contigs} &> {log}"

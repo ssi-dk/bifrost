@@ -323,7 +323,7 @@ rule species_check__set_species:
     run:
         with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
-                species_file.write(config["sample"]["provided_species"] + "\n")
+                species_file.write(config_sample["sample"]["provided_species"] + "\n")
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
