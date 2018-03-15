@@ -333,6 +333,7 @@ rule species_check__set_species:
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
+                print(output.sample_config)
                 with open(output.sample_config, "w") as output_file:
                     config_sample["sample"]["species"] = df["name"].iloc[0]
                     yaml.dump(config_sample, output_file)
