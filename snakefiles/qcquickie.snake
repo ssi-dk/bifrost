@@ -330,10 +330,11 @@ rule species_check__set_species:
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
+                sample = "new.yaml"
                 with open(sample, "w+") as output_file:
                     config_sample["sample"]["species"] = df["name"].iloc[0]
                     yaml.dump(config_sample, output_file)
-                    print(config_sample)
+                    print(sample, config_sample)
 
 
 rule species_check__check_sizes:
