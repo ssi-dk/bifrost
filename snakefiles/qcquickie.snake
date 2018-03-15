@@ -46,7 +46,7 @@ rule all:
     input:
         "qcquickie",
         "qcquickie/contigs.bin.cov",
-        "qcquickie/species.txt",
+        "species.txt",
         "qcquickie/contigs.vcf",
         "qcquickie/contaminantion_check.txt",
         "qcquickie/contigs.variants",
