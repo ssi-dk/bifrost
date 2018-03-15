@@ -221,18 +221,18 @@ rule summarize__depth:
     message:
         "Running step: {rule}"
     input:
-        coverage = "qcquickie/contigs.cov"
+        coverage = "assembly/contigs.cov"
     output:
-        contig_depth_yaml = "qcquickie/contigs.sum.cov",
-        binned_depth_yaml = "qcquickie/contigs.bin.cov"
+        contig_depth_yaml = "assembly/contigs.sum.cov",
+        binned_depth_yaml = "assembly/contigs.bin.cov"
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/summarize__bin_coverage.log"
+        "assembly/log/summarize__bin_coverage.log"
     benchmark:
-        "qcquickie/benchmarks/summarize__bin_coverage.benchmark"
+        "assembly/benchmarks/summarize__bin_coverage.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
 
@@ -261,17 +261,17 @@ rule summarize__variants:
     message:
         "Running step: {rule}"
     input:
-        variants = "qcquickie/contigs.vcf",
+        variants = "assembly/contigs.vcf",
     output:
-        variants_yaml = "qcquickie/contigs.variants",
+        variants_yaml = "assembly/contigs.variants",
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/summarize__variants.log"
+        "assembly/log/summarize__variants.log"
     benchmark:
-        "qcquickie/benchmarks/summarize__variants.benchmark"
+        "assembly/benchmarks/summarize__variants.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_variants.py")
 
