@@ -261,7 +261,7 @@ rule assembly_check__call_variants:
     benchmark:
         "qcquickie/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters &> {log}"
 
 
 rule summarize__variants:
@@ -353,7 +353,7 @@ rule species_check__check_sizes:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         with open(input.species, "r") as species_file:
-            species = species_file.readline.strip()
+            species = species_file.readlines().strip()
             df = pandas.read_table(params.species_db)
             if not df[df["ncbi_species"] == species].empty:
                 with open(output.size_check, "w") as size_check:
