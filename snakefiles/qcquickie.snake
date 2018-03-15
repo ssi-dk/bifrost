@@ -337,6 +337,7 @@ rule species_check__set_species:
                 species_file.write(df["name"].iloc[0] + "\n")
                 with open("temp.yaml", "w") as temp:
                     config_sample["sample"]["species"] = df["name"].iloc[0]
+                    print(config_sample)
                     yaml.dump(config_sample, temp)
                     shell("mv temp.yaml {output.sample_config}")
 
