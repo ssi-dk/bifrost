@@ -324,19 +324,20 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
+        print(os.getcwd())
         with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                with open("temp.yaml", "w") as sample_config:
+                with open("temp.yaml", "w") as temp:
                     config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-                    yaml.dump(config_sample, sample_config)
+                    yaml.dump(config_sample, temp)
                     shell("mv temp.yaml {output.sample_config}")
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
-                with open("temp.yaml", "w") as sample_config:
+                with open("temp.yaml", "w") as temp:
                     config_sample["sample"]["species"] = df["name"].iloc[0]
-                    yaml.dump(config_sample, sample_config)
+                    yaml.dump(config_sample, temp)
                     shell("mv temp.yaml {output.sample_config}")
 
 
