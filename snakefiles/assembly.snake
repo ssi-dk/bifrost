@@ -93,28 +93,28 @@ rule setup__filter_reads_with_bbduk:
             shell("bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}")
 
 
-rule assembly_check__combine_reads_with_bbmerge:
-    message:
-        "Running step: {rule}"
-    input:
-        filtered_reads = "assembly/filtered.fastq"
-    output:
-        merged_reads = "assembly/merged.fastq",
-        unmerged_reads = "assembly/unmerged.fastq"
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        "assembly/log/assembly_check__combine_reads_with_bbmerge.log"
-    benchmark:
-        "assembly/benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark"
-    run:
-        if os.path.isfile("qcquickie/merged.fastq") and os.path.isfile("qcquickie/unmerged.fastq"):
-            shell("ln -s {} {}".format(os.path.realpath("qcquickie/merged.fastq"), output.merged_reads))
-            shell("ln -s {} {}".format(os.path.realpath("qcquickie/unmerged.fastq"), output.unmerged_reads))
-        else:
-            shell("bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}")
+# rule assembly_check__combine_reads_with_bbmerge:
+#     message:
+#         "Running step: {rule}"
+#     input:
+#         filtered_reads = "assembly/filtered.fastq"
+#     output:
+#         merged_reads = "assembly/merged.fastq",
+#         unmerged_reads = "assembly/unmerged.fastq"
+#     threads:
+#         global_threads
+#     resources:
+#         memory_in_GB = global_memory_in_GB
+#     log:
+#         "assembly/log/assembly_check__combine_reads_with_bbmerge.log"
+#     benchmark:
+#         "assembly/benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark"
+#     run:
+#         if os.path.isfile("qcquickie/merged.fastq") and os.path.isfile("qcquickie/unmerged.fastq"):
+#             shell("ln -s {} {}".format(os.path.realpath("qcquickie/merged.fastq"), output.merged_reads))
+#             shell("ln -s {} {}".format(os.path.realpath("qcquickie/unmerged.fastq"), output.unmerged_reads))
+#         else:
+#             shell("bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}")
 
 
 # rule assembly__spades:
@@ -217,6 +217,26 @@ rule post_assembly__pileup:
         "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
 
 
+rule summarize__depth:
+    message:
+        "Running step: {rule}"
+    input:
+        coverage = "qcquickie/contigs.cov"
+    output:
+        contig_depth_yaml = "qcquickie/contigs.sum.cov",
+        binned_depth_yaml = "qcquickie/contigs.bin.cov"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "qcquickie/log/summarize__bin_coverage.log"
+    benchmark:
+        "qcquickie/benchmarks/summarize__bin_coverage.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
+
+
 rule post_assembly__call_variants:
     message:
         "Running step: {rule}"
@@ -234,9 +254,27 @@ rule post_assembly__call_variants:
     benchmark:
         "assembly/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 rarity=0.0 clearfilters"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters"
 
-#filtervcf.sh or some other summary file
+
+rule summarize__variants:
+    message:
+        "Running step: {rule}"
+    input:
+        variants = "qcquickie/contigs.vcf",
+    output:
+        variants_yaml = "qcquickie/contigs.variants",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "qcquickie/log/summarize__variants.log"
+    benchmark:
+        "qcquickie/benchmarks/summarize__variants.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_variants.py")
+
 
 rule post_assembly__annotate:
     message:

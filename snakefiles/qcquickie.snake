@@ -259,7 +259,7 @@ rule assembly_check__call_variants:
     benchmark:
         "qcquickie/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 rarity=0.0 clearfilters"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters"
 
 
 rule summarize__variants:
