@@ -20,7 +20,7 @@ yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 
 fh = open(sample, "r")
-config_sample = yaml.load(yaml_stream)
+config_sample = yaml.load(fh)
 fh.close
 
 # my understanding is all helps specify final output
