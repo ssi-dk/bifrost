@@ -311,8 +311,8 @@ rule species_check__set_species:
     input:
         bracken = "qcquickie/bracken.txt",
     output:
-        species = "qcquickie/species.txt"
-        sample_config = sample
+        species = "qcquickie/species.txt",
+        sample_config = sample,
     threads:
         global_threads
     resources:
