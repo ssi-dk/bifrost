@@ -312,6 +312,7 @@ rule species_check__set_species:
         bracken = "qcquickie/bracken.txt",
     output:
         species = "qcquickie/species.txt"
+        sample_config = sample
     threads:
         global_threads
     resources:
@@ -324,16 +325,15 @@ rule species_check__set_species:
         with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                with open(sample, "w+") as output_file:
+                with open(output.sample_config, "w+") as output_file:
                     config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
                     yaml.dump(config_sample, output_file)
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
-                sample = "new.yaml"
-                with open(sample, "w+") as output_file:
+                with open(output.sample_config, "w+") as output_file:
                     config_sample["sample"]["species"] = df["name"].iloc[0]
-                    yaml.dump(config_sample, output_file)
+                    yaml.dump(config_sample, output.sample_config)
                     print(sample, config_sample)
 
 
