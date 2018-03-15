@@ -38,7 +38,6 @@ rule all:
         os.path.join(folder_name, "ariba_resfinder_report.tsv"),
         os.path.join(folder_name, "ariba_plasmidfinder_report.tsv"),
         os.path.join(folder_name, "ariba_mlst_report.tsv"),
-        os.path.join(folder_name, "species.cmd")
 
 
 rule setup:
@@ -46,16 +45,6 @@ rule setup:
         dir = folder_name
     shell:
         "mkdir {output}"
-
-
-rule check_species_processes_to_run:
-    input:
-        dir = folder_name
-    output:
-        species = os.path.join(folder_name, "species.cmd")
-    run:
-        with open(output.species, "w") as output:
-            output.write(config_sample["sample"]["species"] + "\n")
 
 
 rule ariba__resfinder:
