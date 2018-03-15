@@ -17,7 +17,10 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
 
 run_folder = str(config["run_folder"])
-sample_sheet = str(config["sample_sheet"])
+if "sample_sheet" in config:
+    sample_sheet = str(config["sample_sheet"])
+else:
+    sample_sheet = ""
 partition = str(config["partition"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
