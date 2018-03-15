@@ -313,7 +313,6 @@ rule species_check__set_species:
         bracken = "qcquickie/bracken.txt",
     output:
         species = "qcquickie/species.txt",
-        sample_config = sample,
     threads:
         global_threads
     resources:
@@ -323,25 +322,15 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        print(os.getcwd())
         with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                with open("temp.yaml", "w") as temp:
-                    config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-                    yaml.dump(config_sample, temp)
-                    # shell("mv temp.yaml {output.sample_config}")
+                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
             else:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
-                with open("temp.yaml", "w") as temp:
-                    config_sample["sample"]["species"] = df["name"].iloc[0]
-                    print(config_sample)
-                    yaml.dump(config_sample, temp)
-                    # shell("mv temp.yaml {output.sample_config}")
-                with open(sample, "w") as output_file:
-                    output_file.write("test\n")
-                    print("test")
+                config_sample["sample"]["species"] = df["name"].iloc[0]
+
 
 
 rule species_check__check_sizes:
