@@ -97,6 +97,6 @@ rule ariba__mlst:
     run:
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
-                species = species_file.readlines().strip().replace(" ","_")
+                species = species_file.read().strip().replace(" ","_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/"+species+"/ref_db"):
                     shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
