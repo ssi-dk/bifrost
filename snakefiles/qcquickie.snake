@@ -327,8 +327,6 @@ rule species_check__set_species:
         with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
-
-                    yaml.dump(config_sample, output_file)
                 with open("temp.yaml", "w") as temp:
                     config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
                     yaml.dump(config_sample, temp)
