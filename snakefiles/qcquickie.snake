@@ -26,6 +26,7 @@ with open(sample, "r") as sample_yaml:
 onsuccess:
     print("Workflow complete")
     config_sample["sample"]["status"] = "qcquickie_completed_successfully"
+    print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
     shell("rm qcquickie/*.fastq")
