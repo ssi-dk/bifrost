@@ -324,7 +324,7 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open("output.species", "w") as species_file:
+        with open(output.species, "w") as species_file:
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
                 with open("temp.yaml", "w") as sample_config:
