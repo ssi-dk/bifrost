@@ -106,7 +106,8 @@ rule ariba__mlst:
     log:
         os.path.join(folder_name, "ariba__mlst.log")
     run:
-        if "species" in config_sample["sample"] and os.path.isdir("/srv/data/DB/ariba/mlst/"+config_sample["species"].replace(" ","_")+"/ref_db/"):
-            shell("ariba run /srv/data/DB/ariba/mlst/+""+/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
-        else:
-            shell("touch {output.mlst_report}")
+        if os.path.isfile("species.txt"):
+            with open("species.txt", "r") as species_file:
+                species = species_file.readlines().strip().replace(" ","_")
+                if os.path.isdir("/srv/data/DB/ariba/mlst/"+species+"/ref_db"):
+                    shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
