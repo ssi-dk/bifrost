@@ -341,6 +341,7 @@ rule species_check__set_species:
                     shell("mv temp.yaml {output.sample_config}")
                 with open(sample, "w") as output_file:
                     output_file.write("test\n")
+                    print("test")
 
 
 rule species_check__check_sizes:
