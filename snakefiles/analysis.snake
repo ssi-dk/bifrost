@@ -105,8 +105,8 @@ rule ariba__mlst:
         mlst_report = os.path.join(folder_name, "ariba_mlst_report.tsv")
     log:
         os.path.join(folder_name, "ariba__mlst.log")
-    shell:
-        """
-        ariba run /srv/data/DB/ariba/mlst/Staphylococcus_aureus/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}
-        mv {output.mlst}/mlst_report.tsv {output.mlst_report}
-        """
+    run:
+        if "species" in config_sample["sample"] and os.path.isdir("/srv/data/DB/ariba/mlst/"+config_sample["species"].replace(" ","_")+"/ref_db/"):
+            shell("ariba run /srv/data/DB/ariba/mlst/+""+/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
+        else:
+            shell("touch {output.mlst_report}")
