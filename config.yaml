@@ -1,7 +1,7 @@
 global:
   #in Gb
   memory: &memory 10
-  threads: &threads 4
+  threads: &threads 3
 
 serum:
   samplesheet_column_mapping:
