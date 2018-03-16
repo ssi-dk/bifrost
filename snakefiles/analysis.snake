@@ -54,6 +54,7 @@ rule ariba__resfinder:
         reads = (R1, R2)
     output:
         "analysis/ariba_resfinder",
+        "analysis/ariba_resfinder/report.tsv",
         "analysis/ariba_resfinder_report.tsv",
     threads:
         global_threads
@@ -78,6 +79,7 @@ rule ariba__plasmidfinder:
         reads = (R1, R2)
     output:
         "analysis/ariba_plasmidfinder",
+        "analysis/ariba_plasmidfinder/report.tsv",
         "analysis/ariba_plasmidfinder_report.tsv",
     threads:
         global_threads
@@ -102,6 +104,7 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         "analysis/ariba_mlst",
+        "analysis/ariba_mlst/report.tsv",
         "analysis/ariba_mlst_report.tsv",
     threads:
         global_threads
