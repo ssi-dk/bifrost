@@ -201,7 +201,7 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
     benchmark:
         "qcquickie/benchmarks/assembly_check__map_reads_to_assembly_with_bbmap.benchmark"
     shell:
-        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} &> {log}"
+        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random &> {log}"
 
 
 rule assembly_check__pileup_on_mapped_reads:
