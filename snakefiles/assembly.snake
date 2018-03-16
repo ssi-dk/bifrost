@@ -253,7 +253,7 @@ rule post_assembly__call_variants:
     benchmark:
         "assembly/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters &> {log}"
 
 
 rule summarize__variants:
@@ -291,4 +291,4 @@ rule post_assembly__annotate:
     benchmark:
         "assembly/benchmarks/post_assembly__annotate.benchmark"
     shell:
-        "prokka --centre XXX --compliant --outdir {output.prokka} {input.contigs} &> {log}"
+        "prokka --cpus {threads} --centre XXX --compliant --outdir {output.prokka} {input.contigs} &> {log}"
