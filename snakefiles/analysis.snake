@@ -41,7 +41,7 @@ rule all:
 
 rule setup:
     output:
-        dir = folder_name
+        dir = "analysis"
     shell:
         "mkdir {output}"
 
@@ -50,7 +50,7 @@ rule ariba__resfinder:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
+        dir = "analysis",
         reads = (R1, R2)
     output:
         resfinder = os.path.join(folder_name, "ariba_resfinder"),
