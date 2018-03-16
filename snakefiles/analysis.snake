@@ -98,7 +98,7 @@ rule ariba__mlst:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
+        dir = "analysis",
         reads = (R1, R2)
     output:
         "analysis/ariba_mlst",
