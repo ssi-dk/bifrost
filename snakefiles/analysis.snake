@@ -53,9 +53,8 @@ rule ariba__resfinder:
         dir = "analysis",
         reads = (R1, R2)
     output:
-        "analysis/ariba_resfinder",
-        "analysis/ariba_resfinder/report.tsv",
-        "analysis/ariba_resfinder_report.tsv",
+        folder = "analysis/ariba_resfinder",
+        report = "analysis/ariba_resfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -66,8 +65,8 @@ rule ariba__resfinder:
         "qcquickie/benchmarks/ariba__resfinder.benchmark"
     shell:
         """
-        ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}
-        mv {output.resfinder}/report.tsv {output.resfinder_report}
+        ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
+        mv {output.folder}/report.tsv {output.report}
         """
 
 
@@ -78,9 +77,8 @@ rule ariba__plasmidfinder:
         dir = "analysis",
         reads = (R1, R2)
     output:
-        "analysis/ariba_plasmidfinder",
-        "analysis/ariba_plasmidfinder/report.tsv",
-        "analysis/ariba_plasmidfinder_report.tsv",
+        folder = "analysis/ariba_plasmidfinder",
+        report = "analysis/ariba_plasmidfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -91,8 +89,8 @@ rule ariba__plasmidfinder:
         "qcquickie/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
         """
-        ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}
-        mv {output.plasmidfinder}/report.tsv {output.plasmidfinder_report}
+        ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
+        mv {output.folder}/report.tsv {output.report}
         """
 
 
@@ -103,9 +101,8 @@ rule ariba__mlst:
         dir = "analysis",
         reads = (R1, R2)
     output:
-        "analysis/ariba_mlst",
-        "analysis/ariba_mlst/report.tsv",
-        "analysis/ariba_mlst_report.tsv",
+        folder = "analysis/ariba_mlst",
+        report = "analysis/ariba_mlst_report.tsv",
     threads:
         global_threads
     resources:
@@ -119,5 +116,5 @@ rule ariba__mlst:
             with open("species.txt", "r") as species_file:
                 species = species_file.read().strip().replace(" ","_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/"+species+"/ref_db"):
-                    shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
-                    shell("mv {output.mlst}/report.tsv {output.mlst_report}")
+                    shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}")
+                    shell("mv {output.folder}/report.tsv {output.report}")
