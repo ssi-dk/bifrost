@@ -1,25 +1,23 @@
 import re
 import pandas
-import ruamel.yaml
-
-import pkg_resources
+from ruamel.yaml import YAML
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../"))
 
-import scripts.serum as serum
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
 R1 = config["R1_reads"],
 R2 = config["R2_reads"],
+global_threads = config["global"]["threads"]
+global_memory_in_GB = config["global"]["memory"]
 
-yaml = ruamel.yaml.YAML(typ='safe')
+yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 
-folder_name = "analysis"
+
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -32,12 +30,13 @@ onerror:
     with open(output[0], "w") as status:
         status.write("Failure\n")
 
+
 rule all:
     input:
-        folder_name,
-        os.path.join(folder_name, "ariba_resfinder_report.tsv"),
-        os.path.join(folder_name, "ariba_plasmidfinder_report.tsv"),
-        os.path.join(folder_name, "ariba_mlst_report.tsv"),
+        "analysis",
+        "analysis/ariba_mlst_report.tsv",
+        "analysis/ariba_resfinder_report.tsv",
+        "analysis/ariba_plasmidfinder_report.tsv"
 
 
 rule setup:
@@ -56,8 +55,14 @@ rule ariba__resfinder:
     output:
         resfinder = os.path.join(folder_name, "ariba_resfinder"),
         resfinder_report = os.path.join(folder_name, "ariba_resfinder_report.tsv")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "ariba__resfinder.log")
+        "qcquickie/log/ariba__resfinder.log"
+    benchmark:
+        "qcquickie/benchmarks/ariba__resfinder.benchmark"
     shell:
         """
         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.resfinder} --noclean &> {log}
@@ -74,8 +79,14 @@ rule ariba__plasmidfinder:
     output:
         plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder"),
         plasmidfinder_report = os.path.join(folder_name, "ariba_plasmidfinder_report.tsv")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "ariba__plasmidfinder.log")
+        "qcquickie/log/ariba__plasmidfinder.log"
+    benchmark:
+        "qcquickie/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
         """
         ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.plasmidfinder} --noclean &> {log}
@@ -92,11 +103,18 @@ rule ariba__mlst:
     output:
         mlst = os.path.join(folder_name, "ariba_mlst"),
         mlst_report = os.path.join(folder_name, "ariba_mlst_report.tsv")
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
     log:
-        os.path.join(folder_name, "ariba__mlst.log")
+        "qcquickie/log/ariba__mlst.log"
+    benchmark:
+        "qcquickie/benchmarks/ariba__mlst.benchmark"
     run:
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
                 species = species_file.read().strip().replace(" ","_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/"+species+"/ref_db"):
                     shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.mlst} --noclean &> {log}")
+                    shell("mv {output.mlst}/report.tsv {output.mlst_report}")
