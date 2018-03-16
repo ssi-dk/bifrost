@@ -53,8 +53,8 @@ rule ariba__resfinder:
         dir = "analysis",
         reads = (R1, R2)
     output:
-        resfinder = os.path.join(folder_name, "ariba_resfinder"),
-        resfinder_report = os.path.join(folder_name, "ariba_resfinder_report.tsv")
+        "analysis/ariba_resfinder",
+        "analysis/ariba_resfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -74,11 +74,11 @@ rule ariba__plasmidfinder:
     message:
         "Running step: {rule}"
     input:
-        dir = folder_name,
+        dir = "analysis",
         reads = (R1, R2)
     output:
-        plasmidfinder = os.path.join(folder_name, "ariba_plasmidfinder"),
-        plasmidfinder_report = os.path.join(folder_name, "ariba_plasmidfinder_report.tsv")
+        "analysis/ariba_plasmidfinder",
+        "analysis/ariba_plasmidfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -101,8 +101,8 @@ rule ariba__mlst:
         dir = folder_name,
         reads = (R1, R2)
     output:
-        mlst = os.path.join(folder_name, "ariba_mlst"),
-        mlst_report = os.path.join(folder_name, "ariba_mlst_report.tsv")
+        "analysis/ariba_mlst",
+        "analysis/ariba_mlst_report.tsv",
     threads:
         global_threads
     resources:
