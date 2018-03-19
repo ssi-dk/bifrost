@@ -59,9 +59,9 @@ rule ariba__resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/ariba__resfinder.log"
+        "analysis/log/ariba__resfinder.log"
     benchmark:
-        "qcquickie/benchmarks/ariba__resfinder.benchmark"
+        "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
         """
         ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
@@ -83,9 +83,9 @@ rule ariba__plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/ariba__plasmidfinder.log"
+        "analysis/log/ariba__plasmidfinder.log"
     benchmark:
-        "qcquickie/benchmarks/ariba__plasmidfinder.benchmark"
+        "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
         """
         ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
@@ -106,9 +106,9 @@ rule ariba__mlst:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/ariba__mlst.log"
+        "analysis/log/ariba__mlst.log"
     benchmark:
-        "qcquickie/benchmarks/ariba__mlst.benchmark"
+        "analysis/benchmarks/ariba__mlst.benchmark"
     run:
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
