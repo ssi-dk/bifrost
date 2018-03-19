@@ -34,8 +34,8 @@ onerror:
 rule all:
     input:
         "analysis/ariba_mlst",
-        "analysis/ariba_resfinder_report.tsv",
-        "analysis/ariba_plasmidfinder_report.tsv"
+        "analysis/ariba_resfinder",
+        "analysis/ariba_plasmidfinder"
 
 
 rule setup:
@@ -53,7 +53,6 @@ rule ariba__resfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_resfinder",
-        report = "analysis/ariba_resfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -63,10 +62,7 @@ rule ariba__resfinder:
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        """
-        ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
-        mv {output.folder}/report.tsv {output.report}
-        """
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
 
 
 rule ariba__plasmidfinder:
@@ -77,7 +73,6 @@ rule ariba__plasmidfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_plasmidfinder",
-        report = "analysis/ariba_plasmidfinder_report.tsv",
     threads:
         global_threads
     resources:
@@ -87,10 +82,7 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        """
-        ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}
-        mv {output.folder}/report.tsv {output.report}
-        """
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
 
 
 rule ariba__mlst:
