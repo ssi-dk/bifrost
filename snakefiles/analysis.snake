@@ -31,6 +31,9 @@ onerror:
         status.write("Failure\n")
 
 
+ruleorder: setup > ariba__mlst > ariba__resfinder > ariba__plasmidfinder
+
+
 rule all:
     input:
         "analysis/ariba_mlst",
