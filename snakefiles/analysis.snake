@@ -33,8 +33,7 @@ onerror:
 
 rule all:
     input:
-        "analysis",
-        "analysis/ariba_mlst_report.tsv",
+        "analysis/ariba_mlst",
         "analysis/ariba_resfinder_report.tsv",
         "analysis/ariba_plasmidfinder_report.tsv"
 
@@ -102,7 +101,6 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_mlst",
-        report = "analysis/ariba_mlst_report.tsv",
     threads:
         global_threads
     resources:
@@ -114,7 +112,6 @@ rule ariba__mlst:
     run:
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
-                species = species_file.read().strip().replace(" ","_")
-                if os.path.isdir("/srv/data/DB/ariba/mlst/"+species+"/ref_db"):
-                    shell("ariba run /srv/data/DB/ariba/mlst/"+species+"/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}")
-                    shell("mv {output.folder}/report.tsv {output.report}")
+                species = species_file.read().strip().replace(" ", "_")
+                if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
+                    shell("ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}")
