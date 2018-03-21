@@ -43,7 +43,7 @@ rule all:
 
 rule setup:
     output:
-        dir = "analysis"
+        folder = "analysis"
     shell:
         "mkdir {output}"
 
@@ -52,7 +52,7 @@ rule ariba__resfinder:
     message:
         "Running step: {rule}"
     input:
-        dir = "analysis",
+        folder = "analysis",
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_resfinder",
@@ -68,11 +68,33 @@ rule ariba__resfinder:
         "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
 
 
+rule abricate_on_ariba_resfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        folder = "analysis/ariba_resfinder"
+    output:
+        folder = "analysis/abricate_on_resfinder_from_ariba.tsv",
+    params:
+        database = "/srv/data/DB/abricate/"
+        db_name = "resfinder_db"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "analysis/log/ariba__resfinder.log"
+    benchmark:
+        "analysis/benchmarks/ariba__resfinder.benchmark"
+    shell:
+        "abricate --datadir {params.database} --db {params.db_name} analysis/resfinder/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
+
+
 rule ariba__plasmidfinder:
     message:
         "Running step: {rule}"
     input:
-        dir = "analysis",
+        folder = "analysis",
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_plasmidfinder",
@@ -92,7 +114,7 @@ rule ariba__mlst:
     message:
         "Running step: {rule}"
     input:
-        dir = "analysis",
+        folder = "analysis",
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_mlst",
