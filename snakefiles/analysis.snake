@@ -72,12 +72,12 @@ rule abricate_on_ariba_resfinder:
     message:
         "Running step: {rule}"
     input:
-        folder = "analysis/ariba_resfinder"
+        folder = "analysis/ariba_resfinder",
     output:
         folder = "analysis/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = "/srv/data/DB/abricate/",
-        db_name = "resfinder_db"
+        db_name = "resfinder_db",
     threads:
         global_threads
     resources:
