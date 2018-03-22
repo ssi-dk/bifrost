@@ -83,9 +83,9 @@ rule abricate_on_ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "analysis/log/ariba__resfinder.log"
+        "analysis/log/abricate_on_ariba_resfinder.log"
     benchmark:
-        "analysis/benchmarks/ariba__resfinder.benchmark"
+        "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     shell:
         "abricate --datadir {params.database} --db {params.db_name} analysis/resfinder/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
 
