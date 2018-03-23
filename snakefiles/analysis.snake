@@ -88,10 +88,12 @@ rule check__ariba_resfinder:
         with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
             lines = "".join(ariba_log.readlines())
             if("WARNING: no reads mapped to reference genes" in lines):
+                print("bye", lines)
                 shell("touch {input.folder}/assemblies.fa.gz")
                 shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
                 shell("touch {output.check_file}")
             else:
+                print("bye2", lines)
                 shell("touch {input.folder}/assemblies.fa.gz")
                 shell("touch {output.check_file}")
 
