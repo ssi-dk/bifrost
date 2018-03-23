@@ -86,7 +86,7 @@ rule check__ariba_resfinder:
         "analysis/benchmarks/check__ariba_resfinder.benchmark"
     run:
         with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
-            lines = ariba_log.readlines()
+            lines = "".join(ariba_log.readlines())
             if("WARNING: no reads mapped to reference genes" in lines):
                 print("touch analysis/abricate_on_resfinder_from_ariba.tsv")
                 shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
@@ -158,8 +158,8 @@ rule check__ariba_plasmidfinder:
         "analysis/benchmarks/check__ariba_plasmidfinder.benchmark"
     run:
         with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
-            lines = ariba_log.readlines()
-            print(lines)
+            lines = "".join(ariba_log.readlines())
+            print(lines[0])
             if("WARNING: no reads mapped to reference genes" in lines):
                 print("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
                 shell("touch {output.check_file}")
