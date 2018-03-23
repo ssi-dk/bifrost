@@ -56,6 +56,7 @@ rule ariba__resfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_resfinder",
+        contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
     threads:
         global_threads
     resources:
@@ -72,7 +73,7 @@ rule abricate_on_ariba_resfinder:
     message:
         "Running step: {rule}"
     input:
-        folder = "analysis/ariba_resfinder",
+        contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
     output:
         report = "analysis/abricate_on_resfinder_from_ariba.tsv",
     params:
@@ -87,7 +88,7 @@ rule abricate_on_ariba_resfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     shell:
-        "abricate --datadir {params.database} --db {params.db_name} {input.folder} > {output.report} &> {log}"
+        "abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}"
 
 
 rule ariba__plasmidfinder:
@@ -98,6 +99,7 @@ rule ariba__plasmidfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_plasmidfinder",
+        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz",
     threads:
         global_threads
     resources:
@@ -114,7 +116,7 @@ rule abricate_on_ariba_plasmidfinder:
     message:
         "Running step: {rule}"
     input:
-        folder = "analysis/ariba_plasmidfinder",
+        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz",
     output:
         report = "analysis/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
@@ -129,7 +131,7 @@ rule abricate_on_ariba_plasmidfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     shell:
-        "abricate --datadir {params.database} --db {params.db_name} {input.folder} > {output.report} &> {log}"
+        "abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}"
 
 
 rule ariba__mlst:
@@ -140,6 +142,7 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_mlst",
+        report = "analysis/ariba_mlst/mlst_report.tsv",
     threads:
         global_threads
     resources:
