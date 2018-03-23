@@ -72,10 +72,10 @@ rule check__ariba_resfinder:
     message:
         "Running step: {rule}"
     input:
-        folder = "analysis/ariba_resfinder"
+        folder = "analysis/ariba_resfinder",
     output:
-        check_file = "analysis/ariba_resfinder/check.txt"
-        contigs = "analysis/ariba_resfinder/assemblies.fa.gz"
+        check_file = "analysis/ariba_resfinder/check.txt",
+        contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
     threads:
         global_threads
     resources:
@@ -140,7 +140,7 @@ rule check__ariba_plasmidfinder:
     input:
         folder = "analysis/ariba_plasmidfinder"
     output:
-        check_file = "analysis/ariba_plasmidfinder/check.txt"
+        check_file = "analysis/ariba_plasmidfinder/check.txt",
         contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
     threads:
         global_threads
