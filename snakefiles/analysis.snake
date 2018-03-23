@@ -37,7 +37,7 @@ ruleorder: setup > ariba__mlst > ariba__resfinder > check__ariba_resfinder > abr
 rule all:
     input:
         "analysis/ariba_mlst",
-        "analysis/abricate_on_resfinder_from_ariba.tsv",
+        # "analysis/abricate_on_resfinder_from_ariba.tsv",
         "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
 
