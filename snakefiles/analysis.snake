@@ -111,8 +111,9 @@ rule abricate_on_ariba_resfinder:
         "analysis/log/abricate_on_ariba_resfinder.log"
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
-    shell:
-        "abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}"
+    run:
+        if not os.path.isfile(output.report):
+            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
 rule ariba__plasmidfinder:
@@ -178,8 +179,9 @@ rule abricate_on_ariba_plasmidfinder:
         "analysis/log/abricate_on_ariba_plasmidfinder.log"
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
-    shell:
-        "abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}"
+    run:
+        if not os.path.isfile(output.report):
+            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
 rule ariba__mlst:
