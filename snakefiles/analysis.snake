@@ -31,7 +31,7 @@ onerror:
         status.write("Failure\n")
 
 
-ruleorder: setup > ariba__mlst > ariba__resfinder > check__ariba_resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > check__ariba_plasmidfinder > abricate_on_ariba_plasmidfinder
+ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
 
 
 rule all:
@@ -68,39 +68,11 @@ rule ariba__resfinder:
         "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
 
 
-rule check__ariba_resfinder:
-    message:
-        "Running step: {rule}"
-    input:
-        folder = "analysis/ariba_resfinder"
-    output:
-        check_file = "analysis/ariba_resfinder/check.txt",
-        contigs = "analysis/ariba_resfinder/assemblies.fa.gz"
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        "analysis/log/check__ariba_resfinder.log"
-    benchmark:
-        "analysis/benchmarks/check__ariba_resfinder.benchmark"
-    run:
-        with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
-            lines = "".join(ariba_log.readlines())
-            if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch {input.folder}/assemblies.fa.gz")
-                shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
-                shell("touch {output.check_file}")
-            else:
-                shell("touch {input.folder}/assemblies.fa.gz")
-                shell("touch {output.check_file}")
-
-
 rule abricate_on_ariba_resfinder:
     message:
         "Running step: {rule}"
     input:
-        contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
+        contigs = "analysis/ariba_resfinder",
     output:
         report = "analysis/abricate_on_resfinder_from_ariba.tsv",
     params:
@@ -115,10 +87,12 @@ rule abricate_on_ariba_resfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     run:
-        print("bye")
-        if not os.path.isfile(output.report):
-            print("bye2")
-            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
+        with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
+            lines = "".join(ariba_log.readlines())
+            if("WARNING: no reads mapped to reference genes" in lines):
+                shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
+            else:
+                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
 rule ariba__plasmidfinder:
@@ -141,39 +115,11 @@ rule ariba__plasmidfinder:
         "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
 
 
-rule check__ariba_plasmidfinder:
-    message:
-        "Running step: {rule}"
-    input:
-        folder = "analysis/ariba_plasmidfinder"
-    output:
-        check_file = "analysis/ariba_plasmidfinder/check.txt",
-        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        "analysis/log/check__ariba_plasmidfinder.log"
-    benchmark:
-        "analysis/benchmarks/check__ariba_plasmidfinder.benchmark"
-    run:
-        with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
-            lines = "".join(ariba_log.readlines())
-            if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch {input.folder}/assemblies.fa.gz")
-                shell("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
-                shell("touch {output.check_file}")
-            else:
-                shell("touch {input.folder}/assemblies.fa.gz")
-                shell("touch {output.check_file}")
-
-
 rule abricate_on_ariba_plasmidfinder:
     message:
         "Running step: {rule}"
     input:
-        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz",
+        contigs = "analysis/ariba_plasmidfinder",
     output:
         report = "analysis/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
@@ -188,10 +134,12 @@ rule abricate_on_ariba_plasmidfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     run:
-        print("hi")
-        if not os.path.isfile(output.report):
-            print("hi2")
-            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
+        with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
+            lines = "".join(ariba_log.readlines())
+            if("WARNING: no reads mapped to reference genes" in lines):
+                shell("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
+            else:
+                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
 rule ariba__mlst:
