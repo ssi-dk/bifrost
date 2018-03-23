@@ -159,10 +159,12 @@ rule check__ariba_plasmidfinder:
         with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
             lines = "".join(ariba_log.readlines())
             if("WARNING: no reads mapped to reference genes" in lines):
+                print("hi", lines)
                 shell("touch {input.folder}/assemblies.fa.gz")
                 shell("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
                 shell("touch {output.check_file}")
             else:
+                print("hi2", lines)
                 shell("touch {input.folder}/assemblies.fa.gz")
                 shell("touch {output.check_file}")
 
