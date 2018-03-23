@@ -37,7 +37,7 @@ ruleorder: setup > ariba__mlst > ariba__resfinder > check__ariba_resfinder > abr
 rule all:
     input:
         "analysis/ariba_mlst",
-        # "analysis/abricate_on_resfinder_from_ariba.tsv",
+        "analysis/abricate_on_resfinder_from_ariba.tsv",
         "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
 
@@ -115,7 +115,9 @@ rule abricate_on_ariba_resfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     run:
+        print("bye")
         if not os.path.isfile(output.report):
+            print("bye2")
             shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
@@ -186,7 +188,9 @@ rule abricate_on_ariba_plasmidfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     run:
+        print("hi")
         if not os.path.isfile(output.report):
+            print("hi2")
             shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
 
 
