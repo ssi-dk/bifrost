@@ -31,7 +31,7 @@ onerror:
         status.write("Failure\n")
 
 
-# ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
+ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > check__ariba_resfinder > ariba__plasmidfinder > check__ariba_plasmidfinder > abricate_on_ariba_plasmidfinder
 
 
 rule all:
@@ -85,12 +85,16 @@ rule check__ariba_resfinder:
     benchmark:
         "analysis/benchmarks/check__ariba_resfinder.benchmark"
     run:
-        if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
-            shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
-            shell("touch {output.check_file}")
-        else:
-            shell("touch {input.folder}/assemblies.fa.gz")
-            shell("touch {output.check_file}")
+        with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
+            lines = ariba_log.readlines()
+            if("WARNING: no reads mapped to reference genes" in lines):
+                print("touch analysis/abricate_on_resfinder_from_ariba.tsv")
+                shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
+                shell("touch {output.check_file}")
+            else:
+                print("touch {input.folder}/assemblies.fa.gz")
+                shell("touch {input.folder}/assemblies.fa.gz")
+                shell("touch {output.check_file}")
 
 
 rule abricate_on_ariba_resfinder:
