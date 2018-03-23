@@ -31,7 +31,7 @@ onerror:
         status.write("Failure\n")
 
 
-ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
+# ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
 
 
 rule all:
@@ -55,7 +55,7 @@ rule ariba__resfinder:
         folder = "analysis",
         reads = (R1, R2)
     output:
-        contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
+        folder = "analysis/ariba_resfinder",
     threads:
         global_threads
     resources:
@@ -65,7 +65,31 @@ rule ariba__resfinder:
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_resfinder --tmp_dir /scratch &> {log}"
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+
+
+rule check__ariba_resfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        folder = "analysis/ariba_resfinder"
+    output:
+        check_file = "analysis/ariba_resfinder/check.txt"
+        contigs = "analysis/ariba_resfinder/assemblies.fa.gz"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "analysis/log/check__ariba_resfinder.log"
+    benchmark:
+        "analysis/benchmarks/check__ariba_resfinder.benchmark"
+    run:
+        if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
+            shell("touch {output.check_file}")
+        else:
+            shell("touch {input.folder}/assemblies.fa.gz")
+            shell("touch {output.check_file}")
 
 
 rule abricate_on_ariba_resfinder:
@@ -97,7 +121,7 @@ rule ariba__plasmidfinder:
         folder = "analysis",
         reads = (R1, R2)
     output:
-        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz",
+        folder = "analysis/ariba_plasmidfinder",
     threads:
         global_threads
     resources:
@@ -107,7 +131,31 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmidfinder --tmp_dir /scratch &> {log}"
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+
+
+rule check__ariba_plasmidfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        folder = "analysis/ariba_plasmidfinder"
+    output:
+        check_file = "analysis/ariba_plasmidfinder/check.txt"
+        contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "analysis/log/check__ariba_plasmidfinder.log"
+    benchmark:
+        "analysis/benchmarks/check__ariba_plasmidfinder.benchmark"
+    run:
+        if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
+            shell("touch {output.check_file}")
+        else:
+            shell("touch {input.folder}/assemblies.fa.gz")
+            shell("touch {output.check_file}")
 
 
 rule abricate_on_ariba_plasmidfinder:
