@@ -31,14 +31,14 @@ onerror:
         status.write("Failure\n")
 
 
-ruleorder: setup > ariba__mlst > ariba__resfinder > ariba__plasmidfinder
+ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
 
 
 rule all:
     input:
         "analysis/ariba_mlst",
-        "analysis/ariba_resfinder",
-        "analysis/ariba_plasmidfinder"
+        "analysis/abricate_on_resfinder_from_ariba.tsv",
+        "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
 
 rule setup:
@@ -65,7 +65,7 @@ rule ariba__resfinder:
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
 
 
 rule abricate_on_ariba_resfinder:
@@ -74,7 +74,7 @@ rule abricate_on_ariba_resfinder:
     input:
         folder = "analysis/ariba_resfinder",
     output:
-        folder = "analysis/abricate_on_resfinder_from_ariba.tsv",
+        report = "analysis/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = "/srv/data/DB/abricate/",
         db_name = "resfinder_db",
@@ -87,7 +87,7 @@ rule abricate_on_ariba_resfinder:
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     shell:
-        "abricate --datadir {params.database} --db {params.db_name} analysis/resfinder/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
+        "abricate --datadir {params.database} --db {params.db_name} {input.folder} > {output.report} &> {log}"
 
 
 rule ariba__plasmidfinder:
@@ -107,7 +107,29 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}"
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+
+
+rule abricate_on_ariba_plasmidfinder:
+    message:
+        "Running step: {rule}"
+    input:
+        folder = "analysis/ariba_plasmidfinder",
+    output:
+        report = "analysis/abricate_on_plasmidfinder_from_ariba.tsv",
+    params:
+        database = "/srv/data/DB/abricate/",
+        db_name = "plasmidfinder_db",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "analysis/log/abricate_on_ariba_plasmidfinder.log"
+    benchmark:
+        "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
+    shell:
+        "abricate --datadir {params.database} --db {params.db_name} {input.folder} > {output.report} &> {log}"
 
 
 rule ariba__mlst:
@@ -131,4 +153,4 @@ rule ariba__mlst:
             with open("species.txt", "r") as species_file:
                 species = species_file.read().strip().replace(" ", "_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
-                    shell("ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --noclean &> {log}")
+                    shell("ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}")
