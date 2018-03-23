@@ -153,12 +153,14 @@ rule check__ariba_plasmidfinder:
     benchmark:
         "analysis/benchmarks/check__ariba_plasmidfinder.benchmark"
     run:
-        if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
-            print("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
-            shell("touch {output.check_file}")
-        else:
-            shell("touch {input.folder}/assemblies.fa.gz")
-            shell("touch {output.check_file}")
+        with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
+            lines = ariba_log.readlines()
+            if("WARNING: no reads mapped to reference genes" in lines):
+                print("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
+                shell("touch {output.check_file}")
+            else:
+                shell("touch {input.folder}/assemblies.fa.gz")
+                shell("touch {output.check_file}")
 
 
 rule abricate_on_ariba_plasmidfinder:
