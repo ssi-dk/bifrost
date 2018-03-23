@@ -86,7 +86,7 @@ rule check__ariba_resfinder:
         "analysis/benchmarks/check__ariba_resfinder.benchmark"
     run:
         if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
-            print("empty assemblies.fa.gz created")
+            shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
             shell("touch {output.check_file}")
         else:
             shell("touch {input.folder}/assemblies.fa.gz")
@@ -153,7 +153,7 @@ rule check__ariba_plasmidfinder:
         "analysis/benchmarks/check__ariba_plasmidfinder.benchmark"
     run:
         if(os.path.isfile(os.path.join(input.folder, "assemblies.fa.gz"))):
-            print("empty assemblies.fa.gz created")
+            print("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
             shell("touch {output.check_file}")
         else:
             shell("touch {input.folder}/assemblies.fa.gz")
