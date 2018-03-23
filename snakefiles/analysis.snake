@@ -36,7 +36,7 @@ ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder 
 
 rule all:
     input:
-        "analysis/ariba_mlst",
+        "analysis/ariba_mlst/mlst_report.tsv",
         "analysis/abricate_on_resfinder_from_ariba.tsv",
         "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
@@ -55,7 +55,6 @@ rule ariba__resfinder:
         folder = "analysis",
         reads = (R1, R2)
     output:
-        folder = "analysis/ariba_resfinder",
         contigs = "analysis/ariba_resfinder/assemblies.fa.gz",
     threads:
         global_threads
@@ -98,7 +97,6 @@ rule ariba__plasmidfinder:
         folder = "analysis",
         reads = (R1, R2)
     output:
-        folder = "analysis/ariba_plasmidfinder",
         contigs = "analysis/ariba_plasmidfinder/assemblies.fa.gz",
     threads:
         global_threads
@@ -141,7 +139,6 @@ rule ariba__mlst:
         folder = "analysis",
         reads = (R1, R2)
     output:
-        folder = "analysis/ariba_mlst",
         report = "analysis/ariba_mlst/mlst_report.tsv",
     threads:
         global_threads
