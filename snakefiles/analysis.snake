@@ -65,7 +65,7 @@ rule ariba__resfinder:
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} ariba_resfinder --tmp_dir /scratch &> {log}"
 
 
 rule abricate_on_ariba_resfinder:
@@ -107,7 +107,7 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} ariba_plasmidfinder --tmp_dir /scratch &> {log}"
 
 
 rule abricate_on_ariba_plasmidfinder:
