@@ -92,7 +92,7 @@ rule abricate_on_ariba_resfinder:
             if("WARNING: no reads mapped to reference genes" in lines):
                 shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
             else:
-                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
+                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
 
 
 rule ariba__plasmidfinder:
@@ -139,7 +139,7 @@ rule abricate_on_ariba_plasmidfinder:
             if("WARNING: no reads mapped to reference genes" in lines):
                 shell("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
             else:
-                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs} > {output.report} &> {log}")
+                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
 
 
 rule ariba__mlst:
