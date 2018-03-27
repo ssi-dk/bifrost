@@ -2,7 +2,7 @@ import re
 import pandas
 from ruamel.yaml import YAML
 import sys
-
+import gzip
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -90,9 +90,14 @@ rule abricate_on_ariba_resfinder:
         with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
             lines = "".join(ariba_log.readlines())
             if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch analysis/abricate_on_resfinder_from_ariba.tsv")
+                shell("touch {output.report}")
             else:
-                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
+                with gzip.open("{input.contigs}/assemblies.fa.gz", "r") as contigs_file:
+                    contigs = contigs_file.readlines()
+                    if len(lines) == 0:
+                        shell("touch {output.report}")
+                    else:
+                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
 
 
 rule ariba__plasmidfinder:
@@ -137,9 +142,14 @@ rule abricate_on_ariba_plasmidfinder:
         with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
             lines = "".join(ariba_log.readlines())
             if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch analysis/abricate_on_plasmidfinder_from_ariba.tsv")
+                shell("touch {output.report}")
             else:
-                shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
+                with gzip.open("{input.contigs}/assemblies.fa.gz", "r") as contigs_file:
+                    contigs = contigs_file.readlines()
+                    if len(lines) == 0:
+                        shell("touch {output.report}")
+                    else:
+                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
 
 
 rule ariba__mlst:
