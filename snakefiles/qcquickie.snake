@@ -13,7 +13,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 sample = config["Sample"]
 R1 = config["R1_reads"]
 R2 = config["R2_reads"]
-global_threads = config["global"]["threads"] - 1
+global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 
 yaml = YAML(typ='safe')
