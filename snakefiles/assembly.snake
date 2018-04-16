@@ -24,6 +24,10 @@ onsuccess:
     output = ["assembly_status.txt"]
     with open(output[0], "w") as status:
         status.write("Success\n")
+    shell("rm assembly/filtered.fastq")
+    shell("rm assembly/contigs.sam")
+    shell("rm assembly/contigs.cov")
+    shell("rm assembly/contigs.vcf")
 
 onerror:
     print("Workflow error")
