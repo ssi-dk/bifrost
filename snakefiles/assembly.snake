@@ -243,7 +243,7 @@ rule post_assembly__call_variants:
         "Running step: {rule}"
     input:
         contigs = "assembly/contigs.fasta",
-        mapped = "assembly/contigs.pileup",
+        mapped = "assembly/contigs.sam",
     output:
         variants = "assembly/contigs.vcf",
     threads:
