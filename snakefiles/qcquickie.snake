@@ -73,9 +73,9 @@ rule fastqc_on_reads:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/setup__filter_reads_with_bbduk.log"
+        "qcquickie/log/fastqc_on_reads.log"
     benchmark:
-        "qcquickie/benchmarks/setup__filter_reads_with_bbduk.benchmark"
+        "qcquickie/benchmarks/fastqc_on_reads.benchmark"
     shell:
         """
         mkdir qcquickie/fastqc
