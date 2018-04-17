@@ -79,8 +79,8 @@ rule fastqc_on_reads:
     shell:
         """
         mkdir qcquickie/fastqc
-        fastqc --extract -o qcquickie/fastqc -t {threads} {input.reads[0]} {input.reads[1]}
-        cat qcquickie/fastqc/*/fastqc_data.txt {output.fastqc_summary}
+        fastqc --extract -o qcquickie/fastqc -t {threads} {input.reads[0]} {input.reads[1]} &> {log}
+        cat qcquickie/fastqc/*/fastqc_data.txt > {output.fastqc_summary}
         """
 
 rule setup__filter_reads_with_bbduk:
