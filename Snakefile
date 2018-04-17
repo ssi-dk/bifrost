@@ -94,4 +94,4 @@ rule print_run:
     log:
         os.path.join(folder_name, "log/print_run.log")
     run:
-        print(input.samples)
+        print("Found samples: {}".format(input.samples))
