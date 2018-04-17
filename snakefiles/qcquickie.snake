@@ -45,6 +45,7 @@ onerror:
 rule all:
     input:
         "qcquickie",
+        "qcquickie/fastqc_data.txt",
         "qcquickie/contigs.bin.cov",
         "species.txt",
         "qcquickie/contigs.vcf",
@@ -58,6 +59,29 @@ rule setup:
     shell:
         "mkdir {output}"
 
+
+rule fastqc_on_reads:
+    message:
+        "Running step: {rule}"
+    input:
+        dir = "qcquickie",
+        reads = (R1, R2)
+    output:
+        fastqc_summary = "qcquickie/fastqc_data.txt"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "qcquickie/log/setup__filter_reads_with_bbduk.log"
+    benchmark:
+        "qcquickie/benchmarks/setup__filter_reads_with_bbduk.benchmark"
+    shell:
+        """
+        mkdir qcquickie/fastqc
+        fastqc -o qcquickie/fastqc -t {threads} {input.reads[0]} {input.reads[1]}
+        cp qcquickie/fastqc/filtered_fastqc/fastqc_data.txt {output.fastqc_summary}
+        """
 
 rule setup__filter_reads_with_bbduk:
     message:
