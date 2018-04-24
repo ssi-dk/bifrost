@@ -93,9 +93,10 @@ rule abricate_on_ariba_resfinder:
     run:
         file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
         if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
-            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}")
+            command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
-            shell("touch {output.report}")
+            command = "touch {output.report}"
+        shell(command)
 
 rule ariba__plasmidfinder:
     message:
@@ -142,9 +143,10 @@ rule abricate_on_ariba_plasmidfinder:
     run:
         file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
         if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
-            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}")
+            command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
-            shell("touch {output.report}")
+            command = "touch {output.report}"
+        shell(command)
 
 rule ariba__mlst:
     message:
@@ -163,10 +165,10 @@ rule ariba__mlst:
     benchmark:
         "analysis/benchmarks/ariba__mlst.benchmark"
     run:
+        command = "touch {output.folder}"
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
                 species = species_file.read().strip().replace(" ", "_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
-                    shell("ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}")
-                else:
-                    shell("touch {output.folder}")
+                    command = "ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+        shell(command)
