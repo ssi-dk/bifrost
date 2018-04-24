@@ -155,7 +155,7 @@ rule abricate_on_ariba_plasmidfinder:
                     if len(lines) == 0:
                         shell("touch {output.report}")
                     else:
-                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
+                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} > {log.out_file} 2> {log.err_file}")
 
 
 rule ariba__mlst:
