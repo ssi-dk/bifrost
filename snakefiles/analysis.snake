@@ -96,6 +96,7 @@ rule abricate_on_ariba_resfinder:
             command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
             command = "touch {output.report}"
+        print(command)
         shell(command)
 
 rule ariba__plasmidfinder:
@@ -146,6 +147,7 @@ rule abricate_on_ariba_plasmidfinder:
             command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
             command = "touch {output.report}"
+        print(command)
         shell(command)
 
 rule ariba__mlst:
@@ -171,4 +173,5 @@ rule ariba__mlst:
                 species = species_file.read().strip().replace(" ", "_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
                     command = "ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+        print(command)
         shell(command)
