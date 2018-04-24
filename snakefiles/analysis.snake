@@ -60,12 +60,15 @@ rule ariba__resfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/ariba__resfinder.yaml"
     log:
-        "analysis/log/ariba__resfinder.log"
+        out_file = "analysis/log/ariba__resfinder.out.log",
+        err_file = "analysis/log/ariba__resfinder.err.log",
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
 
 rule abricate_on_ariba_resfinder:
