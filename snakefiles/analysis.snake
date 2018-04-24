@@ -170,3 +170,5 @@ rule ariba__mlst:
                 species = species_file.read().strip().replace(" ", "_")
                 if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
                     shell("ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}")
+                else:
+                    shell("touch {output.folder}")
