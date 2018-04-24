@@ -117,7 +117,7 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {output.report} 2> {log.err_file}"
+        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
 
 rule abricate_on_ariba_plasmidfinder:
