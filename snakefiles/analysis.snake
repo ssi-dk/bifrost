@@ -91,7 +91,7 @@ rule abricate_on_ariba_resfinder:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     run:
         file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
-        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
+        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
             command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
             command = "touch {output.report}"
@@ -140,7 +140,7 @@ rule abricate_on_ariba_plasmidfinder:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     run:
         file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
-        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
+        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
             command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
         else:
             command = "touch {output.report}"
