@@ -37,6 +37,7 @@ ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder 
 
 rule all:
     input:
+        "analysis/ariba_mlst"
         "analysis/abricate_on_resfinder_from_ariba.tsv",
         "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
@@ -145,6 +146,7 @@ rule abricate_on_ariba_plasmidfinder:
         else:
             command = "touch {output.report}"
         shell(command)
+
 
 rule ariba__mlst:
     message:
