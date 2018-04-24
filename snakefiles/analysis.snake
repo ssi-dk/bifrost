@@ -86,7 +86,6 @@ rule abricate_on_ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = "analysis/log/abricate_on_ariba_plasmidfinder.out.log",
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
@@ -136,7 +135,6 @@ rule abricate_on_ariba_plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = "analysis/log/abricate_on_ariba_plasmidfinder.out.log",
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
