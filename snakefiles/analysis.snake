@@ -165,7 +165,7 @@ rule ariba__mlst:
     benchmark:
         "analysis/benchmarks/ariba__mlst.benchmark"
     run:
-        command = "touch {output.folder}"
+        command = "mkdir {output.folder}"
         if os.path.isfile("species.txt"):
             with open("species.txt", "r") as species_file:
                 species = species_file.read().strip().replace(" ", "_")
