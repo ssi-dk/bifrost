@@ -3,6 +3,7 @@ import pandas
 from ruamel.yaml import YAML
 import sys
 import gzip
+import io
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -85,23 +86,20 @@ rule abricate_on_ariba_resfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/abricate.yaml"
     log:
-        "analysis/log/abricate_on_ariba_resfinder.log"
+        out_file = "analysis/log/abricate_on_ariba_plasmidfinder.out.log",
+        err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     run:
-        with open("analysis/log/ariba__resfinder.log", "r") as ariba_log:
-            lines = "".join(ariba_log.readlines())
-            if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch {output.report}")
-            else:
-                with gzip.open("{input.contigs}/assemblies.fa.gz", "r") as contigs_file:
-                    contigs = contigs_file.readlines()
-                    if len(lines) == 0:
-                        shell("touch {output.report}")
-                    else:
-                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
-
+        file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
+        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
+            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {log.out_file} 2> {log.err_file}")
+            shell("cp {log.out_file} {output.report}")
+        else:
+            shell("touch {output.report}")
 
 rule ariba__plasmidfinder:
     message:
@@ -140,23 +138,20 @@ rule abricate_on_ariba_plasmidfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/abricate.yaml"
     log:
-        "analysis/log/abricate_on_ariba_plasmidfinder.log"
+        out_file = "analysis/log/abricate_on_ariba_plasmidfinder.out.log",
+        err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     run:
-        with open("analysis/log/ariba__plasmidfinder.log", "r") as ariba_log:
-            lines = "".join(ariba_log.readlines())
-            if("WARNING: no reads mapped to reference genes" in lines):
-                shell("touch {output.report}")
-            else:
-                with gzip.open("{input.contigs}/assemblies.fa.gz", "r") as contigs_file:
-                    contigs = contigs_file.readlines()
-                    if len(lines) == 0:
-                        shell("touch {output.report}")
-                    else:
-                        shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} &> {log}")
-
+        file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
+        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) == 0:
+            shell("abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {log.out_file} 2> {log.err_file}")
+            shell("cp {log.out_file} {output.report}")
+        else:
+            shell("touch {output.report}")
 
 rule ariba__mlst:
     message:
