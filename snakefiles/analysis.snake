@@ -61,7 +61,7 @@ rule ariba__resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/ariba__resfinder.yaml"
+        "envs/ariba.yaml"
     log:
         out_file = "analysis/log/ariba__resfinder.out.log",
         err_file = "analysis/log/ariba__resfinder.err.log",
@@ -115,8 +115,11 @@ rule ariba__plasmidfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/ariba.yaml"
     log:
-        "analysis/log/ariba__plasmidfinder.log"
+        out_file = "analysis/log/ariba__plasmidfinder.out.log",
+        err_file = "analysis/log/ariba__plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
