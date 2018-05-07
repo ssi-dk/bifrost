@@ -16,14 +16,14 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 # snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
 
-components = ["all"]
-if "components" in config:
-    components = str(config["components"]).split()
+components = str(config["components"])
 
-run_folder = "samples"
 if "run_folder" in config:
     run_folder = str(config["run_folder"])
+elif "samples" in os.getcwd():
+    run_folder = "samples"
 
+run_folder = str(config["run_folder"])
 if "sample_sheet" in config:
     sample_sheet = str(config["sample_sheet"])
 else:
