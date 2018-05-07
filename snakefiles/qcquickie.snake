@@ -72,6 +72,8 @@ rule fastqc_on_reads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/fastqc.yaml"
     log:
         "qcquickie/log/fastqc_on_reads.log"
     benchmark:
@@ -97,6 +99,8 @@ rule setup__filter_reads_with_bbduk:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/setup__filter_reads_with_bbduk.log"
     benchmark:
@@ -118,6 +122,8 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/kraken.yaml"
     log:
         "qcquickie/log/contaminant_check__classify_reads_kraken_minikraken_db.log"
     benchmark:
@@ -139,6 +145,8 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bracken.yaml"
     log:
         "qcquickie/log/contaminant_check__determine_species_bracken_on_minikraken_results.log"
     benchmark:
@@ -161,6 +169,8 @@ rule assembly_check__combine_reads_with_bbmerge:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/assembly_check__combine_reads_with_bbmerge.log"
     benchmark:
@@ -181,6 +191,8 @@ rule assembly_check__quick_assembly_with_tadpole:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/assembly_check__quick_assembly_with_tadpole.log"
     benchmark:
@@ -220,6 +232,8 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/assembly_check__map_reads_to_assembly_with_bbmap.log"
     benchmark:
@@ -240,6 +254,8 @@ rule assembly_check__pileup_on_mapped_reads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/assembly_check__pileup_on_mapped_reads.log"
     benchmark:
@@ -280,6 +296,8 @@ rule assembly_check__call_variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "qcquickie/log/post_assembly__call_variants.log"
     benchmark:

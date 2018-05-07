@@ -86,6 +86,8 @@ rule abricate_on_ariba_resfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/abricate.yaml"
     log:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
@@ -135,6 +137,8 @@ rule abricate_on_ariba_plasmidfinder:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/abricate.yaml"
     log:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
@@ -160,6 +164,8 @@ rule ariba__mlst:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/ariba.yaml"
     log:
         "analysis/log/ariba__mlst.log"
     benchmark:

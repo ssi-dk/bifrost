@@ -16,6 +16,10 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 # snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
 
+if "components" in config:
+    components = str(config["components"]).split()
+else:
+    components = ["all"]
 
 if "run_folder" in config:
     run_folder = str(config["run_folder"])
@@ -61,7 +65,8 @@ rule initialize_run:
     message:
         "Running step: {rule}"
     input:
-        run_folder = run_folder
+        run_folder = run_folder,
+        components = components,
     output:
         samplesheet = "sample_sheet.tsv",
         run_config_yaml = "run.yaml",

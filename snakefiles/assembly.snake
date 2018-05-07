@@ -91,11 +91,8 @@ rule setup__filter_reads_with_bbduk:
         "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
         "assembly/benchmarks/setup__filter_reads_with_bbduk.benchmark"
-    run:
-        if os.path.isfile("qcquickie/filtered.fastq"):
-            shell("ln -s {} {}".format(os.path.realpath("qcquickie/filtered.fastq"), output.filtered_reads))
-        else:
-            shell("bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}")
+    shell:
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
 
 
 # rule assembly_check__combine_reads_with_bbmerge:
@@ -155,6 +152,8 @@ rule assembly__skesa:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/skesa.yaml"
     log:
         "assembly/log/assembly__skesa.log"
     benchmark:
@@ -174,6 +173,8 @@ rule post_assembly__stats:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__stats.log"
     benchmark:
@@ -194,6 +195,8 @@ rule post_assembly__mapping:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__mapping.log"
     benchmark:
@@ -214,6 +217,8 @@ rule post_assembly__pileup:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__pileup.log"
     benchmark:
@@ -234,6 +239,8 @@ rule summarize__depth:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    # conda:
+        # python libs?
     log:
         "assembly/log/summarize__bin_coverage.log"
     benchmark:
@@ -254,6 +261,8 @@ rule post_assembly__call_variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__call_variants.log"
     benchmark:
@@ -273,6 +282,8 @@ rule summarize__variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    # conda:
+        # python libs?
     log:
         "assembly/log/summarize__variants.log"
     benchmark:
@@ -292,6 +303,8 @@ rule post_assembly__annotate:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/prokka.yaml"
     log:
         "assembly/log/post_assembly__annotate.log"
     benchmark:
