@@ -63,7 +63,6 @@ rule initialize_run:
         "Running step: {rule}"
     input:
         run_folder = run_folder,
-        components = components,
     output:
         samplesheet = "sample_sheet.tsv",
         run_config_yaml = "run.yaml",
@@ -71,6 +70,7 @@ rule initialize_run:
     params:
         samplesheet = sample_sheet,
         partition = partition,
+        components = components,
     threads:
         global_threads
     resources:
