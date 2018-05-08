@@ -75,6 +75,8 @@ rule initialize_run:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "env/python_packages.yaml"
     log:
         os.path.join(folder_name, "log/initialize_run.log")
     script:
