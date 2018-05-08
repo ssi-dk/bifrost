@@ -87,6 +87,8 @@ rule setup__filter_reads_with_bbduk:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "envs/bbmap.yaml"
     log:
         "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
