@@ -1,4 +1,3 @@
-name: python_packages
 channels:
   - bioconda
 dependencies:
