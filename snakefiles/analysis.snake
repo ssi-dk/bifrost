@@ -97,7 +97,7 @@ rule abricate_on_ariba_resfinder:
         if [[ -e {input.contigs}/assemblies.fa.gz ]] && test -z $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1);
         then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
-        fi
+        fi;
         """
 
     # run:
@@ -156,7 +156,7 @@ rule abricate_on_ariba_plasmidfinder:
         if [[ -e {input.contigs}/assemblies.fa.gz ]] && test -z $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1);
         then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
-        fi
+        fi;
         """
     # run:
     #     file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
@@ -188,9 +188,9 @@ rule ariba__mlst:
     shell:
         """
         if [[ -s species.txt ]];
-        then ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log};
+        then ariba run /srv/data/DB/ariba/mlst/echo "$(cat species.txt)"/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log};
         else touch {output.folder};
-        fi
+        fi;
         """
     # run:
     #     command = "mkdir {output.folder}"
