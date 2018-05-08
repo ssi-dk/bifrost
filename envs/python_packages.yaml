@@ -1,6 +1,7 @@
 channels:
   - bioconda
 dependencies:
+  - python3
   - cyvcf2
   - pandas
   - ruamel.yaml

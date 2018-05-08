@@ -94,12 +94,12 @@ rule abricate_on_ariba_resfinder:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     shell:
         """
-        if [[ -s species.txt ]];
+        if [[ -e {input.contigs}/assemblies.fa.gz ]] && test -z $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1);
         then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi
         """
-        
+
     # run:
     #     file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
     #     if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
@@ -153,7 +153,7 @@ rule abricate_on_ariba_plasmidfinder:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     shell:
         """
-        if [[ -s species.txt ]];
+        if [[ -e {input.contigs}/assemblies.fa.gz ]] && test -z $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1);
         then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi
