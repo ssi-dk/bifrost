@@ -88,7 +88,7 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/bbmap.yaml"
+        "../envs/bbmap.yaml"
     log:
         "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
@@ -155,7 +155,7 @@ rule assembly__skesa:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/skesa.yaml"
+        "../envs/skesa.yaml"
     log:
         "assembly/log/assembly__skesa.log"
     benchmark:
@@ -176,7 +176,7 @@ rule post_assembly__stats:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/bbmap.yaml"
+        "../envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__stats.log"
     benchmark:
@@ -198,7 +198,7 @@ rule post_assembly__mapping:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/bbmap.yaml"
+        "../envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__mapping.log"
     benchmark:
@@ -220,7 +220,7 @@ rule post_assembly__pileup:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/bbmap.yaml"
+        "../envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__pileup.log"
     benchmark:
@@ -264,7 +264,7 @@ rule post_assembly__call_variants:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/bbmap.yaml"
+        "../envs/bbmap.yaml"
     log:
         "assembly/log/post_assembly__call_variants.log"
     benchmark:
@@ -306,7 +306,7 @@ rule post_assembly__annotate:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "envs/prokka.yaml"
+        "../envs/prokka.yaml"
     log:
         "assembly/log/post_assembly__annotate.log"
     benchmark:
