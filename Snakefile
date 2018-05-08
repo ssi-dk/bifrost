@@ -5,7 +5,7 @@ import sys
 import os
 from ruamel.yaml import YAML
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
-import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
+# import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
