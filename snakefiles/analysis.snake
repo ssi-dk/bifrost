@@ -37,7 +37,7 @@ ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder 
 
 rule all:
     input:
-        # "analysis/ariba_mlst",
+        "analysis/ariba_mlst",
         "analysis/abricate_on_resfinder_from_ariba.tsv",
         "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
 
@@ -182,10 +182,14 @@ rule ariba__mlst:
     conda:
         "../envs/ariba.yaml"
     log:
-        "analysis/log/ariba__mlst.log"
+        out_file = "analysis/log/ariba__mlst.out.log",
+        err_file = "analysis/log/ariba__mlst.err.log",
     benchmark:
         "analysis/benchmarks/ariba__mlst.benchmark"
-    shell:
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
+    # shell:
+    # Currently skipped because of the auto species loading as I'm using a species.txt echo to check and should probably do a db lookup in a script
         """
         if [[ -s species.txt ]];
         then ariba run /srv/data/DB/ariba/mlst/echo "$(cat species.txt)"/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log};
