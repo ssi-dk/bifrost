@@ -3,12 +3,12 @@ channels:
   - anaconda
   - avishapiro
   - biocore
-  - qiime2
   - bioconda
   - conda-forge
   - defaults
   - r
 dependencies:
+  - cyvcf2
   - biopython=1.69=np113py35_0
   - numpy=1.13.3=py35h3dfced4_2
   - colorlover=0.2.1=py35_0
