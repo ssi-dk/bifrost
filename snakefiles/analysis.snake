@@ -100,13 +100,6 @@ rule abricate_on_ariba_resfinder:
         fi;
         """
 
-    # run:
-    #     file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
-    #     if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
-    #         command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
-    #     else:
-    #         command = "touch {output.report}"
-    #     shell(command)
 
 rule ariba__plasmidfinder:
     message:
@@ -158,13 +151,6 @@ rule abricate_on_ariba_plasmidfinder:
         else touch {output.report};
         fi;
         """
-    # run:
-    #     file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
-    #     if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
-    #         command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
-    #     else:
-    #         command = "touch {output.report}"
-    #     shell(command)
 
 
 rule ariba__mlst:
@@ -188,19 +174,3 @@ rule ariba__mlst:
         "analysis/benchmarks/ariba__mlst.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
-    # shell:
-    # Currently skipped because of the auto species loading as I'm using a species.txt echo to check and should probably do a db lookup in a script
-        """
-        if [[ -s species.txt ]];
-        then ariba run /srv/data/DB/ariba/mlst/echo "$(cat species.txt)"/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log};
-        else touch {output.folder};
-        fi;
-        """
-    # run:
-    #     command = "mkdir {output.folder}"
-    #     if os.path.isfile("species.txt"):
-    #         with open("species.txt", "r") as species_file:
-    #             species = species_file.read().strip().replace(" ", "_")
-    #             if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
-    #                 command = "ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
-    #     shell(command)
