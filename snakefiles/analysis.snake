@@ -92,13 +92,21 @@ rule abricate_on_ariba_resfinder:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
-    run:
-        file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
-        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
-            command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
-        else:
-            command = "touch {output.report}"
-        shell(command)
+    shell:
+        """
+        if [[ -s species.txt ]];
+        then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        else touch {output.report};
+        fi
+        """
+        
+    # run:
+    #     file_assemblies = "analysis/ariba_resfinder/assemblies.fa.gz"
+    #     if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
+    #         command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
+    #     else:
+    #         command = "touch {output.report}"
+    #     shell(command)
 
 rule ariba__plasmidfinder:
     message:
@@ -143,13 +151,20 @@ rule abricate_on_ariba_plasmidfinder:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
         "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
-    run:
-        file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
-        if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
-            command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
-        else:
-            command = "touch {output.report}"
-        shell(command)
+    shell:
+        """
+        if [[ -s species.txt ]];
+        then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        else touch {output.report};
+        fi
+        """
+    # run:
+    #     file_assemblies = "analysis/ariba_plasmidfinder/assemblies.fa.gz"
+    #     if os.path.isfile(file_assemblies) and gzip.open(file_assemblies).seek(0, io.SEEK_END) > 0:
+    #         command = "abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file}"
+    #     else:
+    #         command = "touch {output.report}"
+    #     shell(command)
 
 
 rule ariba__mlst:
@@ -170,11 +185,18 @@ rule ariba__mlst:
         "analysis/log/ariba__mlst.log"
     benchmark:
         "analysis/benchmarks/ariba__mlst.benchmark"
-    run:
-        command = "mkdir {output.folder}"
-        if os.path.isfile("species.txt"):
-            with open("species.txt", "r") as species_file:
-                species = species_file.read().strip().replace(" ", "_")
-                if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
-                    command = "ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
-        shell(command)
+    shell:
+        """
+        if [[ -s species.txt ]];
+        then ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log};
+        else touch {output.folder};
+        fi
+        """
+    # run:
+    #     command = "mkdir {output.folder}"
+    #     if os.path.isfile("species.txt"):
+    #         with open("species.txt", "r") as species_file:
+    #             species = species_file.read().strip().replace(" ", "_")
+    #             if os.path.isdir("/srv/data/DB/ariba/mlst/" + species + "/ref_db"):
+    #                 command = "ariba run /srv/data/DB/ariba/mlst/" + species + "/ref_db/ {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch &> {log}"
+    #     shell(command)
