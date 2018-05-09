@@ -3,7 +3,7 @@ import re
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
+# sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
 # import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
 # config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
@@ -15,7 +15,10 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 # snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
 
-components = str(config["components"])
+if "components" in config:
+    components = str(config["components"])
+else:
+    components = "all"
 
 if "run_folder" in config:
     run_folder = str(config["run_folder"])
