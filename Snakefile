@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import re
-import pandas
 import sys
 import os
-from ruamel.yaml import YAML
+
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
 # import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
 
