@@ -212,6 +212,8 @@ rule assembly_check__rename_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/python_packages.yaml"
     log:
         "qcquickie/log/assembly_check__rename_contigs.log"
     benchmark:
@@ -276,6 +278,8 @@ rule summarize__depth:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/python_packages.yaml"
     log:
         "qcquickie/log/summarize__bin_coverage.log"
     benchmark:
@@ -317,6 +321,8 @@ rule summarize__variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/python_packages.yaml"
     log:
         "qcquickie/log/summarize__variants.log"
     benchmark:
