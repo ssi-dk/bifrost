@@ -117,7 +117,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     output:
         kraken_report = "qcquickie/kraken_report.txt"
     params:
-        db = "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+        db = config["kraken"]["database"]
     threads:
         global_threads
     resources:
@@ -140,7 +140,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     output:
         bracken = "qcquickie/bracken.txt"
     params:
-        kmer_dist = "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+        kmer_dist = config["kraken"]["kmer_dist"]
     threads:
         global_threads
     resources:

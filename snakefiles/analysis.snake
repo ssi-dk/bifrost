@@ -57,6 +57,8 @@ rule ariba__resfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_resfinder",
+    params:
+        database = config["ariba"]["resfinder"]["database"]
     threads:
         global_threads
     resources:
@@ -69,7 +71,7 @@ rule ariba__resfinder:
     benchmark:
         "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/resfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
 
 rule abricate_on_ariba_resfinder:
@@ -80,8 +82,8 @@ rule abricate_on_ariba_resfinder:
     output:
         report = "analysis/abricate_on_resfinder_from_ariba.tsv",
     params:
-        database = "/srv/data/DB/abricate/",
-        db_name = "resfinder_db",
+        database = config["abricate"]["resfinder"]["database"],
+        db_name = config["abricate"]["resfinder"]["name"],
     threads:
         global_threads
     resources:
@@ -109,6 +111,8 @@ rule ariba__plasmidfinder:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_plasmidfinder",
+    params:
+        database = config["ariba"]["plasmidfinder"]["database"]
     threads:
         global_threads
     resources:
@@ -121,7 +125,7 @@ rule ariba__plasmidfinder:
     benchmark:
         "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
-        "ariba run /srv/data/DB/ariba/plasmidfinder {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
 
 rule abricate_on_ariba_plasmidfinder:
@@ -132,8 +136,8 @@ rule abricate_on_ariba_plasmidfinder:
     output:
         report = "analysis/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
-        database = "/srv/data/DB/abricate/",
-        db_name = "plasmidfinder_db",
+        database = config["abricate"]["plasmidfinder"]["database"],
+        db_name = config["abricate"]["plasmidfinder"]["name"],
     threads:
         global_threads
     resources:

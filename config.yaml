@@ -3,10 +3,32 @@ run_folder: "samples"
 sample_sheet: "sample_sheet.tsv"
 partition: "standard"
 
+
 global:
   #in Gb
   memory: &memory 10
   threads: &threads 4
+
+kraken:
+  database: &kraken_db "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+  kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+
+abricate:
+  resfinder:
+    database: "/srv/data/DB/abricate/"
+    name: "resfinder_db"
+  plasmidfinder:
+    database: "/srv/data/DB/abricate/"
+    name: "plasmidfinder"
+
+ariba:
+  resfinder:
+    database: "/srv/data/DB/ariba/resfinder"
+  plasmidfinder:
+    database: "/srv/data/DB/ariba/plasmidfinder"
+  mlst:
+    database: "/srv/data/DB/ariba/mlst/"
+
 
 serum:
   samplesheet_column_mapping:
@@ -37,62 +59,7 @@ serum:
     - daytime
     - standard
 
-kraken:
-  database: &kraken_db "/srv/data/DB/kraken/Kraken-mini_20141208/"
-  options: ["--threads ",*threads," --db ",*kraken_db," "]
-  report:
-    options: [" --db ",*kraken_db," "] 
-  names: "/srv/data/DB/kraken/Kraken-mini_20141208/taxonomy/names.dmp"
-  #report:
-  #    pattern: "(?P<proportion>[0-9]+\.[0-9]+)\t[0-9]+\t[0-9]+\t(?P<classification_level>[A-Z])\t[0-9]+\t(?P<spaces>\s*)(?P<classification_name>[a-zA-Z]+.*)"
-  #Kraken summary is not part of default kraken but used in our scripts
-  summary: 
-    cutoff_threshold: 5.0
-
-
-
-ariba:
-  database:
-    resfinder: &resfinder_db "/srv/data/DB/ariba/resfinder/"
-    virulencefinder: &virulencefinder_db "/srv/data/DB/ariba/virulencefinder/"
-    plasmidfinder: &plasmidfinder_db "/srv/data/DB/ariba/plasmidfinder/"
-    mlst:
-      Staphylococcus_aureus: "/srv/data/DB/ariba/Staphylococcus_aureus/ref_db"
-  options: ["--noclean"]
-
-trimmomatic:
-  adaptors: &adaptors "/home/ssi.ad/kimn/code/serumqc/DB/adapters.fasta"
-  options: ["-threads ",*threads]
-  trim_settings: ["ILLUMINACLIP:",*adaptors,":2:30:10 LEADING:20 TRAILING:20 SLIDINGWINDOW:10:20 MINLEN:30"]
-
 #target is currently set to recommended
-bbnorm:
-  options: ["target=25 threads=",*threads," -Xmx",*memory,"g"]
-
-spades:
-  options: ["--only-assembler -t ",*threads," -m ",*memory]
-
-bwa_mem:
-  options: ["-t ",*threads]
-
-elprep:
-  options: ["--nr-of-threads ",*threads," --sorting-order coordinate --mark-duplicates --clean-sam"]
-
-samtools:
-  to_bam:
-    options: ["-@ ",*threads," -b"]
-
-pilon:
-  options: ["--changes --vcf --output contigs  --threads ",*threads]
-
-prokka:
-  options: ["--cpus ",*threads," --centre X --compliant"]
-
-quast:
-  options: ["--fast -t",*threads," "]
-
-tadpole:
-  options: ["threads=",*threads," -Xmx",*memory,"g"]
 
 # qc: 
 #     categories: 
