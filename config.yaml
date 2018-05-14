@@ -19,7 +19,7 @@ abricate:
     name: "resfinder_db"
   plasmidfinder:
     database: "/srv/data/DB/abricate/"
-    name: "plasmidfinder"
+    name: "plasmidfinder_db"
 
 ariba:
   resfinder:
