@@ -1,8 +1,0 @@
-rule qc:
-    input:
-        summarize_qc_yaml = "summaries/serumqc_info.yaml"
-    output:
-        serumqc_yaml = "summaries/serumqc.yaml"
-    run:
-        serum.qc_yaml(input.summarize_qc_yaml, output.serumqc_yaml)
-        # currently considering adjusting output to yaml or csv for parsing

@@ -18,18 +18,18 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 if "components" in config:
     components = str(config["components"])
 else:
-    components = "all"
+    components = "default"
 
 if "run_folder" in config:
     run_folder = str(config["run_folder"])
 elif "samples" in os.getcwd():
     run_folder = "samples"
 
-run_folder = str(config["run_folder"])
 if "sample_sheet" in config:
     sample_sheet = str(config["sample_sheet"])
 else:
     sample_sheet = ""
+
 partition = str(config["partition"])
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
