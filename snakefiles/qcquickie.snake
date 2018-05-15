@@ -11,8 +11,6 @@ import sys
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
-R1 = config["R1_reads"]
-R2 = config["R2_reads"]
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 
@@ -21,6 +19,9 @@ yaml.default_flow_style = False
 
 with open(sample, "r") as sample_yaml:
     config_sample = yaml.load(sample_yaml)
+
+R1 = config_sample["sample"]["R1_reads"]
+R2 = config_sample["sample"]["R2_reads"]
 
 # my understanding is all helps specify final output
 onsuccess:
