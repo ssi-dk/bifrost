@@ -77,6 +77,7 @@ rule initialize_run:
         samplesheet = sample_sheet,
         partition = partition,
         components = components,
+        group = group,
     threads:
         global_threads
     resources:
