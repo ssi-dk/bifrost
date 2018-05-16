@@ -16,8 +16,8 @@ yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 
-R1 = config_sample["sample"]["R1_reads"]
-R2 = config_sample["sample"]["R2_reads"]
+R1 = config_sample["sample"]["R1"]
+R2 = config_sample["sample"]["R2"]
 
 # my understanding is all helps specify final output
 onsuccess:
