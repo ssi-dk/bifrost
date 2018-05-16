@@ -2,7 +2,7 @@
 run_folder: "samples"
 sample_sheet: "sample_sheet.tsv"
 partition: "standard"
-
+grid: "slurm" # slurm|torque|none
 
 global:
   #in Gb
