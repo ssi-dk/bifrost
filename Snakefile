@@ -13,6 +13,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads=~/test/data/nextseq/FHA3_S64_L555_R1_001.fastq.gz R2_reads=~/test/data/nextseq/FHA3_S64_L555_R2_001.fastq.gz Sample=Test
 # snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
 
+
 if "components" in config:
     components = str(config["components"])
 else:
@@ -27,6 +28,11 @@ if "sample_sheet" in config:
     sample_sheet = str(config["sample_sheet"])
 else:
     sample_sheet = ""
+
+if "group" in config:
+    group = str(config["group"])
+else:
+    group = "NA"
 
 partition = str(config["partition"])
 global_threads = config["global"]["threads"]
