@@ -46,27 +46,6 @@ rule all:
         "assembly/contigs.variants"
 
 
-# rule run__assembly:
-#     message:
-#         "Denovo assembly of reads"
-#     input:
-#         reads = (R1, R2)
-#     output:
-#         "assembly_done"
-#     params:
-#         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
-#     shell:
-#         """
-#         mkdir assembly
-#         cd assembly
-#         bbduk.sh in={input.reads[0]} in2={input.reads[1]} out=filtered.fq ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &>> assembly.log
-#         bbmerge.sh in=filtered.fq out=merged.fq outu=unmerged.fq &>> assembly.log
-#         spades.py -k 21,33,55,77 -s merged.fq --s1 unmerged.fq -o spades &>> assembly.log
-#         mv spades/contigs.fasta spades_contigs.fasta
-#         cd ..
-#         touch assembly_done
-#         """
-
 rule setup:
     message:
         "Running step: {rule}"

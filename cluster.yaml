@@ -1,3 +1,4 @@
+# TODO: almost everything for cluster support, was just testing so far
 __default__:
   account: (group|user)
   queue: standard

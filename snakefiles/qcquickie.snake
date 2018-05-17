@@ -3,14 +3,10 @@ import pandas
 from ruamel.yaml import YAML
 import sys
 
-# from pytools.persistent_dict import PersistentDict
-# size estimation from kmers as well with jellyfish?
-# storage = PersistentDict("qcquickie_storage")
-# alternative is to do a quick qc on basepairs followed by a more rigorous assembly
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
-# requires --config R1_reads={read_location},R2_reads={read_location}
-sample = config["Sample"]
+
+sample = config["Sample"]  # expected input
 global_threads = config["global"]["threads"]
 global_memory_in_GB = config["global"]["memory"]
 
@@ -21,10 +17,9 @@ print(sample)
 with open(sample, "r") as sample_yaml:
     config_sample = yaml.load(sample_yaml)
 
-R1 = config_sample["sample"]["R1"]
-R2 = config_sample["sample"]["R2"]
+R1 = config_sample["sample"]["R1"]  # expected in sample config
+R2 = config_sample["sample"]["R2"]  # expected in sample config
 
-# my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
     config_sample["sample"]["status"]["qcquickie"] = "Success"
