@@ -58,6 +58,8 @@ rule all:
 rule setup:
     output:
         dir = "qcquickie"
+    group:
+        "qcquickie"
     shell:
         "mkdir {output}"
 
@@ -368,8 +370,6 @@ rule contaminant_check__declare_contamination:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
@@ -394,8 +394,6 @@ rule species_check__set_species:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
@@ -426,8 +424,6 @@ rule species_check__check_sizes:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/contaminant_check__declare_contamination.log"
     benchmark:
