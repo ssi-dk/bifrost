@@ -22,14 +22,16 @@ R2 = config_sample["sample"]["R2"]
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
-    output = ["analysis_status.txt"]
-    with open(output[0], "w") as status:
-        status.write("Success\n")
+    config_sample["sample"]["status"]["analysis"] = "Success"
+    print(config_sample)
+    with open(sample, "w") as output_file:
+        yaml.dump(config_sample, output_file)
 onerror:
     print("Workflow error")
-    output = ["analysis_status.txt"]
-    with open(output[0], "w") as status:
-        status.write("Failure\n")
+    config_sample["sample"]["status"]["analysis"] = "Failure"
+    print(config_sample)
+    with open(sample, "w") as output_file:
+        yaml.dump(config_sample, output_file)
 
 
 ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder

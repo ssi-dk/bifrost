@@ -27,7 +27,7 @@ R2 = config_sample["sample"]["R2"]
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["status"] = "qcquickie_completed_successfully"
+    config_sample["sample"]["status"]["qcquickie"] = "Success"
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
@@ -39,7 +39,7 @@ onsuccess:
 
 onerror:
     print("Workflow error")
-    config_sample["sample"]["status"] = "qcquickie_failed"
+    config_sample["sample"]["status"]["qcquickie"] = "Failure"
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
