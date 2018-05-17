@@ -1,3 +1,4 @@
+name: ariba
 channels:
   - conda-forge
   - bioconda

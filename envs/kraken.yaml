@@ -1,3 +1,4 @@
+name: kraken
 channels:
   - bioconda
 dependencies:

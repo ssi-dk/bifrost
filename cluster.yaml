@@ -1,0 +1,7 @@
+__default__:
+  account: (group|user)
+  queue: standard
+  memory: 10G
+  resources:
+  partition: standard
+  cpus-per-task: 4

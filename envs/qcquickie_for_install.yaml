@@ -1,0 +1,21 @@
+name: qcquickie
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - snakemake>=5.0
+  - abricate
+  - python
+  - ariba
+  - bbmap
+  - bracken
+  - fastqc
+  - kraken
+  - prokka
+  - pandas
+  - cyvcf2
+  - ruamel.yaml
+  - biopython
+  - skesa
+  - xlrd

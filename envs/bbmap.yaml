@@ -1,3 +1,4 @@
+name: bbmap
 channels:
   - bioconda
 dependencies:
