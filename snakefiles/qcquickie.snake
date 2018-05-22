@@ -22,7 +22,7 @@ R2 = config_sample["sample"]["R2"]  # expected in sample config
 
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["status"]["qcquickie"] = "Success"
+    config_sample["sample"]["status"]["success"].append("qcquickie")
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
