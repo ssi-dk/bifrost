@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
+
+# TODO: should refactor a lot of this Snakefile into a more snakemake orientated solution utilizing wildcards
+
 import re
 import sys
 import os
 
-# sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts/"))
-# import serum  # all serum lib functions also have access to the config file to prevent reduce excess parameter passing
-
-# config_file = pkg_resources.resource_filename(workflow.snakefile "/config/config.yaml")
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
-# from pytools.persistent_dict import PersistentDict
-# storage = PersistentDict("qcquickie_storage")
-# snakemake -s ~/code/serumqc/snakefiles/serumqc.snake --config R1_reads=~/test/data/nextseq/FHA3_S64_L555_R1_001.fastq.gz R2_reads=~/test/data/nextseq/FHA3_S64_L555_R2_001.fastq.gz Sample=Test
-# snakemake -s ~/git.repositories/SerumQC-private/batch_run.snake --config run_folder=../../data/tiny/ sample_sheet=/srv/data/BIG/NGS_facility/assembly/2018/180117_NS500304_0140_N_WGS_91_AHWHHFAFXX/sample_sheet.xlsx partition=daytime 
-
 
 if "components" in config:
     components = str(config["components"])
@@ -35,8 +29,8 @@ else:
     group = "NA"
 
 partition = str(config["partition"])
-global_threads = config["global"]["threads"]
-global_memory_in_GB = config["global"]["memory"]
+global_threads = config["threads"]
+global_memory_in_GB = config["memory"]
 folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:

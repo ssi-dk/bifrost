@@ -4,10 +4,10 @@ sample_sheet: "sample_sheet.tsv"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 
-global:
-  #in Gb
-  memory: &memory 10
-  threads: &threads 4
+
+#in Gb
+memory: &memory 10
+threads: &threads 4
 
 kraken:
   database: &kraken_db "/srv/data/DB/kraken/minikraken_20171019_8GB/"
