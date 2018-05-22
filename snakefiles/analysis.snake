@@ -8,8 +8,8 @@ import io
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
-global_threads = config["global"]["threads"]
-global_memory_in_GB = config["global"]["memory"]
+global_threads = config["threads"]
+global_memory_in_GB = config["memory"]
 
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False

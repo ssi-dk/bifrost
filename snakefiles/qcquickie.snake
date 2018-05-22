@@ -7,8 +7,8 @@ import sys
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 
 sample = config["Sample"]  # expected input
-global_threads = config["global"]["threads"]
-global_memory_in_GB = config["global"]["memory"]
+global_threads = config["threads"]
+global_memory_in_GB = config["memory"]
 
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False
