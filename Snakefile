@@ -72,6 +72,7 @@ rule initialize_run:
         partition = partition,
         components = components,
         group = group,
+        config = config,
     threads:
         global_threads
     resources:
