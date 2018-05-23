@@ -22,7 +22,7 @@ R2 = config_sample["sample"]["R2"]
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["status"]["assembly"] = "Success"
+    config_sample["sample"]["components"]["success"].append("assembly")
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
@@ -33,7 +33,7 @@ onsuccess:
 
 onerror:
     print("Workflow error")
-    config_sample["sample"]["status"]["assembly"] = "Failure"
+    config_sample["sample"]["components"]["failure"].append("assembly")
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)

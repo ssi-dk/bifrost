@@ -4,10 +4,8 @@ sample_sheet: "sample_sheet.tsv"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 
-
-#in Gb
-memory: &memory 10
-threads: &threads 4
+memory: &memory 10 #in Gb
+threads: &threads 5
 
 kraken:
   database: &kraken_db "/srv/data/DB/kraken/minikraken_20171019_8GB/"
@@ -29,8 +27,9 @@ ariba:
   mlst:
     database: "/srv/data/DB/ariba/mlst/"
 
-
 serum:
+  read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
+  samples_to_ignore: ["Undetermined"]
   samplesheet_column_mapping:
     sample_name: "SampleID"
     group: "SupplyingLab" 
@@ -48,8 +47,6 @@ serum:
     ambiguous_cutoff: 0.1
   summarize:
     depth_range: [1, 101]
-  read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
-  samples_to_ignore: ["Undetermined"]
   queues: 
     - urgent
     - clinical
