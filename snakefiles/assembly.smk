@@ -173,6 +173,30 @@ rule post_assembly__stats:
         "stats.sh {input.contigs} &> {log}"
 
 
+# rule post_assembly__mapping:
+#     message:
+#         "Running step: {rule}"
+#     input:
+#         contigs = "assembly/contigs.fasta",
+#         filtered_reads = "assembly/filtered.fastq",
+#     output:
+#         mapped = "assembly/contigs.sam"
+#     threads:
+#         global_threads
+#     resources:
+#         memory_in_GB = global_memory_in_GB
+#     conda:
+#         "../envs/bbmap.yaml"
+#     group:
+#         "assembly"
+#     log:
+#         "assembly/log/post_assembly__mapping.log"
+#     benchmark:
+#         "assembly/benchmarks/post_assembly__mapping.benchmark"
+#     shell:
+#         "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered_reads} out={output.mapped} &> {log}"
+
+
 rule post_assembly__mapping:
     message:
         "Running step: {rule}"
@@ -186,7 +210,7 @@ rule post_assembly__mapping:
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
-        "../envs/bbmap.yaml"
+        "../envs/minimap2.yaml"
     group:
         "assembly"
     log:
@@ -194,7 +218,7 @@ rule post_assembly__mapping:
     benchmark:
         "assembly/benchmarks/post_assembly__mapping.benchmark"
     shell:
-        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered_reads} out={output.mapped} &> {log}"
+        "minimap2 -t {threads} --MD -ax sr {input.contigs} {input.filtered_reads} 1> {output.mapped} 2> {log}"
 
 
 rule post_assembly__pileup:
