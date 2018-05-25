@@ -13,6 +13,7 @@ global_memory_in_GB = config["memory"]
 
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False
+
 with open(sample, "r") as yaml_stream:
     config_sample = yaml.load(yaml_stream)
 

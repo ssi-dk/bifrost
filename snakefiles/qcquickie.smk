@@ -7,13 +7,13 @@ import sys
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 
 sample = config["Sample"]  # expected input
+
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 
-print(sample)
 with open(sample, "r") as sample_yaml:
     config_sample = yaml.load(sample_yaml)
 
