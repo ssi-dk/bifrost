@@ -34,9 +34,6 @@ onerror:
         yaml.dump(config_sample, output_file)
 
 
-ruleorder: setup > ariba__mlst > ariba__resfinder > abricate_on_ariba_resfinder > ariba__plasmidfinder > abricate_on_ariba_plasmidfinder
-
-
 rule all:
     input:
         "analysis/ariba_mlst",
