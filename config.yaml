@@ -1,6 +1,6 @@
 # Input parameters
 run_folder: "samples"
-sample_sheet: "sample_sheet.tsv"
+sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 
