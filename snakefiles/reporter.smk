@@ -19,3 +19,4 @@ with open(sample, "r") as sample_yaml:
 
 
 # run minireport
+add sample to overall summary
