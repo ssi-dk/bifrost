@@ -48,6 +48,8 @@ rule all:
         "qcquickie/contigs.vcf",
         "qcquickie/contaminantion_check.txt",
         "qcquickie/contigs.variants",
+        "qcquickie/quast",
+        "qcquickie/contigs.sketch",
 
 
 rule setup:
@@ -233,6 +235,54 @@ rule assembly_check__rename_contigs:
         "qcquickie/benchmarks/assembly_check__rename_contigs.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/rename_tadpole_contigs.py")
+
+
+# quast/send sketch
+rule assembly_check__quast_on_contigs:
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = "qcquickie/contigs.fasta"
+    output:
+        contigs = "qcquickie/quast"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/quast.yaml"
+    group:
+        "qcquickie"
+    log:
+        "qcquickie/log/assembly_check__quast_on_tadpole_contigs.log"
+    benchmark:
+        "qcquickie/benchmarks/assembly_check__quast_on_tadpole_contigs.benchmark"
+    shell:
+        "quast.py --threads {threads} {input.contigs} -o quast &> {log}"
+
+
+# quast/send sketch
+rule assembly_check__sketch_on_contigs:
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = "qcquickie/contigs.fasta"
+    output:
+        contigs = "qcquickie/contigs.sketch"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/bbmap.yaml"
+    group:
+        "qcquickie"
+    log:
+        "qcquickie/log/assembly_check__sketch_on_contigs.log"
+    benchmark:
+        "qcquickie/benchmarks/assembly_check__sketch_on_contigs.benchmark"
+    shell:
+        "sketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} &> {log}"
 
 
 rule assembly_check__map_reads_to_assembly_with_bbmap:
