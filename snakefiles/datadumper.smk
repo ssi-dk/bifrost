@@ -35,7 +35,7 @@ onerror:
 rule all:
     input:
         "datadumper",
-        "datadumper/all.yaml"
+        "datadumper/summary.yaml"
 
 
 rule setup:
@@ -54,7 +54,7 @@ rule datadump_qcquickie:
         folder = "qcquickie",
     output:
         summary = "qcquickie/qcquickie.yaml"
-    parameters:
+    params:
         sample = config_sample
     threads:
         global_threads
