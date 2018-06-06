@@ -20,14 +20,20 @@ with open(sample, "r") as sample_yaml:
 
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["components"]["success"].append("datadumper")
+    if "datadumper" not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append("datadumper")
+    if "datadumper" in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove("datadumper")
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
 onerror:
     print("Workflow error")
-    config_sample["sample"]["components"]["failure"].append("datadumper")
+    if "datadumper" in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].remove("datadumper")
+    if "datadumper" not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].append("datadumper")
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
