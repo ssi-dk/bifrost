@@ -128,7 +128,6 @@ rule combine_datadumps:
     message:
         "Running step: {rule}"
     input:
-        datadumper = "datadumper",
         qcquickie_summary = "datadumper/qcquickie.yaml",
     output:
         summary = "datadumper/summary.yaml",
