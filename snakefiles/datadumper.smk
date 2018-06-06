@@ -84,7 +84,7 @@ rule datadump_assembly:
     input:
         folder = "assembly",
     output:
-        summary = "datadumper/qcquickie.yaml"
+        summary = "datadumper/assembly.yaml"
     threads:
         global_threads
     resources:
