@@ -123,7 +123,7 @@ rule combine_datadumps:
         "Running step: {rule}"
     input:
         datadumper = "datadumper",
-        qcquickie_yaml = "datadumper/qcquickie.yaml",
+        qcquickie_summary = "datadumper/qcquickie.yaml",
     output:
         summary = pipe("datadumper/summary.yaml"),
     params:
