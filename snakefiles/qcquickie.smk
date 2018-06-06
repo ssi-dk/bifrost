@@ -237,7 +237,6 @@ rule assembly_check__rename_contigs:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/rename_tadpole_contigs.py")
 
 
-# quast/send sketch
 rule assembly_check__quast_on_contigs:
     message:
         "Running step: {rule}"
@@ -261,14 +260,13 @@ rule assembly_check__quast_on_contigs:
         "quast.py --threads {threads} {input.contigs} -o quast &> {log}"
 
 
-# quast/send sketch
 rule assembly_check__sketch_on_contigs:
     message:
         "Running step: {rule}"
     input:
         contigs = "qcquickie/contigs.fasta"
     output:
-        contigs = "qcquickie/contigs.sketch"
+        sketch = "qcquickie/contigs.sketch"
     threads:
         global_threads
     resources:
