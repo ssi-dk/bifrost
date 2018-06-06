@@ -53,7 +53,7 @@ rule datadump_qcquickie:
     input:
         folder = "qcquickie",
     output:
-        summary = "qcquickie/qcquickie.yaml"
+        summary = "datadumper/qcquickie.yaml"
     params:
         sample = config_sample
     threads:
@@ -78,7 +78,7 @@ rule datadump_assembly:
     input:
         folder = "assembly",
     output:
-        summary = "assembly/qcquickie.yaml"
+        summary = "datadumper/qcquickie.yaml"
     threads:
         global_threads
     resources:
@@ -101,7 +101,7 @@ rule datadump_analysis:
     input:
         folder = "analysis",
     output:
-        summary = "analysis/analysis.yaml"
+        summary = "datadumper/analysis.yaml"
     threads:
         global_threads
     resources:
@@ -123,7 +123,7 @@ rule combine_datadumps:
         "Running step: {rule}"
     input:
         datadumper = "datadumper"
-        qcquickie = "qcquickie/qcquickie.yaml",
+        qcquickie = "datadumper/qcquickie.yaml",
     output:
         summary = pipe("datadumper/summary.yaml"),
     params:
