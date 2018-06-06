@@ -125,7 +125,7 @@ rule combine_datadumps:
         datadumper = "datadumper",
         qcquickie_summary = "datadumper/qcquickie.yaml",
     output:
-        summary = pipe("datadumper/summary.yaml"),
+        summary = "datadumper/summary.yaml",
     params:
         sample = "sample.yaml",
     threads:
