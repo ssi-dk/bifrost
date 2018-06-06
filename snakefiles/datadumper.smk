@@ -118,14 +118,15 @@ rule datadump_analysis:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analysis.py")
 
 
-rule datadump_of_datadumps:
+rule combine_datadumps:
     message:
         "Running step: {rule}"
     input:
         folder = "qcquickie/qcquickie.yaml",
     output:
-        summary = "datadumper/summary.yaml",
-        sample = "sample.yaml"
+        summary = pipe("datadumper/summary.yaml"),
+    params:
+        sample = "sample.yaml",
     threads:
         global_threads
     resources:
@@ -135,8 +136,8 @@ rule datadump_of_datadumps:
     group:
         "datadumper"
     log:
-        "datadumper/log/datadump_of_datadumps.log"
+        "datadumper/log/combine_datadumps.log"
     benchmark:
-        "datadumper/benchmarks/datadump_of_datadumps.benchmark"
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_of_datadumps.py")
+        "datadumper/benchmarks/combine_datadumps.benchmark"
+    shell:
+        "cat {input.folder} {params.sample} 1> {summary.yaml} 2> {log}"
