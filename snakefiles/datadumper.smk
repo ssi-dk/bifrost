@@ -45,10 +45,10 @@ rule all:
 
 
 rule setup:
+    message:
+        "Running step: {rule}"
     output:
         dir = "datadumper"
-    group:
-        "datadumper"
     shell:
         "mkdir {output}"
 
@@ -57,6 +57,7 @@ rule datadump_qcquickie:
     message:
         "Running step: {rule}"
     input:
+        datadumper = "datadumper",
         folder = "qcquickie",
     output:
         summary = "datadumper/qcquickie.yaml"
@@ -82,6 +83,7 @@ rule datadump_assembly:
     message:
         "Running step: {rule}"
     input:
+        datadumper = "datadumper",
         folder = "assembly",
     output:
         summary = "datadumper/assembly.yaml"
@@ -105,6 +107,7 @@ rule datadump_analysis:
     message:
         "Running step: {rule}"
     input:
+        datadumper = "datadumper",
         folder = "analysis",
     output:
         summary = "datadumper/analysis.yaml"
