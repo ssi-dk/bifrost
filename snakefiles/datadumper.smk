@@ -122,7 +122,8 @@ rule combine_datadumps:
     message:
         "Running step: {rule}"
     input:
-        folder = "qcquickie/qcquickie.yaml",
+        datadumper = "datadumper"
+        qcquickie = "qcquickie/qcquickie.yaml",
     output:
         summary = pipe("datadumper/summary.yaml"),
     params:
