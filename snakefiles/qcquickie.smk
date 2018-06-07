@@ -243,7 +243,7 @@ rule assembly_check__quast_on_contigs:
     input:
         contigs = "qcquickie/contigs.fasta"
     output:
-        contigs = "qcquickie/quast"
+        quast = "qcquickie/quast"
     threads:
         global_threads
     resources:
@@ -257,7 +257,7 @@ rule assembly_check__quast_on_contigs:
     benchmark:
         "qcquickie/benchmarks/assembly_check__quast_on_tadpole_contigs.benchmark"
     shell:
-        "quast.py --threads {threads} {input.contigs} -o quast &> {log}"
+        "quast.py --threads {threads} {input.contigs} -o {output.quast} &> {log}"
 
 
 rule assembly_check__sketch_on_contigs:
