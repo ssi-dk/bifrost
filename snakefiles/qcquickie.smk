@@ -111,7 +111,7 @@ rule setup__filter_reads_with_bbduk:
     benchmark:
         "qcquickie/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 &> {log}"
 
 
 rule contaminant_check__classify_reads_kraken_minikraken_db:

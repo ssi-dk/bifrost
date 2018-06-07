@@ -81,7 +81,7 @@ rule setup__filter_reads_with_bbduk:
     benchmark:
         "assembly/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 &> {log}"
 
 
 # rule assembly_check__combine_reads_with_bbmerge:
