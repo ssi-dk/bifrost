@@ -44,7 +44,9 @@ rule all:
         "assembly",
         "assembly/prokka",
         "assembly/contigs.bin.cov",
-        "assembly/contigs.variants"
+        "assembly/contigs.variants",
+        "assembly/quast",
+        "assembly/contigs.sketch",
 
 
 rule setup:
@@ -79,7 +81,7 @@ rule setup__filter_reads_with_bbduk:
     benchmark:
         "assembly/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minavgquality=14 &> {log}"
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 &> {log}"
 
 
 # rule assembly_check__combine_reads_with_bbmerge:
@@ -149,6 +151,52 @@ rule assembly__skesa:
         "assembly/benchmarks/assembly__skesa.benchmark"
     shell:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} &> {log}"
+
+
+rule assembly_check__quast_on_contigs:
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = "assembly/contigs.fasta"
+    output:
+        quast = "assembly/quast"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/quast.yaml"
+    group:
+        "assembly"
+    log:
+        "assembly/log/assembly_check__quast_on_tadpole_contigs.log"
+    benchmark:
+        "assembly/benchmarks/assembly_check__quast_on_tadpole_contigs.benchmark"
+    shell:
+        "quast.py --threads {threads} {input.contigs} -o {output.quast} &> {log}"
+
+
+rule assembly_check__sketch_on_contigs:
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = "assembly/contigs.fasta"
+    output:
+        sketch = "assembly/contigs.sketch"
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/bbmap.yaml"
+    group:
+        "assembly"
+    log:
+        "assembly/log/assembly_check__sketch_on_contigs.log"
+    benchmark:
+        "assembly/benchmarks/assembly_check__sketch_on_contigs.benchmark"
+    shell:
+        "sketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} &> {log}"
 
 
 rule post_assembly__stats:
