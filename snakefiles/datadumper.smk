@@ -20,11 +20,13 @@ with open(sample, "r") as sample_yaml:
 
 onsuccess:
     print("Workflow complete")
+    shell("mv datadumper/summary.yaml sample.yaml")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
     if "datadumper" not in config_sample["sample"]["components"]["success"]:
         config_sample["sample"]["components"]["success"].append("datadumper")
     if "datadumper" in config_sample["sample"]["components"]["failure"]:
         config_sample["sample"]["components"]["failure"].remove("datadumper")
-    print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
