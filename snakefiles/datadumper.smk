@@ -140,7 +140,7 @@ rule combine_datadumps:
     output:
         summary = "datadumper/summary.yaml",
     params:
-        sample = "sample.yaml",
+        sample_yaml = "sample.yaml",
     threads:
         global_threads
     resources:
