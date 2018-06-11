@@ -134,6 +134,7 @@ rule combine_datadumps:
         "Running step: {rule}"
     input:
         qcquickie_summary = "datadumper/qcquickie.yaml",
+        assembly_summary = "datadumper/assembly.yaml",
     output:
         summary = "datadumper/summary.yaml",
     params:
@@ -151,4 +152,6 @@ rule combine_datadumps:
     benchmark:
         "datadumper/benchmarks/combine_datadumps.benchmark"
     shell:
-        "cat {input.qcquickie_summary} {params.sample} 1> {output.summary} 2> {log}"
+        "cat {input.qcquickie_summary} {input.assembly_summary} {params.sample_yaml} > {output.summary}"
+    # script:
+    #     os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
