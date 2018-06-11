@@ -89,6 +89,8 @@ rule datadump_assembly:
         folder = "assembly",
     output:
         summary = "datadumper/assembly.yaml"
+    params:
+        sample = config_sample
     threads:
         global_threads
     resources:
