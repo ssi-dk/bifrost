@@ -1,3 +1,4 @@
 testdata
 \.DS_Store
 .vscode
+scripts/keys.py
