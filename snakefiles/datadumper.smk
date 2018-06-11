@@ -153,7 +153,7 @@ rule combine_datadumps:
         "datadumper/log/combine_datadumps.log"
     benchmark:
         "datadumper/benchmarks/combine_datadumps.benchmark"
-    shell:
-        "cat {input.qcquickie_summary} {input.assembly_summary} {params.sample_yaml} > {output.summary}"
-    # script:
-    #     os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
+    # shell:
+    #     "cat {input.qcquickie_summary} {input.assembly_summary} {params.sample_yaml} > {output.summary}"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
