@@ -69,8 +69,6 @@ rule datadump_qcquickie:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_qcquickie.log"
     benchmark:
@@ -93,8 +91,6 @@ rule datadump_assembly:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_assembly.log"
     benchmark:
@@ -115,8 +111,6 @@ rule datadump_analysis:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_analysis.log"
     benchmark:
@@ -140,8 +134,6 @@ rule combine_datadumps:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    group:
-        "datadumper"
     log:
         "datadumper/log/combine_datadumps.log"
     benchmark:
