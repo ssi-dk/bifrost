@@ -69,8 +69,6 @@ rule datadump_qcquickie:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
     group:
         "datadumper"
     log:
@@ -95,8 +93,6 @@ rule datadump_assembly:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
     group:
         "datadumper"
     log:
@@ -119,8 +115,6 @@ rule datadump_analysis:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
     group:
         "datadumper"
     log:
@@ -146,15 +140,11 @@ rule combine_datadumps:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
     group:
         "datadumper"
     log:
         "datadumper/log/combine_datadumps.log"
     benchmark:
         "datadumper/benchmarks/combine_datadumps.benchmark"
-    # shell:
-    #     "cat {input.qcquickie_summary} {input.assembly_summary} {params.sample_yaml} > {output.summary}"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
