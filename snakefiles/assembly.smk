@@ -46,6 +46,7 @@ rule all:
         "assembly/contigs.bin.cov",
         "assembly/contigs.variants",
         "assembly/quast",
+        "assembly/contigs.stats",
         "assembly/contigs.sketch",
 
 
@@ -268,6 +269,29 @@ rule post_assembly__mapping:
         "assembly/benchmarks/post_assembly__mapping.benchmark"
     shell:
         "minimap2 -t {threads} --MD -ax sr {input.contigs} {input.filtered_reads} 1> {output.mapped} 2> {log}"
+
+
+rule post_assembly__samtools_stats:
+    message:
+        "Running step: {rule}"
+    input:
+        mapped = "assembly/contigs.sam"
+    output:
+        stats = "assembly/contigs.stats",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/samtools.yaml"
+    group:
+        "assembly"
+    log:
+        "assembly/log/post_assembly__samtools_stats.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__samtools_stats.benchmark"
+    shell:
+        "samtools stats -@ {threads} in={input.mapped} 1> {output.stats} 2> {log}"
 
 
 rule post_assembly__pileup:
