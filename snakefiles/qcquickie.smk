@@ -26,11 +26,11 @@ onsuccess:
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    shell("rm qcquickie/*.fastq")
-    shell("rm qcquickie/contigs.sam")
-    shell("rm qcquickie/contigs.cov")
-    shell("rm qcquickie/contigs.vcf")
-    shell("rm qcquickie/raw_contigs.fasta")
+    # shell("rm qcquickie/*.fastq")
+    # shell("rm qcquickie/contigs.sam")
+    # shell("rm qcquickie/contigs.cov")
+    # shell("rm qcquickie/contigs.vcf")
+    # shell("rm qcquickie/raw_contigs.fasta")
 
 onerror:
     print("Workflow error")
@@ -95,7 +95,7 @@ rule setup__filter_reads_with_bbduk:
         dir = "qcquickie",
         reads = (R1, R2)
     output:
-        filtered_reads = "qcquickie/filtered.fastq"
+        filtered_reads = temp("qcquickie/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -172,8 +172,8 @@ rule assembly_check__combine_reads_with_bbmerge:
     input:
         filtered_reads = "qcquickie/filtered.fastq"
     output:
-        merged_reads = "qcquickie/merged.fastq",
-        unmerged_reads = "qcquickie/unmerged.fastq"
+        merged_reads = temp("qcquickie/merged.fastq"),
+        unmerged_reads = temp("qcquickie/unmerged.fastq")
     threads:
         global_threads
     resources:
@@ -197,7 +197,7 @@ rule assembly_check__quick_assembly_with_tadpole:
         merged_reads = "qcquickie/merged.fastq",
         unmerged_reads = "qcquickie/unmerged.fastq"
     output:
-        contigs = "qcquickie/raw_contigs.fasta"
+        contigs = temp("qcquickie/raw_contigs.fasta")
     threads:
         global_threads
     resources:
@@ -290,7 +290,7 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         contigs = "qcquickie/contigs.fasta",
         filtered = "qcquickie/filtered.fastq"
     output:
-        mapped = "qcquickie/contigs.sam"
+        mapped = temp("qcquickie/contigs.sam")
     threads:
         global_threads
     resources:
