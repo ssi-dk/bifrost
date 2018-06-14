@@ -313,7 +313,7 @@ rule assembly_check__pileup_on_mapped_reads:
     input:
         mapped = "qcquickie/contigs.sam"
     output:
-        coverage = "qcquickie/contigs.cov",
+        coverage = temp("qcquickie/contigs.cov"),
         pileup = "qcquickie/contigs.pileup"
     threads:
         global_threads
@@ -362,7 +362,7 @@ rule assembly_check__call_variants:
         contigs = "qcquickie/contigs.fasta",
         mapped = "qcquickie/contigs.sam",
     output:
-        variants = "qcquickie/contigs.vcf"
+        variants = temp("qcquickie/contigs.vcf")
     threads:
         global_threads
     resources:

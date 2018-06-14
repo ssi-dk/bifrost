@@ -27,10 +27,10 @@ onsuccess:
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    shell("rm assembly/filtered.fastq")
-    shell("rm assembly/contigs.sam")
-    shell("rm assembly/contigs.cov")
-    shell("rm assembly/contigs.vcf")
+    # shell("rm assembly/filtered.fastq")
+    # shell("rm assembly/contigs.sam")
+    # shell("rm assembly/contigs.cov")
+    # shell("rm assembly/contigs.vcf")
 
 onerror:
     print("Workflow error")
@@ -66,7 +66,7 @@ rule setup__filter_reads_with_bbduk:
         dir = "assembly",
         reads = (R1, R2)
     output:
-        filtered_reads = "assembly/filtered.fastq"
+        filtered_reads = temp("assembly/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -254,7 +254,7 @@ rule post_assembly__mapping:
         contigs = "assembly/contigs.fasta",
         filtered_reads = "assembly/filtered.fastq",
     output:
-        mapped = "assembly/contigs.sam"
+        mapped = temp("assembly/contigs.sam")
     threads:
         global_threads
     resources:
@@ -300,7 +300,7 @@ rule post_assembly__pileup:
     input:
         mapped = "assembly/contigs.sam"
     output:
-        coverage = "assembly/contigs.cov",
+        coverage = temp("assembly/contigs.cov"),
         pileup = "assembly/contigs.pileup"
     threads:
         global_threads
@@ -349,7 +349,7 @@ rule post_assembly__call_variants:
         contigs = "assembly/contigs.fasta",
         mapped = "assembly/contigs.sam",
     output:
-        variants = "assembly/contigs.vcf",
+        variants = temp("assembly/contigs.vcf"),
     threads:
         global_threads
     resources:
