@@ -3,6 +3,7 @@ run_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
+components: "qcquickie,analysis,assembly,datadumper"
 
 memory: &memory 10 #in Gb
 threads: &threads 5
@@ -45,8 +46,6 @@ serum:
     min_depth: 10
     recommended_depth: 25
     ambiguous_cutoff: 0.1
-  summarize:
-    depth_range: [1, 101]
   queues: 
     - urgent
     - clinical

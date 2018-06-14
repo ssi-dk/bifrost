@@ -20,7 +20,7 @@ with open(sample, "r") as sample_yaml:
 
 onsuccess:
     print("Workflow complete")
-    shell("mv datadumper/summary.yaml sample.yaml")
+    shell("cp datadumper/summary.yaml sample.yaml")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
     if "datadumper" not in config_sample["sample"]["components"]["success"]:
@@ -69,10 +69,6 @@ rule datadump_qcquickie:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_qcquickie.log"
     benchmark:
@@ -89,14 +85,12 @@ rule datadump_assembly:
         folder = "assembly",
     output:
         summary = "datadumper/assembly.yaml"
+    params:
+        sample = config_sample
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_assembly.log"
     benchmark:
@@ -117,10 +111,6 @@ rule datadump_analysis:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
-    group:
-        "datadumper"
     log:
         "datadumper/log/datadump_analysis.log"
     benchmark:
@@ -133,22 +123,20 @@ rule combine_datadumps:
     message:
         "Running step: {rule}"
     input:
+        datadumper = "datadumper",
         qcquickie_summary = "datadumper/qcquickie.yaml",
+        assembly_summary = "datadumper/assembly.yaml",
     output:
         summary = "datadumper/summary.yaml",
     params:
-        sample = "sample.yaml",
+        sample_yaml = "sample.yaml",
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    # conda:
-    #     "../envs/fastqc.yaml"
-    group:
-        "datadumper"
     log:
         "datadumper/log/combine_datadumps.log"
     benchmark:
         "datadumper/benchmarks/combine_datadumps.benchmark"
-    shell:
-        "cat {input.qcquickie_summary} {params.sample} 1> {output.summary} 2> {log}"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
