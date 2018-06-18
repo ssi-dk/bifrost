@@ -277,7 +277,7 @@ rule post_assembly__samtools_stats:
     benchmark:
         "assembly/benchmarks/post_assembly__samtools_stats.benchmark"
     shell:
-        "samtools stats -@ {threads} in={input.mapped} 1> {output.stats} 2> {log}"
+        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log}"
 
 
 rule post_assembly__pileup:
