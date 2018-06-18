@@ -23,14 +23,13 @@ R2 = config_sample["sample"]["R2"]  # expected in sample config
 onsuccess:
     print("Workflow complete")
     config_sample["sample"]["components"]["success"].append("qcquickie")
-    print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    shell("rm qcquickie/*.fastq")
-    shell("rm qcquickie/contigs.sam")
-    shell("rm qcquickie/contigs.cov")
-    shell("rm qcquickie/contigs.vcf")
-    shell("rm qcquickie/raw_contigs.fasta")
+    # shell("rm qcquickie/*.fastq")
+    # shell("rm qcquickie/contigs.sam")
+    # shell("rm qcquickie/contigs.cov")
+    # shell("rm qcquickie/contigs.vcf")
+    # shell("rm qcquickie/raw_contigs.fasta")
 
 onerror:
     print("Workflow error")
@@ -55,8 +54,6 @@ rule all:
 rule setup:
     output:
         dir = "qcquickie"
-    group:
-        "qcquickie"
     shell:
         "mkdir {output}"
 
@@ -75,8 +72,6 @@ rule fastqc_on_reads:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/fastqc.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/fastqc_on_reads.log"
     benchmark:
@@ -95,7 +90,7 @@ rule setup__filter_reads_with_bbduk:
         dir = "qcquickie",
         reads = (R1, R2)
     output:
-        filtered_reads = "qcquickie/filtered.fastq"
+        filtered_reads = temp("qcquickie/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -104,8 +99,6 @@ rule setup__filter_reads_with_bbduk:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/setup__filter_reads_with_bbduk.log"
     benchmark:
@@ -129,8 +122,6 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/kraken.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/contaminant_check__classify_reads_kraken_minikraken_db.log"
     benchmark:
@@ -154,8 +145,6 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bracken.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/contaminant_check__determine_species_bracken_on_minikraken_results.log"
     benchmark:
@@ -172,16 +161,14 @@ rule assembly_check__combine_reads_with_bbmerge:
     input:
         filtered_reads = "qcquickie/filtered.fastq"
     output:
-        merged_reads = "qcquickie/merged.fastq",
-        unmerged_reads = "qcquickie/unmerged.fastq"
+        merged_reads = temp("qcquickie/merged.fastq"),
+        unmerged_reads = temp("qcquickie/unmerged.fastq")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__combine_reads_with_bbmerge.log"
     benchmark:
@@ -197,15 +184,13 @@ rule assembly_check__quick_assembly_with_tadpole:
         merged_reads = "qcquickie/merged.fastq",
         unmerged_reads = "qcquickie/unmerged.fastq"
     output:
-        contigs = "qcquickie/raw_contigs.fasta"
+        contigs = temp("qcquickie/raw_contigs.fasta")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__quick_assembly_with_tadpole.log"
     benchmark:
@@ -227,8 +212,6 @@ rule assembly_check__rename_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__rename_contigs.log"
     benchmark:
@@ -250,8 +233,6 @@ rule assembly_check__quast_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/quast.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__quast_on_tadpole_contigs.log"
     benchmark:
@@ -273,8 +254,6 @@ rule assembly_check__sketch_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__sketch_on_contigs.log"
     benchmark:
@@ -290,15 +269,13 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         contigs = "qcquickie/contigs.fasta",
         filtered = "qcquickie/filtered.fastq"
     output:
-        mapped = "qcquickie/contigs.sam"
+        mapped = temp("qcquickie/contigs.sam")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__map_reads_to_assembly_with_bbmap.log"
     benchmark:
@@ -313,7 +290,7 @@ rule assembly_check__pileup_on_mapped_reads:
     input:
         mapped = "qcquickie/contigs.sam"
     output:
-        coverage = "qcquickie/contigs.cov",
+        coverage = temp("qcquickie/contigs.cov"),
         pileup = "qcquickie/contigs.pileup"
     threads:
         global_threads
@@ -321,8 +298,6 @@ rule assembly_check__pileup_on_mapped_reads:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/assembly_check__pileup_on_mapped_reads.log"
     benchmark:
@@ -345,8 +320,6 @@ rule summarize__depth:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/summarize__bin_coverage.log"
     benchmark:
@@ -362,15 +335,13 @@ rule assembly_check__call_variants:
         contigs = "qcquickie/contigs.fasta",
         mapped = "qcquickie/contigs.sam",
     output:
-        variants = "qcquickie/contigs.vcf"
+        variants = temp("qcquickie/contigs.vcf")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/post_assembly__call_variants.log"
     benchmark:
@@ -392,8 +363,6 @@ rule summarize__variants:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "qcquickie"
     log:
         "qcquickie/log/summarize__variants.log"
     benchmark:
@@ -450,7 +419,6 @@ rule species_check__set_species:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
                 config_sample["sample"]["species"] = df["name"].iloc[0]
-        print(config_sample)
 
 
 rule species_check__check_sizes:
