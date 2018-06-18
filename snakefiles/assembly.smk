@@ -75,8 +75,6 @@ rule setup__filter_reads_with_bbduk:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
@@ -144,8 +142,6 @@ rule assembly__skesa:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/skesa.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly__skesa.log"
     benchmark:
@@ -167,8 +163,6 @@ rule assembly_check__quast_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/quast.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly_check__quast_on_tadpole_contigs.log"
     benchmark:
@@ -190,8 +184,6 @@ rule assembly_check__sketch_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly_check__sketch_on_contigs.log"
     benchmark:
@@ -213,8 +205,6 @@ rule post_assembly__stats:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__stats.log"
     benchmark:
@@ -261,8 +251,6 @@ rule post_assembly__mapping:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/minimap2.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__mapping.log"
     benchmark:
@@ -284,8 +272,6 @@ rule post_assembly__samtools_stats:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/samtools.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__samtools_stats.log"
     benchmark:
@@ -308,8 +294,6 @@ rule post_assembly__pileup:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__pileup.log"
     benchmark:
@@ -332,8 +316,6 @@ rule summarize__depth:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/summarize__bin_coverage.log"
     benchmark:
@@ -356,8 +338,6 @@ rule post_assembly__call_variants:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__call_variants.log"
     benchmark:
@@ -379,8 +359,6 @@ rule summarize__variants:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/summarize__variants.log"
     benchmark:
@@ -402,8 +380,6 @@ rule post_assembly__annotate:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/prokka.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__annotate.log"
     benchmark:
