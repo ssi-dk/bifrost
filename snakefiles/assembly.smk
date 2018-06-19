@@ -54,7 +54,7 @@ rule setup:
     message:
         "Running step: {rule}"
     output:
-        dir = "assembly"
+        dir = "assembly",
         assembly_with = "assembly/assembly_with_" + config["assembly_with"]
     shell:
         """
