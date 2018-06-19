@@ -113,7 +113,6 @@ rule assembly__spades:
     message:
         "Running step: {rule}"
     input:
-        assembler = "assembly/assembler_chosen",
         filtered_reads = "assembly/filtered.fastq",
     params:
         assembler = "assembler/assembler_SPAdes"
@@ -137,12 +136,10 @@ rule assembly__spades:
         mv {spades_folder}/contigs.fasta contigs.fasta
         """
 
-
 rule assembly__skesa:
     message:
         "Running step: {rule}"
     input:
-        assembler = "assembly/assembly_with_skesa",
         filtered_reads = "assembly/filtered.fastq",
     output:
         contigs = "assembly/contigs.fasta",
