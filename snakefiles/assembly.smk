@@ -156,15 +156,17 @@ rule assembly__skesa:
     shell:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} &> {log}"
 
-rule temp:
+
+rule assembly__selection:
     input:
-        assembly_with = config["assembly_with"]
+        assembly_with = "assembly/assembly_with" + config["assembly_with"]
     params:
         "assembly/temp.fasta"
     output:
         "assembly/contigs.fasta"
     shell:
         "mv {params} {output}"
+
 
 rule assembly_check__quast_on_contigs:
     message:
