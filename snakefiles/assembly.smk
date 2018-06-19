@@ -165,7 +165,7 @@ rule assembly_check__quast_on_contigs:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"]
+        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         quast = "assembly/quast"
