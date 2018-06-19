@@ -113,6 +113,7 @@ rule assembly__spades:
     message:
         "Running step: {rule}"
     input:
+        assembler = "assembly/assembler_chosen",
         filtered_reads = "assembly/filtered.fastq",
     params:
         assembler = "assembler/assembler_SPAdes"
@@ -140,6 +141,7 @@ rule assembly__skesa:
     message:
         "Running step: {rule}"
     input:
+
         filtered_reads = "assembly/filtered.fastq",
     output:
         contigs = "assembly/contigs.fasta",
@@ -162,7 +164,7 @@ rule assembly_check__quast_on_contigs:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"],
+        assembler_chosen = "assembly/assembly_with_skesa",
         contigs = "assembly/contigs.fasta"
     output:
         quast = "assembly/quast"
@@ -184,7 +186,6 @@ rule assembly_check__sketch_on_contigs:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         sketch = "assembly/contigs.sketch"
@@ -206,7 +207,6 @@ rule post_assembly__stats:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         stats = touch("assembly/post_assermbly__stats")
@@ -252,7 +252,6 @@ rule post_assembly__mapping:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta",
         filtered_reads = "assembly/filtered.fastq",
     output:
@@ -383,7 +382,6 @@ rule post_assembly__annotate:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         prokka = "assembly/prokka"
