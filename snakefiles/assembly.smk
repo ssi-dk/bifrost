@@ -55,7 +55,7 @@ rule setup:
         "Running step: {rule}"
     output:
         dir = "assembly",
-        assembly_with = "assembly/assembly_with_" + config["assembly_with"]
+        assembly_with = "assembly/assembly_with_skesa"
     shell:
         """
         mkdir {output.dir}
