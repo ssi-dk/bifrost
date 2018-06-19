@@ -184,6 +184,7 @@ rule assembly_check__sketch_on_contigs:
     message:
         "Running step: {rule}"
     input:
+        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         sketch = "assembly/contigs.sketch"
@@ -205,6 +206,7 @@ rule post_assembly__stats:
     message:
         "Running step: {rule}"
     input:
+        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         stats = touch("assembly/post_assermbly__stats")
@@ -250,6 +252,7 @@ rule post_assembly__mapping:
     message:
         "Running step: {rule}"
     input:
+        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta",
         filtered_reads = "assembly/filtered.fastq",
     output:
@@ -380,6 +383,7 @@ rule post_assembly__annotate:
     message:
         "Running step: {rule}"
     input:
+        assembler_chosen = config["assembly_with"],
         contigs = "assembly/contigs.fasta"
     output:
         prokka = "assembly/prokka"
