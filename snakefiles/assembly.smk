@@ -55,13 +55,11 @@ rule setup:
         "Running step: {rule}"
     output:
         dir = "assembly",
-        assembly_with = "assembly/assembly_with_skesa"
     shell:
         """
         mkdir {output.dir}
         touch {output.assembly_with}
         """
-
 
 rule setup__filter_reads_with_bbduk:
     message:
@@ -115,11 +113,14 @@ rule assembly__spades:
     message:
         "Running step: {rule}"
     input:
-        assembler = "assembly/assembly_with_SPAdes",
+        assembler = "assembly/assembler_chosen",
         filtered_reads = "assembly/filtered.fastq",
+    params:
+        assembler = "assembler/assembler_SPAdes"
     output:
         spades_folder = temp("spades"),
         contigs = "assembly/contigs.fasta",
+        assembly_with = touch("assembly/assembly_with_SPAdes"),
     threads:
         global_threads
     resources:
@@ -145,6 +146,7 @@ rule assembly__skesa:
         filtered_reads = "assembly/filtered.fastq",
     output:
         contigs = "assembly/contigs.fasta",
+        assembly_with = touch("assembly/assembly_with_skesa")
     threads:
         global_threads
     resources:
@@ -163,6 +165,7 @@ rule assembly_check__quast_on_contigs:
     message:
         "Running step: {rule}"
     input:
+        assembler_chosen = config["assembly_with"]
         contigs = "assembly/contigs.fasta"
     output:
         quast = "assembly/quast"
