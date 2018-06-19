@@ -3,6 +3,7 @@ run_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
+assemble_with: "skesa"
 components: "qcquickie,analysis,assembly,datadumper"
 
 memory: &memory 10 #in Gb

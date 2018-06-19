@@ -55,8 +55,12 @@ rule setup:
         "Running step: {rule}"
     output:
         dir = "assembly"
+        assembly_with = "assembly/assembly_with_" + config["assembly_with"]
     shell:
-        "mkdir {output}"
+        """
+        mkdir {output.dir}
+        touch {output.assembly_with}
+        """
 
 
 rule setup__filter_reads_with_bbduk:
@@ -107,32 +111,37 @@ rule setup__filter_reads_with_bbduk:
 #             shell("bbmerge.sh in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}")
 
 
-# rule assembly__spades:
-#     input:
-#         merged_reads = "assembly/merged.fastq",
-#         unmerged_reads = "assembly/unmerged.fastq"
-#     output:
-#         assembly = "assembly/spades",
-#         contigs = "assembly/spades/contigs.fasta",
-#     threads:
-#         global_threads
-#     resources:
-#         memory_in_GB = global_memory_in_GB
-#     log:
-#         "assembly/log/assembly__spades.log"
-#     benchmark:
-#         "assembly/benchmarks/assembly__spades.benchmark"
-#     shell:
-#         """
-#         spades.py -k 21,33,55,77 -s {input.merged_reads} --12 {input.unmerged_reads} -o {output.assembly} --careful &> {log}
-#         mv spades/contigs.fasta contigs.fasta
-#         """
+rule assembly__spades:
+    message:
+        "Running step: {rule}"
+    input:
+        assembler = "assembly/assembly_with_SPAdes"
+        filtered_reads = "assembly/filtered.fastq"
+    output:
+        spades_folder = temp("spades")
+        contigs = "assembly/contigs.fasta",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/spades.yaml"
+    log:
+        "assembly/log/assembly__spades.log"
+    benchmark:
+        "assembly/benchmarks/assembly__spades.benchmark"
+    shell:
+        """
+        spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful &> {log}
+        mv {spades_folder}/contigs.fasta contigs.fasta
+        """
 
 
 rule assembly__skesa:
     message:
         "Running step: {rule}"
     input:
+        assembler = "assembly/assembly_with_skesa"
         filtered_reads = "assembly/filtered.fastq",
     output:
         contigs = "assembly/contigs.fasta",
