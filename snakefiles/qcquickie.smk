@@ -22,6 +22,8 @@ R2 = config_sample["sample"]["R2"]  # expected in sample config
 
 onsuccess:
     print("Workflow complete")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
     config_sample["sample"]["components"]["success"].append("qcquickie")
     print("end", config_sample)
     with open(sample, "w") as output_file:
@@ -34,6 +36,8 @@ onsuccess:
 
 onerror:
     print("Workflow error")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
     config_sample["sample"]["components"]["failure"].append("qcquickie")
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
