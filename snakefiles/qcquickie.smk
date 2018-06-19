@@ -417,18 +417,16 @@ rule species_check__set_species:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         with open(output.species, "w") as species_file:
+            df = pandas.read_table(input.bracken)
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
                 config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-                with open(sample, "w") as output_file:
-                    yaml.dump(config_sample, output_file)
             else:
-                df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
                 config_sample["sample"]["species"] = df["name"].iloc[0]
-                with open(sample, "w") as output_file:
-                    yaml.dump(config_sample, output_file)
-        print(config_sample)
+        config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+        with open(sample, "w") as output_file:
+            yaml.dump(config_sample, output_file)
 
 rule species_check__check_sizes:
     message:
