@@ -164,7 +164,7 @@ rule temp:
     output:
         "assembly/contigs.fasta"
     shell:
-        "cp temp.fasta contigs.fasta"
+        "mv {params} {output}"
 
 rule assembly_check__quast_on_contigs:
     message:
