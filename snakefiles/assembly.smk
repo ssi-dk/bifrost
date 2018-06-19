@@ -58,7 +58,6 @@ rule setup:
     shell:
         """
         mkdir {output.dir}
-        touch {output.assembly_with}
         """
 
 rule setup__filter_reads_with_bbduk:
