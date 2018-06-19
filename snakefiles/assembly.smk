@@ -118,7 +118,7 @@ rule assembly__spades:
         assembler = "assembly/assembly_with_SPAdes",
         filtered_reads = "assembly/filtered.fastq",
     output:
-        spades_folder = temp("spades")
+        spades_folder = temp("spades"),
         contigs = "assembly/contigs.fasta",
     threads:
         global_threads
