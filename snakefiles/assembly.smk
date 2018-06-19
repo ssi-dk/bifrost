@@ -113,13 +113,12 @@ rule assembly__spades:
     message:
         "Running step: {rule}"
     input:
-        assembler = "assembly/assembler_chosen",
         filtered_reads = "assembly/filtered.fastq",
     params:
         assembler = "assembler/assembler_SPAdes"
     output:
         spades_folder = temp("spades"),
-        contigs = "assembly/contigs.fasta",
+        contigs = "assembly/temp.fasta",
         assembly_with = touch("assembly/assembly_with_SPAdes"),
     threads:
         global_threads
@@ -134,17 +133,16 @@ rule assembly__spades:
     shell:
         """
         spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful &> {log}
-        mv {spades_folder}/contigs.fasta contigs.fasta
+        mv {spades_folder}/contigs.fasta {output.contigs}
         """
 
 rule assembly__skesa:
     message:
         "Running step: {rule}"
     input:
-
         filtered_reads = "assembly/filtered.fastq",
     output:
-        contigs = "assembly/contigs.fasta",
+        contigs = "assembly/temp.fasta",
         assembly_with = touch("assembly/assembly_with_skesa")
     threads:
         global_threads
@@ -160,11 +158,20 @@ rule assembly__skesa:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} &> {log}"
 
 
+rule_temp:
+    input:
+        assembler_chosen = config["assembly_with"],
+    params:
+        "assembly/temp.fasta"
+    output:
+        "assembly/contigs.fasta"
+    shell:
+        "cp temp.fasta contigs.fasta"
+
 rule assembly_check__quast_on_contigs:
     message:
         "Running step: {rule}"
     input:
-        assembler_chosen = "assembly/assembly_with_skesa",
         contigs = "assembly/contigs.fasta"
     output:
         quast = "assembly/quast"
