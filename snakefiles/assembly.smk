@@ -157,7 +157,7 @@ rule assembly__skesa:
     shell:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} &> {log}"
 
-rule_temp:
+rule temp:
     input:
         assembly_with = "assembly/assembly_with_skesa"
     params:
