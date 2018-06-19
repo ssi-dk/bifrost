@@ -23,6 +23,7 @@ R2 = config_sample["sample"]["R2"]  # expected in sample config
 onsuccess:
     print("Workflow complete")
     config_sample["sample"]["components"]["success"].append("qcquickie")
+    print("end", config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
     # shell("rm qcquickie/*.fastq")
@@ -419,7 +420,7 @@ rule species_check__set_species:
                 df = pandas.read_table(input.bracken)
                 species_file.write(df["name"].iloc[0] + "\n")
                 config_sample["sample"]["species"] = df["name"].iloc[0]
-
+        print(config_sample)
 
 rule species_check__check_sizes:
     message:
