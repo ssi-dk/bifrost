@@ -27,10 +27,10 @@ onsuccess:
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    shell("rm assembly/filtered.fastq")
-    shell("rm assembly/contigs.sam")
-    shell("rm assembly/contigs.cov")
-    shell("rm assembly/contigs.vcf")
+    # shell("rm assembly/filtered.fastq")
+    # shell("rm assembly/contigs.sam")
+    # shell("rm assembly/contigs.cov")
+    # shell("rm assembly/contigs.vcf")
 
 onerror:
     print("Workflow error")
@@ -46,6 +46,7 @@ rule all:
         "assembly/contigs.bin.cov",
         "assembly/contigs.variants",
         "assembly/quast",
+        "assembly/contigs.stats",
         "assembly/contigs.sketch",
 
 
@@ -65,7 +66,7 @@ rule setup__filter_reads_with_bbduk:
         dir = "assembly",
         reads = (R1, R2)
     output:
-        filtered_reads = "assembly/filtered.fastq"
+        filtered_reads = temp("assembly/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
     threads:
@@ -74,8 +75,6 @@ rule setup__filter_reads_with_bbduk:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/setup__filter_reads_with_bbduk.log"
     benchmark:
@@ -143,8 +142,6 @@ rule assembly__skesa:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/skesa.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly__skesa.log"
     benchmark:
@@ -166,8 +163,6 @@ rule assembly_check__quast_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/quast.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly_check__quast_on_tadpole_contigs.log"
     benchmark:
@@ -189,8 +184,6 @@ rule assembly_check__sketch_on_contigs:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/assembly_check__sketch_on_contigs.log"
     benchmark:
@@ -212,8 +205,6 @@ rule post_assembly__stats:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__stats.log"
     benchmark:
@@ -253,15 +244,13 @@ rule post_assembly__mapping:
         contigs = "assembly/contigs.fasta",
         filtered_reads = "assembly/filtered.fastq",
     output:
-        mapped = "assembly/contigs.sam"
+        mapped = temp("assembly/contigs.sam")
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/minimap2.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__mapping.log"
     benchmark:
@@ -270,13 +259,34 @@ rule post_assembly__mapping:
         "minimap2 -t {threads} --MD -ax sr {input.contigs} {input.filtered_reads} 1> {output.mapped} 2> {log}"
 
 
+rule post_assembly__samtools_stats:
+    message:
+        "Running step: {rule}"
+    input:
+        mapped = "assembly/contigs.sam"
+    output:
+        stats = "assembly/contigs.stats",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "assembly/log/post_assembly__samtools_stats.log"
+    benchmark:
+        "assembly/benchmarks/post_assembly__samtools_stats.benchmark"
+    shell:
+        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log}"
+
+
 rule post_assembly__pileup:
     message:
         "Running step: {rule}"
     input:
         mapped = "assembly/contigs.sam"
     output:
-        coverage = "assembly/contigs.cov",
+        coverage = temp("assembly/contigs.cov"),
         pileup = "assembly/contigs.pileup"
     threads:
         global_threads
@@ -284,8 +294,6 @@ rule post_assembly__pileup:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__pileup.log"
     benchmark:
@@ -308,8 +316,6 @@ rule summarize__depth:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/summarize__bin_coverage.log"
     benchmark:
@@ -325,15 +331,13 @@ rule post_assembly__call_variants:
         contigs = "assembly/contigs.fasta",
         mapped = "assembly/contigs.sam",
     output:
-        variants = "assembly/contigs.vcf",
+        variants = temp("assembly/contigs.vcf"),
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/bbmap.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__call_variants.log"
     benchmark:
@@ -355,8 +359,6 @@ rule summarize__variants:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/python_packages.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/summarize__variants.log"
     benchmark:
@@ -378,8 +380,6 @@ rule post_assembly__annotate:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/prokka.yaml"
-    group:
-        "assembly"
     log:
         "assembly/log/post_assembly__annotate.log"
     benchmark:

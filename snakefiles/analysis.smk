@@ -64,8 +64,6 @@ rule ariba__resfinder:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/ariba.yaml"
-    group:
-        "analysis"
     log:
         out_file = "analysis/log/ariba__resfinder.out.log",
         err_file = "analysis/log/ariba__resfinder.err.log",
@@ -91,8 +89,6 @@ rule abricate_on_ariba_resfinder:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/abricate.yaml"
-    group:
-        "analysis"
     log:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
@@ -122,8 +118,6 @@ rule ariba__plasmidfinder:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/ariba.yaml"
-    group:
-        "analysis"
     log:
         out_file = "analysis/log/ariba__plasmidfinder.out.log",
         err_file = "analysis/log/ariba__plasmidfinder.err.log",
@@ -149,8 +143,6 @@ rule abricate_on_ariba_plasmidfinder:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/abricate.yaml"
-    group:
-        "analysis"
     log:
         err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
     benchmark:
@@ -178,8 +170,6 @@ rule ariba__mlst:
         memory_in_GB = global_memory_in_GB
     conda:
         "../envs/ariba.yaml"
-    group:
-        "analysis"
     log:
         out_file = "analysis/log/ariba__mlst.out.log",
         err_file = "analysis/log/ariba__mlst.err.log",
