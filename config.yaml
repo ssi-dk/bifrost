@@ -3,8 +3,8 @@ run_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
-assembly_with: "skesa"
-components: "qcquickie,analysis,assembly,datadumper"
+assembly_with: "skesa" # skesa|spades
+components: "qcquickie,analysis,assembly,datadumper" # available options are in snakefiles
 
 memory: &memory 10 #in Gb
 threads: &threads 5
