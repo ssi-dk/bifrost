@@ -32,7 +32,6 @@ ruleorder: setup > initialize_run
 
 rule all:
     input:
-        "run_cmd_qcquickie.sh",
         "run.yaml"
 
 
