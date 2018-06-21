@@ -20,7 +20,6 @@ with open(sample, "r") as sample_yaml:
 
 onsuccess:
     print("Workflow complete")
-    shell("cp datadumper/summary.yaml sample.yaml")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
     if "datadumper" not in config_sample["sample"]["components"]["success"]:
@@ -32,6 +31,8 @@ onsuccess:
 
 onerror:
     print("Workflow error")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
     if "datadumper" in config_sample["sample"]["components"]["success"]:
         config_sample["sample"]["components"]["success"].remove("datadumper")
     if "datadumper" not in config_sample["sample"]["components"]["failure"]:
