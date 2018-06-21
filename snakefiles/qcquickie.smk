@@ -477,9 +477,9 @@ rule datadump_qcquickie:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "datadumper/log/datadump_qcquickie.log"
+        "qcquickie/log/datadump_qcquickie.log"
     benchmark:
-        "datadumper/benchmarks/datadump_qcquickie.benchmark"
+        "qcquickie/benchmarks/datadump_qcquickie.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
 
