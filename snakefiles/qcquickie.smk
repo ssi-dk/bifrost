@@ -133,7 +133,8 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     input:
         kraken_report = "qcquickie/kraken_report.txt"
     output:
-        bracken = "qcquickie/bracken.txt"
+        bracken = "qcquickie/bracken.txt",
+        kraken_report_bracken = "qcquickie/kraken_report_bracken.txt"
     params:
         kmer_dist = config["kraken"]["kmer_dist"]
     threads:
