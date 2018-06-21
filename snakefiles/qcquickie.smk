@@ -470,6 +470,7 @@ rule datadump_qcquickie:
         "qcquickie/contigs.variants",
         "qcquickie/quast",
         "qcquickie/contigs.sketch",
+        "qcquickie/species.txt",
     output:
         summary = "qcquickie/qcquickie.yaml"
     params:
