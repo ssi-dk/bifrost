@@ -3,4 +3,4 @@ testdata
 .vscode
 scripts/keys.py
 start.sh
-
+*.pyc
