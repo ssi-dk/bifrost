@@ -62,9 +62,7 @@ rule setup:
     output:
         directory = "assembly",
     shell:
-        """
-        mkdir {output.dir}
-        """
+        "mkdir {output}"
 
 rule setup__filter_reads_with_bbduk:
     message:
