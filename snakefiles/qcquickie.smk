@@ -462,7 +462,7 @@ rule datadump_qcquickie:
         "qcquickie/contigs.bin.cov",
         "qcquickie/contigs.sum.cov",
         "qcquickie/bracken.txt",
-        "qcquickie/kraken_report_bracken.txt"
+        "qcquickie/kraken_report_bracken.txt",
         "qcquickie/contaminantion_check.txt",
         "qcquickie/contigs.variants",
         "qcquickie/quast",
