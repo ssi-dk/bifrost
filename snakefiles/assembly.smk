@@ -27,10 +27,7 @@ onsuccess:
     print(config_sample)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    # shell("rm assembly/filtered.fastq")
-    # shell("rm assembly/contigs.sam")
-    # shell("rm assembly/contigs.cov")
-    # shell("rm assembly/contigs.vcf")
+
 
 onerror:
     print("Workflow error")
