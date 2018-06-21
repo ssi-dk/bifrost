@@ -11,6 +11,7 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
+
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
@@ -19,6 +20,7 @@ with open(sample, "r") as yaml_stream:
 R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
+species = config_sample["species"]
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -164,6 +166,8 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_mlst",
+    params:
+        species = species,
     threads:
         global_threads
     resources:

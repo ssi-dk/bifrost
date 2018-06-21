@@ -5,12 +5,13 @@ partition: "standard"
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
 components: "qcquickie,analysis,assembly,datadumper" # available options are in snakefiles
+group: "" # group for sbatch on torque system
 
 memory: &memory 10 #in Gb
 threads: &threads 5
 
 kraken:
-  database: &kraken_db "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+  database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
   kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
 
 abricate:
@@ -47,71 +48,3 @@ serum:
     min_depth: 10
     recommended_depth: 25
     ambiguous_cutoff: 0.1
-  queues: 
-    - urgent
-    - clinical
-    - outbreak
-    - surveillance
-    - qc
-    - daytime
-    - standard
-
-#target is currently set to recommended
-
-# qc: 
-#     categories: 
-#         - sample_name
-#         - status
-#         - qc_check
-#         - supplying_lab
-#         - initials
-#         - run_name
-#         - qc_action
-#         - R1_location
-#         - R2_location
-#         - output_directory
-#         - num_of_reads
-#         - trimmed_num_of_reads
-#         - normalized_num_of_reads
-#         - read_length
-#         - mean_read_length
-#         - provided_species
-#         - detected_species_ncbi
-#         - genuses_detected
-#     labels: 
-#         "Organism":"provided_species"
-#         "Initials":"initials"
-#         "Comments":"comments"
-#         "SampleID":"sample_name"
-#         "ExperimentName":"run_name"
-#         "SupplyingLab":"supplying_lab"
-#     identifier_file:
-#         - SampleID
-#         - SupplyingLab
-#         - Organism
-#         - Priority
-#         - Initials
-#         - Comments
-#         - R1_location
-#         - R2_location
-#         - ExperimentName
-#         - output_directory
-
-
-# contig_removal_pattern=.*?(^|_)(?P<value>{}_.*?(_|$))
-# #became a little less flexible than I wanted but need all the parts to recombine so can only expand in patterns between but need groupings as are
-# read_file_pattern = 
-# #list that's comma seperated
-# samples_to_ignore = Undetermined
-
-
-
-# #for mapping between qc and identifier file
-
-
-
-# [email]
-# default_to = ngsbig@ssi.dk
-# default_from = ngsbig@ssi.dk
-# convert_paths_from_linux_to_msft = True
-# replacement_path = /srv;\\s-sdi-calc1-p

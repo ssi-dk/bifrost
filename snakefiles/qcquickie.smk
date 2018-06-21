@@ -45,15 +45,7 @@ onerror:
 
 rule all:
     input:
-        "qcquickie",
-        "qcquickie/fastqc_data.txt",
-        "qcquickie/contigs.bin.cov",
-        "species.txt",
-        "qcquickie/contigs.vcf",
-        "qcquickie/contaminantion_check.txt",
-        "qcquickie/contigs.variants",
-        "qcquickie/quast",
-        "qcquickie/contigs.sketch",
+        "qcquickie/qcquickie.yaml",
 
 
 rule setup:
@@ -406,7 +398,9 @@ rule species_check__set_species:
     input:
         bracken = "qcquickie/bracken.txt",
     output:
-        species = "species.txt",
+        species = "qcquickie/species.txt",
+    params:
+        sample = sample,
     threads:
         global_threads
     resources:
@@ -416,17 +410,20 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open(output.species, "w") as species_file:
-            df = pandas.read_table(input.bracken)
-            if "provided_species" in config_sample["sample"]:
-                species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-            else:
-                species_file.write(df["name"].iloc[0] + "\n")
-                config_sample["sample"]["species"] = df["name"].iloc[0]
-        config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+        with open(sample, "r") as sample_yaml:
+            config_sample = yaml.load(sample_yaml)
+            with open(output.species, "w") as species_file:
+                df = pandas.read_table(input.bracken)
+                if "provided_species" in config_sample["sample"]:
+                    species_file.write(config_sample["sample"]["provided_species"] + "\n")
+                    config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
+                else:
+                    species_file.write(df["name"].iloc[0] + "\n")
+                    config_sample["sample"]["species"] = df["name"].iloc[0]
+            config_sample["sample"]["detected_species"] = df["name"].iloc[0]
         with open(sample, "w") as output_file:
             yaml.dump(config_sample, output_file)
+
 
 rule species_check__check_sizes:
     message:
@@ -455,3 +452,34 @@ rule species_check__check_sizes:
                     size_check.write("{}\n".format(df[df["ncbi_species"] == species]["min_length"]))
                     size_check.write("{}\n".format(df[df["ncbi_species"] == species]["max_length"]))
             pass
+
+
+rule datadump_qcquickie:
+    message:
+        "Running step: {rule}"
+    input:
+        "qcquickie/fastqc_data.txt",
+        "qcquickie/contigs.bin.cov",
+        "qcquickie/contigs.sum.cov",
+        "qcquickie/bracken.txt",
+        "qcquickie/kraken_report_bracken.txt"
+        "qcquickie/contaminantion_check.txt",
+        "qcquickie/contigs.variants",
+        "qcquickie/quast",
+        "qcquickie/contigs.sketch",
+    output:
+        summary = "qcquickie/qcquickie.yaml"
+    params:
+        sample = sample,
+        folder = "qcquickie",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "datadumper/log/datadump_qcquickie.log"
+    benchmark:
+        "datadumper/benchmarks/datadump_qcquickie.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
+
