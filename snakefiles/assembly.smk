@@ -156,7 +156,7 @@ rule assembly__skesa:
 
 rule assembly__selection:
     input:
-        assembly_with = "assembly/assembly_with" + config["assembly_with"]
+        assembly_with = "assembly/assembly_with_" + config["assembly_with"]
     params:
         "assembly/temp.fasta"
     output:
