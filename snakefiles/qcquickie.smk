@@ -20,25 +20,27 @@ with open(sample, "r") as sample_yaml:
 R1 = config_sample["sample"]["R1"]  # expected in sample config
 R2 = config_sample["sample"]["R2"]  # expected in sample config
 
+component = "qcquickie"
+
 onsuccess:
     print("Workflow complete")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
-    config_sample["sample"]["components"]["success"].append("qcquickie")
-    print("end", config_sample)
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    # shell("rm qcquickie/*.fastq")
-    # shell("rm qcquickie/contigs.sam")
-    # shell("rm qcquickie/contigs.cov")
-    # shell("rm qcquickie/contigs.vcf")
-    # shell("rm qcquickie/raw_contigs.fasta")
 
 onerror:
     print("Workflow error")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
-    config_sample["sample"]["components"]["failure"].append("qcquickie")
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -50,7 +52,7 @@ rule all:
 
 rule setup:
     output:
-        dir = "qcquickie"
+        directory = "qcquickie"
     shell:
         "mkdir {output}"
 
@@ -59,7 +61,7 @@ rule fastqc_on_reads:
     message:
         "Running step: {rule}"
     input:
-        dir = "qcquickie",
+        directory = "qcquickie",
         reads = (R1, R2)
     output:
         fastqc_summary = "qcquickie/fastqc_data.txt"
@@ -84,7 +86,7 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = "qcquickie",
+        directory = "qcquickie",
         reads = (R1, R2)
     output:
         filtered_reads = temp("qcquickie/filtered.fastq")

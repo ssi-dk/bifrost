@@ -21,18 +21,27 @@ R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
 # my understanding is all helps specify final output
+component = "assembly"
+
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["components"]["success"].append("assembly")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
-
 onerror:
     print("Workflow error")
-    config_sample["sample"]["components"]["failure"].append("assembly")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -51,7 +60,7 @@ rule setup:
     message:
         "Running step: {rule}"
     output:
-        dir = "assembly",
+        directory = "assembly",
     shell:
         """
         mkdir {output.dir}
@@ -61,7 +70,7 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = "assembly",
+        directory = "assembly",
         reads = (R1, R2)
     output:
         filtered_reads = temp("assembly/filtered.fastq")

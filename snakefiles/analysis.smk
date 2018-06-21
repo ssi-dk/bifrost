@@ -22,16 +22,27 @@ R2 = config_sample["sample"]["R2"]
 
 species = config_sample["species"]
 # my understanding is all helps specify final output
+component = "analysis"
+
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["components"]["success"].append("analysis")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
+
 onerror:
     print("Workflow error")
-    config_sample["sample"]["components"]["failure"].append("analysis")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 

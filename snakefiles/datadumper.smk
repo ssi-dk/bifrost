@@ -18,14 +18,16 @@ with open(sample, "r") as sample_yaml:
     config_sample = yaml.load(sample_yaml)
 
 
+component = "datadumper"
+
 onsuccess:
     print("Workflow complete")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
-    if "datadumper" not in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].append("datadumper")
-    if "datadumper" in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].remove("datadumper")
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -33,10 +35,10 @@ onerror:
     print("Workflow error")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
-    if "datadumper" in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].remove("datadumper")
-    if "datadumper" not in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].append("datadumper")
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -53,7 +55,7 @@ rule setup:
     message:
         "Running step: {rule}"
     output:
-        dir = "datadumper"
+        directory = "datadumper"
     shell:
         "mkdir {output}"
 
