@@ -69,6 +69,6 @@ rule initialize_run:
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 
-rule check_provided_sample_sheet:
+# rule check_provided_sample_sheet:
 
-rule 
+# rule 
