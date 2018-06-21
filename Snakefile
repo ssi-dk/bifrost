@@ -27,7 +27,7 @@ onerror:
     print("Workflow error")
     shell(touch("qcquickie_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_")))
 
-ruleorder: setup > initialize_run > print_run
+ruleorder: setup > initialize_run
 
 
 rule all:
