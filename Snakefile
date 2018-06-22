@@ -21,11 +21,11 @@ folder_name = "run_info"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
-    shell("touch qcquickie_successfully_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
+    shell("touch serumqc_successfully_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
 
 onerror:
     print("Workflow error")
-    shell("touch qcquickie_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
+    shell("touch serumqc_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
 
 ruleorder: setup > initialize_run
 
