@@ -20,7 +20,9 @@ with open(sample, "r") as yaml_stream:
 R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
-species = config_sample["sample"]["species"]
+species = ""
+if "species" in config_sample["sample"]:
+    species = config_sample["sample"]["species"]
 # my understanding is all helps specify final output
 component = "analysis"
 
