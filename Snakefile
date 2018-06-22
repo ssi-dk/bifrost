@@ -68,3 +68,10 @@ rule initialize_run:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 
 # can break this down to 2 parts where you create the sample_sheet in one and then prep for run with the other
+# rule start_run:
+#     input:
+#         "run.yaml"
+#     output:
+#         touch("run_started")
+#     shell:
+#         "bash run_cmd_serumqc.sh"
