@@ -47,13 +47,7 @@ onerror:
 
 rule all:
     input:
-        "assembly",
-        "assembly/prokka",
-        "assembly/contigs.bin.cov",
-        "assembly/contigs.variants",
-        "assembly/quast",
-        "assembly/contigs.stats",
-        "assembly/contigs.sketch",
+        "assembly/assembly.yaml"
 
 
 rule setup:
@@ -408,3 +402,31 @@ rule post_assembly__annotate:
         "assembly/benchmarks/post_assembly__annotate.benchmark"
     shell:
         "prokka --cpus {threads} --centre XXX --compliant --outdir {output.prokka} {input.contigs} &> {log}"
+
+
+rule datadump_assembly:
+    message:
+        "Running step: {rule}"
+    input:
+        "assembly/prokka",
+        "assembly/contigs.bin.cov",
+        "assembly/contigs.sum.cov",
+        "assembly/contigs.variants",
+        "assembly/quast",
+        "assembly/contigs.stats",
+        "assembly/contigs.sketch",
+    output:
+        summary = "assembly/assembly.yaml"
+    params:
+        sample = sample,
+        folder = "assembly",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "assembly/log/datadump_assembly.log"
+    benchmark:
+        "assembly/benchmarks/datadump_assembly.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_assembly.py")
