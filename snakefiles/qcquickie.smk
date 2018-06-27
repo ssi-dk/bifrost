@@ -20,40 +20,39 @@ with open(sample, "r") as sample_yaml:
 R1 = config_sample["sample"]["R1"]  # expected in sample config
 R2 = config_sample["sample"]["R2"]  # expected in sample config
 
+component = "qcquickie"
+
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["components"]["success"].append("qcquickie")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
-    # shell("rm qcquickie/*.fastq")
-    # shell("rm qcquickie/contigs.sam")
-    # shell("rm qcquickie/contigs.cov")
-    # shell("rm qcquickie/contigs.vcf")
-    # shell("rm qcquickie/raw_contigs.fasta")
 
 onerror:
     print("Workflow error")
-    config_sample["sample"]["components"]["failure"].append("qcquickie")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
 
 rule all:
     input:
-        "qcquickie",
-        "qcquickie/fastqc_data.txt",
-        "qcquickie/contigs.bin.cov",
-        "species.txt",
-        "qcquickie/contigs.vcf",
-        "qcquickie/contaminantion_check.txt",
-        "qcquickie/contigs.variants",
-        "qcquickie/quast",
-        "qcquickie/contigs.sketch",
+        "qcquickie/qcquickie.yaml",
 
 
 rule setup:
     output:
-        dir = "qcquickie"
+        directory = "qcquickie"
     shell:
         "mkdir {output}"
 
@@ -62,7 +61,7 @@ rule fastqc_on_reads:
     message:
         "Running step: {rule}"
     input:
-        dir = "qcquickie",
+        directory = "qcquickie",
         reads = (R1, R2)
     output:
         fastqc_summary = "qcquickie/fastqc_data.txt"
@@ -87,7 +86,7 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step: {rule}"
     input:
-        dir = "qcquickie",
+        directory = "qcquickie",
         reads = (R1, R2)
     output:
         filtered_reads = temp("qcquickie/filtered.fastq")
@@ -136,7 +135,8 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     input:
         kraken_report = "qcquickie/kraken_report.txt"
     output:
-        bracken = "qcquickie/bracken.txt"
+        bracken = "qcquickie/bracken.txt",
+        kraken_report_bracken = "qcquickie/kraken_report_bracken.txt"
     params:
         kmer_dist = config["kraken"]["kmer_dist"]
     threads:
@@ -401,7 +401,9 @@ rule species_check__set_species:
     input:
         bracken = "qcquickie/bracken.txt",
     output:
-        species = "species.txt",
+        species = "qcquickie/species.txt",
+    params:
+        sample = sample,
     threads:
         global_threads
     resources:
@@ -411,14 +413,19 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open(output.species, "w") as species_file:
-            if "provided_species" in config_sample["sample"]:
-                species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-            else:
+        with open(sample, "r") as sample_yaml:
+            config_sample = yaml.load(sample_yaml)
+            with open(output.species, "w") as species_file:
                 df = pandas.read_table(input.bracken)
-                species_file.write(df["name"].iloc[0] + "\n")
-                config_sample["sample"]["species"] = df["name"].iloc[0]
+                if "provided_species" in config_sample["sample"]:
+                    species_file.write(config_sample["sample"]["provided_species"] + "\n")
+                    config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
+                else:
+                    species_file.write(df["name"].iloc[0] + "\n")
+                    config_sample["sample"]["species"] = df["name"].iloc[0]
+            config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+        with open(sample, "w") as output_file:
+            yaml.dump(config_sample, output_file)
 
 
 rule species_check__check_sizes:
@@ -448,3 +455,35 @@ rule species_check__check_sizes:
                     size_check.write("{}\n".format(df[df["ncbi_species"] == species]["min_length"]))
                     size_check.write("{}\n".format(df[df["ncbi_species"] == species]["max_length"]))
             pass
+
+
+rule datadump_qcquickie:
+    message:
+        "Running step: {rule}"
+    input:
+        "qcquickie/fastqc_data.txt",
+        "qcquickie/contigs.bin.cov",
+        "qcquickie/contigs.sum.cov",
+        "qcquickie/bracken.txt",
+        "qcquickie/kraken_report_bracken.txt",
+        "qcquickie/contaminantion_check.txt",
+        "qcquickie/contigs.variants",
+        "qcquickie/quast",
+        "qcquickie/contigs.sketch",
+        "qcquickie/species.txt",
+    output:
+        summary = "qcquickie/qcquickie.yaml"
+    params:
+        sample = sample,
+        folder = "qcquickie",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "qcquickie/log/datadump_qcquickie.log"
+    benchmark:
+        "qcquickie/benchmarks/datadump_qcquickie.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
+

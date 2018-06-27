@@ -18,24 +18,27 @@ with open(sample, "r") as sample_yaml:
     config_sample = yaml.load(sample_yaml)
 
 
+component = "datadumper"
+
 onsuccess:
     print("Workflow complete")
-    shell("cp datadumper/summary.yaml sample.yaml")
     with open(sample, "r") as sample_yaml:
         config_sample = yaml.load(sample_yaml)
-    if "datadumper" not in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].append("datadumper")
-    if "datadumper" in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].remove("datadumper")
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
 onerror:
     print("Workflow error")
-    if "datadumper" in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].remove("datadumper")
-    if "datadumper" not in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].append("datadumper")
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -43,14 +46,16 @@ onerror:
 rule all:
     input:
         "datadumper",
-        "datadumper/summary.yaml"
+        "datadumper/qcquickie.yaml",
+        "datadumper/assembly.yaml",
+        "datadumper/analysis.yaml",
 
 
 rule setup:
     message:
         "Running step: {rule}"
     output:
-        dir = "datadumper"
+        directory = "datadumper"
     shell:
         "mkdir {output}"
 
@@ -60,11 +65,11 @@ rule datadump_qcquickie:
         "Running step: {rule}"
     input:
         datadumper = "datadumper",
-        folder = "qcquickie",
     output:
         summary = "datadumper/qcquickie.yaml"
     params:
-        sample = config_sample
+        sample = sample,
+        folder = "qcquickie",
     threads:
         global_threads
     resources:
@@ -82,11 +87,11 @@ rule datadump_assembly:
         "Running step: {rule}"
     input:
         datadumper = "datadumper",
-        folder = "assembly",
     output:
         summary = "datadumper/assembly.yaml"
     params:
-        sample = config_sample
+        sample = sample,
+        folder = "assembly",
     threads:
         global_threads
     resources:
@@ -104,9 +109,11 @@ rule datadump_analysis:
         "Running step: {rule}"
     input:
         datadumper = "datadumper",
-        folder = "analysis",
     output:
         summary = "datadumper/analysis.yaml"
+    params:
+        sample = sample,
+        folder = "analysis",
     threads:
         global_threads
     resources:
@@ -119,24 +126,24 @@ rule datadump_analysis:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analysis.py")
 
 
-rule combine_datadumps:
-    message:
-        "Running step: {rule}"
-    input:
-        datadumper = "datadumper",
-        qcquickie_summary = "datadumper/qcquickie.yaml",
-        assembly_summary = "datadumper/assembly.yaml",
-    output:
-        summary = "datadumper/summary.yaml",
-    params:
-        sample_yaml = "sample.yaml",
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        "datadumper/log/combine_datadumps.log"
-    benchmark:
-        "datadumper/benchmarks/combine_datadumps.benchmark"
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")
+# rule combine_datadumps:
+#     message:
+#         "Running step: {rule}"
+#     input:
+#         datadumper = "datadumper",
+#         qcquickie_summary = "datadumper/qcquickie.yaml",
+#         assembly_summary = "datadumper/assembly.yaml",
+#     output:
+#         summary = "datadumper/summary.yaml",
+#     params:
+#         sample_yaml = "sample.yaml",
+#     threads:
+#         global_threads
+#     resources:
+#         memory_in_GB = global_memory_in_GB
+#     log:
+#         "datadumper/log/combine_datadumps.log"
+#     benchmark:
+#         "datadumper/benchmarks/combine_datadumps.benchmark"
+#     script:
+#         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_combine.py")

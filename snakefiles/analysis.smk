@@ -11,6 +11,7 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
+
 yaml = YAML(typ='safe')
 yaml.default_flow_style = False
 with open(sample, "r") as yaml_stream:
@@ -19,17 +20,31 @@ with open(sample, "r") as yaml_stream:
 R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
+species = ""
+if "species" in config_sample["sample"]:
+    species = config_sample["sample"]["species"]
 # my understanding is all helps specify final output
+component = "analysis"
+
 onsuccess:
     print("Workflow complete")
-    config_sample["sample"]["components"]["success"].append("analysis")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
+
 onerror:
     print("Workflow error")
-    config_sample["sample"]["components"]["failure"].append("analysis")
-    print(config_sample)
+    with open(sample, "r") as sample_yaml:
+        config_sample = yaml.load(sample_yaml)
+    while component in config_sample["sample"]["components"]["success"]:
+        config_sample["sample"]["components"]["failure"].remove(component)
+    if component not in config_sample["sample"]["components"]["failure"]:
+        config_sample["sample"]["components"]["success"].append(component)
     with open(sample, "w") as output_file:
         yaml.dump(config_sample, output_file)
 
@@ -164,6 +179,8 @@ rule ariba__mlst:
         reads = (R1, R2)
     output:
         folder = "analysis/ariba_mlst",
+    params:
+        species = species,
     threads:
         global_threads
     resources:
