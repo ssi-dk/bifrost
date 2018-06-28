@@ -17,7 +17,7 @@ group = str(config["group"])
 partition = str(config["partition"])
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
-folder_name = "run_info"
+"serumqc"
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -42,10 +42,19 @@ rule setup:
         "mkdir {output}"
 
 
+rule get_git_hash_of_serumqc:
+    input:
+        "serumqc"
+    output:
+        "serumqc/git_hash.txt"
+    shell:
+        "git --git-dir {workflow.snakefile} rev-parse snakemake 1> {output}"
+
 rule initialize_run:
     message:
         "Running step: {rule}"
     input:
+        "serumqc/git_hash.txt",
         run_folder = run_folder,
     output:
         samplesheet = "sample_sheet.tsv",
