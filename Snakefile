@@ -48,7 +48,8 @@ rule get_git_hash_of_serumqc:
     output:
         "serumqc/git_hash.txt"
     shell:
-        "git --git-dir {workflow.srcdir}/.git rev-parse snakemake 1> {output}"
+        "echo {workflow.configfile}"
+        "git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}"
 
 rule initialize_run:
     message:
