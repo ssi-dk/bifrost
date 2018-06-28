@@ -48,7 +48,7 @@ rule get_git_hash_of_serumqc:
     output:
         "serumqc/git_hash.txt"
     shell:
-        "git --git-dir {workflow.snakefile} rev-parse snakemake 1> {output}"
+        "git --git-dir {workflow.snakefile}/.git rev-parse snakemake 1> {output}"
 
 rule initialize_run:
     message:
@@ -72,7 +72,7 @@ rule initialize_run:
     conda:
         "envs/python_packages.yaml"
     log:
-        os.path.join(folder_name, "log/initialize_run.log")
+        "serumqc/log/initialize_run.log"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 
