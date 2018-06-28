@@ -37,7 +37,7 @@ rule all:
 
 rule setup:
     output:
-        directory = folder_name
+        directory = "serumqc"
     shell:
         "mkdir {output}"
 
