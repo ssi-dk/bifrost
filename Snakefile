@@ -6,8 +6,12 @@ import re
 import sys
 import os
 import datetime
+from ruamel.yaml import YAML
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+
+yaml = YAML(typ='safe')
+yaml.default_flow_style = False
 
 components = str(config["components"])
 run_folder = str(config["run_folder"])
