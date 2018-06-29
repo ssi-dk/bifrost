@@ -48,13 +48,21 @@ rule get_git_hash_of_serumqc:
     output:
         "serumqc/git_hash.txt"
     shell:
-        "echo {workflow.configfile}"
         "git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}"
+
+
+rule get_conda_env:
+    output:
+        "serumqc/conda.json"
+    shell:
+        "conda list -e 1> {output}"
+
 
 rule initialize_run:
     message:
         "Running step: {rule}"
     input:
+        "serumqc/conda.json",
         "serumqc/git_hash.txt",
         run_folder = run_folder,
     output:
