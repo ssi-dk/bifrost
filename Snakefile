@@ -70,7 +70,7 @@ rule initialize_run:
 
 rule get_git_hash_of_serumqc:
     input:
-        "run.yaml"
+        run_info_yaml_path ="run.yaml"
     output:
         "serumqc/git_hash.txt"
     run:
