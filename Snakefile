@@ -17,7 +17,7 @@ group = str(config["group"])
 partition = str(config["partition"])
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
-"serumqc"
+
 # my understanding is all helps specify final output
 onsuccess:
     print("Workflow complete")
@@ -46,8 +46,6 @@ rule initialize_run:
     message:
         "Running step: {rule}"
     input:
-        "serumqc/conda.json",
-        "serumqc/git_hash.txt",
         run_folder = run_folder,
     output:
         samplesheet = "sample_sheet.tsv",
