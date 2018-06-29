@@ -84,7 +84,7 @@ rule get_git_hash_of_serumqc:
         with open(output.git_hash, "r") as git_info:
             git_hash = git_info.readlines()[0].strip()
         run_info["run"]["git_hash"] = git_hash
-        with open(input.read_info_yaml_path, "w") as run_info_yaml:
+        with open(input.run_info_yaml_path, "w") as run_info_yaml:
             yaml.dump(run_info, run_info_yaml)
 
 
@@ -101,7 +101,7 @@ rule get_conda_env:
         with open(output.conda_yaml, "r") as conda_info_yaml:
             conda_info = yaml.load(conda_info_yaml)
         run_info["run"]["conda_env"] = conda_info
-        with open(input.read_info_yaml_path, "w") as run_info_yaml:
+        with open(input.run_info_yaml_path, "w") as run_info_yaml:
             yaml.dump(run_info, run_info_yaml)
 
 rule create_end_file:
