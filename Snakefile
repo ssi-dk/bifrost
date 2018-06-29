@@ -32,7 +32,7 @@ ruleorder: setup > initialize_run
 
 rule all:
     input:
-        "run.yaml"
+        "serumqc_setup_complete"
 
 
 rule setup:
@@ -40,22 +40,6 @@ rule setup:
         directory = "serumqc"
     shell:
         "mkdir {output}"
-
-
-rule get_git_hash_of_serumqc:
-    input:
-        "serumqc"
-    output:
-        "serumqc/git_hash.txt"
-    shell:
-        "git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}"
-
-
-rule get_conda_env:
-    output:
-        "serumqc/conda.json"
-    shell:
-        "conda list -e 1> {output}"
 
 
 rule initialize_run:
@@ -84,6 +68,47 @@ rule initialize_run:
         "serumqc/log/initialize_run.log"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
+
+
+rule get_git_hash_of_serumqc:
+    input:
+        "run.yaml"
+    output:
+        "serumqc/git_hash.txt"
+    run:
+        with open(input.run_info_yaml_path, "r") as run_info_yaml:
+            run_info = yaml.load(run_info_yaml)
+        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
+        with open(output, "r") as git_info:
+            git_hash = git_info.readlines()[0].strip()
+        run_info["run"]["git_hash"] = git_hash
+        with open(input.read_info_yaml_path, "w") as run_info_yaml:
+            yaml.dump(run_info, run_info_yaml)
+
+
+rule get_conda_env:
+    input:
+        git_hash = "serumqc/git_hash.txt",
+        run_info_yaml_path = "run.yaml"
+    output:
+        "serumqc/conda.yaml"
+    run:
+        with open(input.run_info_yaml_path, "r") as run_info_yaml:
+            run_info = yaml.load(run_info_yaml)
+        shell("conda env export 1> {output}")
+        with open(output, "r") as conda_info_yaml:
+            conda_info = yaml.load(conda_info_yaml)
+        run_info["run"]["conda_env"] = conda_info
+        with open(input.read_info_yaml_path, "w") as run_info_yaml:
+            yaml.dump(run_info, run_info_yaml)
+
+rule create_end_file:
+    input:
+        "serumqc/conda.yaml"
+    output:
+        "serumqc_setup_complete"
+    shell:
+        "touch {output}"
 
 # can break this down to 2 parts where you create the sample_sheet in one and then prep for run with the other
 # rule start_run:
