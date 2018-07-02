@@ -471,6 +471,7 @@ rule datadump_qcquickie:
         "qcquickie/quast",
         "qcquickie/contigs.sketch",
         "qcquickie/species.txt",
+        "qcquickie",
     output:
         summary = "qcquickie/qcquickie.yaml"
     params:
