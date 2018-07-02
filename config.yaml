@@ -6,6 +6,7 @@ grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
 components: "qcquickie,analysis,assembly,datadumper" # available options are in snakefiles
 group: "" # group for sbatch on torque system
+use_mongodb: True 
 
 memory: &memory 10 #in Gb
 threads: &threads 5
