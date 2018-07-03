@@ -4,3 +4,4 @@ testdata
 scripts/keys.py
 start.sh
 *.pyc
+reporter/keys.py
