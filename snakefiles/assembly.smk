@@ -47,7 +47,7 @@ onerror:
 
 rule all:
     input:
-        "assembly/assembly.yaml"
+        "assembly/assembly_complete"
 
 
 rule setup:
@@ -416,7 +416,7 @@ rule datadump_assembly:
         "assembly/contigs.stats",
         "assembly/contigs.sketch",
     output:
-        summary = "assembly/assembly.yaml"
+        summary = touch("assembly/assembly_complete")
     params:
         sample = sample,
         folder = "assembly",

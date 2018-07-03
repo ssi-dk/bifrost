@@ -47,7 +47,7 @@ onerror:
 
 rule all:
     input:
-        "qcquickie/qcquickie.yaml",
+        "qcquickie/qcquickie_complete",
 
 
 rule setup:
@@ -473,7 +473,7 @@ rule datadump_qcquickie:
         "qcquickie/species.txt",
         "qcquickie",
     output:
-        summary = "qcquickie/qcquickie.yaml"
+        summary = touch("qcquickie/qcquickie_complete")
     params:
         sample = sample,
         folder = "qcquickie",
