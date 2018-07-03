@@ -401,8 +401,10 @@ rule post_assembly__annotate:
     benchmark:
         "assembly/benchmarks/post_assembly__annotate.benchmark"
     shell:
-        "prokka --cpus {threads} --centre XXX --compliant --outdir {output.prokka} {input.contigs} &> {log}"
-
+        """ 
+        prokka --cpus {threads} --centre XXX --compliant --outdir {params.prokka} {input.contigs} &> {log} 
+        mv {params.prokka}/*.gff {output.gff} 
+        """ 
 
 rule datadump_assembly:
     message:
