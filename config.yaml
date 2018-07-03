@@ -7,6 +7,7 @@ assembly_with: "skesa" # skesa|spades
 components: "qcquickie,analysis,assembly" # available options are in snakefiles
 group: "" # group for sbatch on torque system
 use_mongodb: True 
+mongo_db_key_location: ""
 
 memory: &memory 10 #in Gb
 threads: &threads 5
