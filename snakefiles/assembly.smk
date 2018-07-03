@@ -389,7 +389,9 @@ rule post_assembly__annotate:
     input:
         contigs = "assembly/contigs.fasta"
     output:
-        prokka = "assembly/prokka"
+        gff = "assembly/contigs.gff"
+    params:
+        prokka = temp("assembly/prokka")
     threads:
         global_threads
     resources:
@@ -410,7 +412,7 @@ rule datadump_assembly:
     message:
         "Running step: {rule}"
     input:
-        "assembly/prokka",
+        "assembly/contigs.gff",
         "assembly/contigs.bin.cov",
         "assembly/contigs.sum.cov",
         "assembly/contigs.variants",
