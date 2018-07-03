@@ -78,11 +78,11 @@ rule run_serumqc_old:
         component + "/benchmarks/run_serumqc_old.benchmark"
     shell:
         """
-        mkdir output.read_folder
-        ln input.reads[0] output.read_folder
-        ln input.reads[1] output.read_folder
+            mkdir {output.read_folder}
+        ln {input.reads[0]} {output.read_folder}
+        ln {input.reads[1]} {output.read_folder}
         source activate env_serumqc
-        serumqc.py -i output.read_folder -o output.folder -run serumqc_wrapper
-        touch output.complete
+        serumqc.py -i {output.read_folder} -o {output.folder} -run serumqc_wrapper
+        touch {output.complete}
         """
 
