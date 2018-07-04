@@ -278,7 +278,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
     return dcc.Graph(
-        id="coverage-10-" + sample['name'],
+        id="coverage-1-" + sample['name'],
         figure={
             "data": [
                 go.Box(
@@ -293,7 +293,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                 #{"x": [1, 2, 3], "y": [2, 4, 5], "type": "bar", "name": u"Montréal"},
             ],
             "layout": go.Layout(
-                title="{}: Binned Depth 10x size".format(sample['name']),
+                title="{}: Binned Depth 1x size".format(sample['name']),
                 margin=go.Margin(
                     l=75,
                     r=50,
