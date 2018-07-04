@@ -44,17 +44,24 @@ PLOT_VALUES = [
 ]
 DEFAULT_PLOT = 0
 
+PAGESIZE = 50
+
 def get_species_color(species):
     color = COLOR_DICT.get(species, "#b3ccc1")
     if color == '':
         color = "#b3ccc1"  # Default
     return color
 
-def filter_dataframe(dataframe, species_list, group_list):
-    return dataframe[
+def filter_dataframe(dataframe, species_list, group_list, page_n=None):
+    filtered = dataframe[
         dataframe.name_classified_species_1.isin(species_list) &
         dataframe.supplying_lab.isin(group_list)
     ]
+    if page_n is None:
+        return filtered
+    else:
+        return filtered.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
+
 
 def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
@@ -270,9 +277,8 @@ def html_sample_tables(sample_data, **kwargs):
 def graph_sample_depth_plot(sample, background_dataframe):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
-    return None
     return dcc.Graph(
-        id="coverage-10-" + sample['name'],
+        id="coverage-1-" + sample['name'],
         figure={
             "data": [
                 go.Box(
@@ -287,7 +293,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                 #{"x": [1, 2, 3], "y": [2, 4, 5], "type": "bar", "name": u"Montréal"},
             ],
             "layout": go.Layout(
-                title="{}: Binned Depth 10x size".format(sample['name']),
+                title="{}: Binned Depth 1x size".format(sample['name']),
                 margin=go.Margin(
                     l=75,
                     r=50,
@@ -326,15 +332,13 @@ def graph_sample_depth_plot(sample, background_dataframe):
     )
 
 
-def children_sample_list_report(dataframe, species_list, group_list):
+def children_sample_list_report(filtered_df):
     report = []
-    for species in species_list:
-        filtered_dataframe = dataframe[dataframe.supplying_lab.isin(
-            group_list)]
+    for species in filtered_df.name_classified_species_1.unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_dataframe, species)
+            html_species_report(filtered_df, species)
         ]))
     return report
 
@@ -549,6 +553,7 @@ def main(argv):
     # Change this to provided species ?
     dataframe = dataframe.sort_values("name_classified_species_1")
     app = dash.Dash()
+    app.config['suppress_callback_exceptions'] = True
 
     species_list = dataframe.name_classified_species_1.unique()
 
@@ -627,23 +632,103 @@ def main(argv):
                 '"{}" is excluded from the allowed static files'.format(image_path))
         return flask.send_from_directory(image_directory, image_name)
 
+    @app.callback(
+        Output(component_id="page-n",
+               component_property="children"),
+        [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
+         Input(component_id="nextpage", component_property="n_clicks_timestamp")],
+        [State(component_id="page-n", component_property="children"),
+         State(component_id="species-list", component_property="value"),
+         State(component_id="group-list", component_property="value")]
+    )
+    def next_page(prev_ts, next_ts, page_n, species_list, group_list):
+        page_n = int(page_n)
+        max_page = filter_dataframe(dataframe, species_list, group_list)["_id"].count() // PAGESIZE
+        if prev_ts > next_ts:
+            return max(page_n - 1, 0)
+        elif next_ts > prev_ts:
+            return min(page_n + 1, max_page)
+        else:
+            return 0
+
+    @app.callback(
+        Output(component_id="sample-report", component_property="children"),
+        [Input(component_id="page-n", component_property="children")],
+         [State(component_id="species-list", component_property="value"),
+          State(component_id="group-list", component_property="value")]
+         )
+    def sample_report(page_n, species_list, group_list):
+        page_n = int(page_n)
+        filtered = filter_dataframe(dataframe, species_list, group_list, page_n)
+        max_page = len(filter_dataframe(dataframe, species_list, group_list)) // PAGESIZE
+        return [
+            html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+            html.Div(children_sample_list_report(filtered))
+        ]
+
+    @app.callback(
+        Output(component_id="prevpage", component_property="disabled"),
+        [Input(component_id="page-n", component_property="children")]
+    )
+    def update_prevpage(page_n):
+        if int(page_n) == 0:
+            return True
+        else:
+            return False
+
+    @app.callback(
+        Output(component_id="nextpage", component_property="disabled"),
+        [Input(component_id="page-n", component_property="children")],
+        [State(component_id="species-list", component_property="value"),
+         State(component_id="group-list", component_property="value")]
+    )
+    def update_nextpage(page_n, species_list, group_list):
+        page_n = int(page_n)
+        max_page = len(filter_dataframe(
+            dataframe, species_list, group_list)) // PAGESIZE
+        if page_n == max_page:
+            return True
+        else:
+            return False
 
     @app.callback(
         Output(component_id="current-report", component_property="children"),
         [Input(component_id="update-samples", component_property="n_clicks_timestamp"),
-         Input(component_id="update-table", component_property="n_clicks_timestamp")],
-        [State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value")]
+         Input(component_id="update-table", component_property="n_clicks_timestamp")]
+
     )
-    def update_report(n_samples_ts, n_table_ts, species_list, group_list):
+    def update_report(n_samples_ts, n_table_ts):
         if n_samples_ts > n_table_ts:  # samples was clicked
             return [
                 html.H3("Individual Sample Reports"),
+                html.Span("0", style={'display': 'none'}, id="page-n"),
                 html.Div(
-                    children_sample_list_report(
-                        dataframe, species_list, group_list),
-                    id="sample-report"
+                    [
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Previous page", id="prevpage", n_clicks_timestamp=0),
+                            ],
+                            className="three columns"
+                        ),
+                        html.Div(
+                            [
+                                # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                            ],
+                            className="three columns"
+                        ),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Next page", id="nextpage", n_clicks_timestamp=0),
+                            ],
+                            className="three columns"
+                        ),
+                    ],
+                    className="row"
                 ),
+                
+                html.Div(id="sample-report"),
             ]
         elif n_table_ts > n_samples_ts:  # table was clicked
             columns = ['name', 'supplying_lab', 'run_name', '_id', 'input_read_status',
