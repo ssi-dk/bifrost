@@ -277,7 +277,6 @@ def html_sample_tables(sample_data, **kwargs):
 def graph_sample_depth_plot(sample, background_dataframe):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
-    return None
     return dcc.Graph(
         id="coverage-10-" + sample['name'],
         figure={
