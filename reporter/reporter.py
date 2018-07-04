@@ -54,7 +54,7 @@ def get_species_color(species):
 
 def filter_dataframe(dataframe, species_list, group_list, page_n=None):
     filtered = dataframe[
-        dataframe.name_classified_species_1.isin(species_list) &
+        dataframe.short_class_species_1.isin(species_list) &
         dataframe.supplying_lab.isin(group_list)
     ]
     if page_n is None:
@@ -106,8 +106,13 @@ def get_qcquickie(sample_db):
         sys.stderr.write("Sample {} has no run name.\n".format(sample["name"]))
         sample["run_name"] = ""
 
-    if not "name_classified_species_1" in sample:
+    if "name_classified_species_1" in sample:
+        genus, species = sample["name_classified_species_1"].split()
+        sample["short_class_species_1"] = '{}. {}'.format(genus[0], species)
+    else:
         sample["name_classified_species_1"] = "Not classified"
+        sample["short_class_species_1"] = "Not classified"
+
     if not "supplying_lab" in sample:
         sample["supplying_lab"] = "Not specified"
 
@@ -352,7 +357,7 @@ def html_table_run_information(run_data):
 
 
 def html_div_summary(dataframe, species_list, sample_list, group_list):
-    species_list = dataframe.name_classified_species_1.unique()
+    species_list = dataframe.short_class_species_1.unique()
     species_list_options = [{"label": species, "value": species}
                             for species in species_list]
 
@@ -523,24 +528,7 @@ def html_div_summary(dataframe, species_list, sample_list, group_list):
                 ], className="row"
             ),
 
-            dcc.Graph(
-                id="summary-plot",
-                figure={
-                    "data": [
-                        go.Box(
-                            x=dataframe[PLOT_VALUES[DEFAULT_PLOT]],
-                            text=dataframe["name"],
-                            name="<i>{}</i>".format(dataframe["name"]),
-                            boxpoints="all",
-                            jitter=0.3,
-                            pointpos=-1.8
-                        )
-                    ],
-                    "layout": {
-                        "title": PLOT_VALUES[DEFAULT_PLOT].replace("_", " ")
-                    }
-                }
-            )
+            dcc.Graph(id="summary-plot")
         ], className="border-box"
     )
 
@@ -555,7 +543,7 @@ def main(argv):
     app = dash.Dash()
     app.config['suppress_callback_exceptions'] = True
 
-    species_list = dataframe.name_classified_species_1.unique()
+    species_list = dataframe.short_class_species_1.unique()
 
     sample_list = dataframe.name.unique()
 
@@ -795,13 +783,14 @@ def main(argv):
         data = []
         filtered_df = filter_dataframe(dataframe, species_list, group_list)
         for species in species_list:
-            species_df = filtered_df[filtered_df.name_classified_species_1 == species]
+            species_df = filtered_df[filtered_df.short_class_species_1 == species]
             species_name = species if species == "Not classified" else "<i>{}</i>".format(species)
+            species_full = species_df.iloc[0]["name_classified_species_1"]
             data.append(go.Box(
                 go.Box(
                     x=species_df.loc[:, plot_value],
                     text=species_df["name"],
-                    marker=dict(color=COLOR_DICT.get(species, None)),
+                    marker=dict(color=COLOR_DICT.get(species_full, None)),
                     boxpoints="all",
                     jitter=0.3,
                     pointpos=-1.8,
