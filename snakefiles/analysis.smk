@@ -51,9 +51,7 @@ onerror:
 
 rule all:
     input:
-        "analysis/ariba_mlst",
-        "analysis/abricate_on_resfinder_from_ariba.tsv",
-        "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
+        "analysis/analysis_complete"
 
 
 rule setup:
@@ -194,3 +192,27 @@ rule ariba__mlst:
         "analysis/benchmarks/ariba__mlst.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
+
+
+rule datadump_analysis:
+    message:
+        "Running step: {rule}"
+    input:
+        "analysis/ariba_mlst",
+        "analysis/abricate_on_resfinder_from_ariba.tsv",
+        "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
+    output:
+        summary = touch("analysis/analysis_complete")
+    params:
+        sample = sample,
+        folder = "analysis",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        "analysis/log/datadump_analysis.log"
+    benchmark:
+        "analysis/benchmarks/datadump_analysis.benchmark"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analysis.py")
