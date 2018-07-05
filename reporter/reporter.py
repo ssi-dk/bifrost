@@ -371,6 +371,10 @@ def html_div_summary():
                     html.Div(
                         [
                             html.Div(
+                                id="run-selector",
+                                className="row"
+                            ),
+                            html.Div(
                                 [
                                     html.Div(
                                         [
@@ -520,7 +524,6 @@ def html_div_summary():
                     ),
                 ], className="row"
             ),
-
             dcc.Graph(id="summary-plot")
         ], className="border-box"
     )
@@ -619,6 +622,53 @@ def main(argv):
             return []
         else:
             return "Not found"
+
+    @app.callback(
+        Output('run-selector', 'children'),
+        [Input('run-name', 'children')]
+    )
+    def update_group_list(run_name):
+        if len(run_name) == 0:
+            run_list = dataframe.sort_values("run_name").run_name.unique()
+            run_list_options = [{"label": run, "value": run}
+                                for run in run_list]
+            return [
+                html.Div(
+                    [
+                        html.Div(
+                            dcc.Dropdown(
+                                id="run-list",
+                                options=run_list_options,
+                                placeholder="Sequencing run"
+                            )
+                        )
+                    ],
+                    className="nine columns"
+                ),
+                html.Div(
+                    [
+                        dcc.Link(
+                            "Go to run",
+                            id="run-link",
+                            href="/",
+                            className="button button-primary")
+
+                    ],
+                    className="three columns"
+                )
+            ]
+        else:
+            return
+
+    @app.callback(
+        Output("run-link", "href"),
+        [Input("run-list", "value")]
+    )
+    def update_run_button(run):
+        if run is not None:
+            return "/" + run
+        else:
+            return "/"
 
     @app.callback(
         Output('group-div', 'children'),
