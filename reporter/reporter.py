@@ -52,11 +52,15 @@ def get_species_color(species):
         color = "#b3ccc1"  # Default
     return color
 
-def filter_dataframe(dataframe, species_list, group_list, page_n=None):
+def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None):
+    if species_list is None: species_list = []
+    if group_list is None: group_list = []
     filtered = dataframe[
         dataframe.short_class_species_1.isin(species_list) &
         dataframe.supplying_lab.isin(group_list)
     ]
+    if len(run_name) != 0:
+        filtered = filtered[filtered.run_name == run_name]
     if page_n is None:
         return filtered
     else:
@@ -356,19 +360,7 @@ def html_table_run_information(run_data):
     ])
 
 
-def html_div_summary(dataframe, species_list, sample_list, group_list):
-    species_list = dataframe.short_class_species_1.unique()
-    species_list_options = [{"label": species, "value": species}
-                            for species in species_list]
-
-    sample_list = dataframe.name.unique()
-    sample_list_options = [{"label": sample, "value": sample}
-                           for sample in sample_list]
-
-    group_list = dataframe.supplying_lab.unique()
-    group_list_options = [{"label": group, "value": group}
-                          for group in group_list]
-
+def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
                            for plot in PLOT_VALUES]
     return html.Div(
@@ -400,11 +392,12 @@ def html_div_summary(dataframe, species_list, sample_list, group_list):
                                                 ],
                                                 htmlFor="group-list"
                                             ),
-                                            dcc.Dropdown(
-                                                id="group-list",
-                                                options=group_list_options,
-                                                multi=True,
-                                                value=group_list
+                                            html.Div(
+                                                dcc.Dropdown(
+                                                    id="group-list",
+                                                    multi=True
+                                                ),
+                                                id="group-div"
                                             )
                                         ],
                                         className="twelve columns"
@@ -432,13 +425,14 @@ def html_div_summary(dataframe, species_list, sample_list, group_list):
                                                         ]
                                                     )
                                                 ],
-                                                htmlFor="group-list"
+                                                htmlFor="species-list"
                                             ),
-                                            dcc.Dropdown(
-                                                id="species-list",
-                                                options=species_list_options,
-                                                multi=True,
-                                                value=species_list
+                                            html.Div(
+                                                dcc.Dropdown(
+                                                    id="species-list",
+                                                    multi=True
+                                                ),
+                                                id="species-div"
                                             )
                                         ],
                                         className="twelve columns"
@@ -513,7 +507,6 @@ def html_div_summary(dataframe, species_list, sample_list, group_list):
                                 html.Div(
                                     dcc.Dropdown(
                                         id="sample-list",
-                                        options=sample_list_options,
                                         placeholder="Sample name"
                                     )
                                 , className="six columns"),
@@ -534,7 +527,6 @@ def html_div_summary(dataframe, species_list, sample_list, group_list):
 
 
 def main(argv):
-    run_folder = "../testdata/" + "tiny_180608"
     dataframe = pd.DataFrame(list(map(get_qcquickie, mongo_interface.test_get_all_samples())))
     
 
@@ -542,12 +534,6 @@ def main(argv):
     dataframe = dataframe.sort_values("name_classified_species_1")
     app = dash.Dash()
     app.config['suppress_callback_exceptions'] = True
-
-    species_list = dataframe.short_class_species_1.unique()
-
-    sample_list = dataframe.name.unique()
-
-    group_list = dataframe.supplying_lab.unique()
 
     # Temp css to make it look nice
     # Dash CSS
@@ -562,12 +548,11 @@ def main(argv):
 
     app.layout = html.Div(className="container", children=[
         html.Div(dt.DataTable(rows=[{}], editable=False), style={'display': 'none'}),
-        html.A(id="top"),
         html.H1("QC REPORT"),
-        html.H2(run_folder),
+        html.H2("", id="run-name"),
         dcc.Location(id="url", refresh=False),
-        html_table_run_information({'run_name': run_folder}),
-        html_div_summary(dataframe, species_list, sample_list, group_list),
+        html.Div(html_table_run_information({'run_name': ""}), id="run-table"),
+        html_div_summary(),
         html.Div(
             [
                 html.H5("Update report", className="box-title"),
@@ -621,17 +606,83 @@ def main(argv):
         return flask.send_from_directory(image_directory, image_name)
 
     @app.callback(
+        Output('run-name', 'children'),
+        [Input('url', 'pathname')]
+    )
+    def update_run_name(pathname):
+        if pathname is None:
+            pathname = "/"
+        path = pathname.split('/')
+        if path[1] in dataframe.run_name.values:
+            return path[1]
+        elif path[1] == "":
+            return []
+        else:
+            return "Not found"
+
+    @app.callback(
+        Output('group-div', 'children'),
+        [Input('run-name', 'children')]
+    )
+    def update_group_list(run_name):
+        if len(run_name) == 0:
+            group_list = dataframe.supplying_lab.unique()
+        else:
+            group_list = dataframe[dataframe.run_name == run_name].supplying_lab.unique()
+        group_list_options = [{"label": group, "value": group}
+                              for group in group_list]
+        return dcc.Dropdown(
+            id="group-list",
+            options=group_list_options,
+            multi=True,
+            value=group_list
+        )
+
+    @app.callback(
+        Output('species-div', 'children'),
+        [Input('run-name', 'children')]
+    )
+    def update_group_list(run_name):
+        if len(run_name) == 0:
+            species_list = dataframe.short_class_species_1.unique()
+        else:
+            species_list = dataframe[dataframe.run_name ==
+                                     run_name].short_class_species_1.unique()
+        species_list_options = [{"label": group, "value": group}
+                              for group in species_list]
+        return dcc.Dropdown(
+            id="species-list",
+            options=species_list_options,
+            multi=True,
+            value=species_list
+        )
+
+
+    @app.callback(
+        Output('run-table', 'children'),
+        [Input('run-name', 'children')]
+    )
+    def update_run_name(run_name):
+        if run_name == "Not found":
+            return html_table_run_information({'run_name': "Run not found!"})
+        elif run_name == None:
+            return html_table_run_information({'run_name': "No run selected"})
+        else:
+            return html_table_run_information({'run_name': run_name})
+
+    @app.callback(
         Output(component_id="page-n",
                component_property="children"),
         [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
          Input(component_id="nextpage", component_property="n_clicks_timestamp")],
         [State(component_id="page-n", component_property="children"),
          State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value")]
+         State(component_id="group-list", component_property="value"),
+         State(component_id="run-name", component_property="children")]
     )
-    def next_page(prev_ts, next_ts, page_n, species_list, group_list):
+    def next_page(prev_ts, next_ts, page_n, species_list, group_list, run_name):
         page_n = int(page_n)
-        max_page = filter_dataframe(dataframe, species_list, group_list)["_id"].count() // PAGESIZE
+        max_page = filter_dataframe(dataframe, species_list, group_list, run_name)["_id"].count() // PAGESIZE
         if prev_ts > next_ts:
             return max(page_n - 1, 0)
         elif next_ts > prev_ts:
@@ -643,12 +694,13 @@ def main(argv):
         Output(component_id="sample-report", component_property="children"),
         [Input(component_id="page-n", component_property="children")],
          [State(component_id="species-list", component_property="value"),
-          State(component_id="group-list", component_property="value")]
+          State(component_id="group-list", component_property="value"),
+          State(component_id="run-name", component_property="children")]
          )
-    def sample_report(page_n, species_list, group_list):
+    def sample_report(page_n, species_list, group_list, run_name):
         page_n = int(page_n)
-        filtered = filter_dataframe(dataframe, species_list, group_list, page_n)
-        max_page = len(filter_dataframe(dataframe, species_list, group_list)) // PAGESIZE
+        filtered = filter_dataframe(dataframe, species_list, group_list, run_name, page_n)
+        max_page = len(filter_dataframe(dataframe, species_list, group_list, run_name)) // PAGESIZE
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
             html.Div(children_sample_list_report(filtered))
@@ -668,12 +720,13 @@ def main(argv):
         Output(component_id="nextpage", component_property="disabled"),
         [Input(component_id="page-n", component_property="children")],
         [State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value")]
+         State(component_id="group-list", component_property="value"),
+         State(component_id="run-name", component_property="children")]
     )
-    def update_nextpage(page_n, species_list, group_list):
+    def update_nextpage(page_n, species_list, group_list, run_name):
         page_n = int(page_n)
         max_page = len(filter_dataframe(
-            dataframe, species_list, group_list)) // PAGESIZE
+            dataframe, species_list, group_list, run_name)) // PAGESIZE
         if page_n == max_page:
             return True
         else:
@@ -682,10 +735,13 @@ def main(argv):
     @app.callback(
         Output(component_id="current-report", component_property="children"),
         [Input(component_id="update-samples", component_property="n_clicks_timestamp"),
-         Input(component_id="update-table", component_property="n_clicks_timestamp")]
+         Input(component_id="update-table", component_property="n_clicks_timestamp")],
+        [State(component_id="species-list", component_property="value"),
+         State(component_id="group-list", component_property="value"),
+         State(component_id="run-name", component_property="children")]
 
     )
-    def update_report(n_samples_ts, n_table_ts):
+    def update_report(n_samples_ts, n_table_ts, species_list, group_list, run_name):
         if n_samples_ts > n_table_ts:  # samples was clicked
             return [
                 html.H3("Individual Sample Reports"),
@@ -732,7 +788,7 @@ def main(argv):
                 html.H3("Table Report"),
                 dt.DataTable(
                     rows=filter_dataframe(
-                        dataframe, species_list, group_list).to_dict("records"),
+                        dataframe, species_list, group_list, run_name).to_dict("records"),
 
                     # optional - sets the order of columns
                     columns=columns,
@@ -749,20 +805,22 @@ def main(argv):
     @app.callback(
         Output(component_id="selected-samples", component_property="value"),
         [Input(component_id="species-list", component_property="value"),
-         Input(component_id="group-list", component_property="value")]
+         Input(component_id="group-list", component_property="value"),
+         Input(component_id="run-name", component_property="children")]
     )
-    def update_selected_samples(species_list, group_list):
-        filtered_df = filter_dataframe(dataframe, species_list, group_list)
+    def update_selected_samples(species_list, group_list, run_name):
+        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
         return [format_selected_samples(filtered_df)]
 
     @app.callback(
         Output(component_id="sample-count",
                 component_property="children"),
         [Input(component_id="species-list", component_property="value"),
-            Input(component_id="group-list", component_property="value")]
+         Input(component_id="group-list", component_property="value"),
+         Input(component_id="run-name", component_property="children")]
     )
-    def update_sample_count(species_list, group_list):
-        filtered_df = filter_dataframe(dataframe, species_list, group_list)
+    def update_sample_count(species_list, group_list, run_name):
+        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
         return filtered_df['name'].count()
 
     @app.callback(
@@ -770,27 +828,29 @@ def main(argv):
         [Input(component_id="sample-list", component_property="value")]
     )
     def update_go_to_sample(sample_name):
-        if sample_name in sample_list:
-            return "#sample-" + sample_name
+        return "not working"
+        # if sample_name in sample_list:
+        #     return "#sample-" + sample_name
 
     @app.callback(
         Output(component_id="summary-plot", component_property="figure"),
         [Input(component_id="species-list", component_property="value"),
          Input(component_id="group-list", component_property="value"),
+         Input(component_id="run-name", component_property="children"),
          Input(component_id="plot-list", component_property="value")]
     )
-    def update_coverage_figure(species_list, group_list, plot_value):
+    def update_coverage_figure(species_list, group_list, run_name, plot_value):
         data = []
-        filtered_df = filter_dataframe(dataframe, species_list, group_list)
+        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
+        if species_list is None: species_list = []
         for species in species_list:
             species_df = filtered_df[filtered_df.short_class_species_1 == species]
             species_name = species if species == "Not classified" else "<i>{}</i>".format(species)
-            species_full = species_df.iloc[0]["name_classified_species_1"]
             data.append(go.Box(
                 go.Box(
                     x=species_df.loc[:, plot_value],
                     text=species_df["name"],
-                    marker=dict(color=COLOR_DICT.get(species_full, None)),
+                    marker=dict(color=COLOR_DICT.get(species, None)),
                     boxpoints="all",
                     jitter=0.3,
                     pointpos=-1.8,
@@ -814,17 +874,19 @@ def main(argv):
 
     @app.callback(
         Output('group-list', 'value'),
-        [Input('group-all', 'n_clicks')]
+        [Input('group-all', 'n_clicks')],
+        [State("run-name", "children")]
     )
-    def all_groups(n_clicks):
-        return group_list
+    def all_groups(n_clicks, run_name):
+        return filter_dataframe(dataframe, [], [], run_name).supplying_lab.unique()
 
     @app.callback(
         Output('species-list', 'value'),
-        [Input('species-all', 'n_clicks')]
+        [Input('species-all', 'n_clicks')],
+        [State("run-name", "children")]
     )
-    def all_species(n_clicks):
-        return species_list
+    def all_species(n_clicks, run_name):
+        return filter_dataframe(dataframe, [], [], run_name).short_class_species_1.unique()
 
 
     @app.callback(

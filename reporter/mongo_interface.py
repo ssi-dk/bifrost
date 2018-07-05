@@ -37,5 +37,5 @@ def get_species_colors():
         species = db.species
         colors = {}
         for species in species.find():
-            colors[species["ncbi_species"]] = species["color"]
+            colors[species["organism"]] = species["color"]
     return colors
