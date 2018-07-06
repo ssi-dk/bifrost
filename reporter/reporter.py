@@ -92,8 +92,9 @@ def get_qcquickie(sample_db):
 
     # Not nice, but we have many different combinations
     if "sample_sheet" in sample_db["sample"]:
+        sample['supplied_name'] = sample_db['sample']["sample_sheet"]["sample_name"]
         if sample['name'] == None:
-            sample['name'] = sample_db['sample']["sample_sheet"]["sample_name"]
+            sample['name'] = sample["supplied_name"]
         sample["provided_species"] = sample_db['sample']["sample_sheet"].get("provided_species", "")
         sample['supplying_lab'] = sample_db['sample']["sample_sheet"]['group']
         sample['comments'] = sample_db["sample"]["sample_sheet"]["Comments"]
@@ -115,7 +116,7 @@ def get_qcquickie(sample_db):
     if "name_classified_species_1" in sample:
         species_words = sample["name_classified_species_1"].split()
         sample["short_class_species_1"] = '{}. {}'.format(
-            species_words[0], ' '.join(species_words[1:]))
+            species_words[0][0], ' '.join(species_words[1:]))
     else:
         sample["name_classified_species_1"] = "Not classified"
         sample["short_class_species_1"] = "Not classified"
@@ -233,15 +234,14 @@ def html_sample_tables(sample_data, **kwargs):
     return html.Div([
         html.Div(img, className="bact_div"),
         html.H6("Run folder: " + sample_data["run_name"]),
-        html.H5("Sample Data", className="table-header"),
+        html.H6("Setup time: " + str(sample_data["setup_time"])),
+        html.H5("Sample Sheet", className="table-header"),
         html.Div([
             html.Div([
                 html_table([
-                    ["Sample name", sample_data["name"]],
+                    ["Supplied name", sample_data["supplied_name"]],
                     ["Supplying lab", sample_data["supplying_lab"]],
                     ["Submitter emails", emails],
-                    ["Submitter user", sample_data["user"]],
-                    ["Setup time", sample_data["setup_time"]],
                     ["Provided species", html.I(
                         sample_data["provided_species"])]
                 ])
