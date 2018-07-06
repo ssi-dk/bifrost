@@ -1,8 +1,5 @@
-import re
-import pandas
-from ruamel.yaml import YAML
-import sys
-
+import os
+import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -11,11 +8,7 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-yaml = YAML(typ='safe')
-yaml.default_flow_style = False
-
-with open(sample, "r") as yaml_stream:
-    config_sample = yaml.load(yaml_stream)
+config_sample = datahandling.load_sample(sample)
 
 R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
@@ -25,25 +18,11 @@ component = "assembly"
 
 onsuccess:
     print("Workflow complete")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
+    datahandling.update_sample_component_success(component, sample)
 
 onerror:
     print("Workflow error")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
+    datahandling.update_sample_component_failure(component, sample)
 
 rule all:
     input:
