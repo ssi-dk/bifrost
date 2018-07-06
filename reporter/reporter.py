@@ -11,6 +11,8 @@ import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
 
+import dash_scroll_up
+
 import flask  #used for the image server
 import glob
 
@@ -111,8 +113,9 @@ def get_qcquickie(sample_db):
         sample["run_name"] = ""
 
     if "name_classified_species_1" in sample:
-        genus, species = sample["name_classified_species_1"].split()
-        sample["short_class_species_1"] = '{}. {}'.format(genus[0], species)
+        species_words = sample["name_classified_species_1"].split()
+        sample["short_class_species_1"] = '{}. {}'.format(
+            species_words[0], ' '.join(species_words[1:]))
     else:
         sample["name_classified_species_1"] = "Not classified"
         sample["short_class_species_1"] = "Not classified"
@@ -370,6 +373,11 @@ def html_div_summary():
                 [
                     html.Div(
                         [
+                            dash_scroll_up.DashScrollUp(
+                                id='input',
+                                label='UP',
+                                className="button button-primary no-print"
+                            ),
                             html.Div(
                                 id="run-selector",
                                 className="row"
