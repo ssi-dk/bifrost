@@ -955,7 +955,7 @@ def main(argv):
         if clickData != None:
             return clickData["points"][0]["text"]
 
-    app.run_server(debug=True, port=8050, host='s-calc-fat01-p.ssi.ad')
+    app.run_server(debug=True)
 
 
 if __name__ == "__main__":
