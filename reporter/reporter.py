@@ -635,7 +635,7 @@ def main(argv):
         Output('run-selector', 'children'),
         [Input('run-name', 'children')]
     )
-    def update_group_list(run_name):
+    def update_run_list(run_name):
         if len(run_name) == 0:
             run_list = dataframe.sort_values("run_name").run_name.unique()
             run_list_options = [{"label": run, "value": run}
@@ -684,16 +684,17 @@ def main(argv):
     )
     def update_group_list(run_name):
         if len(run_name) == 0:
-            group_list = dataframe.supplying_lab.unique()
+            group_list = dataframe.supplying_lab.value_counts()
         else:
-            group_list = dataframe[dataframe.run_name == run_name].supplying_lab.unique()
-        group_list_options = [{"label": group, "value": group}
-                              for group in group_list]
+            group_list = dataframe[dataframe.run_name == run_name].supplying_lab.value_counts()
+        group_list_options = [{"label": "{} ({})".format(group, count), "value": group}
+                              for group, count in group_list.items()]
+        group_options = [group for group, count in group_list.items()]
         return dcc.Dropdown(
             id="group-list",
             options=group_list_options,
             multi=True,
-            value=group_list
+            value=group_options
         )
 
     @app.callback(
@@ -702,17 +703,18 @@ def main(argv):
     )
     def update_group_list(run_name):
         if len(run_name) == 0:
-            species_list = dataframe.short_class_species_1.unique()
+            species_list = dataframe.short_class_species_1.value_counts()
         else:
             species_list = dataframe[dataframe.run_name ==
-                                     run_name].short_class_species_1.unique()
-        species_list_options = [{"label": group, "value": group}
-                              for group in species_list]
+                                     run_name].short_class_species_1.value_counts()
+        species_list_options = [{"label": "{} ({})".format(species, count), "value": species}
+                                for species, count in species_list.items()]
+        species_options = [species for species, count in species_list.items()]
         return dcc.Dropdown(
             id="species-list",
             options=species_list_options,
             multi=True,
-            value=species_list
+            value=species_options
         )
 
 
