@@ -23,19 +23,19 @@ def test_get_all_samples():
     """
     with get_connection() as connection:
         db = connection.ngs_runs
-        samples = db.samples
+        samples = db.samples_test
         run_samples = []
         for sample in samples.find():
             run_samples.append(sample)
         return run_samples
 
 
-def get_species_colors():
+def get_species_colors(): 
     "Get a dict with ncbi species name and color"
     with get_connection() as connection:
         db = connection.ngs_runs
-        species = db.species
+        species_col = db.species
         colors = {}
-        for species in species.find():
+        for species in species_col.find():
             colors[species["organism"]] = species["color"]
     return colors

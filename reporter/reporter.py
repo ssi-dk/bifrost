@@ -17,6 +17,7 @@ import flask  #used for the image server
 import glob
 
 import mongo_interface
+import import_data
 
 #DEV images
 image_directory = '/Users/mbas/Documents/SerumQC-private/reporter/resources/img/'
@@ -74,58 +75,6 @@ def format_selected_samples(filtered_df):
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
 
-# Data loading before application starts.
-
-def get_qcquickie(sample_db):
-    sample = {}
-    sample['_id'] = str(sample_db['_id'])
-    sample["input_read_status"] = sample_db["sample"]["input_read_status"]
-    sample['name'] = sample_db['sample'].get('name')
-    sample['user'] = sample_db['sample'].get('user')
-    sample['R1_location'] = sample_db['sample'].get('R1')
-    sample['R2_location'] = sample_db['sample'].get('R2')
-    sample["run_name"] = sample_db["sample"]["run_folder"].split("/")[-1]
-    if "setup_time" in sample_db["sample"]:
-        sample["setup_time"] = datetime.datetime.strptime(sample_db["sample"]["setup_time"], "%Y-%m-%d %H:%M:%S.%f")
-    else:
-        sample["setup_time"] = None
-
-    # Not nice, but we have many different combinations
-    if "sample_sheet" in sample_db["sample"]:
-        sample['supplied_name'] = sample_db['sample']["sample_sheet"]["sample_name"]
-        if sample['name'] == None:
-            sample['name'] = sample["supplied_name"]
-        sample["provided_species"] = sample_db['sample']["sample_sheet"].get("provided_species", "")
-        sample['supplying_lab'] = sample_db['sample']["sample_sheet"]['group']
-        sample['comments'] = sample_db["sample"]["sample_sheet"]["Comments"]
-        sample["emails"] = sample_db["sample"]["sample_sheet"]["emails"]
-    
-
-    if "qcquickie" in sample_db:
-        for key, value in sample_db['qcquickie']['summary'].items():
-            sample[key] = value
-        sample["N50"] = sample_db["qcquickie"]["quast/report_tsv"]["N50"]
-        sample["N75"] = sample_db["qcquickie"]["quast/report_tsv"]["N75"]
-        sample["bin_length_1x_25x_diff"] = sample["bin_length_at_1x"] - \
-            sample["bin_length_at_25x"]
-    
-    if not "run_name" in sample:
-        sys.stderr.write("Sample {} has no run name.\n".format(sample["name"]))
-        sample["run_name"] = ""
-
-    if "name_classified_species_1" in sample:
-        species_words = sample["name_classified_species_1"].split()
-        sample["short_class_species_1"] = '{}. {}'.format(
-            species_words[0][0], ' '.join(species_words[1:]))
-    else:
-        sample["name_classified_species_1"] = "Not classified"
-        sample["short_class_species_1"] = "Not classified"
-
-    if not "supplying_lab" in sample:
-        sample["supplying_lab"] = "Not specified"
-
-    return sample
-
 # Components
 
 
@@ -151,7 +100,7 @@ def html_td_percentage(value, color):
 
 # QCQuickie
 
-def generate_sample_report(dataframe, sample):
+def generate_sample_report(dataframe, sample, data_content):
     return (
         html.Div(
             [
@@ -160,7 +109,7 @@ def generate_sample_report(dataframe, sample):
                     sample["name"],
                     className="box-title"
                 ),
-                html_sample_tables(sample, className="row"),
+                html_sample_tables(sample, data_content, className="row"),
 
                 graph_sample_depth_plot(
                     sample, dataframe[dataframe.name_classified_species_1 == sample["name_classified_species_1"]])
@@ -170,10 +119,10 @@ def generate_sample_report(dataframe, sample):
     )
 
 
-def html_species_report(dataframe, species, **kwargs):
+def html_species_report(dataframe, species, data_content, **kwargs):
     report = []
     for index, sample in dataframe.loc[dataframe["name_classified_species_1"] == species].iterrows():
-        report.append(generate_sample_report(dataframe, sample))
+        report.append(generate_sample_report(dataframe, sample, data_content))
     return html.Div(report, **kwargs)
 
 
@@ -211,7 +160,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 
-def html_sample_tables(sample_data, **kwargs):
+def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
     genus = str(sample_data["name_classified_species_1"]).split()[0].lower()
@@ -231,28 +180,9 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         emails = ''
 
-    return html.Div([
-        html.Div(img, className="bact_div"),
-        html.H6("Run folder: " + sample_data["run_name"]),
-        html.H6("Setup time: " + str(sample_data["setup_time"])),
-        html.H5("Sample Sheet", className="table-header"),
-        html.Div([
-            html.Div([
-                html_table([
-                    ["Supplied name", sample_data["supplied_name"]],
-                    ["Supplying lab", sample_data["supplying_lab"]],
-                    ["Submitter emails", emails],
-                    ["Provided species", html.I(
-                        sample_data["provided_species"])]
-                ])
-            ], className="six columns"),
-            html.Div([
-                html.H6("User Comments", className="table-header"),
-                sample_data["comments"]
-            ], className="six columns"),
-        ], className="row"),
-        html.H5("QCQuickie Results", className="table-header"),
-        html.Div([
+    if data_content == "qcquickie":
+        title = "QCQuickie Results"
+        report = [
             html.Div([
                 html_table([
                     [
@@ -282,7 +212,66 @@ def html_sample_tables(sample_data, **kwargs):
                 ])
             ], className="six columns"),
             html_organisms_table(sample_data, className="six columns")
-        ], className="row")
+        ]
+    elif data_content == "assembly":
+        title= "Assembly Results"
+        report = [
+            html.Div([
+                html_table([
+                    [
+                        "Number of contigs",
+                        "{:,}".format(sample_data["bin_contigs_at_1x"])
+                    ],
+                    [
+                        "N50",
+                        "{:,}".format(sample_data["N50"])
+                    ],
+                    [
+                        "N75",
+                        "{:,}".format(sample_data["N75"])
+                    ],
+                    [
+                        "bin length at 1x depth",
+                        "{:,}".format(sample_data["bin_length_at_1x"])
+                    ],
+                    [
+                        "bin length at 10x depth",
+                        "{:,}".format(sample_data["bin_length_at_10x"])
+                    ],
+                    [
+                        "bin length at 25x depth",
+                        "{:,}".format(sample_data["bin_length_at_25x"])
+                    ]
+                ])
+            ], className="six columns"),
+            html_organisms_table(sample_data, className="six columns")
+        ]
+    else:
+        title = "No report selected"
+        report = []
+
+    return html.Div([
+        html.Div(img, className="bact_div"),
+        html.H6("Run folder: " + sample_data["run_name"]),
+        html.H6("Setup time: " + str(sample_data["setup_time"])),
+        html.H5("Sample Sheet", className="table-header"),
+        html.Div([
+            html.Div([
+                html_table([
+                    ["Supplied name", sample_data["supplied_name"]],
+                    ["Supplying lab", sample_data["supplying_lab"]],
+                    ["Submitter emails", emails],
+                    ["Provided species", html.I(
+                        sample_data["provided_species"])]
+                ])
+            ], className="six columns"),
+            html.Div([
+                html.H6("User Comments", className="table-header"),
+                sample_data["comments"]
+            ], className="six columns"),
+        ], className="row"),
+        html.H5(title, className="table-header"),
+        html.Div(report, className="row")
     ], **kwargs)
 
 
@@ -344,13 +333,13 @@ def graph_sample_depth_plot(sample, background_dataframe):
     )
 
 
-def children_sample_list_report(filtered_df):
+def children_sample_list_report(filtered_df, data_content):
     report = []
     for species in filtered_df.name_classified_species_1.unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species)
+            html_species_report(filtered_df, species, data_content)
         ]))
     return report
 
@@ -538,7 +527,7 @@ def html_div_summary():
 
 
 def main(argv):
-    dataframe = pd.DataFrame(list(map(get_qcquickie, mongo_interface.test_get_all_samples())))
+    dataframe = import_data.import_data()
     
 
     # Change this to provided species ?
@@ -572,13 +561,24 @@ def main(argv):
                         html.Div(
                             [
                                 html.Button(
-                                    "Individual sample report",
-                                    id="update-samples",
+                                    "QCQuickie report",
+                                    id="update-qcquickie",
                                     n_clicks_timestamp=0,
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="six columns"
+                            className="four columns"
+                        ),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Assembly report",
+                                    id="update-assembly",
+                                    n_clicks_timestamp=0,
+                                    className="button-primary u-full-width"
+                                )
+                            ],
+                            className="four columns"
                         ),
                         html.Div(
                             [
@@ -589,7 +589,7 @@ def main(argv):
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="six columns"
+                            className="four columns"
                         )
                     ],
                     className="row"
@@ -752,18 +752,21 @@ def main(argv):
 
     @app.callback(
         Output(component_id="sample-report", component_property="children"),
-        [Input(component_id="page-n", component_property="children")],
+        [Input(component_id="page-n", component_property="children"),
+         Input(component_id="sample-report", component_property="data-content")],
          [State(component_id="species-list", component_property="value"),
           State(component_id="group-list", component_property="value"),
           State(component_id="run-name", component_property="children")]
          )
-    def sample_report(page_n, species_list, group_list, run_name):
+    def sample_report(page_n, data_content, species_list, group_list, run_name):
         page_n = int(page_n)
         filtered = filter_dataframe(dataframe, species_list, group_list, run_name, page_n)
         max_page = len(filter_dataframe(dataframe, species_list, group_list, run_name)) // PAGESIZE
+        if not (data_content == "qcquickie" or data_content == "assembly"):
+            return []
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-            html.Div(children_sample_list_report(filtered))
+            html.Div(children_sample_list_report(filtered, data_content))
         ]
 
     @app.callback(
@@ -794,17 +797,24 @@ def main(argv):
 
     @app.callback(
         Output(component_id="current-report", component_property="children"),
-        [Input(component_id="update-samples", component_property="n_clicks_timestamp"),
+        [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
+         Input(component_id="update-assembly", component_property="n_clicks_timestamp"),
          Input(component_id="update-table", component_property="n_clicks_timestamp")],
         [State(component_id="species-list", component_property="value"),
          State(component_id="group-list", component_property="value"),
          State(component_id="run-name", component_property="children")]
 
     )
-    def update_report(n_samples_ts, n_table_ts, species_list, group_list, run_name):
-        if n_samples_ts > n_table_ts:  # samples was clicked
+    def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, species_list, group_list, run_name):
+        if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
+            if n_qcquickie_ts > n_assembly_ts:
+                title = "QCQuickie Report"
+                content = "qcquickie"
+            else:
+                title = "Assembly Report"
+                content = "assembly"
             return [
-                html.H3("Individual Sample Reports"),
+                html.H3(title),
                 html.Span("0", style={'display': 'none'}, id="page-n"),
                 html.Div(
                     [
@@ -832,9 +842,9 @@ def main(argv):
                     className="row"
                 ),
                 
-                html.Div(id="sample-report"),
+                html.Div(id="sample-report", **{"data-content": content}),
             ]
-        elif n_table_ts > n_samples_ts:  # table was clicked
+        elif n_table_ts > n_assembly_ts:  # table was clicked
             columns = ['name', 'supplying_lab', 'run_name', '_id', 'input_read_status',
                        'emails', 'user', 'R1_location', 'R2_location', 'provided_species',
                        'name_classified_species_1', 'percent_classified_species_1',
