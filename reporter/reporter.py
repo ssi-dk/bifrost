@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import datetime
 
 import dash
 import dash_core_components as dcc
@@ -128,12 +127,13 @@ def html_species_report(dataframe, species, data_content, **kwargs):
 
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
-        sample_data["percent_classified_species_1"],
-        sample_data["percent_classified_species_2"],
-        sample_data["percent_unclassified"]
+        sample_data["qcquickie"]["percent_classified_species_1"],
+        sample_data["qcquickie"]["percent_classified_species_2"],
+        sample_data["qcquickie"]["percent_unclassified"]
     ]
 
-    color_1 = get_species_color(sample_data["name_classified_species_1"])  # Default
+    color_1 = get_species_color(
+        sample_data["qcquickie"]["name_classified_species_1"])  # Default
 #    color_2 = COLOR_DICT.get(
 #        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
@@ -145,11 +145,13 @@ def html_organisms_table(sample_data, **kwargs):
         html.H6("Detected Organisms", className="table-header"),
         html.Table([
             html.Tr([
-                html.Td(html.I(sample_data["name_classified_species_1"])),
+                html.Td(html.I(sample_data["qcquickie"]
+                               ["name_classified_species_1"])),
                 html_td_percentage(percentages[0], color_1)
             ]),
             html.Tr([
-                html.Td(html.I(sample_data["name_classified_species_2"])),
+                html.Td(html.I(sample_data["qcquickie"]
+                               ["name_classified_species_2"])),
                 html_td_percentage(percentages[1], color_2)
             ]),
             html.Tr([
@@ -163,9 +165,10 @@ def html_organisms_table(sample_data, **kwargs):
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
-    genus = str(sample_data["name_classified_species_1"]).split()[0].lower()
+    genus = str(sample_data["qcquickie"]
+                ["name_classified_species_1"]).split()[0].lower()
     if "{}.svg".format(genus) in list_of_images:
-        img = html.Img(src="/static/" + str(sample_data["name_classified_species_1"]).split()
+        img = html.Img(src="/static/" + str(sample_data["qcquickie"]["name_classified_species_1"]).split()
                        [0].lower() + ".svg", className="svg_bact")
     else:
         img = []
@@ -187,27 +190,31 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 html_table([
                     [
                         "Number of contigs",
-                        "{:,}".format(sample_data["bin_contigs_at_1x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_contigs_at_1x"])
                     ],
                     [
                         "N50",
-                        "{:,}".format(sample_data["N50"])
+                        "{:,}".format(sample_data["qcquickie"]["N50"])
                     ],
                     [
                         "N75",
-                        "{:,}".format(sample_data["N75"])
+                        "{:,}".format(sample_data["qcquickie"]["N75"])
                     ],
                     [
                         "bin length at 1x depth",
-                        "{:,}".format(sample_data["bin_length_at_1x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_1x"])
                     ],
                     [
                         "bin length at 10x depth",
-                        "{:,}".format(sample_data["bin_length_at_10x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_10x"])
                     ],
                     [
                         "bin length at 25x depth",
-                        "{:,}".format(sample_data["bin_length_at_25x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_25x"])
                     ]
                 ])
             ], className="six columns"),
@@ -220,27 +227,31 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 html_table([
                     [
                         "Number of contigs",
-                        "{:,}".format(sample_data["bin_contigs_at_1x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_contigs_at_1x"])
                     ],
                     [
                         "N50",
-                        "{:,}".format(sample_data["N50"])
+                        "{:,}".format(sample_data["qcquickie"]["N50"])
                     ],
                     [
                         "N75",
-                        "{:,}".format(sample_data["N75"])
+                        "{:,}".format(sample_data["qcquickie"]["N75"])
                     ],
                     [
                         "bin length at 1x depth",
-                        "{:,}".format(sample_data["bin_length_at_1x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_1x"])
                     ],
                     [
                         "bin length at 10x depth",
-                        "{:,}".format(sample_data["bin_length_at_10x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_10x"])
                     ],
                     [
                         "bin length at 25x depth",
-                        "{:,}".format(sample_data["bin_length_at_25x"])
+                        "{:,}".format(
+                            sample_data["qcquickie"]["bin_length_at_25x"])
                     ]
                 ])
             ], className="six columns"),

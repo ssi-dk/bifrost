@@ -30,23 +30,24 @@ def extract_data(sample_db):
 
     if "qcquickie" in sample_db:
         for key, value in sample_db['qcquickie']['summary'].items():
-            sample[key] = value
-        sample["N50"] = sample_db["qcquickie"]["quast/report_tsv"]["N50"]
-        sample["N75"] = sample_db["qcquickie"]["quast/report_tsv"]["N75"]
-        sample["bin_length_1x_25x_diff"] = sample["bin_length_at_1x"] - \
-            sample["bin_length_at_25x"]
+            sample["qcquickie_" + key] = value
+        sample["qcquickie_N50"] = sample_db["qcquickie"]["quast/report_tsv"]["N50"]
+        sample["qcquickie_N75"] = sample_db["qcquickie"]["quast/report_tsv"]["N75"]
+        sample["qcquickie_bin_length_1x_25x_diff"] = sample["qcquickie_bin_length_at_1x"] - \
+            sample["qcquickie_bin_length_at_25x"]
 
     if not "run_name" in sample:
         sys.stderr.write("Sample {} has no run name.\n".format(sample["name"]))
         sample["run_name"] = ""
 
-    if "name_classified_species_1" in sample:
-        species_words = sample["name_classified_species_1"].split()
+    if "qcquickie_name_classified_species_1" in sample:
+        species_words = sample["qcquickie_name_classified_species_1"].split(
+        )
         sample["short_class_species_1"] = '{}. {}'.format(
             species_words[0][0], ' '.join(species_words[1:]))
     else:
-        sample["name_classified_species_1"] = "Not classified"
-        sample["short_class_species_1"] = "Not classified"
+        sample["qcquickie_name_classified_species_1"] = "Not classified"
+        sample["qcquickie"]["short_class_species_1"] = "Not classified"
 
     if not "supplying_lab" in sample:
         sample["supplying_lab"] = "Not specified"
