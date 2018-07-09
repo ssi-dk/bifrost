@@ -397,7 +397,7 @@ rule species_check__set_species:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
         config_sample = datahandling.load_sample(sample)
-        with open(output.species, "r") as species_file:
+        with open(output.species, "w") as species_file:
             df = pandas.read_table(input.bracken)
             if "provided_species" in config_sample["sample"]:
                 species_file.write(config_sample["sample"]["provided_species"] + "\n")
