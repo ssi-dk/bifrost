@@ -396,19 +396,17 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open(sample, "r") as sample_yaml:
-            config_sample = yaml.load(sample_yaml)
-            with open(output.species, "w") as species_file:
-                df = pandas.read_table(input.bracken)
-                if "provided_species" in config_sample["sample"]:
-                    species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                    config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-                else:
-                    species_file.write(df["name"].iloc[0] + "\n")
-                    config_sample["sample"]["species"] = df["name"].iloc[0]
-            config_sample["sample"]["detected_species"] = df["name"].iloc[0]
-        with open(sample, "w") as output_file:
-            yaml.dump(config_sample, output_file)
+        config_sample = datahandling.load_sample(sample)
+        with open(output.species, "r") as species_file:
+            df = pandas.read_table(input.bracken)
+            if "provided_species" in config_sample["sample"]:
+                species_file.write(config_sample["sample"]["provided_species"] + "\n")
+                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
+            else:
+                species_file.write(df["name"].iloc[0] + "\n")
+                config_sample["sample"]["species"] = df["name"].iloc[0]
+        config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+        datahandling.save_sample(config_sample, sample)
 
 
 rule species_check__check_sizes:
