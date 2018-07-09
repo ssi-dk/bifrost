@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
