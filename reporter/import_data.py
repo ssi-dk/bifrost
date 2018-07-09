@@ -47,7 +47,7 @@ def extract_data(sample_db):
             species_words[0][0], ' '.join(species_words[1:]))
     else:
         sample["qcquickie_name_classified_species_1"] = "Not classified"
-        sample["qcquickie"]["short_class_species_1"] = "Not classified"
+        sample["short_class_species_1"] = "Not classified"
 
     if not "supplying_lab" in sample:
         sample["supplying_lab"] = "Not specified"

@@ -111,7 +111,7 @@ def generate_sample_report(dataframe, sample, data_content):
                 html_sample_tables(sample, data_content, className="row"),
 
                 graph_sample_depth_plot(
-                    sample, dataframe[dataframe.name_classified_species_1 == sample["name_classified_species_1"]])
+                    sample, dataframe[dataframe.qcquickie_name_classified_species_1 == sample["qcquickie_name_classified_species_1"]])
             ],
             className="border-box"
         )
@@ -120,20 +120,20 @@ def generate_sample_report(dataframe, sample, data_content):
 
 def html_species_report(dataframe, species, data_content, **kwargs):
     report = []
-    for index, sample in dataframe.loc[dataframe["name_classified_species_1"] == species].iterrows():
+    for index, sample in dataframe.loc[dataframe["qcquickie_name_classified_species_1"] == species].iterrows():
         report.append(generate_sample_report(dataframe, sample, data_content))
     return html.Div(report, **kwargs)
 
 
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
-        sample_data["qcquickie"]["percent_classified_species_1"],
-        sample_data["qcquickie"]["percent_classified_species_2"],
-        sample_data["qcquickie"]["percent_unclassified"]
+        sample_data["qcquickie_percent_classified_species_1"],
+        sample_data["qcquickie_percent_classified_species_2"],
+        sample_data["qcquickie_percent_unclassified"]
     ]
 
     color_1 = get_species_color(
-        sample_data["qcquickie"]["name_classified_species_1"])  # Default
+        sample_data["qcquickie_name_classified_species_1"])  # Default
 #    color_2 = COLOR_DICT.get(
 #        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
@@ -145,13 +145,11 @@ def html_organisms_table(sample_data, **kwargs):
         html.H6("Detected Organisms", className="table-header"),
         html.Table([
             html.Tr([
-                html.Td(html.I(sample_data["qcquickie"]
-                               ["name_classified_species_1"])),
+                html.Td(html.I(sample_data["qcquickie_name_classified_species_1"])),
                 html_td_percentage(percentages[0], color_1)
             ]),
             html.Tr([
-                html.Td(html.I(sample_data["qcquickie"]
-                               ["name_classified_species_2"])),
+                html.Td(html.I(sample_data["qcquickie_name_classified_species_2"])),
                 html_td_percentage(percentages[1], color_2)
             ]),
             html.Tr([
@@ -165,10 +163,9 @@ def html_organisms_table(sample_data, **kwargs):
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
-    genus = str(sample_data["qcquickie"]
-                ["name_classified_species_1"]).split()[0].lower()
+    genus = str(sample_data["qcquickie_name_classified_species_1"]).split()[0].lower()
     if "{}.svg".format(genus) in list_of_images:
-        img = html.Img(src="/static/" + str(sample_data["qcquickie"]["name_classified_species_1"]).split()
+        img = html.Img(src="/static/" + str(sample_data["qcquickie_name_classified_species_1"]).split()
                        [0].lower() + ".svg", className="svg_bact")
     else:
         img = []
@@ -191,30 +188,30 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                     [
                         "Number of contigs",
                         "{:,}".format(
-                            sample_data["qcquickie"]["bin_contigs_at_1x"])
+                            sample_data["qcquickie_bin_contigs_at_1x"])
                     ],
                     [
                         "N50",
-                        "{:,}".format(sample_data["qcquickie"]["N50"])
+                        "{:,}".format(sample_data["qcquickie_N50"])
                     ],
                     [
                         "N75",
-                        "{:,}".format(sample_data["qcquickie"]["N75"])
+                        "{:,}".format(sample_data["qcquickie_N75"])
                     ],
                     [
                         "bin length at 1x depth",
                         "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_1x"])
+                            sample_data["qcquickie_bin_length_at_1x"])
                     ],
                     [
                         "bin length at 10x depth",
                         "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_10x"])
+                            sample_data["qcquickie_bin_length_at_10x"])
                     ],
                     [
                         "bin length at 25x depth",
                         "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_25x"])
+                            sample_data["qcquickie_bin_length_at_25x"])
                     ]
                 ])
             ], className="six columns"),
@@ -294,13 +291,13 @@ def graph_sample_depth_plot(sample, background_dataframe):
         figure={
             "data": [
                 go.Box(
-                    x=background_dataframe["bin_length_at_1x"],
+                    x=background_dataframe["qcquickie_bin_length_at_1x"],
                     text=background_dataframe["name"],
                     boxpoints="all",
                     jitter=0.3,
                     pointpos=-1.8,
                     marker=dict(color=get_species_color(
-                        sample['name_classified_species_1']))
+                        sample['qcquickie_name_classified_species_1']))
                 )
                 #{"x": [1, 2, 3], "y": [2, 4, 5], "type": "bar", "name": u"Montréal"},
             ],
@@ -314,7 +311,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                 ),
                 annotations=go.Annotations([
                     go.Annotation(
-                        x=sample["bin_length_at_1x"],
+                        x=sample["qcquickie_bin_length_at_1x"],
                         y=0,
                         text="1x",
                         showarrow=True,
@@ -322,7 +319,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                         ay=0
                     ),
                     go.Annotation(
-                        x=sample["bin_length_at_10x"],
+                        x=sample["qcquickie_bin_length_at_10x"],
                         y=0.0,
                         text="10x",
                         showarrow=True,
@@ -330,7 +327,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                         ay=40
                     ),
                     go.Annotation(
-                        x=sample["bin_length_at_25x"],
+                        x=sample["qcquickie_bin_length_at_25x"],
                         y=0,
                         text="25x",
                         showarrow=True,
@@ -346,7 +343,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
 
 def children_sample_list_report(filtered_df, data_content):
     report = []
-    for species in filtered_df.name_classified_species_1.unique():
+    for species in filtered_df.qcquickie_name_classified_species_1.unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
@@ -542,7 +539,7 @@ def main(argv):
     
 
     # Change this to provided species ?
-    dataframe = dataframe.sort_values("name_classified_species_1")
+    dataframe = dataframe.sort_values("short_class_species_1")
     app = dash.Dash()
     app.config['suppress_callback_exceptions'] = True
 
@@ -929,7 +926,7 @@ def main(argv):
             species_name = species if species == "Not classified" else "<i>{}</i>".format(species)
             data.append(go.Box(
                 go.Box(
-                    x=species_df.loc[:, plot_value],
+                    x=species_df.loc[:, "qcquickie_" + plot_value],
                     text=species_df["name"],
                     marker=dict(color=COLOR_DICT.get(species, None)),
                     boxpoints="all",
