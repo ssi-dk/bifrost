@@ -102,7 +102,10 @@ rule create_end_file:
     output:
         "serumqc_setup_complete"
     shell:
-        "touch {output}"
+        """
+        bash run_cmd_serumqc.sh
+        touch {output}
+        """
 
 # can break this down to 2 parts where you create the sample_sheet in one and then prep for run with the other
 # rule start_run:
