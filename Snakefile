@@ -93,9 +93,7 @@ rule get_conda_env:
     run:
         run_info = datahandling.load_run(input.run_info_yaml_path)
         shell("conda env export 1> {output}")
-        with open(output.conda_yaml, "r") as conda_info_yaml:
-            conda_info = yaml.load(conda_info_yaml)
-        run_info["run"]["conda_env"] = conda_info
+        run_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
         datahandling.save_run(run_info, input.run_info_yaml_path)
 
 rule create_end_file:
