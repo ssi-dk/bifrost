@@ -114,7 +114,7 @@ rule ariba__plasmidfinder:
         folder = component,
         reads = (R1, R2)
     output:
-        folder = component + "/" + rule_name,
+        folder = component + "/ariba__plasmidfinder",
     params:
         database = config["ariba"]["plasmidfinder"]["database"]
     conda:
