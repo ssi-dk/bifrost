@@ -1,48 +1,31 @@
-import re
-import pandas
-from ruamel.yaml import YAML
+import os
 import sys
-
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+import datahandling
+import pandas
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
-
-sample = config["Sample"]  # expected input
+# requires --config R1_reads={read_location},R2_reads={read_location}
+sample = config["Sample"]
 
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-yaml = YAML(typ='safe')
-yaml.default_flow_style = False
+config_sample = datahandling.load_sample(sample)
 
-with open(sample, "r") as sample_yaml:
-    config_sample = yaml.load(sample_yaml)
+R1 = config_sample["sample"]["R1"]
+R2 = config_sample["sample"]["R2"]
 
-R1 = config_sample["sample"]["R1"]  # expected in sample config
-R2 = config_sample["sample"]["R2"]  # expected in sample config
-
-component = "qcquickie"
+# my understanding is all helps specify final output
+component = "assembly"
 
 onsuccess:
     print("Workflow complete")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
+    datahandling.update_sample_component_success(component, sample)
 
 onerror:
     print("Workflow error")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
+    datahandling.update_sample_component_failure(component, sample)
 
 
 rule all:
@@ -413,19 +396,17 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        with open(sample, "r") as sample_yaml:
-            config_sample = yaml.load(sample_yaml)
-            with open(output.species, "w") as species_file:
-                df = pandas.read_table(input.bracken)
-                if "provided_species" in config_sample["sample"]:
-                    species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                    config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
-                else:
-                    species_file.write(df["name"].iloc[0] + "\n")
-                    config_sample["sample"]["species"] = df["name"].iloc[0]
-            config_sample["sample"]["detected_species"] = df["name"].iloc[0]
-        with open(sample, "w") as output_file:
-            yaml.dump(config_sample, output_file)
+        config_sample = datahandling.load_sample(sample)
+        with open(output.species, "w") as species_file:
+            df = pandas.read_table(input.bracken)
+            if "provided_species" in config_sample["sample"]:
+                species_file.write(config_sample["sample"]["provided_species"] + "\n")
+                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
+            else:
+                species_file.write(df["name"].iloc[0] + "\n")
+                config_sample["sample"]["species"] = df["name"].iloc[0]
+        config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+        datahandling.save_sample(config_sample, sample)
 
 
 rule species_check__check_sizes:

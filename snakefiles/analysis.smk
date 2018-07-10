@@ -1,9 +1,7 @@
-import re
-import pandas
-from ruamel.yaml import YAML
+import os
 import sys
-import gzip
-import io
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -11,103 +9,84 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-
-yaml = YAML(typ='safe')
-yaml.default_flow_style = False
-with open(sample, "r") as yaml_stream:
-    config_sample = yaml.load(yaml_stream)
+config_sample = datahandling.load_sample(sample)
 
 R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
-species = ""
-if "species" in config_sample["sample"]:
-    species = config_sample["sample"]["species"]
-# my understanding is all helps specify final output
 component = "analysis"
 
 onsuccess:
     print("Workflow complete")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
+    datahandling.update_sample_component_success(component, sample)
 
 onerror:
     print("Workflow error")
-    with open(sample, "r") as sample_yaml:
-        config_sample = yaml.load(sample_yaml)
-    while component in config_sample["sample"]["components"]["success"]:
-        config_sample["sample"]["components"]["failure"].remove(component)
-    if component not in config_sample["sample"]["components"]["failure"]:
-        config_sample["sample"]["components"]["success"].append(component)
-    with open(sample, "w") as output_file:
-        yaml.dump(config_sample, output_file)
-
+    datahandling.update_sample_component_failure(component, sample)
 
 rule all:
     input:
-        "analysis/ariba_mlst",
-        "analysis/abricate_on_resfinder_from_ariba.tsv",
-        "analysis/abricate_on_plasmidfinder_from_ariba.tsv"
+        component + "/" + component + "_complete"
 
 
 rule setup:
     output:
-        folder = "analysis"
+        folder = component
     shell:
         "mkdir {output}"
 
 
+rule_name = "ariba__resfinder"
 rule ariba__resfinder:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        folder = "analysis",
-        reads = (R1, R2)
-    output:
-        folder = "analysis/ariba_resfinder",
-    params:
-        database = config["ariba"]["resfinder"]["database"]
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = component,
+        reads = (R1, R2)
+    output:
+        folder = component + "/ariba_resfinder",
+    params:
+        database = config["ariba"]["resfinder"]["database"]
     conda:
         "../envs/ariba.yaml"
-    log:
-        out_file = "analysis/log/ariba__resfinder.out.log",
-        err_file = "analysis/log/ariba__resfinder.err.log",
-    benchmark:
-        "analysis/benchmarks/ariba__resfinder.benchmark"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
-
+rule_name = "abricate_on_ariba_resfinder"
 rule abricate_on_ariba_resfinder:
+    # Static
     message:
-        "Running step: {rule}"
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
     input:
-        contigs = "analysis/ariba_resfinder",
+        contigs = component + "/ariba_resfinder",
     output:
-        report = "analysis/abricate_on_resfinder_from_ariba.tsv",
+        report = component + "/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = config["abricate"]["resfinder"]["database"],
         db_name = config["abricate"]["resfinder"]["name"],
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
     conda:
         "../envs/abricate.yaml"
-    log:
-        err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
-    benchmark:
-        "analysis/benchmarks/abricate_on_ariba_resfinder.benchmark"
     shell:
         """
         if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
@@ -116,81 +95,117 @@ rule abricate_on_ariba_resfinder:
         fi;
         """
 
-
+rule_name = "ariba__plasmidfinder"
 rule ariba__plasmidfinder:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        folder = "analysis",
-        reads = (R1, R2)
-    output:
-        folder = "analysis/ariba_plasmidfinder",
-    params:
-        database = config["ariba"]["plasmidfinder"]["database"]
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = component,
+        reads = (R1, R2)
+    output:
+        folder = component + "/ariba__plasmidfinder",
+    params:
+        database = config["ariba"]["plasmidfinder"]["database"]
     conda:
         "../envs/ariba.yaml"
-    log:
-        out_file = "analysis/log/ariba__plasmidfinder.out.log",
-        err_file = "analysis/log/ariba__plasmidfinder.err.log",
-    benchmark:
-        "analysis/benchmarks/ariba__plasmidfinder.benchmark"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
-
+rule_name = "abricate_on_ariba_plasmidfinder"
 rule abricate_on_ariba_plasmidfinder:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "analysis/ariba_plasmidfinder",
-    output:
-        report = "analysis/abricate_on_plasmidfinder_from_ariba.tsv",
-    params:
-        database = config["abricate"]["plasmidfinder"]["database"],
-        db_name = config["abricate"]["plasmidfinder"]["name"],
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = component + "/ariba__plasmidfinder",
+    output:
+        report = component + "/abricate_on_plasmidfinder_from_ariba.tsv",
+    params:
+        database = config["abricate"]["plasmidfinder"]["database"],
+        db_name = config["abricate"]["plasmidfinder"]["name"],
     conda:
         "../envs/abricate.yaml"
-    log:
-        err_file = "analysis/log/abricate_on_ariba_plasmidfinder.err.log",
-    benchmark:
-        "analysis/benchmarks/abricate_on_ariba_plasmidfinder.benchmark"
     shell:
         """
-        if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
-        then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        if [[ -e {input.folder}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.folder}/assemblies.fa.gz | head -c1) ]];
+        then abricate --datadir {params.database} --db {params.db_name} {input.folder}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi;
         """
 
-
+rule_name = "ariba__mlst"
 rule ariba__mlst:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        folder = "analysis",
-        reads = (R1, R2)
-    output:
-        folder = "analysis/ariba_mlst",
-    params:
-        species = species,
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = component,
+        reads = (R1, R2)
+    output:
+        folder = component + "/ariba_mlst",
+    params:
+        sample = sample,
     conda:
         "../envs/ariba.yaml"
-    log:
-        out_file = "analysis/log/ariba__mlst.out.log",
-        err_file = "analysis/log/ariba__mlst.err.log",
-    benchmark:
-        "analysis/benchmarks/ariba__mlst.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
+
+rule_name = "datadump_analysis"
+rule datadump_analysis:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        component + "/ariba_mlst",
+        component + "/abricate_on_resfinder_from_ariba.tsv",
+        component + "/abricate_on_plasmidfinder_from_ariba.tsv"
+    output:
+        summary = touch(component + "/" +component +"_complete")
+    params:
+        sample = sample,
+        folder = component,
+    conda:
+        "../envs/ariba.yaml"
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analysis.py")

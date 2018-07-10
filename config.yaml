@@ -8,6 +8,7 @@ components: "qcquickie,analysis,assembly" # available options are in snakefiles
 group: "" # group for sbatch on torque system
 use_mongodb: True 
 mongo_db_key_location: ""
+run_type: "project" # run type (routine, project)
 
 memory: &memory 10 #in Gb
 threads: &threads 5
