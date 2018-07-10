@@ -41,7 +41,7 @@ rule ariba__resfinder:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
@@ -68,7 +68,7 @@ rule abricate_on_ariba_resfinder:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
@@ -100,7 +100,7 @@ rule ariba__plasmidfinder:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
@@ -127,7 +127,7 @@ rule abricate_on_ariba_plasmidfinder:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
@@ -159,7 +159,7 @@ rule ariba__mlst:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
@@ -186,7 +186,7 @@ rule datadump_analysis:
     # Static
     message:
         "Running step:" + rule_name
-        threads:
+    threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
