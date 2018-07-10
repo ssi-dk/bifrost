@@ -138,7 +138,7 @@ rule abricate_on_ariba_plasmidfinder:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = component + "/ariba_plasmidfinder",
+        folder = component + "/ariba__plasmidfinder",
     output:
         report = component + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
@@ -148,7 +148,7 @@ rule abricate_on_ariba_plasmidfinder:
         "../envs/abricate.yaml"
     shell:
         """
-        if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
+        if [[ -e {input.folder}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.folder}/assemblies.fa.gz | head -c1) ]];
         then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi;
