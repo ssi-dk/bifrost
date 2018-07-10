@@ -13,16 +13,14 @@ from dash.dependencies import Input, Output, State
 import dash_scroll_up
 
 import flask  #used for the image server
-import glob
 
-import mongo_interface
+
+import components.mongo_interface
 import import_data
-
-#DEV images
-image_directory = '/Users/mbas/Documents/SerumQC-private/reporter/resources/img/'
-list_of_images = [os.path.basename(x) for x in glob.glob(
-    '{}*.svg'.format(image_directory))]
-static_image_route = '/static/'
+from components.table import html_table, html_td_percentage
+from components.summary import html_div_summary, format_selected_samples
+from components.sample_report import children_sample_list_report
+from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
 
 
 def hex_to_rgb(value):
@@ -31,28 +29,13 @@ def hex_to_rgb(value):
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
 # Globals
-COLOR_DICT = mongo_interface.get_species_colors()
 
-PLOT_VALUES = [
-    "bin_length_at_1x",
-    "bin_length_at_10x",
-    "bin_length_at_25x",
-    "bin_length_1x_25x_diff",
-    "bin_contigs_at_1x",
-    "bin_contigs_at_10x",
-    "bin_contigs_at_25x",
-    "N50",
-    "N75"
-]
-DEFAULT_PLOT = 0
+
+
 
 PAGESIZE = 50
 
-def get_species_color(species):
-    color = COLOR_DICT.get(species, "#b3ccc1")
-    if color == '':
-        color = "#b3ccc1"  # Default
-    return color
+
 
 def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None):
     if species_list is None: species_list = []
@@ -69,470 +52,12 @@ def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None)
         return filtered.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
 
 
-def format_selected_samples(filtered_df):
-    "Returns a formatted string of selected samples"
-    return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
-
-
-# Components
-
-
-def html_table(data, **kwargs):
-    return html.Table([
-        html.Tr([html.Td(data_cell) for data_cell in data_row])
-        for data_row in data
-    ], **kwargs)
-
-
-def html_td_percentage(value, color):
-    string = str(round(float(value) * 100, 2)) + "%"
-    return html.Td(
-        html.Div([
-            html.Span(string, className="val"),
-            html.Span(
-                className="bar",
-                style={"backgroundColor": color, "width": string}
-            )
-        ], className="wrapper"
-    ), className="data-colored")
-
-
-# QCQuickie
-
-def generate_sample_report(dataframe, sample, data_content):
-    return (
-        html.Div(
-            [
-                html.A(id="sample-" + sample["name"]),
-                html.H5(
-                    sample["name"],
-                    className="box-title"
-                ),
-                html_sample_tables(sample, data_content, className="row"),
-
-                graph_sample_depth_plot(
-                    sample, dataframe[dataframe.qcquickie_name_classified_species_1 == sample["qcquickie_name_classified_species_1"]])
-            ],
-            className="border-box"
-        )
-    )
-
-
-def html_species_report(dataframe, species, data_content, **kwargs):
-    report = []
-    for index, sample in dataframe.loc[dataframe["qcquickie_name_classified_species_1"] == species].iterrows():
-        report.append(generate_sample_report(dataframe, sample, data_content))
-    return html.Div(report, **kwargs)
-
-
-def html_organisms_table(sample_data, **kwargs):
-    percentages = [
-        sample_data["qcquickie_percent_classified_species_1"],
-        sample_data["qcquickie_percent_classified_species_2"],
-        sample_data["qcquickie_percent_unclassified"]
-    ]
-
-    color_1 = get_species_color(
-        sample_data["qcquickie_name_classified_species_1"])  # Default
-#    color_2 = COLOR_DICT.get(
-#        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
-    color_2 = "#f3bbd3"  # Default
-
-#   color_u = COLOR_DICT.get("", "#fee1cd")  # Default
-    color_u = "#fee1cd"  # Default
-
-    return html.Div([
-        html.H6("Detected Organisms", className="table-header"),
-        html.Table([
-            html.Tr([
-                html.Td(html.I(sample_data["qcquickie_name_classified_species_1"])),
-                html_td_percentage(percentages[0], color_1)
-            ]),
-            html.Tr([
-                html.Td(html.I(sample_data["qcquickie_name_classified_species_2"])),
-                html_td_percentage(percentages[1], color_2)
-            ]),
-            html.Tr([
-                html.Td("Unclassified"),
-                html_td_percentage(percentages[2], color_u)
-            ])
-        ])
-    ], **kwargs)
-
-
-def html_sample_tables(sample_data, data_content, **kwargs):
-    """Generate the tables for each sample containing submitter information,
-       detected organisms etc. """
-    genus = str(sample_data["qcquickie_name_classified_species_1"]).split()[0].lower()
-    if "{}.svg".format(genus) in list_of_images:
-        img = html.Img(src="/static/" + str(sample_data["qcquickie_name_classified_species_1"]).split()
-                       [0].lower() + ".svg", className="svg_bact")
-    else:
-        img = []
-    if type(sample_data["emails"]) is str:
-        n_emails = len(sample_data["emails"].split(";"))
-        if (n_emails > 1):
-            emails = ", ".join(sample_data["emails"].split(";")[:2])
-            if (n_emails > 2):
-                emails += ", ..."
-        else:
-            emails = sample_data["emails"]
-    else:
-        emails = ''
-
-    if data_content == "qcquickie":
-        title = "QCQuickie Results"
-        report = [
-            html.Div([
-                html_table([
-                    [
-                        "Number of contigs",
-                        "{:,}".format(
-                            sample_data["qcquickie_bin_contigs_at_1x"])
-                    ],
-                    [
-                        "N50",
-                        "{:,}".format(sample_data["qcquickie_N50"])
-                    ],
-                    [
-                        "N75",
-                        "{:,}".format(sample_data["qcquickie_N75"])
-                    ],
-                    [
-                        "bin length at 1x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie_bin_length_at_1x"])
-                    ],
-                    [
-                        "bin length at 10x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie_bin_length_at_10x"])
-                    ],
-                    [
-                        "bin length at 25x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie_bin_length_at_25x"])
-                    ]
-                ])
-            ], className="six columns"),
-            html_organisms_table(sample_data, className="six columns")
-        ]
-    elif data_content == "assembly":
-        title= "Assembly Results"
-        report = [
-            html.Div([
-                html_table([
-                    [
-                        "Number of contigs",
-                        "{:,}".format(
-                            sample_data["qcquickie"]["bin_contigs_at_1x"])
-                    ],
-                    [
-                        "N50",
-                        "{:,}".format(sample_data["qcquickie"]["N50"])
-                    ],
-                    [
-                        "N75",
-                        "{:,}".format(sample_data["qcquickie"]["N75"])
-                    ],
-                    [
-                        "bin length at 1x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_1x"])
-                    ],
-                    [
-                        "bin length at 10x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_10x"])
-                    ],
-                    [
-                        "bin length at 25x depth",
-                        "{:,}".format(
-                            sample_data["qcquickie"]["bin_length_at_25x"])
-                    ]
-                ])
-            ], className="six columns"),
-            html_organisms_table(sample_data, className="six columns")
-        ]
-    else:
-        title = "No report selected"
-        report = []
-
-    return html.Div([
-        html.Div(img, className="bact_div"),
-        html.H6("Run folder: " + sample_data["run_name"]),
-        html.H6("Setup time: " + str(sample_data["setup_time"])),
-        html.H5("Sample Sheet", className="table-header"),
-        html.Div([
-            html.Div([
-                html_table([
-                    ["Supplied name", sample_data["supplied_name"]],
-                    ["Supplying lab", sample_data["supplying_lab"]],
-                    ["Submitter emails", emails],
-                    ["Provided species", html.I(
-                        sample_data["provided_species"])]
-                ])
-            ], className="six columns"),
-            html.Div([
-                html.H6("User Comments", className="table-header"),
-                sample_data["comments"]
-            ], className="six columns"),
-        ], className="row"),
-        html.H5(title, className="table-header"),
-        html.Div(report, className="row")
-    ], **kwargs)
-
-
-def graph_sample_depth_plot(sample, background_dataframe):
-    # With real data, we should be getting sample data (where to put 1, 10
-    # and 25x annotation) and the info for the rest of that species box.
-    return dcc.Graph(
-        id="coverage-1-" + sample['name'],
-        figure={
-            "data": [
-                go.Box(
-                    x=background_dataframe["qcquickie_bin_length_at_1x"],
-                    text=background_dataframe["name"],
-                    boxpoints="all",
-                    jitter=0.3,
-                    pointpos=-1.8,
-                    marker=dict(color=get_species_color(
-                        sample['qcquickie_name_classified_species_1']))
-                )
-                #{"x": [1, 2, 3], "y": [2, 4, 5], "type": "bar", "name": u"Montréal"},
-            ],
-            "layout": go.Layout(
-                title="{}: Binned Depth 1x size".format(sample['name']),
-                margin=go.Margin(
-                    l=75,
-                    r=50,
-                    b=25,
-                    t=50
-                ),
-                annotations=go.Annotations([
-                    go.Annotation(
-                        x=sample["qcquickie_bin_length_at_1x"],
-                        y=0,
-                        text="1x",
-                        showarrow=True,
-                        ax=40,
-                        ay=0
-                    ),
-                    go.Annotation(
-                        x=sample["qcquickie_bin_length_at_10x"],
-                        y=0.0,
-                        text="10x",
-                        showarrow=True,
-                        ax=0,
-                        ay=40
-                    ),
-                    go.Annotation(
-                        x=sample["qcquickie_bin_length_at_25x"],
-                        y=0,
-                        text="25x",
-                        showarrow=True,
-                        ax=0,
-                        ay=-40
-                    ),
-                ])
-            )
-        },
-        style={"height": "200px"}
-    )
-
-
-def children_sample_list_report(filtered_df, data_content):
-    report = []
-    for species in filtered_df.qcquickie_name_classified_species_1.unique():
-        report.append(html.Div([
-            html.A(id="species-cat-" + str(species).replace(" ", "-")),
-            html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species, data_content)
-        ]))
-    return report
-
-
 def html_table_run_information(run_data):
     return html_table([
         ["Run Name", run_data["run_name"]],
         ["Run Date", "06 MAY 2018"],
         ["Placeholder", "Lorem ipsum"]
     ])
-
-
-def html_div_summary():
-    plot_values_options = [{"label": plot, "value": plot}
-                           for plot in PLOT_VALUES]
-    return html.Div(
-        [
-            html.H5("Summary", className="box-title"),
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            dash_scroll_up.DashScrollUp(
-                                id='input',
-                                label='UP',
-                                className="button button-primary no-print"
-                            ),
-                            html.Div(
-                                id="run-selector",
-                                className="row"
-                            ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.Label(
-                                                [
-                                                    "Supplying lab ",
-                                                    html.Small(
-                                                        [
-                                                            "(",
-                                                            html.A(
-                                                                "all",
-                                                                href="#",
-                                                                n_clicks=0,
-                                                                id="group-all"
-                                                            ),
-                                                            ")"
-                                                        ]
-                                                    )
-                                                ],
-                                                htmlFor="group-list"
-                                            ),
-                                            html.Div(
-                                                dcc.Dropdown(
-                                                    id="group-list",
-                                                    multi=True
-                                                ),
-                                                id="group-div"
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                        )
-                                ],
-                                className="row"
-                            ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.Label(
-                                                [
-                                                    "Detected organism ",
-                                                    html.Small(
-                                                        [
-                                                            "(",
-                                                            html.A(
-                                                                "all",
-                                                                href="#",
-                                                                n_clicks=0,
-                                                                id="species-all"
-                                                            ),
-                                                            ")"
-                                                        ]
-                                                    )
-                                                ],
-                                                htmlFor="species-list"
-                                            ),
-                                            html.Div(
-                                                dcc.Dropdown(
-                                                    id="species-list",
-                                                    multi=True
-                                                ),
-                                                id="species-div"
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                    )
-                                ],
-                                className="row"
-                            ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.Label("Plot value",
-                                                       htmlFor="plot-list"),
-                                            dcc.Dropdown(
-                                                id="plot-list",
-                                                options=plot_values_options,
-                                                value=PLOT_VALUES[DEFAULT_PLOT]
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                    )
-                                ],
-                                className="row"
-                            )
-                        ],
-                        className="eight columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.Label(
-                                                [
-                                                    "Selected Samples (",
-                                                    html.Span(id="sample-count"),
-                                                    "):"
-                                                ],
-                                                       htmlFor="plot-list"),
-                                            dcc.Textarea(
-                                                id="selected-samples",
-                                                className="u-full-width",
-                                                style={"resize": "none",
-                                                       "height": "400px"},
-                                                readOnly=True
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                    )
-                                ],
-                                className="row"
-                            )
-                        ],
-                        className="four columns"
-                    )
-                ],
-                className="row"
-            ),
-            # Filtered list
-            html.Div(
-                [
-                    html.Div(
-                        [
-                        ],
-                        className="four columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Label("Go to sample", htmlFor="sample-list"),
-                            html.Div([
-                                html.Div(
-                                    dcc.Dropdown(
-                                        id="sample-list",
-                                        placeholder="Sample name"
-                                    )
-                                , className="six columns"),
-                                html.Div(
-                                    html.A("Go", id="go-to-sample",
-                                        href="#", className="button")
-                                , className="six columns")
-                            ], className="row")
-                        ],
-                        className="six columns"
-                    ),
-                ], className="row"
-            ),
-            dcc.Graph(id="summary-plot")
-        ], className="border-box"
-    )
-
 
 def main(argv):
     dataframe = import_data.import_data()
@@ -555,6 +80,11 @@ def main(argv):
         {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
     app.layout = html.Div(className="container", children=[
+        dash_scroll_up.DashScrollUp(
+            id='input',
+            label='UP',
+            className="button button-primary no-print"
+        ),
         html.Div(dt.DataTable(rows=[{}], editable=False), style={'display': 'none'}),
         html.H1("QC REPORT"),
         html.H2("", id="run-name"),

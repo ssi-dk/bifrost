@@ -1,6 +1,6 @@
 import pandas as pd
 import datetime
-import mongo_interface
+import components.mongo_interface as mongo_interface
 
 def extract_data(sample_db):
     sample = {}
@@ -35,6 +35,18 @@ def extract_data(sample_db):
         sample["qcquickie_N75"] = sample_db["qcquickie"]["quast/report_tsv"]["N75"]
         sample["qcquickie_bin_length_1x_25x_diff"] = sample["qcquickie_bin_length_at_1x"] - \
             sample["qcquickie_bin_length_at_25x"]
+
+    if "assembly" in sample_db:
+        for key, value in sample_db['assembly']['summary'].items():
+            sample["assembly_" + key] = value
+        if "bin_length_at_25x" not in sample_db["assembly"]["summary"]:
+            print(sample["name"])
+            print(sample_db['assembly']['summary'])
+    
+        sample["assembly_N50"] = sample_db["assembly"]["quast/report_tsv"]["N50"]
+        sample["assembly_N75"] = sample_db["assembly"]["quast/report_tsv"]["N75"]
+        # sample["assembly_bin_length_1x_25x_diff"] = sample["assembly_bin_length_at_1x"] - \
+        #     sample["assembly_bin_length_at_25x"]
 
     if not "run_name" in sample:
         sys.stderr.write("Sample {} has no run name.\n".format(sample["name"]))
