@@ -11,9 +11,6 @@ import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
-yaml = YAML(typ='safe')
-yaml.default_flow_style = False
-
 components = str(config["components"])
 run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
