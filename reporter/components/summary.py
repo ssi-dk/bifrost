@@ -141,7 +141,7 @@ def html_div_summary():
                                                 id="selected-samples",
                                                 className="u-full-width",
                                                 style={"resize": "none",
-                                                       "height": "400px"},
+                                                       "height": "300px"},
                                                 readOnly=True
                                             )
                                         ],
@@ -152,36 +152,30 @@ def html_div_summary():
                             )
                         ],
                         className="four columns"
-                    )
+                    ),
+                    
                 ],
                 className="row"
             ),
-            # Filtered list
+            dcc.Graph(id="summary-plot"),
             html.Div(
                 [
                     html.Div(
                         [
+                            html.Div(
+                                [
+                                    html.Div(
+                                        
+                                        className="twelve columns",
+                                        id="lasso-div"
+                                    )
+                                ],
+                                className="row"
+                            )
                         ],
-                        className="four columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Label("Go to sample", htmlFor="sample-list"),
-                            html.Div([
-                                html.Div(
-                                    dcc.Dropdown(
-                                        id="sample-list",
-                                        placeholder="Sample name"
-                                    ), className="six columns"),
-                                html.Div(
-                                    html.A("Go", id="go-to-sample",
-                                           href="#", className="button"), className="six columns")
-                            ], className="row")
-                        ],
-                        className="six columns"
-                    ),
-                ], className="row"
-            ),
-            dcc.Graph(id="summary-plot")
+                        className="twelve columns"
+                    )
+                ]
+                , className="row")
         ], className="border-box"
     )

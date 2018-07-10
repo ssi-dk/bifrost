@@ -30,12 +30,7 @@ def hex_to_rgb(value):
 
 # Globals
 
-
-
-
 PAGESIZE = 50
-
-
 
 def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None):
     if species_list is None: species_list = []
@@ -93,7 +88,14 @@ def main(argv):
         html_div_summary(),
         html.Div(
             [
-                html.H5("Update report", className="box-title"),
+                html.H5(
+                    [
+                        "Update report (",
+                        html.Span(id="report-count"),
+                        " samples selected)"
+                    ],
+                    className="box-title"
+                    ),
                 html.Div(
                     [
                         html.Div(
@@ -215,6 +217,49 @@ def main(argv):
             return "/" + run
         else:
             return "/"
+
+    @app.callback(
+        Output('report-count', 'children'),
+        [Input('summary-plot', 'selectedData'),
+         Input(component_id="species-list", component_property="value"),
+         Input(component_id="group-list", component_property="value"),
+         Input(component_id="run-name", component_property="children")]
+    )
+    def display_selected_data(selected_data, species_list, group_list, run_name):
+        if selected_data is not None and len(selected_data["points"]):
+            return len([sample['text']
+                      for sample in selected_data["points"]])
+        else:
+            filtered_df = filter_dataframe(
+                dataframe, species_list, group_list, run_name)
+            return filtered_df['name'].count()
+
+    @app.callback(
+        Output('lasso-div', 'children'),
+        [Input('summary-plot', 'selectedData')]
+    )
+    def display_selected_data(selected_data):
+        if selected_data is not None and len(selected_data["points"]):
+            points = [sample['text']
+                      for sample in selected_data["points"]]
+            return [
+                html.Label(
+                    [
+                        "Selected from plot lasso (",
+                            str(len(points)),
+                        "):"
+                    ],
+                    htmlFor="selected-from-plot"),
+                dcc.Textarea(
+                    id="selected-from-plot",
+                    className="u-full-width",
+                    style={"resize": "none"},
+                    readOnly=True,
+                    value=", ".join(points)
+                )
+            ]
+        else:
+            return ""
 
     @app.callback(
         Output('group-div', 'children'),
@@ -394,6 +439,7 @@ def main(argv):
                        'snp_filter_indels', 'snp_filter_10x_10%', 'comments']
             return [
                 html.H3("Table Report"),
+
                 dt.DataTable(
                     rows=filter_dataframe(
                         dataframe, species_list, group_list, run_name).to_dict("records"),
@@ -430,15 +476,6 @@ def main(argv):
     def update_sample_count(species_list, group_list, run_name):
         filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
         return filtered_df['name'].count()
-
-    @app.callback(
-        Output(component_id="go-to-sample", component_property="href"),
-        [Input(component_id="sample-list", component_property="value")]
-    )
-    def update_go_to_sample(sample_name):
-        return "not working"
-        # if sample_name in sample_list:
-        #     return "#sample-" + sample_name
 
     @app.callback(
         Output(component_id="summary-plot", component_property="figure"),
