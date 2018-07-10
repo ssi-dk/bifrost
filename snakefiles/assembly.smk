@@ -371,6 +371,7 @@ rule post_assembly__annotate:
         contigs = "assembly/contigs.fasta"
     output:
         gff = "assembly/contigs.gff",
+    params:
         prokka = temp("assembly/prokka")
     threads:
         global_threads
