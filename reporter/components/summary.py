@@ -2,15 +2,24 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 PLOT_VALUES = [
-    "bin_length_at_1x",
-    "bin_length_at_10x",
-    "bin_length_at_25x",
-    "bin_length_1x_25x_diff",
-    "bin_contigs_at_1x",
-    "bin_contigs_at_10x",
-    "bin_contigs_at_25x",
-    "N50",
-    "N75"
+    "qcquickie_bin_length_at_1x",
+    "qcquickie_bin_length_at_10x",
+    "qcquickie_bin_length_at_25x",
+    "qcquickie_bin_length_1x_25x_diff",
+    "qcquickie_bin_contigs_at_1x",
+    "qcquickie_bin_contigs_at_10x",
+    "qcquickie_bin_contigs_at_25x",
+    "qcquickie_N50",
+    "qcquickie_N75",
+    "assembly_bin_length_at_10x",
+    "assembly_bin_length_at_1x",
+    "assembly_bin_length_at_25x",
+    "assembly_bin_length_1x_25x_diff",
+    "assembly_bin_contigs_at_1x",
+    "assembly_bin_contigs_at_10x",
+    "assembly_bin_contigs_at_25x",
+    "assembly_N50",
+    "assembly_N75"
 ]
 DEFAULT_PLOT = 0
 

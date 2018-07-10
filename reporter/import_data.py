@@ -45,8 +45,8 @@ def extract_data(sample_db):
     
         sample["assembly_N50"] = sample_db["assembly"]["quast/report_tsv"]["N50"]
         sample["assembly_N75"] = sample_db["assembly"]["quast/report_tsv"]["N75"]
-        # sample["assembly_bin_length_1x_25x_diff"] = sample["assembly_bin_length_at_1x"] - \
-        #     sample["assembly_bin_length_at_25x"]
+        sample["assembly_bin_length_1x_25x_diff"] = sample["assembly_bin_length_at_1x"] - \
+            sample["assembly_bin_length_at_25x"]
 
     if not "run_name" in sample:
         sys.stderr.write("Sample {} has no run name.\n".format(sample["name"]))

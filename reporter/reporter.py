@@ -440,13 +440,18 @@ def main(argv):
             
             columns = ['name', 'supplying_lab', 'run_name', '_id', 'input_read_status',
                        'emails', 'user', 'R1_location', 'R2_location', 'provided_species',
-                       'name_classified_species_1', 'percent_classified_species_1',
-                       'name_classified_species_2', 'percent_classified_species_2',
-                       'percent_unclassified', 'bin_length_at_1x', 'bin_length_at_10x',
-                       'bin_length_at_25x', 'bin_length_1x_25x_diff', 'bin_coverage_at_1x',
-                       'bin_coverage_at_10x', 'bin_coverage_at_25x', 'bin_contigs_at_1x',
-                       'bin_contigs_at_10x', 'N50', 'N75', 'snp_filter_deletions',
-                       'snp_filter_indels', 'snp_filter_10x_10%', 'comments']
+                       'qcquickie_name_classified_species_1', 'qcquickie_percent_classified_species_1',
+                       'qcquickie_name_classified_species_2', 'qcquickie_percent_classified_species_2',
+                       'qcquickie_percent_unclassified', 'qcquickie_bin_length_at_1x', 'qcquickie_bin_length_at_10x',
+                       'qcquickie_bin_length_at_25x', 'qcquickie_bin_length_1x_25x_diff', 'qcquickie_bin_coverage_at_1x',
+                       'qcquickie_bin_coverage_at_10x', 'qcquickie_bin_coverage_at_25x', 'qcquickie_bin_contigs_at_1x',
+                       'qcquickie_bin_contigs_at_10x', 'qcquickie_N50', 'qcquickie_N75', 'qcquickie_snp_filter_deletions',
+                       'qcquickie_snp_filter_indels', 'qcquickie_snp_filter_10x_10%',
+                       'assembly_bin_length_at_1x', 'assembly_bin_length_at_10x',
+                       'assembly_bin_length_at_25x', 'assembly_bin_length_1x_25x_diff', 'assembly_bin_coverage_at_1x',
+                       'assembly_bin_coverage_at_10x', 'assembly_bin_coverage_at_25x', 'assembly_bin_contigs_at_1x',
+                       'assembly_bin_contigs_at_10x', 'assembly_N50', 'assembly_N75', 'assembly_snp_filter_deletions',
+                       'assembly_snp_filter_indels', 'assembly_snp_filter_10x_10%', 'comments']
             return [
                 html.H3("Table Report"),
 
@@ -501,7 +506,7 @@ def main(argv):
             species_name = species if species == "Not classified" else "<i>{}</i>".format(species)
             data.append(go.Box(
                 go.Box(
-                    x=species_df.loc[:, "qcquickie_" + plot_value],
+                    x=species_df.loc[:, plot_value],
                     text=species_df["name"],
                     marker=dict(color=COLOR_DICT.get(species, None)),
                     boxpoints="all",
