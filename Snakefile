@@ -11,6 +11,8 @@ import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
+datahandling.save_yaml(config, "serumqc_config.yaml")
+
 components = str(config["components"])
 run_folder = str(config["run_folder"])
 sample_sheet = str(config["sample_sheet"])
