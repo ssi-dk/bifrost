@@ -17,7 +17,7 @@ R1 = config_sample["sample"]["R1"]
 R2 = config_sample["sample"]["R2"]
 
 # my understanding is all helps specify final output
-component = "assembly"
+component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
