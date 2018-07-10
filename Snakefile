@@ -6,7 +6,7 @@ import re
 import sys
 import os
 import datetime
-from ruamel.yaml import YAML
+import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
@@ -78,14 +78,12 @@ rule get_git_hash_of_serumqc:
     output:
         git_hash = "serumqc/git_hash.txt"
     run:
-        with open(input.run_info_yaml_path, "r") as run_info_yaml:
-            run_info = yaml.load(run_info_yaml)
+        run_info = datahandling.load_run(input.run_info_yaml_path)
         shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
         with open(output.git_hash, "r") as git_info:
             git_hash = git_info.readlines()[0].strip()
         run_info["run"]["git_hash"] = git_hash
-        with open(input.run_info_yaml_path, "w") as run_info_yaml:
-            yaml.dump(run_info, run_info_yaml)
+        datahandling.save_run(run_info, input.run_info_yaml_path)
 
 
 rule get_conda_env:
@@ -95,14 +93,12 @@ rule get_conda_env:
     output:
         conda_yaml = "serumqc/conda.yaml"
     run:
-        with open(input.run_info_yaml_path, "r") as run_info_yaml:
-            run_info = yaml.load(run_info_yaml)
+        run_info = datahandling.load_run(input.run_info_yaml_path)
         shell("conda env export 1> {output}")
         with open(output.conda_yaml, "r") as conda_info_yaml:
             conda_info = yaml.load(conda_info_yaml)
         run_info["run"]["conda_env"] = conda_info
-        with open(input.run_info_yaml_path, "w") as run_info_yaml:
-            yaml.dump(run_info, run_info_yaml)
+        datahandling.save_run(run_info, input.run_info_yaml_path)
 
 rule create_end_file:
     input:
