@@ -149,7 +149,7 @@ rule abricate_on_ariba_plasmidfinder:
     shell:
         """
         if [[ -e {input.folder}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.folder}/assemblies.fa.gz | head -c1) ]];
-        then abricate --datadir {params.database} --db {params.db_name} {input.folders}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        then abricate --datadir {params.database} --db {params.db_name} {input.folder}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi;
         """
