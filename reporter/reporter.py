@@ -46,6 +46,8 @@ def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None)
     else:
         return filtered.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
 
+def paginate_df(dataframe, page_n):
+    return dataframe.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
 
 def html_table_run_information(run_data):
     return html_table([
@@ -337,19 +339,24 @@ def main(argv):
         Output(component_id="sample-report", component_property="children"),
         [Input(component_id="page-n", component_property="children"),
          Input(component_id="sample-report", component_property="data-content")],
-         [State(component_id="species-list", component_property="value"),
-          State(component_id="group-list", component_property="value"),
-          State(component_id="run-name", component_property="children")]
+         [State('summary-plot', 'selectedData'),
+         State("selected-samples", "value")]
          )
-    def sample_report(page_n, data_content, species_list, group_list, run_name):
+    def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
         page_n = int(page_n)
-        filtered = filter_dataframe(dataframe, species_list, group_list, run_name, page_n)
-        max_page = len(filter_dataframe(dataframe, species_list, group_list, run_name)) // PAGESIZE
+        if lasso_selected is not None and len(lasso_selected["points"]):
+            samples = [sample['text']
+                       for sample in lasso_selected["points"]]  # lasso first
+        else:
+            samples = prefilter_samples[0].split("\n")
+        filtered = dataframe[dataframe.name.isin(samples)]
+        page = paginate_df(filtered, page_n)
+        max_page = len(filtered) // PAGESIZE
         if not (data_content == "qcquickie" or data_content == "assembly"):
             return []
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-            html.Div(children_sample_list_report(filtered, data_content))
+            html.Div(children_sample_list_report(page, data_content))
         ]
 
     @app.callback(
@@ -383,12 +390,10 @@ def main(argv):
         [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
          Input(component_id="update-assembly", component_property="n_clicks_timestamp"),
          Input(component_id="update-table", component_property="n_clicks_timestamp")],
-        [State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value"),
-         State(component_id="run-name", component_property="children")]
-
+        [State('summary-plot', 'selectedData'),
+         State("selected-samples", "value")]
     )
-    def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, species_list, group_list, run_name):
+    def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, lasso_selected, prefilter_samples):
         if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
             if n_qcquickie_ts > n_assembly_ts:
                 title = "QCQuickie Report"
@@ -428,6 +433,11 @@ def main(argv):
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
         elif n_table_ts > n_assembly_ts:  # table was clicked
+            if lasso_selected is not None and len(lasso_selected["points"]):
+                samples = [sample['text'] for sample in lasso_selected["points"]] # lasso first
+            else:
+                samples = prefilter_samples[0].split("\n")
+            
             columns = ['name', 'supplying_lab', 'run_name', '_id', 'input_read_status',
                        'emails', 'user', 'R1_location', 'R2_location', 'provided_species',
                        'name_classified_species_1', 'percent_classified_species_1',
@@ -441,11 +451,9 @@ def main(argv):
                 html.H3("Table Report"),
 
                 dt.DataTable(
-                    rows=filter_dataframe(
-                        dataframe, species_list, group_list, run_name).to_dict("records"),
+                    rows=dataframe[dataframe.name.isin(samples)].to_dict("records"),
 
-                    # optional - sets the order of columns
-                    columns=columns,
+                    columns=columns, # sets the order
                     column_widths=[150]*len(columns),
                     editable=False,
                     filterable=True,
@@ -506,6 +514,7 @@ def main(argv):
         return {
             "data": data,
             "layout": go.Layout(
+                hovermode="closest",
                 title=plot_value.replace("_", " "),
                 margin=go.Margin(
                     l=175,
