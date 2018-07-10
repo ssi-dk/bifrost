@@ -5,3 +5,4 @@ scripts/keys.py
 reporter/keys.py
 start.sh
 *.pyc
+reporter/keys.py
