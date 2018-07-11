@@ -68,3 +68,8 @@ def extract_data(sample_db):
 
 def import_data():
     return pd.DataFrame(list(map(extract_data, mongo_interface.test_get_all_samples())))
+
+
+def get_plot_data(id_list):
+    return mongo_interface.get_plot_data(id_list)
+    

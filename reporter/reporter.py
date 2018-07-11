@@ -343,6 +343,8 @@ def main(argv):
          State("selected-samples", "value")]
          )
     def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
+        if not (data_content == "qcquickie" or data_content == "assembly"):
+            return []
         page_n = int(page_n)
         if lasso_selected is not None and len(lasso_selected["points"]):
             samples = [sample['text']
@@ -352,11 +354,10 @@ def main(argv):
         filtered = dataframe[dataframe.name.isin(samples)]
         page = paginate_df(filtered, page_n)
         max_page = len(filtered) // PAGESIZE
-        if not (data_content == "qcquickie" or data_content == "assembly"):
-            return []
+        plot_data = import_data.get_plot_data(page["_id"].tolist())
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-            html.Div(children_sample_list_report(page, data_content))
+            html.Div(children_sample_list_report(page, data_content, plot_data))
         ]
 
     @app.callback(

@@ -3,9 +3,10 @@ import dash_core_components as dcc
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 import plotly.graph_objs as go
+import pandas as pd
 
 
-def generate_sample_report(dataframe, sample, data_content):
+def generate_sample_report(dataframe, sample, data_content, plot_data):
     return (
         html.Div(
             [
@@ -17,17 +18,18 @@ def generate_sample_report(dataframe, sample, data_content):
                 html_sample_tables(sample, data_content, className="row"),
 
                 graph_sample_depth_plot(
-                    sample, dataframe[dataframe.qcquickie_name_classified_species_1 == sample["qcquickie_name_classified_species_1"]])
+                    sample, dataframe[dataframe.qcquickie_name_classified_species_1 == sample["qcquickie_name_classified_species_1"]]),
+                graph_sample_cov_plot(sample, plot_data[data_content]["contig_coverage"])
             ],
             className="border-box"
         )
     )
 
 
-def html_species_report(dataframe, species, data_content, **kwargs):
+def html_species_report(dataframe, species, data_content, plot_data, **kwargs):
     report = []
     for index, sample in dataframe.loc[dataframe["qcquickie_name_classified_species_1"] == species].iterrows():
-        report.append(generate_sample_report(dataframe, sample, data_content))
+        report.append(generate_sample_report(dataframe, sample, data_content, plot_data[sample["_id"]]))
     return html.Div(report, **kwargs)
 
 
@@ -249,14 +251,42 @@ def graph_sample_depth_plot(sample, background_dataframe):
         style={"height": "200px"}
     )
 
+def graph_sample_cov_plot(sample, sample_coverage):
+    df = pd.DataFrame.from_dict(sample_coverage, orient="index")
+    return dcc.Graph(
+        id="something" + sample["name"],
+        figure={
+            "data": [
+                go.Scattergl(
+                    x= df.total_length,
+                    y= df.coverage,
+                    text= df.index,
+                    mode= 'markers'
+                )
+            ],
+            "layout": go.Layout(
+                title="{}: Binned Depth 1x size".format("something"),
+                xaxis=dict(
+                    type='log',
+                    autorange=True
+                ),
+                yaxis=dict(
+                    type='log',
+                    autorange=True
+                )
+            )
+        },
+    )
 
-def children_sample_list_report(filtered_df, data_content):
+
+def children_sample_list_report(filtered_df, data_content, plot_data):
     report = []
     for species in filtered_df.qcquickie_name_classified_species_1.unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species, data_content)
+            
+            html_species_report(filtered_df, species, data_content, plot_data)
         ]))
     return report
 
