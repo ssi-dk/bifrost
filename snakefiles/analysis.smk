@@ -55,7 +55,7 @@ rule species__checker:
         folder = component,
         reads = (R1, R2)
     output:
-        check_file = component + "/species_set",
+        check_file = touch(component + "/species_set"),
     params:
         species_value = config_sample.get("species", None),
         kraken_db = config["kraken"]["database"]
@@ -68,7 +68,7 @@ rule species__checker:
                     config_sample["species"] = species[0]
                     datahandling.save_sample(config_sample, sample)
         else:
-            shell("touch species_set")
+            shell("touch {output.checkfile}")
 
 
 rule_name = "ariba__resfinder"
