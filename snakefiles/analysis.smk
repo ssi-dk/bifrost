@@ -61,7 +61,7 @@ rule species__checker:
         kraken_db = config["kraken"]["database"]
     run:
         if params.species_value is None:
-            shell("kraken --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} | grep -oPm1 '.*\tS\t[0-9]+\s+(\K.*)' > {output.check_file}")
+            shell("kraken --threads {threads} --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} | grep -oPm1 '.*\sS\s[0-9]+\s+(\K.*)' > {output.check_file}")
             with open(output.check_file) as species_check:
                 species = species_check.readlines()
                 if len(species) == 1:
