@@ -40,37 +40,33 @@ def get_species_colors():
             colors[species["organism"]] = species["color"]
     return colors
 
-def get_plot_data(id_list):
+def get_species_plot_data(species_list, id_list):
     """Get plot data for many samples using a list of Ids"""
     with get_connection() as connection:
         db = connection.get_default_database()
         samples = db.samples_test
         plot_data = {}
-        res = samples.find(
-            {
-                "_id": {
-                    "$in": [ObjectId(id) for id in id_list]
+        id_list = list(map(lambda x: ObjectId(x), id_list))
+        res = db.samples.aggregate([
+            {"$match": {
+                "qcquickie.summary.name_classified_species_1": {"$in": species_list},
+                "_id": {"$not": {"$in": id_list}}
+                }
+            },
+            {"$group": {
+                "_id": "$qcquickie.summary.name_classified_species_1",
+                "bin_coverage_at_1x": {"$push": "$qcquickie.summary.bin_length_at_1x"}
                 }
             }
-        )
-        for data in res:
-            plot_data[str(data["_id"])] = {
-                "assembly": {
-                    "contig_coverage": data["assembly"]["contigs_sum_cov"]["contig_depth"]
-                },
-                "qcquickie": {
-                    "contig_coverage": data["qcquickie"]["contigs_sum_cov"]["contig_depth"]
-                }
-            }
-    return plot_data
+        ])
+        # for data in res:
+        #     plot_data[str(data["_id"])] = {
+        #         "assembly": {
+        #             "contig_coverage": data["assembly"]["contigs_sum_cov"]["contig_depth"]
+        #         },
+        #         "qcquickie": {
+        #             "contig_coverage": data["qcquickie"]["contigs_sum_cov"]["contig_depth"]
+        #         }
+        #     }
+    return res
 
-def _format_contigs(contig_dict):
-    contig_list = []
-    for key, value in contig_dict.items():
-        contig_list.append({
-            "name": key,
-            "coverage": value["coverage"],
-            "total_depth": value["total_depth"],
-            "total_length": value["total_length"]
-        })
-    return contig_list

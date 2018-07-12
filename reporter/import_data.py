@@ -70,6 +70,11 @@ def import_data():
     return pd.DataFrame(list(map(extract_data, mongo_interface.test_get_all_samples())))
 
 
-def get_plot_data(id_list):
-    return mongo_interface.get_plot_data(id_list)
+def get_species_plot_data(species_list, id_list):
+    res = mongo_interface.get_species_plot_data(species_list, id_list)
+    data = {}
+    for doc in res:
+        data[doc["_id"]] = doc["bin_coverage_at_1x"]
+        print(doc)
+    return data
     

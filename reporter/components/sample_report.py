@@ -18,18 +18,26 @@ def generate_sample_report(dataframe, sample, data_content, plot_data):
                 html_sample_tables(sample, data_content, className="row"),
 
                 graph_sample_depth_plot(
-                    sample, dataframe[dataframe.qcquickie_name_classified_species_1 == sample["qcquickie_name_classified_species_1"]]),
-                graph_sample_cov_plot(sample, plot_data[data_content]["contig_coverage"])
+                    sample,
+                    dataframe[dataframe.qcquickie_name_classified_species_1 \
+                        == sample["qcquickie_name_classified_species_1"]],
+                    plot_data
+                ),
+                # graph_sample_cov_plot(sample, plot_data[data_content]["contig_coverage"])
             ],
             className="border-box"
         )
     )
 
 
-def html_species_report(dataframe, species, data_content, plot_data, **kwargs):
+def html_species_report(dataframe, species, data_content, species_plot_data, **kwargs):
     report = []
-    for index, sample in dataframe.loc[dataframe["qcquickie_name_classified_species_1"] == species].iterrows():
-        report.append(generate_sample_report(dataframe, sample, data_content, plot_data[sample["_id"]]))
+    for index, sample in \
+      dataframe.loc[dataframe["qcquickie_name_classified_species_1"] == species].iterrows():
+        report.append(generate_sample_report(dataframe,
+                                             sample,
+                                             data_content,
+                                             species_plot_data))
     return html.Div(report, **kwargs)
 
 
@@ -76,8 +84,10 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     genus = str(sample_data["qcquickie_name_classified_species_1"]).split()[
         0].lower()
     if "{}.svg".format(genus) in list_of_images:
-        img = html.Img(src="/static/" + str(sample_data["qcquickie_name_classified_species_1"]).split()
-                       [0].lower() + ".svg", className="svg_bact")
+        img = html.Img(
+            src="/static/" + genus + ".svg",
+            className="svg_bact"
+        )
     else:
         img = []
     if type(sample_data["emails"]) is str:
@@ -194,7 +204,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     ], **kwargs)
 
 
-def graph_sample_depth_plot(sample, background_dataframe):
+def graph_sample_depth_plot(sample, run_species, background):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
     return dcc.Graph(
@@ -202,18 +212,35 @@ def graph_sample_depth_plot(sample, background_dataframe):
         figure={
             "data": [
                 go.Box(
-                    x=background_dataframe["qcquickie_bin_length_at_1x"],
-                    text=background_dataframe["name"],
+                    x=run_species["qcquickie_bin_length_at_1x"],
+                    text=run_species["name"],
+                    name="Current run",
+                    showlegend=False,
                     boxpoints="all",
+                    pointpos=-1.8,
+                    jitter=0.3,
+                    marker=dict(
+                        size=4,
+                        color=get_species_color(
+                            sample['qcquickie_name_classified_species_1'])
+                    )
+                ),
+                go.Box(
+                    x=background,
+                    # boxpoints="all",
+                    showlegend=False,
+                    name="Prev. runs",
                     jitter=0.3,
                     pointpos=-1.8,
-                    marker=dict(color=get_species_color(
-                        sample['qcquickie_name_classified_species_1']))
+                    marker=dict(
+                        color="black",
+                        size=4
+                    )
                 )
-                #{"x": [1, 2, 3], "y": [2, 4, 5], "type": "bar", "name": u"Montréal"},
             ],
             "layout": go.Layout(
                 title="{}: Binned Depth 1x size".format(sample['name']),
+                hovermode="closest",
                 margin=go.Margin(
                     l=75,
                     r=50,
@@ -226,7 +253,7 @@ def graph_sample_depth_plot(sample, background_dataframe):
                         y=0,
                         text="1x",
                         showarrow=True,
-                        ax=40,
+                        ax=35,
                         ay=0
                     ),
                     go.Annotation(
@@ -235,15 +262,15 @@ def graph_sample_depth_plot(sample, background_dataframe):
                         text="10x",
                         showarrow=True,
                         ax=0,
-                        ay=40
+                        ay=35
                     ),
                     go.Annotation(
                         x=sample["qcquickie_bin_length_at_25x"],
                         y=0,
                         text="25x",
                         showarrow=True,
-                        ax=0,
-                        ay=-40
+                        ax=-35,
+                        ay=0
                     ),
                 ])
             )
@@ -257,7 +284,7 @@ def graph_sample_cov_plot(sample, sample_coverage):
         id="something" + sample["name"],
         figure={
             "data": [
-                go.Scattergl(
+                go.Scatter(
                     x= df.total_length,
                     y= df.coverage,
                     text= df.index,
@@ -286,7 +313,7 @@ def children_sample_list_report(filtered_df, data_content, plot_data):
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
             
-            html_species_report(filtered_df, species, data_content, plot_data)
+            html_species_report(filtered_df, species, data_content, plot_data.get(species,[]))
         ]))
     return report
 

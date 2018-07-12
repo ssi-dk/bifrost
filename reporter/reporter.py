@@ -21,6 +21,7 @@ from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary, format_selected_samples
 from components.sample_report import children_sample_list_report
 from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
+import components.global_vars
 
 
 def hex_to_rgb(value):
@@ -238,9 +239,11 @@ def main(argv):
 
     @app.callback(
         Output('lasso-div', 'children'),
-        [Input('summary-plot', 'selectedData')]
+        [Input('summary-plot', 'selectedData'),
+         Input('report-count', 'children')]
     )
-    def display_selected_data(selected_data):
+    def display_selected_data(selected_data, ignore_this):
+        # ignore_this is there so the function is called when the sample list is updated.
         if selected_data is not None and len(selected_data["points"]):
             points = [sample['text']
                       for sample in selected_data["points"]]
@@ -354,10 +357,11 @@ def main(argv):
         filtered = dataframe[dataframe.name.isin(samples)]
         page = paginate_df(filtered, page_n)
         max_page = len(filtered) // PAGESIZE
-        plot_data = import_data.get_plot_data(page["_id"].tolist())
+        page_species = page.qcquickie_name_classified_species_1.unique().tolist()
+        species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-            html.Div(children_sample_list_report(page, data_content, plot_data))
+            html.Div(children_sample_list_report(page, data_content, species_plot_data))
         ]
 
     @app.callback(
@@ -439,28 +443,14 @@ def main(argv):
             else:
                 samples = prefilter_samples[0].split("\n")
             
-            columns = ['name', 'supplying_lab', 'run_name', '_id', 'input_read_status',
-                       'emails', 'user', 'R1_location', 'R2_location', 'provided_species',
-                       'qcquickie_name_classified_species_1', 'qcquickie_percent_classified_species_1',
-                       'qcquickie_name_classified_species_2', 'qcquickie_percent_classified_species_2',
-                       'qcquickie_percent_unclassified', 'qcquickie_bin_length_at_1x', 'qcquickie_bin_length_at_10x',
-                       'qcquickie_bin_length_at_25x', 'qcquickie_bin_length_1x_25x_diff', 'qcquickie_bin_coverage_at_1x',
-                       'qcquickie_bin_coverage_at_10x', 'qcquickie_bin_coverage_at_25x', 'qcquickie_bin_contigs_at_1x',
-                       'qcquickie_bin_contigs_at_10x', 'qcquickie_N50', 'qcquickie_N75', 'qcquickie_snp_filter_deletions',
-                       'qcquickie_snp_filter_indels', 'qcquickie_snp_filter_10x_10%',
-                       'assembly_bin_length_at_1x', 'assembly_bin_length_at_10x',
-                       'assembly_bin_length_at_25x', 'assembly_bin_length_1x_25x_diff', 'assembly_bin_coverage_at_1x',
-                       'assembly_bin_coverage_at_10x', 'assembly_bin_coverage_at_25x', 'assembly_bin_contigs_at_1x',
-                       'assembly_bin_contigs_at_10x', 'assembly_N50', 'assembly_N75', 'assembly_snp_filter_deletions',
-                       'assembly_snp_filter_indels', 'assembly_snp_filter_10x_10%', 'comments']
             return [
                 html.H3("Table Report"),
 
                 dt.DataTable(
                     rows=dataframe[dataframe.name.isin(samples)].to_dict("records"),
 
-                    columns=columns, # sets the order
-                    column_widths=[150]*len(columns),
+                    columns=global_vars.columns, # sets the order
+                    column_widths=[150]*len(global_vars.columns),
                     editable=False,
                     filterable=True,
                     sortable=True,
@@ -481,8 +471,7 @@ def main(argv):
         return [format_selected_samples(filtered_df)]
 
     @app.callback(
-        Output(component_id="sample-count",
-                component_property="children"),
+        Output(component_id="sample-count", component_property="children"),
         [Input(component_id="species-list", component_property="value"),
          Input(component_id="group-list", component_property="value"),
          Input(component_id="run-name", component_property="children")]
@@ -504,14 +493,20 @@ def main(argv):
         if species_list is None: species_list = []
         for species in species_list:
             species_df = filtered_df[filtered_df.short_class_species_1 == species]
-            species_name = species if species == "Not classified" else "<i>{}</i>".format(species)
+            if species == "Not classified":
+                species_name = species
+            else:
+                species_name = "<i>{}</i>".format(species)
             data.append(go.Box(
                 go.Box(
                     x=species_df.loc[:, plot_value],
                     text=species_df["name"],
-                    marker=dict(color=COLOR_DICT.get(species, None)),
+                    marker=dict(
+                        color=COLOR_DICT.get(species, None),
+                        size=4
+                    ),
                     boxpoints="all",
-                    jitter=0.3,
+                    jitter=0.5,
                     pointpos=-1.8,
                     name="{} ({})".format(species_name,species_df["_id"].count()),
                     showlegend=False
