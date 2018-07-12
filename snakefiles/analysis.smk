@@ -36,6 +36,40 @@ rule setup:
         "mkdir {output}"
 
 
+rule_name = "species__checker_and_setter"
+rule species__checker:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = component,
+        reads = (R1, R2)
+    output:
+        check_file = component + "/species_set",
+    params:
+        species_value = config_sample.get("species", None)
+    run:
+        if species_value is None:
+            shell("kraken --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} | grep -oPm1 '.*\tS\t[0-9]+\s+(\K.*)' > {output.check_file}")
+            with open(output.check_file) as species_check:
+                species = species_check.readlines()
+                if len(species) == 1:
+                    config_sample["species"] = species[0]
+                    datahandling.save_sample(config_sample, sample)
+        else:
+            shell("touch species_set")
+
+
 rule_name = "ariba__resfinder"
 rule ariba__resfinder:
     # Static
@@ -170,16 +204,25 @@ rule ariba__mlst:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
+        check_file = component + "/species_set",
         folder = component,
         reads = (R1, R2)
     output:
         folder = component + "/ariba_mlst",
     params:
-        sample = sample,
+        species = config_sample.get("species", None)
     conda:
         "../envs/ariba.yaml"
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
+    run:
+        if species_db is not None:
+            mlst_species_DB = datahandling.get_mlst_species_DB(species)
+            if mlst_species is None:
+                touch(output.folder)
+            else:
+                shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
+        else:
+            touch(output.folder)
+        # os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
 
 rule_name = "datadump_analysis"
 rule datadump_analysis:
@@ -199,12 +242,12 @@ rule datadump_analysis:
     input:
         component + "/ariba_mlst",
         component + "/abricate_on_resfinder_from_ariba.tsv",
-        component + "/abricate_on_plasmidfinder_from_ariba.tsv"
+        component + "/abricate_on_plasmidfinder_from_ariba.tsv",
+        component,
     output:
-        summary = touch(component + "/" +component +"_complete")
+        summary = touch(component + "/" + component + "_complete")
     params:
         sample = sample,
-        folder = component,
     conda:
         "../envs/ariba.yaml"
     script:
