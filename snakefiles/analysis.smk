@@ -57,7 +57,8 @@ rule species__checker:
     output:
         check_file = component + "/species_set",
     params:
-        species_value = config_sample.get("species", None)
+        species_value = config_sample.get("species", None),
+        kraken_db = config["kraken"]["database"]
     run:
         if params.species_value is None:
             shell("kraken --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} | grep -oPm1 '.*\tS\t[0-9]+\s+(\K.*)' > {output.check_file}")
