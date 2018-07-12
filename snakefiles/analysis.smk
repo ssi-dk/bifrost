@@ -59,7 +59,7 @@ rule species__checker:
     params:
         species_value = config_sample.get("species", None)
     run:
-        if species_value is None:
+        if params.species_value is None:
             shell("kraken --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} | grep -oPm1 '.*\tS\t[0-9]+\s+(\K.*)' > {output.check_file}")
             with open(output.check_file) as species_check:
                 species = species_check.readlines()
@@ -155,6 +155,7 @@ rule ariba__plasmidfinder:
         "../envs/ariba.yaml"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+
 
 rule_name = "abricate_on_ariba_plasmidfinder"
 rule abricate_on_ariba_plasmidfinder:
