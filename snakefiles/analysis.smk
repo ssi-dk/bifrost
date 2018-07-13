@@ -217,7 +217,7 @@ rule ariba__mlst:
     conda:
         "../envs/ariba.yaml"
     run:
-        mlst_species_DB = datahandling.get_mlst_species_DB(species)
+        mlst_species_DB = datahandling.get_mlst_species_DB(params.species)
         if mlst_species is None:
             touch(output.folder)
         else:
