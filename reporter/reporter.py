@@ -167,7 +167,7 @@ def main(argv):
         if pathname is None:
             pathname = "/"
         path = pathname.split('/')
-        if path[1] in dataframe.run_name.values:
+        if import_data.check_run_name(path[1]):
             return path[1]
         elif path[1] == "":
             return []
@@ -180,9 +180,13 @@ def main(argv):
     )
     def update_run_list(run_name):
         if len(run_name) == 0:
-            run_list = dataframe.sort_values("run_name").run_name.unique()
-            run_list_options = [{"label": run, "value": run}
-                                for run in run_list]
+            run_list = import_data.get_run_list()
+            run_list_options = [
+                {
+                    "label": "{} ({})".format(run["run"]["name"],
+                                              len(run["samples"])),
+                    "value": run["run"]["name"]
+                } for run in run_list]
             return [
                 html.Div(
                     [
@@ -224,18 +228,14 @@ def main(argv):
     @app.callback(
         Output('report-count', 'children'),
         [Input('summary-plot', 'selectedData'),
-         Input(component_id="species-list", component_property="value"),
-         Input(component_id="group-list", component_property="value"),
-         Input(component_id="run-name", component_property="children")]
+         Input("sample-count", "children")]
     )
-    def display_selected_data(selected_data, species_list, group_list, run_name):
+    def display_selected_data(selected_data, sample_count):
         if selected_data is not None and len(selected_data["points"]):
             return len([sample['text']
                       for sample in selected_data["points"]])
         else:
-            filtered_df = filter_dataframe(
-                dataframe, species_list, group_list, run_name)
-            return filtered_df['name'].count()
+            return sample_count
 
     @app.callback(
         Output('lasso-div', 'children'),
@@ -243,7 +243,8 @@ def main(argv):
          Input('report-count', 'children')]
     )
     def display_selected_data(selected_data, ignore_this):
-        # ignore_this is there so the function is called when the sample list is updated.
+        # ignore_this is there so the function is called 
+        # when the sample list is updated.
         if selected_data is not None and len(selected_data["points"]):
             points = [sample['text']
                       for sample in selected_data["points"]]
@@ -272,12 +273,12 @@ def main(argv):
     )
     def update_group_list(run_name):
         if len(run_name) == 0:
-            group_list = dataframe.supplying_lab.value_counts()
+            group_list = import_data.get_group_list()
         else:
-            group_list = dataframe[dataframe.run_name == run_name].supplying_lab.value_counts()
-        group_list_options = [{"label": "{} ({})".format(group, count), "value": group}
-                              for group, count in group_list.items()]
-        group_options = [group for group, count in group_list.items()]
+            group_list = import_data.get_group_list(run_name)
+        group_list_options = [{"label": "{} ({})".format(item["_id"], item["count"]), "value": item["_id"]}
+                              for item in group_list]
+        group_options = [item["_id"] for item in group_list]
         return dcc.Dropdown(
             id="group-list",
             options=group_list_options,

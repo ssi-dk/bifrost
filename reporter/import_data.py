@@ -75,6 +75,13 @@ def get_species_plot_data(species_list, id_list):
     data = {}
     for doc in res:
         data[doc["_id"]] = doc["bin_coverage_at_1x"]
-        print(doc)
     return data
+
+def check_run_name(name):
+    return mongo_interface.check_run_name(name)
+
+def get_run_list():
+    return mongo_interface.get_run_list()
     
+def get_group_list(run_name=None):
+    return mongo_interface.get_group_list(run_name)

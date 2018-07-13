@@ -23,7 +23,7 @@ def test_get_all_samples():
     """
     with get_connection() as connection:
         db = connection.get_default_database()
-        samples = db.samples_test
+        samples = db.samples
         run_samples = []
         for sample in samples.find():
             run_samples.append(sample)
@@ -44,7 +44,7 @@ def get_species_plot_data(species_list, id_list):
     """Get plot data for many samples using a list of Ids"""
     with get_connection() as connection:
         db = connection.get_default_database()
-        samples = db.samples_test
+        samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
         res = db.samples.aggregate([
@@ -59,14 +59,58 @@ def get_species_plot_data(species_list, id_list):
                 }
             }
         ])
-        # for data in res:
-        #     plot_data[str(data["_id"])] = {
-        #         "assembly": {
-        #             "contig_coverage": data["assembly"]["contigs_sum_cov"]["contig_depth"]
-        #         },
-        #         "qcquickie": {
-        #             "contig_coverage": data["qcquickie"]["contigs_sum_cov"]["contig_depth"]
-        #         }
-        #     }
     return res
 
+def check_run_name(name):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        # Fastest.
+        run = db.runs.find({"run.name": name}).limit(1).count(True)
+    return run is not 0
+
+def get_run_list():
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        # Fastest.
+        # Change run type when this is fixed in the db
+        runs = list(db.runs.find({"run.type": "project"},
+                                 {"run.name": 1,
+                                  "_id": 0,
+                                  "samples": 1}))
+    return runs
+
+def get_group_list(run_name=None):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        if run_name is not None:
+            sample_ids = list(db.runs.find_one(
+                {"run.name": run_name},
+                {
+                    "_id": -1,
+                    "samples" : 1
+                }
+            ))
+            groups = db.samples.aggregate([
+                {
+                    "$match": {
+                        {"_id": {"$in": sample_ids}},
+                    }
+                },
+                {
+                    "$group": {
+                        "group": "$sample.sample_sheet.group",
+                        "count": {"$sum": 1}
+                    }
+                }
+            ])
+        else:
+            groups = list(db.samples.aggregate([
+                {
+                    "$group": {
+                        "_id": "$sample.sample_sheet.group",
+                        "count": { "$sum":1 }
+                    }
+                }
+            ]))
+
+    return groups
