@@ -69,7 +69,7 @@ rule species__checker:
                     config_sample["species"] = species[0]
                     datahandling.save_sample(config_sample, sample)
         else:
-            shell("touch {output.checkfile}")
+            shell("touch {output.check_file}")
 
 
 rule_name = "ariba__resfinder"
