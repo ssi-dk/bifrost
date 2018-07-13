@@ -66,7 +66,7 @@ rule species__checker:
             with open(output.check_file) as species_check:
                 species = species_check.readlines()
                 if len(species) == 1:
-                    config_sample["species"] = species[0]
+                    config_sample["species"] = species[0].strip()
                     datahandling.save_sample(config_sample, sample)
         else:
             shell("touch {output.check_file}")
