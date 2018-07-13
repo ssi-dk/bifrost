@@ -221,6 +221,7 @@ rule ariba__mlst:
         if mlst_species_DB is None:
             touch(output.folder)
         else:
+            print("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
 
 
