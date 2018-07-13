@@ -217,15 +217,12 @@ rule ariba__mlst:
     conda:
         "../envs/ariba.yaml"
     run:
-        if species_db is not None:
-            mlst_species_DB = datahandling.get_mlst_species_DB(species)
-            if mlst_species is None:
-                touch(output.folder)
-            else:
-                shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
-        else:
+        mlst_species_DB = datahandling.get_mlst_species_DB(species)
+        if mlst_species is None:
             touch(output.folder)
-        # os.path.join(os.path.dirname(workflow.snakefile), "../scripts/ariba_mlst.py")
+        else:
+            shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
+
 
 rule_name = "datadump_analysis"
 rule datadump_analysis:
