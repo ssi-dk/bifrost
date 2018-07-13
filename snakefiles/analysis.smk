@@ -213,11 +213,11 @@ rule ariba__mlst:
     output:
         folder = component + "/ariba_mlst",
     params:
-        species = config_sample.get("species", None)
+        sample = sample
     conda:
         "../envs/ariba.yaml"
     run:
-        mlst_species_DB = datahandling.get_mlst_species_DB(params.species)
+        mlst_species_DB = datahandling.get_mlst_species_DB(sample)
         if mlst_species is None:
             touch(output.folder)
         else:
