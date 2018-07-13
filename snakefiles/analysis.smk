@@ -218,7 +218,7 @@ rule ariba__mlst:
         "../envs/ariba.yaml"
     run:
         mlst_species_DB = datahandling.get_mlst_species_DB(sample)
-        if mlst_species is None:
+        if mlst_species_DB is None:
             touch(output.folder)
         else:
             shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
