@@ -276,9 +276,21 @@ def main(argv):
             group_list = import_data.get_group_list()
         else:
             group_list = import_data.get_group_list(run_name)
-        group_list_options = [{"label": "{} ({})".format(item["_id"], item["count"]), "value": item["_id"]}
-                              for item in group_list]
-        group_options = [item["_id"] for item in group_list]
+        group_options = []
+        group_list_options = []
+        for item in group_list:
+            if item["_id"] == None:
+                group_options.append("Not defined")
+                group_list_options.append({
+                    "label": "Not defined ({})".format(item["count"]),
+                    "value": "Not defined"
+                })
+            else:
+                group_options.append(item["_id"])
+                group_list_options.append({
+                    "label": "{} ({})".format(item["_id"], item["count"]),
+                    "value": item["_id"]
+                })
         return dcc.Dropdown(
             id="group-list",
             options=group_list_options,

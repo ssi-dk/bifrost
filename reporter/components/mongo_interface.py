@@ -83,26 +83,27 @@ def get_group_list(run_name=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         if run_name is not None:
-            sample_ids = list(db.runs.find_one(
+            sample_ids = list(db.runs.find_one( #Should be taking _id
                 {"run.name": run_name},
                 {
                     "_id": -1,
                     "samples" : 1
                 }
-            ))
-            groups = db.samples.aggregate([
+            )["samples"].keys())
+            groups = list(db.samples.aggregate([
                 {
                     "$match": {
-                        {"_id": {"$in": sample_ids}},
+                        "sample.name": {"$in": sample_ids},  # Should be id
+                        "sample.run_folder" : {"$regex" : run_name} # Delete when we switch to id
                     }
                 },
                 {
                     "$group": {
-                        "group": "$sample.sample_sheet.group",
+                        "_id": "$sample.sample_sheet.group",
                         "count": {"$sum": 1}
                     }
                 }
-            ])
+            ]))
         else:
             groups = list(db.samples.aggregate([
                 {
