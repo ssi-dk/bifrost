@@ -35,7 +35,7 @@ rule all:
 
 rule setup:
     output:
-        directory = "qcquickie"
+        directory = directory("qcquickie")
     shell:
         "mkdir {output}"
 
@@ -209,7 +209,7 @@ rule assembly_check__quast_on_contigs:
     input:
         contigs = "qcquickie/contigs.fasta"
     output:
-        quast = "qcquickie/quast"
+        quast = directory("qcquickie/quast")
     threads:
         global_threads
     resources:
