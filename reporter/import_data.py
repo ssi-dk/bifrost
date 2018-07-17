@@ -85,3 +85,6 @@ def get_run_list():
     
 def get_group_list(run_name=None):
     return mongo_interface.get_group_list(run_name)
+
+def get_species_list(run_name=None):
+    return mongo_interface.get_species_list(run_name)

@@ -304,13 +304,24 @@ def main(argv):
     )
     def update_group_list(run_name):
         if len(run_name) == 0:
-            species_list = dataframe.short_class_species_1.value_counts()
+            species_list = import_data.get_species_list()
         else:
-            species_list = dataframe[dataframe.run_name ==
-                                     run_name].short_class_species_1.value_counts()
-        species_list_options = [{"label": "{} ({})".format(species, count), "value": species}
-                                for species, count in species_list.items()]
-        species_options = [species for species, count in species_list.items()]
+            species_list = import_data.get_species_list(run_name)
+        species_options = []
+        species_list_options = []
+        for item in species_list:
+            if item["_id"] == None:
+                species_options.append("Not classified")
+                species_list_options.append({
+                    "label": "Not classified ({})".format(item["count"]),
+                    "value": "Not classified"
+                })
+            else:
+                species_options.append(item["_id"])
+                species_list_options.append({
+                    "label": "{} ({})".format(item["_id"], item["count"]),
+                    "value": item["_id"]
+                })
         return dcc.Dropdown(
             id="species-list",
             options=species_list_options,

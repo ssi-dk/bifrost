@@ -115,3 +115,42 @@ def get_group_list(run_name=None):
             ]))
 
     return groups
+
+
+def get_species_list(run_name=None):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        if run_name is not None:
+            sample_ids = list(db.runs.find_one(  # Should be taking _id
+                {"run.name": run_name},
+                {
+                    "_id": -1,
+                    "samples": 1
+                }
+            )["samples"].keys())
+            species = list(db.samples.aggregate([
+                {
+                    "$match": {
+                        "sample.name": {"$in": sample_ids},  # Should be id
+                        # Delete when we switch to id
+                        "sample.run_folder": {"$regex": run_name}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$qcquickie.summary.name_classified_species_1",
+                        "count": {"$sum": 1}
+                    }
+                }
+            ]))
+        else:
+            species = list(db.samples.aggregate([
+                {
+                    "$group": {
+                        "_id": "$qcquickie.summary.name_classified_species_1",
+                        "count": {"$sum": 1}
+                    }
+                }
+            ]))
+
+    return species
