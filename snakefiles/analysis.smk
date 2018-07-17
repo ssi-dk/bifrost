@@ -31,7 +31,7 @@ rule all:
 
 rule setup:
     output:
-        folder = component
+        folder = directory(component)
     shell:
         "mkdir {output}"
 
@@ -91,7 +91,7 @@ rule ariba__resfinder:
         folder = component,
         reads = (R1, R2)
     output:
-        folder = component + "/ariba_resfinder",
+        folder = directory(component + "/ariba_resfinder")
     params:
         database = config["ariba"]["resfinder"]["database"]
     conda:
@@ -115,7 +115,7 @@ rule abricate_on_ariba_resfinder:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = component + "/ariba_resfinder",
+        contigs = component + "/ariba_resfinder"
     output:
         report = component + "/abricate_on_resfinder_from_ariba.tsv",
     params:
@@ -150,7 +150,7 @@ rule ariba__plasmidfinder:
         folder = component,
         reads = (R1, R2)
     output:
-        folder = component + "/ariba__plasmidfinder",
+        folder = directory(component + "/ariba__plasmidfinder")
     params:
         database = config["ariba"]["plasmidfinder"]["database"]
     conda:
@@ -211,7 +211,7 @@ rule ariba__mlst:
         folder = component,
         reads = (R1, R2)
     output:
-        folder = component + "/ariba_mlst",
+        folder = directory(component + "/ariba_mlst")
     params:
         sample = sample
     conda:

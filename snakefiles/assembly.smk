@@ -35,7 +35,7 @@ rule setup:
     message:
         "Running step: {rule}"
     output:
-        directory = "assembly",
+        directory = directory("assembly"),
     shell:
         "mkdir {output}"
 
@@ -153,7 +153,7 @@ rule assembly_check__quast_on_contigs:
     input:
         contigs = "assembly/contigs.fasta"
     output:
-        quast = "assembly/quast"
+        quast = directory("assembly/quast")
     threads:
         global_threads
     resources:
