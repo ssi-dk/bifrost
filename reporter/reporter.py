@@ -225,47 +225,47 @@ def main(argv):
         else:
             return "/"
 
-    @app.callback(
-        Output('report-count', 'children'),
-        [Input('summary-plot', 'selectedData'),
-         Input("sample-count", "children")]
-    )
-    def display_selected_data(selected_data, sample_count):
-        if selected_data is not None and len(selected_data["points"]):
-            return len([sample['text']
-                      for sample in selected_data["points"]])
-        else:
-            return sample_count
+    # @app.callback(
+    #     Output('report-count', 'children'),
+    #     [Input('summary-plot', 'selectedData'),
+    #      Input("sample-count", "children")]
+    # )
+    # def display_selected_data(selected_data, sample_count):
+    #     if selected_data is not None and len(selected_data["points"]):
+    #         return len([sample['text']
+    #                   for sample in selected_data["points"]])
+    #     else:
+    #         return sample_count
 
-    @app.callback(
-        Output('lasso-div', 'children'),
-        [Input('summary-plot', 'selectedData'),
-         Input('report-count', 'children')]
-    )
-    def display_selected_data(selected_data, ignore_this):
-        # ignore_this is there so the function is called 
-        # when the sample list is updated.
-        if selected_data is not None and len(selected_data["points"]):
-            points = [sample['text']
-                      for sample in selected_data["points"]]
-            return [
-                html.Label(
-                    [
-                        "Selected from plot lasso (",
-                            str(len(points)),
-                        "):"
-                    ],
-                    htmlFor="selected-from-plot"),
-                dcc.Textarea(
-                    id="selected-from-plot",
-                    className="u-full-width",
-                    style={"resize": "none"},
-                    readOnly=True,
-                    value=", ".join(points)
-                )
-            ]
-        else:
-            return ""
+    # @app.callback(
+    #     Output('lasso-div', 'children'),
+    #     [Input('summary-plot', 'selectedData'),
+    #      Input('report-count', 'children')]
+    # )
+    # def display_selected_data(selected_data, ignore_this):
+    #     # ignore_this is there so the function is called 
+    #     # when the sample list is updated.
+    #     if selected_data is not None and len(selected_data["points"]):
+    #         points = [sample['text']
+    #                   for sample in selected_data["points"]]
+    #         return [
+    #             html.Label(
+    #                 [
+    #                     "Selected from plot lasso (",
+    #                         str(len(points)),
+    #                     "):"
+    #                 ],
+    #                 htmlFor="selected-from-plot"),
+    #             dcc.Textarea(
+    #                 id="selected-from-plot",
+    #                 className="u-full-width",
+    #                 style={"resize": "none"},
+    #                 readOnly=True,
+    #                 value=", ".join(points)
+    #             )
+    #         ]
+    #     else:
+    #         return ""
 
     @app.callback(
         Output('group-div', 'children'),
@@ -302,7 +302,7 @@ def main(argv):
         Output('species-div', 'children'),
         [Input('run-name', 'children')]
     )
-    def update_group_list(run_name):
+    def update_species_list(run_name):
         if len(run_name) == 0:
             species_list = import_data.get_species_list()
         else:
@@ -342,214 +342,221 @@ def main(argv):
         else:
             return html_table_run_information({'run_name': run_name})
 
-    @app.callback(
-        Output(component_id="page-n",
-               component_property="children"),
-        [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-         Input(component_id="nextpage", component_property="n_clicks_timestamp")],
-        [State(component_id="page-n", component_property="children"),
-         State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value"),
-         State(component_id="run-name", component_property="children")]
-    )
-    def next_page(prev_ts, next_ts, page_n, species_list, group_list, run_name):
-        page_n = int(page_n)
-        max_page = filter_dataframe(dataframe, species_list, group_list, run_name)["_id"].count() // PAGESIZE
-        if prev_ts > next_ts:
-            return max(page_n - 1, 0)
-        elif next_ts > prev_ts:
-            return min(page_n + 1, max_page)
-        else:
-            return 0
+    # @app.callback(
+    #     Output(component_id="page-n",
+    #            component_property="children"),
+    #     [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
+    #      Input(component_id="nextpage", component_property="n_clicks_timestamp")],
+    #     [State(component_id="page-n", component_property="children"),
+    #      State(component_id="species-list", component_property="value"),
+    #      State(component_id="group-list", component_property="value"),
+    #      State(component_id="run-name", component_property="children")]
+    # )
+    # def next_page(prev_ts, next_ts, page_n, species_list, group_list, run_name):
+    #     page_n = int(page_n)
+    #     max_page = filter_dataframe(dataframe, species_list, group_list, run_name)["_id"].count() // PAGESIZE
+    #     if prev_ts > next_ts:
+    #         return max(page_n - 1, 0)
+    #     elif next_ts > prev_ts:
+    #         return min(page_n + 1, max_page)
+    #     else:
+    #         return 0
 
-    @app.callback(
-        Output(component_id="sample-report", component_property="children"),
-        [Input(component_id="page-n", component_property="children"),
-         Input(component_id="sample-report", component_property="data-content")],
-         [State('summary-plot', 'selectedData'),
-         State("selected-samples", "value")]
-         )
-    def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
-        if not (data_content == "qcquickie" or data_content == "assembly"):
-            return []
-        page_n = int(page_n)
-        if lasso_selected is not None and len(lasso_selected["points"]):
-            samples = [sample['text']
-                       for sample in lasso_selected["points"]]  # lasso first
-        else:
-            samples = prefilter_samples[0].split("\n")
-        filtered = dataframe[dataframe.name.isin(samples)]
-        page = paginate_df(filtered, page_n)
-        max_page = len(filtered) // PAGESIZE
-        page_species = page.qcquickie_name_classified_species_1.unique().tolist()
-        species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
-        return [
-            html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-            html.Div(children_sample_list_report(page, data_content, species_plot_data))
-        ]
+    # # @app.callback(
+    # #     Output(component_id="sample-report", component_property="children"),
+    # #     [Input(component_id="page-n", component_property="children"),
+    # #      Input(component_id="sample-report", component_property="data-content")],
+    # #      [State('summary-plot', 'selectedData'),
+    # #      State("selected-samples", "value")]
+    # #      )
+    # # def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
+    # #     if not (data_content == "qcquickie" or data_content == "assembly"):
+    # #         return []
+    # #     page_n = int(page_n)
+    # #     if lasso_selected is not None and len(lasso_selected["points"]):
+    # #         samples = [sample['text']
+    # #                    for sample in lasso_selected["points"]]  # lasso first
+    # #     else:
+    # #         samples = prefilter_samples[0].split("\n")
+    # #     filtered = dataframe[dataframe.name.isin(samples)]
+    # #     page = paginate_df(filtered, page_n)
+    # #     max_page = len(filtered) // PAGESIZE
+    # #     page_species = page.qcquickie_name_classified_species_1.unique().tolist()
+    # #     species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
+    # #     return [
+    # #         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+    # #         html.Div(children_sample_list_report(page, data_content, species_plot_data))
+    # #     ]
 
-    @app.callback(
-        Output(component_id="prevpage", component_property="disabled"),
-        [Input(component_id="page-n", component_property="children")]
-    )
-    def update_prevpage(page_n):
-        if int(page_n) == 0:
-            return True
-        else:
-            return False
+    # @app.callback(
+    #     Output(component_id="prevpage", component_property="disabled"),
+    #     [Input(component_id="page-n", component_property="children")]
+    # )
+    # def update_prevpage(page_n):
+    #     if int(page_n) == 0:
+    #         return True
+    #     else:
+    #         return False
 
-    @app.callback(
-        Output(component_id="nextpage", component_property="disabled"),
-        [Input(component_id="page-n", component_property="children")],
-        [State(component_id="species-list", component_property="value"),
-         State(component_id="group-list", component_property="value"),
-         State(component_id="run-name", component_property="children")]
-    )
-    def update_nextpage(page_n, species_list, group_list, run_name):
-        page_n = int(page_n)
-        max_page = len(filter_dataframe(
-            dataframe, species_list, group_list, run_name)) // PAGESIZE
-        if page_n == max_page:
-            return True
-        else:
-            return False
+    # @app.callback(
+    #     Output(component_id="nextpage", component_property="disabled"),
+    #     [Input(component_id="page-n", component_property="children")],
+    #     [State(component_id="species-list", component_property="value"),
+    #      State(component_id="group-list", component_property="value"),
+    #      State(component_id="run-name", component_property="children")]
+    # )
+    # def update_nextpage(page_n, species_list, group_list, run_name):
+    #     page_n = int(page_n)
+    #     max_page = len(filter_dataframe(
+    #         dataframe, species_list, group_list, run_name)) // PAGESIZE
+    #     if page_n == max_page:
+    #         return True
+    #     else:
+    #         return False
 
-    @app.callback(
-        Output(component_id="current-report", component_property="children"),
-        [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
-         Input(component_id="update-assembly", component_property="n_clicks_timestamp"),
-         Input(component_id="update-table", component_property="n_clicks_timestamp")],
-        [State('summary-plot', 'selectedData'),
-         State("selected-samples", "value")]
-    )
-    def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, lasso_selected, prefilter_samples):
-        if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
-            if n_qcquickie_ts > n_assembly_ts:
-                title = "QCQuickie Report"
-                content = "qcquickie"
-            else:
-                title = "Assembly Report"
-                content = "assembly"
-            return [
-                html.H3(title),
-                html.Span("0", style={'display': 'none'}, id="page-n"),
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Previous page", id="prevpage", n_clicks_timestamp=0),
-                            ],
-                            className="three columns"
-                        ),
-                        html.Div(
-                            [
-                                # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                            ],
-                            className="three columns"
-                        ),
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Next page", id="nextpage", n_clicks_timestamp=0),
-                            ],
-                            className="three columns"
-                        ),
-                    ],
-                    className="row"
-                ),
+    # # @app.callback(
+    # #     Output(component_id="current-report", component_property="children"),
+    # #     [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
+    # #      Input(component_id="update-assembly", component_property="n_clicks_timestamp"),
+    # #      Input(component_id="update-table", component_property="n_clicks_timestamp")],
+    # #     [State('summary-plot', 'selectedData'),
+    # #      State("selected-samples", "value")]
+    # # )
+    # # def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, lasso_selected, prefilter_samples):
+    # #     if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
+    # #         if n_qcquickie_ts > n_assembly_ts:
+    # #             title = "QCQuickie Report"
+    # #             content = "qcquickie"
+    # #         else:
+    # #             title = "Assembly Report"
+    # #             content = "assembly"
+    # #         return [
+    # #             html.H3(title),
+    # #             html.Span("0", style={'display': 'none'}, id="page-n"),
+    # #             html.Div(
+    # #                 [
+    # #                     html.Div(
+    # #                         [
+    # #                             html.Button(
+    # #                                 "Previous page", id="prevpage", n_clicks_timestamp=0),
+    # #                         ],
+    # #                         className="three columns"
+    # #                     ),
+    # #                     html.Div(
+    # #                         [
+    # #                             # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+    # #                         ],
+    # #                         className="three columns"
+    # #                     ),
+    # #                     html.Div(
+    # #                         [
+    # #                             html.Button(
+    # #                                 "Next page", id="nextpage", n_clicks_timestamp=0),
+    # #                         ],
+    # #                         className="three columns"
+    # #                     ),
+    # #                 ],
+    # #                 className="row"
+    # #             ),
                 
-                html.Div(id="sample-report", **{"data-content": content}),
-            ]
-        elif n_table_ts > n_assembly_ts:  # table was clicked
-            if lasso_selected is not None and len(lasso_selected["points"]):
-                samples = [sample['text'] for sample in lasso_selected["points"]] # lasso first
-            else:
-                samples = prefilter_samples[0].split("\n")
+    # #             html.Div(id="sample-report", **{"data-content": content}),
+    # #         ]
+    # #     elif n_table_ts > n_assembly_ts:  # table was clicked
+    # #         if lasso_selected is not None and len(lasso_selected["points"]):
+    # #             samples = [sample['text'] for sample in lasso_selected["points"]] # lasso first
+    # #         else:
+    # #             samples = prefilter_samples[0].split("\n")
             
-            return [
-                html.H3("Table Report"),
+    # #         return [
+    # #             html.H3("Table Report"),
 
-                dt.DataTable(
-                    rows=dataframe[dataframe.name.isin(samples)].to_dict("records"),
+    # #             dt.DataTable(
+    # #                 rows=dataframe[dataframe.name.isin(samples)].to_dict("records"),
 
-                    columns=global_vars.columns, # sets the order
-                    column_widths=[150]*len(global_vars.columns),
-                    editable=False,
-                    filterable=True,
-                    sortable=True,
-                    selected_row_indices=[],
-                    id='datatable-samples'
-                )
-            ]
-        return []
+    # #                 columns=global_vars.columns, # sets the order
+    # #                 column_widths=[150]*len(global_vars.columns),
+    # #                 editable=False,
+    # #                 filterable=True,
+    # #                 sortable=True,
+    # #                 selected_row_indices=[],
+    # #                 id='datatable-samples'
+    # #             )
+    # #         ]
+    # #     return []
 
     @app.callback(
-        Output(component_id="selected-samples", component_property="value"),
+        Output(component_id="selected-samples", component_property="children"),
         [Input(component_id="species-list", component_property="value"),
          Input(component_id="group-list", component_property="value"),
          Input(component_id="run-name", component_property="children")]
     )
     def update_selected_samples(species_list, group_list, run_name):
-        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
-        return [format_selected_samples(filtered_df)]
 
-    @app.callback(
-        Output(component_id="sample-count", component_property="children"),
-        [Input(component_id="species-list", component_property="value"),
-         Input(component_id="group-list", component_property="value"),
-         Input(component_id="run-name", component_property="children")]
-    )
-    def update_sample_count(species_list, group_list, run_name):
-        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
-        return filtered_df['name'].count()
-
-    @app.callback(
-        Output(component_id="summary-plot", component_property="figure"),
-        [Input(component_id="species-list", component_property="value"),
-         Input(component_id="group-list", component_property="value"),
-         Input(component_id="run-name", component_property="children"),
-         Input(component_id="plot-list", component_property="value")]
-    )
-    def update_coverage_figure(species_list, group_list, run_name, plot_value):
-        data = []
-        filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
-        if species_list is None: species_list = []
-        for species in species_list:
-            species_df = filtered_df[filtered_df.short_class_species_1 == species]
-            if species == "Not classified":
-                species_name = species
-            else:
-                species_name = "<i>{}</i>".format(species)
-            data.append(go.Box(
-                go.Box(
-                    x=species_df.loc[:, plot_value],
-                    text=species_df["name"],
-                    marker=dict(
-                        color=COLOR_DICT.get(species, None),
-                        size=4
-                    ),
-                    boxpoints="all",
-                    jitter=0.5,
-                    pointpos=-1.8,
-                    name="{} ({})".format(species_name,species_df["_id"].count()),
-                    showlegend=False
-                )
-            ))
-        return {
-            "data": data,
-            "layout": go.Layout(
-                hovermode="closest",
-                title=plot_value.replace("_", " "),
-                margin=go.Margin(
-                    l=175,
-                    r=50,
-                    b=25,
-                    t=50
-                ),
-                xaxis={"showgrid": True}
+        samples = import_data.filter(back="name",
+            species=species_list, group=group_list, run_name=run_name)
+        return [
+            html.Label(
+                [
+                    "Selected Samples (",
+                    len(samples),
+                    "):"
+                ],
+                htmlFor="plot-list"),
+            dcc.Textarea(
+                className="u-full-width",
+                style={"resize": "none",
+                        "height": "300px"},
+                readOnly=True,
+                value=["\n".join(samples)]
             )
-        }
+        ]
+
+    # @app.callback(
+    #     Output(component_id="summary-plot", component_property="figure"),
+    #     [Input(component_id="species-list", component_property="value"),
+    #      Input(component_id="group-list", component_property="value"),
+    #      Input(component_id="run-name", component_property="children"),
+    #      Input(component_id="plot-list", component_property="value")]
+    # )
+    # def update_coverage_figure(species_list, group_list, run_name, plot_value):
+    #     data = []
+    #     filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
+    #     if species_list is None: species_list = []
+    #     for species in species_list:
+    #         species_df = filtered_df[filtered_df.short_class_species_1 == species]
+    #         if species == "Not classified":
+    #             species_name = species
+    #         else:
+    #             species_name = "<i>{}</i>".format(species)
+    #         data.append(go.Box(
+    #             go.Box(
+    #                 x=species_df.loc[:, plot_value],
+    #                 text=species_df["name"],
+    #                 marker=dict(
+    #                     color=COLOR_DICT.get(species, None),
+    #                     size=4
+    #                 ),
+    #                 boxpoints="all",
+    #                 jitter=0.5,
+    #                 pointpos=-1.8,
+    #                 name="{} ({})".format(species_name,species_df["_id"].count()),
+    #                 showlegend=False
+    #             )
+    #         ))
+    #     return {
+    #         "data": data,
+    #         "layout": go.Layout(
+    #             hovermode="closest",
+    #             title=plot_value.replace("_", " "),
+    #             margin=go.Margin(
+    #                 l=175,
+    #                 r=50,
+    #                 b=25,
+    #                 t=50
+    #             ),
+    #             xaxis={"showgrid": True}
+    #         )
+    #     }
 
     @app.callback(
         Output('group-list', 'value'),
@@ -557,7 +564,18 @@ def main(argv):
         [State("run-name", "children")]
     )
     def all_groups(n_clicks, run_name):
-        return filter_dataframe(dataframe, [], [], run_name).supplying_lab.unique()
+        if len(run_name) == 0:
+            group_list = import_data.get_group_list()
+        else:
+            group_list = import_data.get_group_list(run_name)
+        group_options = []
+        for item in group_list:
+            if item["_id"] == None:
+                group_options.append("Not defined")
+            else:
+                group_options.append(item["_id"])
+
+        return group_options
 
     @app.callback(
         Output('species-list', 'value'),
@@ -565,16 +583,26 @@ def main(argv):
         [State("run-name", "children")]
     )
     def all_species(n_clicks, run_name):
-        return filter_dataframe(dataframe, [], [], run_name).short_class_species_1.unique()
+        if len(run_name) == 0:
+            species_list = import_data.get_species_list()
+        else:
+            species_list = import_data.get_species_list(run_name)
+        species_options = []
+        for item in species_list:
+            if item["_id"] == None:
+                species_options.append("Not classified")
+            else:
+                species_options.append(item["_id"])
 
+        return species_options
 
-    @app.callback(
-        Output('sample-list', "value"),
-        [Input("summary-plot", "clickData")]
-    )
-    def update_active_sample(clickData):
-        if clickData != None:
-            return clickData["points"][0]["text"]
+    # @app.callback(
+    #     Output('sample-list', "value"),
+    #     [Input("summary-plot", "clickData")]
+    # )
+    # def update_active_sample(clickData):
+    #     if clickData != None:
+    #         return clickData["points"][0]["text"]
 
     app.run_server(debug=True)
 

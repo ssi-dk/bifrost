@@ -88,3 +88,8 @@ def get_group_list(run_name=None):
 
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
+
+def filter(back="all", run_name=None, species=None, group=None):
+    if back == "name":
+        result = mongo_interface.filter(back, run_name, species, group)
+        return list(map(lambda x: x["sample"]["name"], result))
