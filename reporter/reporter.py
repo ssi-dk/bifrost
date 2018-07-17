@@ -58,11 +58,7 @@ def html_table_run_information(run_data):
     ])
 
 def main(argv):
-    dataframe = import_data.import_data()
-    
 
-    # Change this to provided species ?
-    dataframe = dataframe.sort_values("short_class_species_1")
     app = dash.Dash()
     app.config['suppress_callback_exceptions'] = True
 
