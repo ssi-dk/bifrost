@@ -113,6 +113,21 @@ def html_div_summary():
                         className="eight columns"
                     ),
                     html.Div(
+                        [
+                            html.Label(
+                                [
+                                    "Selected Samples ():"
+                                ],
+                                htmlFor="plot-list"),
+                            dcc.Textarea(
+                                className="u-full-width",
+                                style={"resize": "none",
+                                       "height": "300px"},
+                                readOnly=True,
+                                value=[""],
+                                id="selected-samples-list"
+                            )
+                        ],
                         className="four columns",
                         id="selected-samples"
                     ),

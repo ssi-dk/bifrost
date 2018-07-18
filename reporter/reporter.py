@@ -221,47 +221,47 @@ def main(argv):
         else:
             return "/"
 
-    # @app.callback(
-    #     Output('report-count', 'children'),
-    #     [Input('summary-plot', 'selectedData'),
-    #      Input("sample-count", "children")]
-    # )
-    # def display_selected_data(selected_data, sample_count):
-    #     if selected_data is not None and len(selected_data["points"]):
-    #         return len([sample['text']
-    #                   for sample in selected_data["points"]])
-    #     else:
-    #         return sample_count
+    @app.callback(
+        Output('report-count', 'children'),
+        [Input('summary-plot', 'selectedData'),
+         Input("selected-samples-list", "value")]
+    )
+    def display_selected_data(plot_selected, selected_samples_list):
+        if plot_selected is not None and len(plot_selected["points"]):
+            return len([sample['text']
+                      for sample in plot_selected["points"]])
+        else:
+            return len(selected_samples_list[0].split("\n"))
 
-    # @app.callback(
-    #     Output('lasso-div', 'children'),
-    #     [Input('summary-plot', 'selectedData'),
-    #      Input('report-count', 'children')]
-    # )
-    # def display_selected_data(selected_data, ignore_this):
-    #     # ignore_this is there so the function is called 
-    #     # when the sample list is updated.
-    #     if selected_data is not None and len(selected_data["points"]):
-    #         points = [sample['text']
-    #                   for sample in selected_data["points"]]
-    #         return [
-    #             html.Label(
-    #                 [
-    #                     "Selected from plot lasso (",
-    #                         str(len(points)),
-    #                     "):"
-    #                 ],
-    #                 htmlFor="selected-from-plot"),
-    #             dcc.Textarea(
-    #                 id="selected-from-plot",
-    #                 className="u-full-width",
-    #                 style={"resize": "none"},
-    #                 readOnly=True,
-    #                 value=", ".join(points)
-    #             )
-    #         ]
-    #     else:
-    #         return ""
+    @app.callback(
+        Output('lasso-div', 'children'),
+        [Input('summary-plot', 'selectedData'),
+         Input('report-count', 'children')]
+    )
+    def display_selected_data(selected_data, ignore_this):
+        # ignore_this is there so the function is called 
+        # when the sample list is updated.
+        if selected_data is not None and len(selected_data["points"]):
+            points = [sample['text']
+                      for sample in selected_data["points"]]
+            return [
+                html.Label(
+                    [
+                        "Selected from plot lasso (",
+                            str(len(points)),
+                        "):"
+                    ],
+                    htmlFor="selected-from-plot"),
+                dcc.Textarea(
+                    id="selected-from-plot",
+                    className="u-full-width",
+                    style={"resize": "none"},
+                    readOnly=True,
+                    value=", ".join(points)
+                )
+            ]
+        else:
+            return ""
 
     @app.callback(
         Output('group-div', 'children'),
@@ -503,7 +503,8 @@ def main(argv):
                 style={"resize": "none",
                         "height": "300px"},
                 readOnly=True,
-                value=["\n".join(samples)]
+                value=["\n".join(samples)],
+                id="selected-samples-list"
             )
         ]
 
@@ -595,6 +596,7 @@ def main(argv):
 
         return species_options
 
+    # Delete?
     # @app.callback(
     #     Output('sample-list', "value"),
     #     [Input("summary-plot", "clickData")]
