@@ -516,7 +516,7 @@ def main(argv):
     )
     def update_coverage_figure(species_list, group_list, run_name, plot_value):
         plot_query = global_vars.PLOTS[plot_value]["projection"]
-        plot_aggregate = global_vars.PLOTS.get(plot_value)
+        plot_aggregate = global_vars.PLOTS[plot_value].get("aggregate")
         
         data = []
         plot_df = import_data.filter_plot(plot_query, species_list, group_list, run_name, plot_aggregate)

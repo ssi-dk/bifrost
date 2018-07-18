@@ -49,12 +49,14 @@ PLOTS["qcquickie_bin_length_at_25x"] = {
         "projection": "qcquickie.summary.bin_length_at_25x"
     }
 PLOTS["qcquickie_bin_length_1x_25x_diff"] = {
-        "projection": "plot",
+        "projection": "value",
         "aggregate": [
             {
                 "$project": {
-                    "plot": {
-                        "$substract": [
+                    "sample.name": 1,
+                    "qcquickie.summary.name_classified_species_1": 1,
+                    "value": {
+                        "$subtract": [
                             "$qcquickie.summary.bin_length_at_1x",
                             "$qcquickie.summary.bin_length_at_25x"
                         ]
@@ -88,12 +90,14 @@ PLOTS["assembly_bin_length_at_25x"] = {
         "projection": "assembly.summary.bin_length_at_25x"
     }
 PLOTS["assembly_bin_length_1x_25x_diff"] = {
-        "projection": "plot",
+        "projection": "value",
         "aggregate": [
             {
                 "$project": {
-                    "plot": {
-                        "$substract": [
+                    "sample.name": 1,
+                    "qcquickie.summary.name_classified_species_1": 1,
+                    "value": {
+                        "$subtract": [
                             "$assembly.summary.bin_length_at_1x",
                             "$assembly.summary.bin_length_at_25x"
                         ]

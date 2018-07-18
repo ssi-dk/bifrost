@@ -117,8 +117,7 @@ def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
             "sample.name" : 1,
             "qcquickie.summary.name_classified_species_1" : 1
         },
-        run_name, species, group)
-    
+        run_name, species, group, aggregate)
     clean_result = []
     for item in query_result:
         clean_result.append({
