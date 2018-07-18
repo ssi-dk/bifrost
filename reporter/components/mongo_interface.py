@@ -155,15 +155,20 @@ def get_species_list(run_name=None):
 
     return species
 
-def filter(back, run_name, species, group):
-    if back == "name":
-        with get_connection() as connection:
-            db = connection.get_default_database()
-            query = {}
-            if run_name is not None:
-                query["sample.run_folder"] = {"$regex": run_name} # Fix this when update is done.
-            # if species is not None:
-            #     query["qcquickie.summary.name_detected_species_1"] = {"$in": species}
-            # if group is not None:
-            #     query["sample.sample_sheet.group"] = {"$in": group}
-            return list(db.samples.find(query,{"sample.name" : 1}))
+def filter(projection, run_name, species, group, aggregate=None):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        query = {}
+        if run_name is not None:
+            query["sample.run_folder"] = {"$regex": run_name} # Fix this when update is done.
+        if species is not None:
+            query["qcquickie.summary.name_classified_species_1"] = {
+                "$in": species}
+        if group is not None:
+            query["sample.sample_sheet.group"] = {"$in": group}
+        if aggregate is None:
+            return list(db.samples.find(query, projection))
+        else:
+            return list(db.samples.aggregate([
+                {'$match': query}
+            ] + aggregate))

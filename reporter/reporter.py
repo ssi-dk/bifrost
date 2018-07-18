@@ -18,10 +18,10 @@ import flask  #used for the image server
 import components.mongo_interface
 import import_data
 from components.table import html_table, html_td_percentage
-from components.summary import html_div_summary, format_selected_samples
+from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report
 from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
-import components.global_vars
+import components.global_vars as global_vars
 
 
 def hex_to_rgb(value):
@@ -488,8 +488,8 @@ def main(argv):
     )
     def update_selected_samples(species_list, group_list, run_name):
 
-        samples = import_data.filter(back="name",
-            species=species_list, group=group_list, run_name=run_name)
+        samples = import_data.filter_name(species=species_list,
+            group=group_list, run_name=run_name)
         return [
             html.Label(
                 [
@@ -507,52 +507,55 @@ def main(argv):
             )
         ]
 
-    # @app.callback(
-    #     Output(component_id="summary-plot", component_property="figure"),
-    #     [Input(component_id="species-list", component_property="value"),
-    #      Input(component_id="group-list", component_property="value"),
-    #      Input(component_id="run-name", component_property="children"),
-    #      Input(component_id="plot-list", component_property="value")]
-    # )
-    # def update_coverage_figure(species_list, group_list, run_name, plot_value):
-    #     data = []
-    #     filtered_df = filter_dataframe(dataframe, species_list, group_list, run_name)
-    #     if species_list is None: species_list = []
-    #     for species in species_list:
-    #         species_df = filtered_df[filtered_df.short_class_species_1 == species]
-    #         if species == "Not classified":
-    #             species_name = species
-    #         else:
-    #             species_name = "<i>{}</i>".format(species)
-    #         data.append(go.Box(
-    #             go.Box(
-    #                 x=species_df.loc[:, plot_value],
-    #                 text=species_df["name"],
-    #                 marker=dict(
-    #                     color=COLOR_DICT.get(species, None),
-    #                     size=4
-    #                 ),
-    #                 boxpoints="all",
-    #                 jitter=0.5,
-    #                 pointpos=-1.8,
-    #                 name="{} ({})".format(species_name,species_df["_id"].count()),
-    #                 showlegend=False
-    #             )
-    #         ))
-    #     return {
-    #         "data": data,
-    #         "layout": go.Layout(
-    #             hovermode="closest",
-    #             title=plot_value.replace("_", " "),
-    #             margin=go.Margin(
-    #                 l=175,
-    #                 r=50,
-    #                 b=25,
-    #                 t=50
-    #             ),
-    #             xaxis={"showgrid": True}
-    #         )
-    #     }
+    @app.callback(
+        Output(component_id="summary-plot", component_property="figure"),
+        [Input(component_id="species-list", component_property="value"),
+         Input(component_id="group-list", component_property="value"),
+         Input(component_id="run-name", component_property="children"),
+         Input(component_id="plot-list", component_property="value")]
+    )
+    def update_coverage_figure(species_list, group_list, run_name, plot_value):
+        plot_query = global_vars.PLOTS[plot_value]["projection"]
+        plot_aggregate = global_vars.PLOTS.get(plot_value)
+        
+        data = []
+        plot_df = import_data.filter_plot(plot_query, species_list, group_list, run_name, plot_aggregate)
+        if species_list is None: species_list = []
+        for species in species_list:
+            species_df = plot_df[plot_df.species == species]
+            if species == "Not classified":
+                species_name = species
+            else:
+                species_name = "<i>{}</i>".format(species)
+            data.append(go.Box(
+                go.Box(
+                    x=species_df.loc[:, "value"],
+                    text=species_df["name"],
+                    marker=dict(
+                        color=COLOR_DICT.get(species, None),
+                        size=4
+                    ),
+                    boxpoints="all",
+                    jitter=0.5,
+                    pointpos=-1.8,
+                    name="{} ({})".format(species_name,species_df["_id"].count()),
+                    showlegend=False
+                )
+            ))
+        return {
+            "data": data,
+            "layout": go.Layout(
+                hovermode="closest",
+                title=plot_value.replace("_", " "),
+                margin=go.Margin(
+                    l=175,
+                    r=50,
+                    b=25,
+                    t=50
+                ),
+                xaxis={"showgrid": True}
+            )
+        }
 
     @app.callback(
         Output('group-list', 'value'),

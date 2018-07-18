@@ -1,3 +1,5 @@
+import collections
+
 columns = ['name', 'supplying_lab', 'run_name', '_id',
             'input_read_status', 'emails', 'user',
             'R1_location', 'R2_location',
@@ -33,3 +35,87 @@ columns = ['name', 'supplying_lab', 'run_name', '_id',
             'assembly_snp_filter_deletions',
             'assembly_snp_filter_indels',
             'assembly_snp_filter_10x_10%', 'comments']
+
+
+PLOTS = collections.OrderedDict()
+
+PLOTS["qcquickie_bin_length_at_1x"] = {
+        "projection": "qcquickie.summary.bin_length_at_1x"
+    }
+PLOTS["qcquickie_bin_length_at_10x"] = {
+        "projection": "qcquickie.summary.bin_length_at_10x"
+    }
+PLOTS["qcquickie_bin_length_at_25x"] = {
+        "projection": "qcquickie.summary.bin_length_at_25x"
+    }
+PLOTS["qcquickie_bin_length_1x_25x_diff"] = {
+        "projection": "plot",
+        "aggregate": [
+            {
+                "$project": {
+                    "plot": {
+                        "$substract": [
+                            "$qcquickie.summary.bin_length_at_1x",
+                            "$qcquickie.summary.bin_length_at_25x"
+                        ]
+                    }
+                },
+            },
+        ]
+    }
+PLOTS["qcquickie_bin_contigs_at_1x"] = {
+        "projection": "qcquickie.summary.bin_contigs_at_1x"
+    }
+PLOTS["qcquickie_bin_contigs_at_10x"] = {
+        "projection": "qcquickie.summary.bin_contigs_at_10x"
+    }
+PLOTS["qcquickie_bin_contigs_at_25x"] = {
+        "projection": "qcquickie.summary.bin_contigs_at_25x"
+    }
+PLOTS["qcquickie_N50"] = {
+        "projection": "qcquickie.quast/report_tsv/N50"
+    }
+PLOTS["qcquickie_N75"] = {
+        "projection": "qcquickie.quast/report_tsv/N75"
+    }
+PLOTS["assembly_bin_length_at_1x"] = {
+        "projection": "assembly.summary.bin_length_at_1x"
+    }
+PLOTS["assembly_bin_length_at_10x"] = {
+        "projection": "assembly.summary.bin_length_at_10x"
+    }
+PLOTS["assembly_bin_length_at_25x"] = {
+        "projection": "assembly.summary.bin_length_at_25x"
+    }
+PLOTS["assembly_bin_length_1x_25x_diff"] = {
+        "projection": "plot",
+        "aggregate": [
+            {
+                "$project": {
+                    "plot": {
+                        "$substract": [
+                            "$assembly.summary.bin_length_at_1x",
+                            "$assembly.summary.bin_length_at_25x"
+                        ]
+                    }
+                },
+            },
+        ]
+    }
+PLOTS["assembly_bin_contigs_at_1x"] = {
+        "projection": "assembly.summary.bin_contigs_at_1x"
+    }
+PLOTS["assembly_bin_contigs_at_10x"] = {
+        "projection": "assembly.summary.bin_contigs_at_10x"
+    }
+PLOTS["assembly_bin_contigs_at_25x"] = {
+        "projection": "assembly.summary.bin_contigs_at_25x"
+    }
+PLOTS["assembly_N50"] = {
+        "projection": "assembly.quast/report_tsv/N50"
+    }
+PLOTS["assembly_N75"] = {
+        "projection": "assembly.quast/report_tsv/N75"
+    }
+
+DEFAULT_PLOT = 'qcquickie_bin_length_at_1x'

@@ -89,7 +89,42 @@ def get_group_list(run_name=None):
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
-def filter(back="all", run_name=None, species=None, group=None):
-    if back == "name":
-        result = mongo_interface.filter(back, run_name, species, group)
-        return list(map(lambda x: x["sample"]["name"], result))
+def get_from_path(path_string, response):
+    fields = path_string.split(".")
+    for field in fields:
+        response = response.get(field, None)
+        if response is None:
+            return response
+    return response
+
+# def filter(species=None, group=None, run_name=None, aggregate=None):
+#     result = mongo_interface.filter({path: 1},
+#                                     run_name, species, group, aggregate)
+#     return list(map(lambda x: get_from_path(path, x), result))
+
+
+def filter_name(species=None, group=None, run_name=None):
+    result = mongo_interface.filter({"sample.name": 1},
+                                    run_name, species, group)
+    return list(map(lambda x: x["sample"]["name"], result))
+
+
+def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
+
+    query_result =  mongo_interface.filter(
+        {
+            path: 1,
+            "sample.name" : 1,
+            "qcquickie.summary.name_classified_species_1" : 1
+        },
+        run_name, species, group)
+    
+    clean_result = []
+    for item in query_result:
+        clean_result.append({
+            "_id": item["_id"],
+            'name': item["sample"]["name"],
+            'value': get_from_path(path, item),
+            'species': item["qcquickie"]["summary"]["name_classified_species_1"]
+        })
+    return pd.DataFrame(clean_result)

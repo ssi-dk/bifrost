@@ -1,27 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
-PLOT_VALUES = [
-    "qcquickie_bin_length_at_1x",
-    "qcquickie_bin_length_at_10x",
-    "qcquickie_bin_length_at_25x",
-    "qcquickie_bin_length_1x_25x_diff",
-    "qcquickie_bin_contigs_at_1x",
-    "qcquickie_bin_contigs_at_10x",
-    "qcquickie_bin_contigs_at_25x",
-    "qcquickie_N50",
-    "qcquickie_N75",
-    "assembly_bin_length_at_10x",
-    "assembly_bin_length_at_1x",
-    "assembly_bin_length_at_25x",
-    "assembly_bin_length_1x_25x_diff",
-    "assembly_bin_contigs_at_1x",
-    "assembly_bin_contigs_at_10x",
-    "assembly_bin_contigs_at_25x",
-    "assembly_N50",
-    "assembly_N75"
-]
-DEFAULT_PLOT = 0
+from components.global_vars import PLOTS, DEFAULT_PLOT
 
 
 def format_selected_samples(filtered_df):
@@ -30,7 +10,7 @@ def format_selected_samples(filtered_df):
 
 def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
-                           for plot in PLOT_VALUES]
+                           for plot, value in PLOTS.items()]
     return html.Div(
         [
             html.H5("Summary", className="box-title"),
@@ -121,7 +101,7 @@ def html_div_summary():
                                             dcc.Dropdown(
                                                 id="plot-list",
                                                 options=plot_values_options,
-                                                value=PLOT_VALUES[DEFAULT_PLOT]
+                                                value=DEFAULT_PLOT
                                             )
                                         ],
                                         className="twelve columns"
