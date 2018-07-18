@@ -166,7 +166,7 @@ def main(argv):
         if import_data.check_run_name(path[1]):
             return path[1]
         elif path[1] == "":
-            return []
+            return ""
         else:
             return "Not found"
 
@@ -528,7 +528,7 @@ def main(argv):
                 species_name = species
             else:
                 species_name = "<i>{}</i>".format(species)
-            data.append(go.Box(
+            data.append(
                 go.Box(
                     x=species_df.loc[:, "value"],
                     text=species_df["name"],
@@ -537,12 +537,12 @@ def main(argv):
                         size=4
                     ),
                     boxpoints="all",
-                    jitter=0.5,
+                    jitter=0.3,
                     pointpos=-1.8,
                     name="{} ({})".format(species_name,species_df["_id"].count()),
                     showlegend=False
                 )
-            ))
+            )
         return {
             "data": data,
             "layout": go.Layout(

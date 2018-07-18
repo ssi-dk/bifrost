@@ -159,7 +159,7 @@ def filter(projection, run_name, species, group, aggregate=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         query = {}
-        if run_name is not None:
+        if run_name is not None or run_name != "":
             query["sample.run_folder"] = {"$regex": run_name} # Fix this when update is done.
         if species is not None:
             query["qcquickie.summary.name_classified_species_1"] = {
