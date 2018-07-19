@@ -1,6 +1,19 @@
 import pandas as pd
 import datetime
 import components.mongo_interface as mongo_interface
+from pandas.io.json import json_normalize
+# Utils
+
+def get_from_path(path_string, response):
+    fields = path_string.split(".")
+    for field in fields:
+        response = response.get(field, None)
+        if response is None:
+            return response
+    return response
+
+# Main functions
+
 
 def extract_data(sample_db):
     sample = {}
@@ -89,13 +102,6 @@ def get_group_list(run_name=None):
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
-def get_from_path(path_string, response):
-    fields = path_string.split(".")
-    for field in fields:
-        response = response.get(field, None)
-        if response is None:
-            return response
-    return response
 
 # def filter(species=None, group=None, run_name=None, aggregate=None):
 #     result = mongo_interface.filter({path: 1},
@@ -106,7 +112,7 @@ def get_from_path(path_string, response):
 def filter_name(species=None, group=None, run_name=None):
     result = mongo_interface.filter({"sample.name": 1},
                                     run_name, species, group)
-    return list(map(lambda x: x["sample"]["name"], result))
+    return list(result)
 
 
 def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
@@ -121,9 +127,21 @@ def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
     clean_result = []
     for item in query_result:
         clean_result.append({
-            "_id": item["_id"],
+            "_id": str(item["_id"]),
             'name': item["sample"]["name"],
             'value': get_from_path(path, item),
             'species': item["qcquickie"]["summary"]["name_classified_species_1"]
         })
     return pd.DataFrame(clean_result)
+
+
+def filter_all(samples=[]):
+    projection = {
+        'sample': 1,
+        'qcquickie.summary': 1,
+        'assembly.summary': 1
+    }
+    query_result = mongo_interface.filter(projection=projection,samples=samples)
+    dataframe = json_normalize(query_result)
+    dataframe['_id'] = dataframe['_id'].astype(str)
+    return dataframe

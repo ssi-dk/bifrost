@@ -155,11 +155,15 @@ def get_species_list(run_name=None):
 
     return species
 
-def filter(projection, run_name, species, group, aggregate=None):
+
+def filter(projection=None, run_name=None, species=None, group=None, aggregate=None, samples=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         query = {}
-        if run_name is not None or run_name != "":
+        if samples is not None:
+            samples = [ObjectId(id) for id in samples]
+            query["_id"] = {"$in": samples}
+        if run_name is not None and run_name != "":
             query["sample.run_folder"] = {"$regex": run_name} # Fix this when update is done.
         if species is not None:
             query["qcquickie.summary.name_classified_species_1"] = {
@@ -172,3 +176,4 @@ def filter(projection, run_name, species, group, aggregate=None):
             return list(db.samples.aggregate([
                 {'$match': query}
             ] + aggregate))
+
