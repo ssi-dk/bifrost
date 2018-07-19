@@ -345,25 +345,23 @@ def main(argv):
         else:
             return html_table_run_information({'run_name': run_name})
 
-    # @app.callback(
-    #     Output(component_id="page-n",
-    #            component_property="children"),
-    #     [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-    #      Input(component_id="nextpage", component_property="n_clicks_timestamp")],
-    #     [State(component_id="page-n", component_property="children"),
-    #      State(component_id="species-list", component_property="value"),
-    #      State(component_id="group-list", component_property="value"),
-    #      State(component_id="run-name", component_property="children")]
-    # )
-    # def next_page(prev_ts, next_ts, page_n, species_list, group_list, run_name):
-    #     page_n = int(page_n)
-    #     max_page = filter_dataframe(dataframe, species_list, group_list, run_name)["_id"].count() // PAGESIZE
-    #     if prev_ts > next_ts:
-    #         return max(page_n - 1, 0)
-    #     elif next_ts > prev_ts:
-    #         return min(page_n + 1, max_page)
-    #     else:
-    #         return 0
+    @app.callback(
+        Output(component_id="page-n",
+               component_property="children"),
+        [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
+         Input(component_id="nextpage", component_property="n_clicks_timestamp")],
+        [State(component_id="page-n", component_property="children"),
+         State(component_id="max-page", component_property="children")]
+    )
+    def next_page(prev_ts, next_ts, page_n, max_page):
+        page_n = int(page_n)
+        max_page = int(max_page)
+        if prev_ts > next_ts:
+            return max(page_n - 1, 0)
+        elif next_ts > prev_ts:
+            return min(page_n + 1, max_page)
+        else:
+            return 0
 
     @app.callback(
         Output(component_id="sample-report", component_property="children"),
@@ -392,31 +390,28 @@ def main(argv):
             html.Div(children_sample_list_report(page, data_content, species_plot_data))
         ]
 
-    # @app.callback(
-    #     Output(component_id="prevpage", component_property="disabled"),
-    #     [Input(component_id="page-n", component_property="children")]
-    # )
-    # def update_prevpage(page_n):
-    #     if int(page_n) == 0:
-    #         return True
-    #     else:
-    #         return False
+    @app.callback(
+        Output(component_id="prevpage", component_property="disabled"),
+        [Input(component_id="page-n", component_property="children")]
+    )
+    def update_prevpage(page_n):
+        if int(page_n) == 0:
+            return True
+        else:
+            return False
 
-    # @app.callback(
-    #     Output(component_id="nextpage", component_property="disabled"),
-    #     [Input(component_id="page-n", component_property="children")],
-    #     [State(component_id="species-list", component_property="value"),
-    #      State(component_id="group-list", component_property="value"),
-    #      State(component_id="run-name", component_property="children")]
-    # )
-    # def update_nextpage(page_n, species_list, group_list, run_name):
-    #     page_n = int(page_n)
-    #     max_page = len(filter_dataframe(
-    #         dataframe, species_list, group_list, run_name)) // PAGESIZE
-    #     if page_n == max_page:
-    #         return True
-    #     else:
-    #         return False
+    @app.callback(
+        Output(component_id="nextpage", component_property="disabled"),
+        [Input(component_id="page-n", component_property="children"),
+         Input(component_id="max-page", component_property="children")]
+    )
+    def update_nextpage(page_n, max_page):
+        page_n = int(page_n)
+        max_page = int(max_page)
+        if page_n == max_page:
+            return True
+        else:
+            return False
 
     @app.callback(
         Output(component_id="current-report", component_property="children"),
@@ -427,6 +422,16 @@ def main(argv):
          State("selected-samples-ids", "children")]
     )
     def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, lasso_selected, prefilter_samples):
+        if lasso_selected != '':
+            samples = lasso_selected.split(',')  # lasso first
+        elif prefilter_samples != '':
+            samples = prefilter_samples.split(',')
+        else:
+            samples = []
+        dataframe = import_data.filter_all(samples=samples)
+    
+        max_page = len(dataframe) // PAGESIZE
+
         if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
             if n_qcquickie_ts > n_assembly_ts:
                 title = "QCQuickie Report"
@@ -437,6 +442,7 @@ def main(argv):
             return [
                 html.H3(title),
                 html.Span("0", style={'display': 'none'}, id="page-n"),
+                html.Span(max_page, style={'display': 'none'}, id="max-page"),
                 html.Div(
                     [
                         html.Div(
@@ -466,11 +472,6 @@ def main(argv):
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
         elif n_table_ts > n_assembly_ts:  # table was clicked
-            if lasso_selected != '':
-                samples = lasso_selected.split(',') # lasso first
-            else:
-                samples = prefilter_samples.split(',')
-            dataframe = import_data.filter_all(samples=samples)
             return [
                 html.H3("Table Report"),
 
@@ -613,14 +614,6 @@ def main(argv):
 
         return species_options
 
-    # Delete?
-    # @app.callback(
-    #     Output('sample-list', "value"),
-    #     [Input("summary-plot", "clickData")]
-    # )
-    # def update_active_sample(clickData):
-    #     if clickData != None:
-    #         return clickData["points"][0]["text"]
 
     app.run_server(debug=True)
 

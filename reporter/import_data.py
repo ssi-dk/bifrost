@@ -143,5 +143,6 @@ def filter_all(samples=[]):
     }
     query_result = mongo_interface.filter(projection=projection,samples=samples)
     dataframe = json_normalize(query_result)
-    dataframe['_id'] = dataframe['_id'].astype(str)
+    if "_id" in dataframe: # False for empty results.
+        dataframe['_id'] = dataframe['_id'].astype(str)
     return dataframe
