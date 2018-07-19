@@ -33,19 +33,9 @@ def hex_to_rgb(value):
 
 PAGESIZE = 50
 
-def filter_dataframe(dataframe, species_list, group_list, run_name, page_n=None):
-    if species_list is None: species_list = []
-    if group_list is None: group_list = []
-    filtered = dataframe[
-        dataframe.short_class_species_1.isin(species_list) &
-        dataframe.supplying_lab.isin(group_list)
-    ]
-    if len(run_name) != 0:
-        filtered = filtered[filtered.run_name == run_name]
-    if page_n is None:
-        return filtered
-    else:
-        return filtered.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
+def short_species(species):
+    words = species.split(' ')
+    return '{}. {}'.format(words[0][0], ' '.join(words[1:]))
 
 def paginate_df(dataframe, page_n):
     return dataframe.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
@@ -73,71 +63,76 @@ def main(argv):
     app.css.append_css(
         {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
-    app.layout = html.Div(className="container", children=[
-        dash_scroll_up.DashScrollUp(
-            id='input',
-            label='UP',
-            className="button button-primary no-print"
-        ),
-        html.Div(dt.DataTable(rows=[{}], editable=False), style={'display': 'none'}),
-        html.H1("QC REPORT"),
-        html.H2("", id="run-name"),
-        dcc.Location(id="url", refresh=False),
-        html.Div(html_table_run_information({'run_name': ""}), id="run-table"),
-        html_div_summary(),
-        html.Div(
-            [
-                html.H5(
-                    [
-                        "Update report (",
-                        html.Span(id="report-count"),
-                        " samples selected)"
-                    ],
-                    className="box-title"
-                    ),
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Button(
-                                    "QCQuickie report",
-                                    id="update-qcquickie",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="four columns"
+    app.layout = html.Div([
+        html.Div(className="container", children=[
+            dash_scroll_up.DashScrollUp(
+                id='input',
+                label='UP',
+                className="button button-primary no-print"
+            ),
+            html.Div(dt.DataTable(rows=[{}], editable=False), style={'display': 'none'}),
+            html.H1("QC REPORT"),
+            html.H2("", id="run-name"),
+            dcc.Location(id="url", refresh=False),
+            html.Div(html_table_run_information({'run_name': ""}), id="run-table"),
+            html_div_summary(),
+            html.Div(
+                [
+                    html.H5(
+                        [
+                            "Update report (",
+                            html.Span(id="report-count"),
+                            " samples selected)"
+                        ],
+                        className="box-title"
                         ),
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Assembly report",
-                                    id="update-assembly",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="four columns"
-                        ),
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Table report",
-                                    id="update-table",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="four columns"
-                        )
-                    ],
-                    className="row"
-                )
-            ],
-            className="border-box"
-        ),
-        html.Div(id="current-report")
-    ])
+                    html.Div(
+                        [
+                            html.Div(
+                                [
+                                    html.Button(
+                                        "QCQuickie report",
+                                        id="update-qcquickie",
+                                        n_clicks_timestamp=0,
+                                        className="button-primary u-full-width"
+                                    )
+                                ],
+                                className="four columns"
+                            ),
+                            html.Div(
+                                [
+                                    html.Button(
+                                        "Assembly report",
+                                        id="update-assembly",
+                                        n_clicks_timestamp=0,
+                                        className="button-primary u-full-width"
+                                    )
+                                ],
+                                className="four columns"
+                            ),
+                            html.Div(
+                                [
+                                    html.Button(
+                                        "Table report",
+                                        id="update-table",
+                                        n_clicks_timestamp=0,
+                                        className="button-primary u-full-width"
+                                    )
+                                ],
+                                className="four columns"
+                            )
+                        ],
+                        className="row"
+                    )
+                ],
+                className="border-box"
+            ),
+            html.Div(id="current-report"),
+        ]),
+        html.Footer(
+            "Created with ❤️ at SSI."
+        , className='footer container')
+    ], className="appcontainer")
 
 
 # Callbacks
@@ -322,7 +317,7 @@ def main(argv):
             else:
                 species_options.append(item["_id"])
                 species_list_options.append({
-                    "label": "{} ({})".format(item["_id"], item["count"]),
+                    "label": "{} ({})".format(short_species(item["_id"]), item["count"]),
                     "value": item["_id"]
                 })
         return dcc.Dropdown(
@@ -544,7 +539,7 @@ def main(argv):
             if species == "Not classified":
                 species_name = species
             else:
-                species_name = "<i>{}</i>".format(species)
+                species_name = "<i>{}</i>".format(short_species(species))
             data.append(
                 go.Box(
                     x=species_df.loc[:, "value"],

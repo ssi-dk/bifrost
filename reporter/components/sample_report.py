@@ -4,7 +4,7 @@ from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 import plotly.graph_objs as go
 import pandas as pd
-
+import math
 
 def generate_sample_report(dataframe, sample, data_content, plot_data):
     return (
@@ -110,32 +110,32 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                     [
                         "Number of contigs",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_contigs_at_1x"])
+                            sample_data.get("qcquickie.summary.bin_contigs_at_1x", math.nan))
                     ],
                     [
                         "N50",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_contigs_at_1x"])
+                            sample_data.get("qcquickie.summary.bin_contigs_at_1x", math.nan))
                     ],
                     [
                         "N75",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_contigs_at_1x"])
+                            sample_data.get("qcquickie.summary.bin_contigs_at_1x", math.nan))
                     ],
                     [
                         "bin length at 1x depth",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_length_at_1x"])
+                            sample_data.get("qcquickie.summary.bin_length_at_1x", math.nan))
                     ],
                     [
                         "bin length at 10x depth",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_length_at_10x"])
+                            sample_data.get("qcquickie.summary.bin_length_at_10x", math.nan))
                     ],
                     [
                         "bin length at 25x depth",
                         "{:,}".format(
-                            sample_data["qcquickie.summary.bin_length_at_25x"])
+                            sample_data.get("qcquickie.summary.bin_length_at_25x", math.nan))
                     ]
                 ])
             ], className="six columns"),
@@ -149,30 +149,30 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                     [
                         "Number of contigs",
                         "{:,}".format(
-                            sample_data["assembly.summary.bin_contigs_at_1x"])
+                            sample_data.get("assembly.summary.bin_contigs_at_1x", math.nan))
                     ],
                     [
                         "N50",
-                        "{:,}".format(sample_data["assembly_N50"])
+                        "{:,}".format(sample_data.get("assembly_N50", math.nan))
                     ],
                     [
                         "N75",
-                        "{:,}".format(sample_data["assembly_N75"])
+                        "{:,}".format(sample_data.get("assembly_N75", math.nan))
                     ],
                     [
                         "bin length at 1x depth",
                         "{:,}".format(
-                            sample_data["assembly.summary.bin_length_at_1x"])
+                            sample_data.get("assembly.summary.bin_length_at_1x", math.nan))
                     ],
                     [
                         "bin length at 10x depth",
                         "{:,}".format(
-                            sample_data["assembly.summary.bin_length_at_10x"])
+                            sample_data.get("assembly.summary.bin_length_at_10x", math.nan))
                     ],
                     [
                         "bin length at 25x depth",
                         "{:,}".format(
-                            sample_data["assembly.summary.bin_length_at_25x"])
+                            sample_data.get("assembly.summary.bin_length_at_25x", math.nan))
                     ]
                 ])
             ], className="six columns"),
