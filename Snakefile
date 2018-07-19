@@ -46,8 +46,8 @@ rule setup:
         "mkdir {output}"
 
 
-rule_name = "initialize_components"
-rule initialize_components:
+rule_name = "generate_git_hash"
+rule generate_git_hash:
     # Static
     message:
         "Running step:" + rule_name
@@ -66,18 +66,64 @@ rule initialize_components:
     input:
         component
     output:
-        init_complete = touch(component + "/initialize_components_complete"),
+        component + "/git_hash.txt"
+    shell:
+        "git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output} 2> {log.err_file}"
+
+
+rule_name = "export_conda_env"
+rule export_conda_env:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component
+    output:
+        component + "/conda_env.yaml"
+    shell:
+        "conda env export 1> {output} 2> {log.err_file}"
+
+
+rule initialize_components:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
         git_hash = component + "/git_hash.txt",
-        conda_yaml = component + "/conda.yaml"
+        conda_env = component + "/conda_env.yaml"
+    output:
+        touch(component + "/initialize_components_complete"),
     run:
         sys.stdout.write("Started initialize_components\n")
         component_info = {}
-        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output.git_hash}")
         with open(output.git_hash, "r") as git_info:
             git_hash = git_info.readlines()[0].strip()
             component_info["git_hash"] = git_hash
 
-        shell("conda env export 1> {output}")
         component_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
         component_info["config"]: config
 
