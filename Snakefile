@@ -133,29 +133,29 @@ rule species_checker:
 #         datahandling.save_run(run_info, input.run_info_yaml_path)
 
 
-rule get_conda_env:
-    input:
-        git_hash = "serumqc/git_hash.txt",
-        run_info_yaml_path = "run.yaml"
-    output:
-        conda_yaml = "serumqc/conda.yaml"
-    run:
-        run_info = datahandling.load_run(input.run_info_yaml_path)
-        shell("conda env export 1> {output}")
-        run_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
-        datahandling.save_run(run_info, input.run_info_yaml_path)
+# rule get_conda_env:
+#     input:
+#         git_hash = "serumqc/git_hash.txt",
+#         run_info_yaml_path = "run.yaml"
+#     output:
+#         conda_yaml = "serumqc/conda.yaml"
+#     run:
+#         run_info = datahandling.load_run(input.run_info_yaml_path)
+#         shell("conda env export 1> {output}")
+#         run_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
+#         datahandling.save_run(run_info, input.run_info_yaml_path)
 
 
-rule add_components_data_entry:
-    input:
-        git_hash = "serumqc/git_hash.txt",
-        conda_yaml = "serumqc/conda.yaml",
-    output:
-        components_db = ""
+# rule add_components_data_entry:
+#     input:
+#         git_hash = "serumqc/git_hash.txt",
+#         conda_yaml = "serumqc/conda.yaml",
+#     output:
+#         components_db = ""
 
 rule create_end_file:
     input:
-        "serumqc/conda.yaml"
+        "serumqc/run.yaml"
     output:
         rules.all.input
     shell:
