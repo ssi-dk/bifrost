@@ -73,7 +73,7 @@ rule initialize_components:
         shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
         with open(output.git_hash, "r") as git_info:
             git_hash = git_info.readlines()[0].strip()
-        component_info["git_hash"] = git_hash
+            component_info["git_hash"] = git_hash
 
         shell("conda env export 1> {output}")
         component_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
