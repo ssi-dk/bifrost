@@ -64,10 +64,10 @@ rule initialize_components:
         "Running step: {rule}"
     # Dynamic
     input:
-        folder = component
+        component
     output:
-        init_complete = touch(component + "/initialize_components_complete")
-        git_hash = component + "/git_hash.txt"
+        init_complete = touch(component + "/initialize_components_complete"),
+        git_hash = component + "/git_hash.txt",
         conda_yaml = component + "/conda.yaml"
     run:
         sys.stdout.write("Started initialize_components\n")
