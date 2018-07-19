@@ -365,31 +365,32 @@ def main(argv):
     #     else:
     #         return 0
 
-    # @app.callback(
-    #     Output(component_id="sample-report", component_property="children"),
-    #     [Input(component_id="page-n", component_property="children"),
-    #      Input(component_id="sample-report", component_property="data-content")],
-    #      [State('summary-plot', 'selectedData'),
-    #      State("selected-samples", "value")]
-    #      )
-    # def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
-    #     if not (data_content == "qcquickie" or data_content == "assembly"):
-    #         return []
-    #     page_n = int(page_n)
-    #     if lasso_selected is not None and len(lasso_selected["points"]):
-    #         samples = [sample['text']
-    #                    for sample in lasso_selected["points"]]  # lasso first
-    #     else:
-    #         samples = prefilter_samples[0].split("\n")
-    #     filtered = dataframe[dataframe.name.isin(samples)]
-    #     page = paginate_df(filtered, page_n)
-    #     max_page = len(filtered) // PAGESIZE
-    #     page_species = page.qcquickie_name_classified_species_1.unique().tolist()
-    #     species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
-    #     return [
-    #         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-    #         html.Div(children_sample_list_report(page, data_content, species_plot_data))
-    #     ]
+    @app.callback(
+        Output(component_id="sample-report", component_property="children"),
+        [Input(component_id="page-n", component_property="children"),
+         Input(component_id="sample-report", component_property="data-content")],
+        [State('lasso-sample-ids', 'children'),
+         State("selected-samples-ids", "children")]
+         )
+    def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
+        if not (data_content == "qcquickie" or data_content == "assembly"):
+            return []
+        page_n = int(page_n)
+        if lasso_selected != '':
+            samples = lasso_selected.split(',')  # lasso first
+        else:
+            samples = prefilter_samples.split(',')
+        dataframe = import_data.filter_all(samples=samples)
+        dataframe.sort_values('qcquickie.summary.name_classified_species_1')
+        page = paginate_df(dataframe, page_n)
+        max_page = len(dataframe) // PAGESIZE
+        page_species = page['qcquickie.summary.name_classified_species_1'].unique().tolist()
+        #species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
+        species_plot_data = {}
+        return [
+            html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+            html.Div(children_sample_list_report(page, data_content, species_plot_data))
+        ]
 
     # @app.callback(
     #     Output(component_id="prevpage", component_property="disabled"),
