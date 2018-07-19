@@ -66,7 +66,7 @@ rule initialize_components:
     input:
         component
     output:
-        component + "/" + component + "_complete"
+        component + "/initialize_components_complete"
     run:
         component_info = {}
         shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
