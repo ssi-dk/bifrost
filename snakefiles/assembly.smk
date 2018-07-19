@@ -398,7 +398,7 @@ rule datadump_assembly:
         "assembly/quast",
         "assembly/contigs.stats",
         "assembly/contigs.sketch",
-        "assembly",
+        folder = "assembly",
     output:
         summary = touch(rules.all.input)
     params:
