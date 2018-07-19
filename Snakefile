@@ -64,9 +64,9 @@ rule initialize_components:
         "Running step: {rule}"
     # Dynamic
     input:
-        component
+        folder = component
     output:
-        touch(component + "/initialize_components_complete")
+        init_complete = touch(component + "/initialize_components_complete")
     run:
         sys.stdout.write("Started initialize_components\n")
         component_info = {}
@@ -108,7 +108,7 @@ rule species_checker:
         "Running step: {rule}"
     # Dynamic
     input:
-        component + "/initialize_components_complete",
+        init_complete = component + "/initialize_components_complete",
         run_folder = run_folder,
     output:
         samplesheet = "sample_sheet.tsv",
