@@ -124,7 +124,7 @@ rule initialize_components:
             git_hash = git_info.readlines()[0].strip()
             component_info["git_hash"] = git_hash
 
-        component_info["run"]["conda_env"] = datahandling.load_yaml(input.conda_env)
+        component_info["conda_env"] = datahandling.load_yaml(input.conda_env)
         component_info["config"]: config
 
         for component_name in components:
