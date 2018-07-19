@@ -108,6 +108,7 @@ rule species_checker:
         "Running step: {rule}"
     # Dynamic
     input:
+        component,
         init_complete = component + "/initialize_components_complete",
         run_folder = run_folder,
     output:
