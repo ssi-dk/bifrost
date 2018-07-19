@@ -60,7 +60,7 @@ rule species_checker:
     output:
         check_file = touch(component + "/species_set"),
     params:
-        species_value = config_sample.get("species", None),
+        species_value = config_sample["sample"].get("species", None),
         kraken_db = config["kraken"]["database"]
     run:
         if params.species_value is None:
