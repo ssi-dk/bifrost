@@ -398,11 +398,11 @@ rule datadump_assembly:
         "assembly/quast",
         "assembly/contigs.stats",
         "assembly/contigs.sketch",
+        "assembly",
     output:
         summary = touch(rules.all.input)
     params:
         sample = sample,
-        folder = "assembly",
     threads:
         global_threads
     resources:
