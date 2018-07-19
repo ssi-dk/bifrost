@@ -67,10 +67,12 @@ rule initialize_components:
         folder = component
     output:
         init_complete = touch(component + "/initialize_components_complete")
+        git_hash = component + "/git_hash.txt"
+        conda_yaml = component + "/conda.yaml"
     run:
         sys.stdout.write("Started initialize_components\n")
         component_info = {}
-        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
+        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output.git_hash}")
         with open(output.git_hash, "r") as git_info:
             git_hash = git_info.readlines()[0].strip()
             component_info["git_hash"] = git_hash
