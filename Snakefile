@@ -15,12 +15,11 @@ component = "serumqc"
 
 datahandling.save_yaml(config, "serumqc_config.yaml")
 
-components = str(config["components"])
-run_folder = str(config["run_folder"])
-sample_sheet = str(config["sample_sheet"])
-group = str(config["group"])
-
-partition = str(config["partition"])
+components = config["components"]
+run_folder = config["run_folder"]
+sample_sheet = config["sample_sheet"]
+group = config["group"]
+partition = config["partition"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
@@ -37,19 +36,74 @@ onerror:
 
 rule all:
     input:
-        "serumqc_setup_complete"
+        component + "/" + component + "_complete"
 
 
 rule setup:
     output:
-        directory = "serumqc"
+        folder = directory(component)
     shell:
         "mkdir {output}"
 
 
-rule initialize_run:
+rule_name = "initialize_components"
+rule initialize_components:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
     message:
         "Running step: {rule}"
+    # Dynamic
+    input:
+        component
+    output:
+        component + "/" + component + "_complete"
+    run:
+        component_info = {}
+        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
+        with open(output.git_hash, "r") as git_info:
+            git_hash = git_info.readlines()[0].strip()
+        component_info["git_hash"] = git_hash
+
+        shell("conda env export 1> {output}")
+        component_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
+        component_info["config"]: config
+
+        for component_name in components:
+            component_info["name"] = component_name
+            datahandling.save_component(component_info, component + "/" + component_name + ".yaml")
+        shell("touch initialize_components_complete")
+
+# rule_name = "initialize_samples"
+# rule_name = "initialize_run"
+
+
+rule_name = "initialize_run"
+rule species_checker:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
     input:
         run_folder = run_folder,
     output:
@@ -61,30 +115,22 @@ rule initialize_run:
         components = components,
         group = group,
         config = config,
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    conda:
-        "envs/python_packages.yaml"
-    log:
-        "serumqc/log/initialize_run.log"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 
 
-rule get_git_hash_of_serumqc:
-    input:
-        run_info_yaml_path = "run.yaml"
-    output:
-        git_hash = "serumqc/git_hash.txt"
-    run:
-        run_info = datahandling.load_run(input.run_info_yaml_path)
-        shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
-        with open(output.git_hash, "r") as git_info:
-            git_hash = git_info.readlines()[0].strip()
-        run_info["run"]["git_hash"] = git_hash
-        datahandling.save_run(run_info, input.run_info_yaml_path)
+# rule get_git_hash_of_serumqc:
+#     input:
+#         run_info_yaml_path = "run.yaml"
+#     output:
+#         git_hash = "serumqc/git_hash.txt"
+#     run:
+#         run_info = datahandling.load_run(input.run_info_yaml_path)
+#         shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
+#         with open(output.git_hash, "r") as git_info:
+#             git_hash = git_info.readlines()[0].strip()
+#         run_info["run"]["git_hash"] = git_hash
+#         datahandling.save_run(run_info, input.run_info_yaml_path)
 
 
 rule get_conda_env:
@@ -111,7 +157,7 @@ rule create_end_file:
     input:
         "serumqc/conda.yaml"
     output:
-        "serumqc_setup_complete"
+        rules.all.input
     shell:
         """
         bash run_cmd_serumqc.sh
