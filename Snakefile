@@ -68,6 +68,7 @@ rule initialize_components:
     output:
         component + "/initialize_components_complete"
     run:
+        sys.stdout.write("Started initialize_components\n")
         component_info = {}
         shell("git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output}")
         with open(output.git_hash, "r") as git_info:
@@ -82,6 +83,8 @@ rule initialize_components:
             component_info["name"] = component_name
             datahandling.save_component(component_info, component + "/" + component_name + ".yaml")
         shell("touch initialize_components_complete")
+        print(component_info)
+        sys.stdout.write("Done initialize_components\n")
 
 # rule_name = "initialize_samples"
 # rule_name = "initialize_run"
