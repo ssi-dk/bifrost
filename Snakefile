@@ -155,7 +155,7 @@ rule species_checker:
 
 rule create_end_file:
     input:
-        "serumqc/run.yaml"
+        "run.yaml"
     output:
         rules.all.input
     shell:
