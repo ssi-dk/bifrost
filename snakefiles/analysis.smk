@@ -16,13 +16,16 @@ R2 = config_sample["sample"]["R2"]
 
 component = "analysis"
 
+
 onsuccess:
     print("Workflow complete")
     datahandling.update_sample_component_success(component, sample)
 
+
 onerror:
     print("Workflow error")
     datahandling.update_sample_component_failure(component, sample)
+
 
 rule all:
     input:
@@ -36,8 +39,8 @@ rule setup:
         "mkdir {output}"
 
 
-rule_name = "species__checker_and_setter"
-rule species__checker:
+rule_name = "species_checker_and_setter"
+rule species_checker:
     # Static
     message:
         "Running step:" + rule_name
@@ -72,8 +75,8 @@ rule species__checker:
             shell("touch {output.check_file}")
 
 
-rule_name = "ariba__resfinder"
-rule ariba__resfinder:
+rule_name = "ariba_resfinder"
+rule ariba_resfinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -99,6 +102,7 @@ rule ariba__resfinder:
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
+
 rule_name = "abricate_on_ariba_resfinder"
 rule abricate_on_ariba_resfinder:
     # Static
@@ -115,7 +119,7 @@ rule abricate_on_ariba_resfinder:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = component + "/ariba_resfinder"
+        contigs = rules.ariba_resfinder.output.folder
     output:
         report = component + "/abricate_on_resfinder_from_ariba.tsv",
     params:
@@ -131,8 +135,9 @@ rule abricate_on_ariba_resfinder:
         fi;
         """
 
-rule_name = "ariba__plasmidfinder"
-rule ariba__plasmidfinder:
+
+rule_name = "ariba_plasmidfinder"
+rule ariba_plasmidfinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -150,7 +155,7 @@ rule ariba__plasmidfinder:
         folder = component,
         reads = (R1, R2)
     output:
-        folder = directory(component + "/ariba__plasmidfinder")
+        folder = directory(component + "/ariba_plasmidfinder")
     params:
         database = config["ariba"]["plasmidfinder"]["database"]
     conda:
@@ -175,7 +180,7 @@ rule abricate_on_ariba_plasmidfinder:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = component + "/ariba__plasmidfinder",
+        folder = rules.ariba_plasmidfinder.output
     output:
         report = component + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
@@ -191,8 +196,9 @@ rule abricate_on_ariba_plasmidfinder:
         fi;
         """
 
-rule_name = "ariba__mlst"
-rule ariba__mlst:
+
+rule_name = "ariba_mlst"
+rule ariba_mlst:
     # Static
     message:
         "Running step:" + rule_name
@@ -207,7 +213,7 @@ rule ariba__mlst:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        check_file = component + "/species_set",
+        check_file = rules.species_checker.output,
         folder = component,
         reads = (R1, R2)
     output:
@@ -245,7 +251,7 @@ rule datadump_analysis:
         component + "/abricate_on_plasmidfinder_from_ariba.tsv",
         component,
     output:
-        summary = touch(component + "/" + component + "_complete")
+        summary = touch(rules.all.input)
     params:
         sample = sample,
     conda:

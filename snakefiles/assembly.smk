@@ -28,14 +28,12 @@ onerror:
 
 rule all:
     input:
-        "assembly/assembly_complete"
+        component + "/" + component + "_complete"
 
 
 rule setup:
-    message:
-        "Running step: {rule}"
     output:
-        directory = directory("assembly"),
+        folder = directory(component)
     shell:
         "mkdir {output}"
 
@@ -401,7 +399,7 @@ rule datadump_assembly:
         "assembly/contigs.stats",
         "assembly/contigs.sketch",
     output:
-        summary = touch("assembly/assembly_complete")
+        summary = touch(rules.all.input)
     params:
         sample = sample,
         folder = "assembly",

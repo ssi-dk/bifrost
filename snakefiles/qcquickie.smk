@@ -409,35 +409,6 @@ rule species_check__set_species:
         datahandling.save_sample(config_sample, sample)
 
 
-rule species_check__check_sizes:
-    message:
-        "Running step: {rule}"
-    input:
-        contig_depth_yaml = "qcquickie/contigs.sum.cov",
-        species = "qcquickie/species.txt"
-    output:
-        size_check = "qcquickie/size_check.txt"
-    params:
-        species_db = os.path.join(os.path.dirname(workflow.snakefile), "../resources/species_qc_values.tsv")
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        "qcquickie/log/contaminant_check__declare_contamination.log"
-    benchmark:
-        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
-    run:
-        with open(input.species, "r") as species_file:
-            species = species_file.readlines().strip()
-            df = pandas.read_table(params.species_db)
-            if not df[df["ncbi_species"] == species].empty:
-                with open(output.size_check, "w") as size_check:
-                    size_check.write("{}\n".format(df[df["ncbi_species"] == species]["min_length"]))
-                    size_check.write("{}\n".format(df[df["ncbi_species"] == species]["max_length"]))
-            pass
-
-
 rule datadump_qcquickie:
     message:
         "Running step: {rule}"

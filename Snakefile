@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO: should refactor a lot of this Snakefile into a more snakemake orientated solution utilizing wildcards
-
 import re
 import sys
 import os
@@ -10,6 +9,9 @@ sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+
+#Saving the config
+component = "serumqc"
 
 datahandling.save_yaml(config, "serumqc_config.yaml")
 
@@ -22,16 +24,15 @@ partition = str(config["partition"])
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-# my understanding is all helps specify final output
+
 onsuccess:
     print("Workflow complete")
     shell("touch serumqc_successfully_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
 
+
 onerror:
     print("Workflow error")
     shell("touch serumqc_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
-
-ruleorder: setup > initialize_run
 
 
 rule all:
@@ -97,6 +98,14 @@ rule get_conda_env:
         shell("conda env export 1> {output}")
         run_info["run"]["conda_env"] = datahandling.load_yaml(output.conda_yaml)
         datahandling.save_run(run_info, input.run_info_yaml_path)
+
+
+rule add_components_data_entry:
+    input:
+        git_hash = "serumqc/git_hash.txt",
+        conda_yaml = "serumqc/conda.yaml",
+    output:
+        components_db = ""
 
 rule create_end_file:
     input:
