@@ -66,7 +66,7 @@ rule initialize_components:
     input:
         component
     output:
-        component + "/initialize_components_complete"
+        touch(component + "/initialize_components_complete")
     run:
         sys.stdout.write("Started initialize_components\n")
         component_info = {}
