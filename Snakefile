@@ -127,8 +127,8 @@ rule initialize_components:
         component_info["conda_env"] = datahandling.load_yaml(input.conda_env)
         component_info["config"]: config
 
-        for component_name in components:
-            component_info["name"] = component_name
+        for component_name in components.split(","):
+            component_info["name"] = component_name.strip()
             datahandling.save_component(component_info, component + "/" + component_name + ".yaml")
         shell("touch initialize_components_complete")
         print(component_info)
