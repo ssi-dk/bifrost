@@ -130,7 +130,7 @@ def main(argv):
             html.Div(id="current-report"),
         ]),
         html.Footer(
-            "Created with ❤️ at SSI."
+            "Created with 🔬 at SSI."
         , className='footer container')
     ], className="appcontainer")
 
