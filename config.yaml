@@ -9,6 +9,7 @@ group: "" # group for sbatch on torque system
 use_mongodb: True 
 mongo_db_key_location: ""
 run_type: "project" # run type (routine, project)
+#run_name #if provided use that for db if not use folder
 
 memory: &memory 10 #in Gb
 threads: &threads 5
