@@ -46,31 +46,6 @@ rule setup:
         "mkdir {output}"
 
 
-rule_name = "generate_git_hash"
-rule generate_git_hash:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
-    benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
-    message:
-        "Running step: {rule}"
-    # Dynamic
-    input:
-        component
-    output:
-        component + "/git_hash.txt"
-    shell:
-        "git --git-dir {workflow.basedir}/.git rev-parse snakemake 1> {output} 2> {log.err_file}"
-
-
 rule_name = "export_conda_env"
 rule export_conda_env:
     # Static
@@ -96,6 +71,31 @@ rule export_conda_env:
         "conda env export 1> {output} 2> {log.err_file}"
 
 
+rule_name = "generate_git_hash"
+rule generate_git_hash:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component
+    output:
+        component + "/git_hash.txt"
+    shell:
+        "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output} 2> {log.err_file}"
+
+
 rule initialize_components:
     # Static
     message:
@@ -113,8 +113,8 @@ rule initialize_components:
         "Running step: {rule}"
     # Dynamic
     input:
-        git_hash = component + "/git_hash.txt",
-        conda_env = component + "/conda_env.yaml"
+        git_hash = rules.generate_git_hash.output
+        conda_env = rules.export_conda_env.output
     output:
         touch(component + "/initialize_components_complete"),
     run:
@@ -125,21 +125,55 @@ rule initialize_components:
             component_info["git_hash"] = git_hash
 
         component_info["conda_env"] = datahandling.load_yaml(input.conda_env)
-        component_info["config"]: config
+        component_info["config"] = config
 
         for component_name in components.split(","):
             component_info["name"] = component_name.strip()
             datahandling.save_component(component_info, component + "/" + component_name + ".yaml")
         shell("touch initialize_components_complete")
-        print(component_info)
         sys.stdout.write("Done initialize_components\n")
 
-# rule_name = "initialize_samples"
+
+rule_name = "initialize_samples"
+rule initialize_samples:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component,
+        init_complete = rules.initialize_components.output,
+        run_folder = run_folder,
+    output:
+        touch(component + "/initialize_samples_complete")
+        samplesheet = "sample_sheet.tsv",
+        output = "run.yaml"
+    params:
+        samplesheet = sample_sheet,
+        partition = partition,
+        components = components,
+        group = group,
+        config = config,
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/initialize_run.py")
 # rule_name = "initialize_run"
 
 
+
+
 rule_name = "initialize_run"
-rule species_checker:
+rule initialize_run:
     # Static
     message:
         "Running step:" + rule_name
