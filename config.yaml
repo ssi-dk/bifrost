@@ -13,6 +13,14 @@ read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9
 samples_to_ignore: ["Undetermined"]
 #run_name #if provided use that for db if not use folder
 
+samplesheet_column_mapping:
+  sample_name: "SampleID"
+  group: "SupplyingLab" 
+  emails: "Initials"
+  run_name: "ExperimentName"
+  priority: "Priority"
+  provided_species: "Organism"
+
 memory: &memory 10 #in Gb
 threads: &threads 5
 
@@ -37,15 +45,6 @@ ariba:
     database: "/srv/data/DB/ariba/mlst/"
 
 serum:
-  
-  samplesheet_column_mapping:
-    sample_name: "SampleID"
-    group: "SupplyingLab" 
-    emails: "Initials"
-    run_name: "ExperimentName"
-    priority: "Priority"
-    provided_species: "Organism"
-  database: "/home/ssi.ad/kimn/code/serumqc/DB/species_qc_values.tsv"
   minimum_number_of_reads: 10000
   qc:
     min_length: 1000
