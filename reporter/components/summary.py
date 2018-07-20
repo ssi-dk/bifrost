@@ -1,18 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
-PLOT_VALUES = [
-    "bin_length_at_1x",
-    "bin_length_at_10x",
-    "bin_length_at_25x",
-    "bin_length_1x_25x_diff",
-    "bin_contigs_at_1x",
-    "bin_contigs_at_10x",
-    "bin_contigs_at_25x",
-    "N50",
-    "N75"
-]
-DEFAULT_PLOT = 0
+from components.global_vars import PLOTS, DEFAULT_PLOT
 
 
 def format_selected_samples(filtered_df):
@@ -21,7 +10,7 @@ def format_selected_samples(filtered_df):
 
 def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
-                           for plot in PLOT_VALUES]
+                           for plot, value in PLOTS.items()]
     return html.Div(
         [
             html.H5("Summary", className="box-title"),
@@ -112,7 +101,7 @@ def html_div_summary():
                                             dcc.Dropdown(
                                                 id="plot-list",
                                                 options=plot_values_options,
-                                                value=PLOT_VALUES[DEFAULT_PLOT]
+                                                value=DEFAULT_PLOT
                                             )
                                         ],
                                         className="twelve columns"
@@ -125,33 +114,25 @@ def html_div_summary():
                     ),
                     html.Div(
                         [
-                            html.Div(
+                            html.Label(
                                 [
-                                    html.Div(
-                                        [
-                                            html.Label(
-                                                [
-                                                    "Selected Samples (",
-                                                    html.Span(
-                                                        id="sample-count"),
-                                                    "):"
-                                                ],
-                                                htmlFor="plot-list"),
-                                            dcc.Textarea(
-                                                id="selected-samples",
-                                                className="u-full-width",
-                                                style={"resize": "none",
-                                                       "height": "300px"},
-                                                readOnly=True
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                    )
+                                    "Selected Samples ():"
                                 ],
-                                className="row"
-                            )
+                                htmlFor="plot-list"),
+                            dcc.Textarea(
+                                className="u-full-width",
+                                style={"resize": "none",
+                                       "height": "300px"},
+                                readOnly=True,
+                                value=[""],
+                                id="selected-samples-list"
+                            ),
+                            html.Div('',
+                                     style={'display': 'none'},
+                                     id='selected-samples-ids')
                         ],
-                        className="four columns"
+                        className="four columns",
+                        id="selected-samples"
                     ),
                     
                 ],
@@ -165,7 +146,11 @@ def html_div_summary():
                             html.Div(
                                 [
                                     html.Div(
-                                        
+                                        [
+                                            html.Div('',
+                                                     style={'display': 'none'},
+                                                     id='lasso-sample-ids')
+                                        ],
                                         className="twelve columns",
                                         id="lasso-div"
                                     )
