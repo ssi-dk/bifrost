@@ -31,7 +31,7 @@ def hex_to_rgb(value):
 
 # Globals
 
-PAGESIZE = 50
+PAGESIZE = 25
 
 def short_species(species):
     words = species.split(' ')
@@ -378,8 +378,7 @@ def main(argv):
         page = paginate_df(dataframe, page_n)
         max_page = len(dataframe) // PAGESIZE
         page_species = page['qcquickie.summary.name_classified_species_1'].unique().tolist()
-        #species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
-        species_plot_data = {}
+        species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
             html.Div(children_sample_list_report(page, data_content, species_plot_data))
