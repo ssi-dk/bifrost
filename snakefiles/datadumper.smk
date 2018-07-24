@@ -20,11 +20,11 @@ component = "datadumper"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(component, sample)
+    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(component, sample)
+    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
 
 
 rule all:
