@@ -39,7 +39,7 @@ rule setup:
     message:
         "Running step: {rule}"
     output:
-        directory = "datadumper"
+        directory = directory("datadumper")
     shell:
         "mkdir {output}"
 

@@ -555,17 +555,20 @@ def main(argv):
                     customdata=species_df['_id']
                 )
             )
+        height = max(450, len(species_list)*20 + 200)
         return {
             "data": data,
             "layout": go.Layout(
                 hovermode="closest",
                 title=plot_value.replace("_", " "),
+                height=height,
                 margin=go.Margin(
                     l=175,
                     r=50,
                     b=25,
                     t=50
                 ),
+                yaxis={"tickfont":{"size": 10}},
                 xaxis={"showgrid": True}
             )
         }
