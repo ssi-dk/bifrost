@@ -12,19 +12,19 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["sample"]["R1"]
-R2 = config_sample["sample"]["R2"]
+R1 = config_sample["R1"]
+R2 = config_sample["R2"]
 
 # my understanding is all helps specify final output
 component = "assembly"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(component, sample)
+    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(component, sample)
+    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
 
 rule all:
     input:

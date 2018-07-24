@@ -11,20 +11,20 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["sample"]["R1"]
-R2 = config_sample["sample"]["R2"]
+R1 = config_sample["R1"]
+R2 = config_sample["R2"]
 
 component = "analysis"
 
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(component, sample)
+    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(component, sample)
+    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
 
 
 rule all:
@@ -60,7 +60,7 @@ rule species_checker:
     output:
         check_file = touch(component + "/species_set"),
     params:
-        species_value = config_sample["sample"].get("species", None),
+        species_value = config_sample.get("species", None),
         kraken_db = config["kraken"]["database"]
     run:
         if params.species_value is None:
@@ -69,7 +69,7 @@ rule species_checker:
             with open(output.check_file) as species_check:
                 species = species_check.readlines()
                 if len(species) == 1:
-                    config_sample["sample"]["species"] = species[0].strip()
+                    config_sample["species"] = species[0].strip()
                     datahandling.save_sample(config_sample, sample)
         else:
             shell("touch {output.check_file}")

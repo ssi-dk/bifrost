@@ -13,19 +13,19 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["sample"]["R1"]
-R2 = config_sample["sample"]["R2"]
+R1 = config_sample["R1"]
+R2 = config_sample["R2"]
 
 # my understanding is all helps specify final output
 component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(component, sample)
+    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(component, sample)
+    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
 
 
 rule all:
@@ -399,13 +399,13 @@ rule species_check__set_species:
         config_sample = datahandling.load_sample(sample)
         with open(output.species, "w") as species_file:
             df = pandas.read_table(input.bracken)
-            if "provided_species" in config_sample["sample"]:
-                species_file.write(config_sample["sample"]["provided_species"] + "\n")
-                config_sample["sample"]["species"] = config_sample["sample"]["provided_species"]
+            if "provided_species" in config_sample:
+                species_file.write(config_sample["provided_species"] + "\n")
+                config_sample["species"] = config_sample["provided_species"]
             else:
                 species_file.write(df["name"].iloc[0] + "\n")
-                config_sample["sample"]["species"] = df["name"].iloc[0]
-        config_sample["sample"]["detected_species"] = df["name"].iloc[0]
+                config_sample["species"] = df["name"].iloc[0]
+        config_sample["detected_species"] = df["name"].iloc[0]
         datahandling.save_sample(config_sample, sample)
 
 
