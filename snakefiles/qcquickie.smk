@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 import pandas
 
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
+configfile: "../serumqc_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
 
@@ -12,7 +12,6 @@ global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
-
 R1 = config_sample["R1"]
 R2 = config_sample["R2"]
 
@@ -21,11 +20,11 @@ component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name","ERROR") + "__" + component + ".yaml")
 
 
 rule all:
@@ -427,7 +426,7 @@ rule datadump_qcquickie:
     output:
         summary = touch("qcquickie/qcquickie_complete")
     params:
-        sample = sample,
+        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
         folder = "qcquickie",
     threads:
         global_threads

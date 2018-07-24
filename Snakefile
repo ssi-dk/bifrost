@@ -320,22 +320,20 @@ rule add_components_to_samples:
                 sample_name = result.group("sample_name")
                 unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-        for sample_name in unique_sample_names:
-            sample_config = sample_name + "/sample.yaml"
-            sample_db = datahandling.load_sample(sample_config)
-            sample_db[result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
-            # sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum(os.path.realpath(os.path.join(run_folder, file)))
-            sample_db["components"] = sample_db.get("components", [])
-            for component_name in components:
-                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-                if component_id is not None:
-                    insert_component = True
-                    for sample_component in sample_db["components"]:
-                        if component_id == sample_component["_id"]:
-                            insert_component = False
-                    if insert_component is True:
-                        sample_db["components"].append({"name": component_name, "_id": component_id})
-            datahandling.save_sample(sample_db, sample_config)
+            for sample_name in unique_sample_names:
+                sample_config = sample_name + "/sample.yaml"
+                sample_db = datahandling.load_sample(sample_config)
+                sample_db["components"] = sample_db.get("components", [])
+                for component_name in components:
+                    component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                    if component_id is not None:
+                        insert_component = True
+                        for sample_component in sample_db["components"]:
+                            if component_id == sample_component["_id"]:
+                                insert_component = False
+                        if insert_component is True:
+                            sample_db["components"].append({"name": component_name, "_id": component_id})
+                datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
@@ -379,7 +377,7 @@ rule initialize_sample_components_for_each_sample:
             sample_db = datahandling.load_sample(sample_config)
 
             sample_id = sample_db.get("_id",)
-            component_dict = sample_db.get("component_ids",)
+            component_dict = sample_db.get("components",[])
             for item in component_dict:
                 component_name = item.get("name",)
                 component_id = item.get("_id",)
@@ -514,7 +512,7 @@ rule setup_sample_components_to_run:
                                 command.write("snakemake --cores {} -s {} --config Sample={};\n".format(config["threads"], component_file, "sample.yaml"))
 
                                 sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                sample_component_db["status"] = "queue'd to run"
+                                sample_component_db["status"] = "queued to run"
                                 sample_component_db["setup_date"] = current_time
                                 datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                             else:
@@ -530,11 +528,11 @@ rule setup_sample_components_to_run:
                 os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_serumqc.sh"))
                 run_cmd_handle.write("cd {};\n".format(sample_name))
                 if config["grid"] == "torque":
-                    run_cmd_handle.write("qsub cmd_serumqc.sh\n")  # dependent on grid engine
+                    run_cmd_handle.write("qsub cmd_serumqc.sh;\n")  # dependent on grid engine
                 elif config["grid"] == "slurm":
-                    run_cmd_handle.write("sbatch cmd_serumqc.sh\n")  # dependent on grid engine
+                    run_cmd_handle.write("sbatch cmd_serumqc.sh;\n")  # dependent on grid engine
                 else:
-                    run_cmd_handle.write("bash cmd_serumqc.sh\n")
+                    run_cmd_handle.write("bash cmd_serumqc.sh;\n")
                 run_cmd_handle.write("cd {};\n".format(os.getcwd()))
         sys.stdout.write("Started {}\n".format(rule_name))
 

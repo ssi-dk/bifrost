@@ -20,11 +20,11 @@ component = "assembly"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(sample + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(sample + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name","ERROR") + "__" + component + ".yaml")
 
 rule all:
     input:
@@ -402,7 +402,7 @@ rule datadump_assembly:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = sample,
+        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
     threads:
         global_threads
     resources:
