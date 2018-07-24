@@ -9,7 +9,7 @@ import pandas
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 import datahandling
 import pkg_resources
-
+import hashlib
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
 #Saving the config
@@ -172,7 +172,12 @@ rule initialize_samples_from_run_folder:
                 sample_db = datahandling.load_sample(sample_config)
                 sample_db["name"] = sample_name
                 sample_db[result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
-                # sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum(os.path.realpath(os.path.join(run_folder, file)))
+                # may be better to move this out
+                with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
+                    md5sum = hashlib.md5()
+                    for data in iter(lambda: fh.read(4096), b""):
+                        md5sum.update(data)
+                sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                 sample_db["properties"] = {} # init for others
                 datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
