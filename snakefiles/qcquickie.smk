@@ -395,16 +395,16 @@ rule species_check__set_species:
     benchmark:
         "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
     run:
-        config_sample = datahandling.load_sample(sample)
+        sample_db = datahandling.load_sample(sample)
         with open(output.species, "w") as species_file:
             df = pandas.read_table(input.bracken)
-            if "provided_species" in config_sample:
-                species_file.write(config_sample["provided_species"] + "\n")
-                config_sample["species"] = config_sample["provided_species"]
+            sample_db["properties"]["detected_species"] = df["name"].iloc[0]
+            sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
+            if sample_db["properties"]["provided_species"] is not None:
+                sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
             else:
-                species_file.write(df["name"].iloc[0] + "\n")
-                config_sample["species"] = df["name"].iloc[0]
-        config_sample["detected_species"] = df["name"].iloc[0]
+                sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
+
         datahandling.save_sample(config_sample, sample)
 
 

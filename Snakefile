@@ -173,6 +173,7 @@ rule initialize_samples_from_run_folder:
                 sample_db["name"] = sample_name
                 sample_db[result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
                 # sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum(os.path.realpath(os.path.join(run_folder, file)))
+                sample_db["properties"] = {} # init for others
                 datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
@@ -443,7 +444,6 @@ rule initialize_run:
         run_db["components"] = run_db.get("components", [])
         for component_name in components:
             component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-            print(component_id)
             if component_id is not None:
                 insert_component = True
                 for run_components in run_db["components"]:
