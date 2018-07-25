@@ -213,7 +213,7 @@ rule ariba_mlst:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        check_file = rules.species_checker.output,
+        check_file = rules.species_checker_and_setter.output,
         folder = component,
         reads = (R1, R2)
     output:
