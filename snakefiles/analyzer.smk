@@ -29,7 +29,7 @@ onerror:
 
 rule all:
     input:
-        rules.setup.output.folder + "/" + component + "_complete"
+        component + "/" + component + "_complete"
 
 
 rule setup:
