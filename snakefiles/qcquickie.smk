@@ -433,7 +433,7 @@ rule species_check__set_species:
             else:
                 sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
 
-        datahandling.save_sample(config_sample, sample)
+        datahandling.save_sample(sample_db, sample)
 
 
 rule datadump_qcquickie:
