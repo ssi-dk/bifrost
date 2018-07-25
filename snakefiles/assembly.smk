@@ -370,7 +370,7 @@ rule post_assembly__annotate:
     output:
         gff = "assembly/contigs.gff",
     params:
-        prokka = temp("assembly/prokka")
+        prokka = temp(directory("assembly/prokka"))
     threads:
         global_threads
     resources:

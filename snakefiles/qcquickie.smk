@@ -266,6 +266,27 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random &> {log}"
 
 
+rule post_assembly__samtools_stats:
+    message:
+        "Running step: {rule}"
+    input:
+        mapped = "qcquickie/contigs.sam"
+    output:
+        stats = "qcquickie/contigs.stats",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "qcquickie/log/post_assembly__samtools_stats.log"
+    benchmark:
+        "qcquickie/benchmarks/post_assembly__samtools_stats.benchmark"
+    shell:
+        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log}"
+
+
 rule assembly_check__pileup_on_mapped_reads:
     message:
         "Running step: {rule}"
