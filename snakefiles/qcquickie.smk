@@ -206,7 +206,7 @@ rule assembly_check__rename_contigs:
             record.id = record.id.split(",")[0]
             record.description = record.id
         with open(output.contigs, "w") as output_handle:
-            Bio.SeqIO.write(records, output, "fasta")
+            Bio.SeqIO.write(records, output_handle, "fasta")
 
 
 rule assembly_check__quast_on_contigs:
