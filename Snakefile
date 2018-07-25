@@ -140,6 +140,8 @@ rule copy_run_info:
         if [ -f \"{params}/RunParams.xml\" ]; then cp {params}/RunParams.xml {input}/RunParams.xml; fi;
         """
 
+
+rule_name = "initialize_components"
 rule initialize_components:
     # Static
     message:
@@ -163,7 +165,10 @@ rule initialize_components:
     output:
         touch(rerun_folder + "/initialize_components"),
         touch(component + "/initialize_components_complete"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         git_hash = str(input.git_hash)
         conda_env = str(input.conda_env)
         component = str(input.component)
@@ -204,7 +209,10 @@ rule initialize_samples_from_run_folder:
     output:
         touch(rerun_folder + "/initialize_samples_from_run_folder"),
         touch(component + "/initialize_samples_from_run_folder")
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -251,9 +259,11 @@ rule check__provided_sample_info:
         touch(rerun_folder + "/check__provided_sample_info"),
         sample_sheet_tsv = component + "/sample_sheet.tsv",
     params:
-        sample_sheet
+        rule_name = rule_name,
+        sample_sheet = sample_sheet
     run:
-        sample_sheet = str(params)
+        rule_name = str(params.rule_name)
+        sample_sheet = str(params.sample_sheet)
         corrected_sample_sheet_tsv = str(output.sample_sheet_tsv)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -313,7 +323,10 @@ rule set_samples_from_sample_info:
     output:
         touch(rerun_folder + "/set_samples_from_sample_info"),
         touch(component + "/set_samples_from_sample_info")
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -362,7 +375,10 @@ rule add_components_to_samples:
     output:
         touch(rerun_folder + "/add_components_to_samples"),
         touch(component + "/add_components_to_samples"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
 
@@ -416,7 +432,10 @@ rule initialize_sample_components_for_each_sample:
     output:
         touch(rerun_folder + "/initialize_sample_components_for_each_sample"),
         touch(component + "/initialize_sample_components_for_each_sample"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -472,8 +491,9 @@ rule initialize_run:
         touch(rerun_folder + "/initialize_run"),
         touch(component + "/initialize_run"),
     params:
-        sample_sheet
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
 
@@ -543,7 +563,10 @@ rule setup_sample_components_to_run:
     output:
         touch(rerun_folder + "/setup_sample_components_to_run"),
         bash_file = "run_cmd_serumqc.sh"
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
         run_cmd = str(output.bash_file)
