@@ -12,8 +12,8 @@ global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
-R1 = config_sample["R1"]
-R2 = config_sample["R2"]
+R1 = config_sample["reads"]["R1"]
+R2 = config_sample["reads"]["R2"]
 
 # my understanding is all helps specify final output
 component = "qcquickie"
@@ -264,6 +264,27 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         "qcquickie/benchmarks/assembly_check__map_reads_to_assembly_with_bbmap.benchmark"
     shell:
         "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random &> {log}"
+
+
+rule post_assembly__samtools_stats:
+    message:
+        "Running step: {rule}"
+    input:
+        mapped = "qcquickie/contigs.sam"
+    output:
+        stats = "qcquickie/contigs.stats",
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    conda:
+        "../envs/samtools.yaml"
+    log:
+        "qcquickie/log/post_assembly__samtools_stats.log"
+    benchmark:
+        "qcquickie/benchmarks/post_assembly__samtools_stats.benchmark"
+    shell:
+        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log}"
 
 
 rule assembly_check__pileup_on_mapped_reads:

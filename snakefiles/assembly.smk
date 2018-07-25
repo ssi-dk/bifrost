@@ -12,8 +12,8 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["R1"]
-R2 = config_sample["R2"]
+R1 = config_sample["reads"]["R1"]
+R2 = config_sample["reads"]["R2"]
 
 # my understanding is all helps specify final output
 component = "assembly"
@@ -370,7 +370,7 @@ rule post_assembly__annotate:
     output:
         gff = "assembly/contigs.gff",
     params:
-        prokka = temp("assembly/prokka")
+        prokka = temp(directory("assembly/prokka"))
     threads:
         global_threads
     resources:
