@@ -448,6 +448,7 @@ rule datadump_qcquickie:
         "qcquickie/contaminantion_check.txt",
         "qcquickie/contigs.variants",
         "qcquickie/quast",
+        "qcquickie/contigs.stats",
         "qcquickie/contigs.sketch",
         "qcquickie/species.txt",
         "qcquickie",

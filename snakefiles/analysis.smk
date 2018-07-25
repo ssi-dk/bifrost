@@ -11,8 +11,8 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["R1"]
-R2 = config_sample["R2"]
+R1 = config_sample["reads"]["R1"]
+R2 = config_sample["reads"]["R2"]
 
 component = "analysis"
 
