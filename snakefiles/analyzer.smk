@@ -254,6 +254,6 @@ rule datadump_analysis:
     params:
         sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
     conda:
-        "../envs/ariba.yaml"
+        "../envs/python_packages.yaml"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analyzer.py")

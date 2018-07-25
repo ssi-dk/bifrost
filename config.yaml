@@ -4,7 +4,7 @@ sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
-components: "qcquickie,analyzer,assembly" # available options are in snakefiles
+components: "qcquickie,analyzer,assemblatron" # available options are in snakefiles
 group: "" # group for sbatch on torque system
 use_mongodb: True 
 mongo_db_key_location: ""
