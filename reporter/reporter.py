@@ -42,9 +42,7 @@ def paginate_df(dataframe, page_n):
 
 def html_table_run_information(run_data):
     return html_table([
-        ["Run Name", run_data["run_name"]],
-        ["Run Date", "06 MAY 2018"],
-        ["Placeholder", "Lorem ipsum"]
+        ["Run Name", run_data["run_name"]]
     ])
 
 def main(argv):
