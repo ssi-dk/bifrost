@@ -495,7 +495,13 @@ rule initialize_run:
             sample_config = sample_name + "/sample.yaml"
             sample_db = datahandling.load_sample(sample_config)
             sample_id = sample_db.get("_id",)
-            run_db["samples"].append({"name": sample_name, "_id": sample_id})
+            if sample_id is not None:
+                insert_sample = True
+                for sample in run_db["samples"]:
+                    if sample_id == sample["_id"]:
+                        insert_sample = False
+                if insert_sample is True:
+                    run_db["samples"].append({"name": sample_name, "_id": sample_id})
 
         run_db["components"] = run_db.get("components", [])
         for component_name in components:
