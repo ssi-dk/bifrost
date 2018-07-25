@@ -207,10 +207,10 @@ rule ariba_mlst:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = component + "/log/" + params.rule_name + ".out.log",
+        err_file = component + "/log/" + params.rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        component + "/benchmarks/" + params.rule_name + ".benchmark"
     # Dynamic
     input:
         check_file = rules.species_checker_and_setter.output,
@@ -219,7 +219,8 @@ rule ariba_mlst:
     output:
         folder = directory(component + "/ariba_mlst")
     params:
-        sample = sample
+        sample = sample,
+        rule_name = rule_name
     conda:
         "../envs/ariba.yaml"
     run:
