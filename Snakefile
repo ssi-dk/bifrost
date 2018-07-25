@@ -98,6 +98,36 @@ rule generate_git_hash:
         "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output} 2> {log.err_file}"
 
 
+rule_name = "copy_run_info"
+rule copy_run_info:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component
+    output:
+        touch(component + "/copy_run_info_complete")
+    params:
+        run_folder
+    shell:
+        """
+        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp ; fi;
+        if [ -f \"{params}/RunInfo.xml\" ]; then cp RunInfo.xml {input}/RunInfo.xml; fi;
+        if [ -f \"{params}/RunParams.xml\" ]; then cp RunParams.xml {input}/RunParams.xml; fi;
+        """
+
 rule initialize_components:
     # Static
     message:
@@ -117,7 +147,7 @@ rule initialize_components:
     input:
         component = component,
         git_hash = rules.generate_git_hash.output,
-        conda_env = rules.export_conda_env.output
+        conda_env = rules.export_conda_env.output,
     output:
         touch(component + "/initialize_components_complete"),
     run:
@@ -171,13 +201,14 @@ rule initialize_samples_from_run_folder:
                 sample_config = sample_name + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
                 sample_db["name"] = sample_name
-                sample_db[result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
+                sample_db["reads"] = sample_db.get("reads",{})
+                sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
                 # may be better to move this out
                 with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
                     md5sum = hashlib.md5()
                     for data in iter(lambda: fh.read(4096), b""):
                         md5sum.update(data)
-                sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                 sample_db["properties"] = {} # init for others
                 datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
@@ -414,6 +445,7 @@ rule initialize_run:
         "Running step: {rule}"
     # Dynamic
     input:
+        rules.copy_run_info.output,
         rules.initialize_sample_components_for_each_sample.output,
         run_folder = run_folder,
         component = component
