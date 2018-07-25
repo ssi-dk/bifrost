@@ -327,8 +327,9 @@ rule set_samples_from_sample_info:
                 sample_db["sample_sheet"] = {}
                 for column in df:
                     column_name = column
-                    if column in config["samplesheet_column_mapping"]:
-                        column_name = config["samplesheet_column_mapping"][column]
+                    for rename_column in config["samplesheet_column_mapping"]:
+                        if config["samplesheet_column_mapping"][rename_column] == column:
+                            column_name = rename_column
                     sample_db["sample_sheet"][column_name] = row[column]
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
