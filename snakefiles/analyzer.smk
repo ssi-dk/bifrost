@@ -40,7 +40,7 @@ rule setup:
 
 
 rule_name = "species_checker_and_setter"
-rule species_checker:
+rule species_checker_and_setter:
     # Static
     message:
         "Running step:" + rule_name
@@ -49,16 +49,16 @@ rule species_checker:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = component,
+        folder = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        check_file = touch(component + "/species_set"),
+        check_file = touch(rules.setup.output.folder + "/species_set"),
     params:
         kraken_db = config["kraken"]["database"]
     run:
@@ -91,7 +91,7 @@ rule ariba_resfinder:
         component + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = component,
+        folder = rules.setup.output.folder,
         reads = (R1, R2)
     output:
         folder = directory(component + "/ariba_resfinder")

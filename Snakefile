@@ -346,7 +346,7 @@ rule set_samples_from_sample_info:
                     sample_db["sample_sheet"][column_name] = row[column]
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
-            sys.stderr.write("No samplesheet data")
+            sys.stderr.write("No samplesheet data\n")
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
