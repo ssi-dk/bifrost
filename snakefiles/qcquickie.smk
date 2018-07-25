@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 import pandas
+import Bio.SeqIO
 
 configfile: "../serumqc_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -198,8 +199,14 @@ rule assembly_check__rename_contigs:
         "qcquickie/log/assembly_check__rename_contigs.log"
     benchmark:
         "qcquickie/benchmarks/assembly_check__rename_contigs.benchmark"
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/rename_tadpole_contigs.py")
+    run:
+        with open(input.contigs, "r") as fasta_input:
+            records = list(Bio.SeqIO.parse(fasta_input, "fasta"))
+        for record in records:
+            record.id = record.id.split(",")[0]
+            record.description = record.id
+        with open(output.contigs, "w") as output_handle:
+            Bio.SeqIO.write(records, output, "fasta")
 
 
 rule assembly_check__quast_on_contigs:
