@@ -14,7 +14,7 @@ config_sample = datahandling.load_sample(sample)
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
-component = "analysis"
+component = "analyzer"
 
 
 onsuccess:
@@ -230,7 +230,7 @@ rule ariba_mlst:
             shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
 
 
-rule_name = "datadump_analysis"
+rule_name = "datadump_analyzer"
 rule datadump_analysis:
     # Static
     message:
@@ -257,4 +257,4 @@ rule datadump_analysis:
     conda:
         "../envs/ariba.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analysis.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analyzer.py")
