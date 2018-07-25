@@ -29,7 +29,7 @@ onerror:
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        rules.setup.output.folder + "/" + component + "_complete"
 
 
 rule setup:
@@ -85,16 +85,16 @@ rule ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         folder = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        folder = directory(component + "/ariba_resfinder")
+        folder = directory(rules.setup.output.folder + "/ariba_resfinder")
     params:
         database = config["ariba"]["resfinder"]["database"]
     conda:
@@ -113,15 +113,15 @@ rule abricate_on_ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.ariba_resfinder.output.folder
     output:
-        report = component + "/abricate_on_resfinder_from_ariba.tsv",
+        report = rules.setup.output.folder + "/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = config["abricate"]["resfinder"]["database"],
         db_name = config["abricate"]["resfinder"]["name"],
@@ -146,16 +146,16 @@ rule ariba_plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = component,
+        folder = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        folder = directory(component + "/ariba_plasmidfinder")
+        folder = directory(rules.setup.output.folder + "/ariba_plasmidfinder")
     params:
         database = config["ariba"]["plasmidfinder"]["database"]
     conda:
@@ -174,15 +174,15 @@ rule abricate_on_ariba_plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         folder = rules.ariba_plasmidfinder.output
     output:
-        report = component + "/abricate_on_plasmidfinder_from_ariba.tsv",
+        report = rules.setup.output.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
         database = config["abricate"]["plasmidfinder"]["database"],
         db_name = config["abricate"]["plasmidfinder"]["name"],
@@ -207,20 +207,19 @@ rule ariba_mlst:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + params.rule_name + ".out.log",
-        err_file = component + "/log/" + params.rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + params.rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         check_file = rules.species_checker_and_setter.output,
-        folder = component,
+        folder = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        folder = directory(component + "/ariba_mlst")
+        folder = directory(rules.setup.output.folder + "/ariba_mlst")
     params:
-        sample = sample,
-        rule_name = rule_name
+        sample = sample
     conda:
         "../envs/ariba.yaml"
     run:
@@ -241,16 +240,15 @@ rule datadump_analysis:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        component + "/ariba_mlst",
-        component + "/abricate_on_resfinder_from_ariba.tsv",
-        component + "/abricate_on_plasmidfinder_from_ariba.tsv",
-        component,
+        rules.ariba_mlst.output.folder,
+        rules.abricate_on_ariba_resfinder.output.report,
+        rules.abricate_on_ariba_plasmidfinder.output.report,
     output:
         summary = touch(rules.all.input)
     params:
