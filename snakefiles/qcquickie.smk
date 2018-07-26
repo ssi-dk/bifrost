@@ -141,7 +141,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.krakent_report,
+        kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.kraken_report,
     output:
         bracken = rules.setup.output.folder + "/bracken.txt",
         kraken_report_bracken = rules.setup.output.folder + "/kraken_report_bracken.txt"
