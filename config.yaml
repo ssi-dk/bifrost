@@ -17,7 +17,6 @@ threads: &threads 5
 # adapters_fasta: PATH/adapters.fasta     # fasta File
 # run_name: NAME                              # if provided use that for db if not use folder
 # mongo_db_key_location: PATH                 # location of keys.py used for accessing mongodb
-mondodb_url: "mongodb://ssi_dev:dR7Xf2RxaOvg@s-calc-fat01-p:27017/ngs_runs_dev"
 kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # Directory
 kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # TXT File
 abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" # Directory
