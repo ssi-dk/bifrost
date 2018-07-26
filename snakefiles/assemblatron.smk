@@ -162,7 +162,7 @@ rule assembly_check__quast_on_contigs:
         out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.assembly__selection.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output
