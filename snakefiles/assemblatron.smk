@@ -3,14 +3,13 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "../config.yaml")
+configfile: "../serumqc_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
-
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
@@ -426,7 +425,6 @@ rule datadump_assemblatron:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.setup.output,
         rules.post_assembly__annotate.output.gff,
         rules.summarize__depth.output.contig_depth_yaml,
         rules.summarize__depth.output.binned_depth_yaml,
@@ -434,6 +432,7 @@ rule datadump_assemblatron:
         rules.assembly_check__quast_on_contigs.output.quast,
         rules.post_assembly__samtools_stats.output.stats,
         rules.assembly_check__sketch_on_contigs.output.sketch,
+        folder = rules.setup.output,
     output:
         summary = touch(rules.all.input)
     params:
