@@ -385,7 +385,7 @@ rule summarize__depth:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        coverage = rules.assembly_check__pileup_on_mapped_reads.coverage
+        coverage = rules.assembly_check__pileup_on_mapped_reads.output.coverage
     output:
         contig_depth_yaml = rules.setup.output.folder + "/contigs.sum.cov",
         binned_depth_yaml = rules.setup.output.folder + "/contigs.bin.cov"
