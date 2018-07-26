@@ -426,6 +426,7 @@ rule datadump_assemblatron:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
+        rules.setup.output,
         rules.post_assembly__annotate.output.gff,
         rules.summarize__depth.output.contig_depth_yaml,
         rules.summarize__depth.output.binned_depth_yaml,
