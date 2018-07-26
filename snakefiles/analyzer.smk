@@ -19,12 +19,12 @@ component = "analyzer"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 rule all:
@@ -60,7 +60,7 @@ rule species_checker_and_setter:
     output:
         check_file = touch(rules.setup.output.folder + "/species_set"),
     params:
-        kraken_db = config["kraken"]["database"]
+        kraken_db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
     run:
         sample_db = datahandling.load_sample(sample)
         if sample_db["properties"].get("species",) is None:
@@ -96,7 +96,7 @@ rule ariba_resfinder:
     output:
         folder = directory(rules.setup.output.folder + "/ariba_resfinder")
     params:
-        database = config["ariba"]["resfinder"]["database"]
+        database = config.get("ariba_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_resfinder_database"))
     conda:
         "../envs/ariba.yaml"
     shell:
@@ -123,14 +123,13 @@ rule abricate_on_ariba_resfinder:
     output:
         report = rules.setup.output.folder + "/abricate_on_resfinder_from_ariba.tsv",
     params:
-        database = config["abricate"]["resfinder"]["database"],
-        db_name = config["abricate"]["resfinder"]["name"],
+        database = config.get("abricate_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_resfinder_database")),
     conda:
         "../envs/abricate.yaml"
     shell:
         """
         if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
-        then abricate --datadir {params.database} --db {params.db_name} {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        then abricate --datadir {params.database} --db . {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi;
         """
@@ -157,7 +156,7 @@ rule ariba_plasmidfinder:
     output:
         folder = directory(rules.setup.output.folder + "/ariba_plasmidfinder")
     params:
-        database = config["ariba"]["plasmidfinder"]["database"]
+        database = config.get("ariba_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_plasmidfinder_database")),
     conda:
         "../envs/ariba.yaml"
     shell:
@@ -184,14 +183,13 @@ rule abricate_on_ariba_plasmidfinder:
     output:
         report = rules.setup.output.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
-        database = config["abricate"]["plasmidfinder"]["database"],
-        db_name = config["abricate"]["plasmidfinder"]["name"],
+        database = config.get("abricate_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_plasmidfinder_database")),
     conda:
         "../envs/abricate.yaml"
     shell:
         """
         if [[ -e {input.folder}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.folder}/assemblies.fa.gz | head -c1) ]];
-        then abricate --datadir {params.database} --db {params.db_name} {input.folder}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        then abricate --datadir {params.database} --db . {input.folder}/assemblies.fa.gz > {output.report} 2> {log.err_file};
         else touch {output.report};
         fi;
         """
@@ -252,7 +250,7 @@ rule datadump_analysis:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
+        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     conda:
         "../envs/python_packages.yaml"
     script:

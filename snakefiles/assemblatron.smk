@@ -18,12 +18,12 @@ component = "assemblatron"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 rule all:
@@ -59,7 +59,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
     params:
-        adapters = config.get("adapter_file_override", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
+        adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -87,8 +87,6 @@ rule assembly__spades:
         spades_folder = temp(directory("spades")),
         contigs = rules.setup.output.folder + "/temp.fasta",
         assembly_with = touch(rules.setup.output.folder + "/assembly_with_SPAdes"),
-    params:
-        assembler = rules.setup.output.folder + "/assembler_SPAdes"
     conda:
         "../envs/spades.yaml"
     shell:
@@ -436,6 +434,6 @@ rule datadump_assemblatron:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
+        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_assemblatron.py")

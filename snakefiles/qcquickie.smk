@@ -1,9 +1,9 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
-import datahandling
 import pandas
 import Bio.SeqIO
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+import datahandling
 
 configfile: "../serumqc_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
@@ -19,12 +19,12 @@ component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
 
 rule all:
@@ -92,7 +92,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
     params:
-        adapters = config.get("adapter_file_override", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
+        adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -119,7 +119,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     output:
         kraken_report = rules.setup.output.folder + "/kraken_report.txt"
     params:
-        db = config["kraken"]["database"]
+        db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
     conda:
         "../envs/kraken.yaml"
     shell:
@@ -147,7 +147,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         bracken = rules.setup.output.folder + "/bracken.txt",
         kraken_report_bracken = rules.setup.output.folder + "/kraken_report_bracken.txt"
     params:
-        kmer_dist = config["kraken"]["kmer_dist"]
+        kmer_dist = config.get("kraken_kmer_dist", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_kmer_dist.txt"))
     conda:
         "../envs/bracken.yaml"
     shell:
@@ -537,7 +537,6 @@ rule datadump_qcquickie:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
+        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
-
