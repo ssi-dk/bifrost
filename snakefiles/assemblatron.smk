@@ -432,7 +432,7 @@ rule datadump_assemblatron:
         rules.summarize__variants.output.variants_yaml,
         rules.assembly_check__quast_on_contigs.output.quast,
         rules.post_assembly__samtools_stats.output.stats,
-        rules.assembly_check__sketch_on_contigs.sketch,
+        rules.assembly_check__sketch_on_contigs.output.sketch,
     output:
         summary = touch(rules.all.input)
     params:
