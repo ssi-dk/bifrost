@@ -19,3 +19,4 @@ dependencies:
   - biopython
   - skesa
   - xlrd
+  - pymongo

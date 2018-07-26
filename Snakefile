@@ -6,12 +6,12 @@ import sys
 import os
 import datetime
 import pandas
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
-import datahandling
 import pkg_resources
 import hashlib
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
+import datahandling
 
+configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 #Saving the config
 component = "serumqc"
 rerun_folder = component + "/delete_to_update"
@@ -346,7 +346,7 @@ rule set_samples_from_sample_info:
                     sample_db["sample_sheet"][column_name] = row[column]
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
-            sys.stderr.write("No samplesheet data")
+            sys.stderr.write("No samplesheet data\n")
         sys.stdout.write("Done {}\n".format(rule_name))
 
 

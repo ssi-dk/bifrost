@@ -1,18 +1,32 @@
-# Input parameters
+# Input parameters with default values
 run_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
-components: "qcquickie,analysis,assembly" # available options are in snakefiles
+components: "qcquickie,analyzer,assemblatron" # available options are in snakefiles
 group: "" # group for sbatch on torque system
 use_mongodb: True 
-mongo_db_key_location: ""
 run_type: "project" # run type (routine, project)
 read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
 samples_to_ignore: ["Undetermined"]
-#run_name #if provided use that for db if not use folder
+memory: &memory 10 #in Gb
+threads: &threads 5
 
+# --Optional override values--  # if not set will look in resources folder for all files
+# adapters_fasta: PATH/adapters.fasta     # fasta File
+# run_name: NAME                              # if provided use that for db if not use folder
+# mongo_db_key_location: PATH                 # location of keys.py used for accessing mongodb
+mondodb_url: "mongodb://ssi_dev:dR7Xf2RxaOvg@s-calc-fat01-p:27017/ngs_runs_dev"
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # Directory
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # TXT File
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" # Directory
+abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" # Directory
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
+ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+# MLST DB's is handled in species DB
+
+# For processing sample sheets
 samplesheet_column_mapping:
   sample_name: "SampleID"
   group: "SupplyingLab" 
@@ -20,36 +34,3 @@ samplesheet_column_mapping:
   run_name: "ExperimentName"
   priority: "Priority"
   provided_species: "Organism"
-
-memory: &memory 10 #in Gb
-threads: &threads 5
-
-kraken:
-  database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
-  kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
-
-abricate:
-  resfinder:
-    database: "/srv/data/DB/abricate/"
-    name: "resfinder_db"
-  plasmidfinder:
-    database: "/srv/data/DB/abricate/"
-    name: "plasmidfinder_db"
-
-ariba:
-  resfinder:
-    database: "/srv/data/DB/ariba/resfinder"
-  plasmidfinder:
-    database: "/srv/data/DB/ariba/plasmidfinder"
-  mlst:
-    database: "/srv/data/DB/ariba/mlst/"
-
-serum:
-  minimum_number_of_reads: 10000
-  qc:
-    min_length: 1000
-    base_depth: 1
-    min_depth: 10
-    recommended_depth: 25
-    ambiguous_cutoff: 0.1
-

@@ -1,7 +1,5 @@
 import os
 import sys
-import pandas
-import Bio.SeqIO
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
@@ -15,7 +13,8 @@ config_sample = datahandling.load_sample(sample)
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
-component = "qcquickie"
+component = "assemblatron"
+
 
 onsuccess:
     print("Workflow complete")
@@ -37,37 +36,6 @@ rule setup:
         folder = directory(component)
     shell:
         "mkdir {output}"
-
-
-rule_name = "fastqc_on_reads"
-rule fastqc_on_reads:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        directory = rules.setup.output.folder,
-        reads = (R1, R2)
-    output:
-        folder = directory(rules.setup.output.folder + "/fastqc"),
-        fastqc_summary = rules.setup.output.folder + "/fastqc_data.txt"
-    conda:
-        "../envs/fastqc.yaml"
-    shell:
-        """
-        mkdir {output.folder}
-        fastqc --extract -o {output.folder} -t {threads} {input.reads[0]} {input.reads[1]} 1> {log.out_file} 2> {log.err_file}
-        cat {output.folder}/*/fastqc_data.txt > {output.fastqc_summary}
-        """
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -95,11 +63,11 @@ rule setup__filter_reads_with_bbduk:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
+        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
 
 
-rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
-rule contaminant_check__classify_reads_kraken_minikraken_db:
+rule_name = "assembly__spades"
+rule assembly__spades:
     # Static
     message:
         "Running step:" + rule_name
@@ -116,48 +84,20 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        kraken_report = rules.setup.output.folder + "/kraken_report.txt"
-    params:
-        db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
+        spades_folder = temp(directory("spades")),
+        contigs = rules.setup.output.folder + "/temp.fasta",
+        assembly_with = touch(rules.setup.output.folder + "/assembly_with_SPAdes"),
     conda:
-        "../envs/kraken.yaml"
-    shell:
-        "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
-
-
-rule_name = "contaminant_check__determine_species_bracken_on_minikraken_results"
-rule contaminant_check__determine_species_bracken_on_minikraken_results:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.kraken_report,
-    output:
-        bracken = rules.setup.output.folder + "/bracken.txt",
-        kraken_report_bracken = rules.setup.output.folder + "/kraken_report_bracken.txt"
-    params:
-        kmer_dist = config.get("kraken_kmer_dist", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_kmer_dist.txt"))
-    conda:
-        "../envs/bracken.yaml"
+        "../envs/spades.yaml"
     shell:
         """
-        est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} 1> {log.out_file} 2> {log.err_file}
-        sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
+        spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful 1> {log.out_file} 2> {log.err_file}
+        mv {spades_folder}/contigs.fasta {output.contigs}
         """
 
 
-rule_name = "assembly_check__combine_reads_with_bbmerge"
-rule assembly_check__combine_reads_with_bbmerge:
+rule_name = "assembly__skesa"
+rule assembly__skesa:
     # Static
     message:
         "Running step:" + rule_name
@@ -174,16 +114,16 @@ rule assembly_check__combine_reads_with_bbmerge:
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        merged_reads = temp(rules.setup.output.folder + "/merged.fastq"),
-        unmerged_reads = temp(rules.setup.output.folder + "/unmerged.fastq")
+        contigs = rules.setup.output.folder + "/temp.fasta",
+        assembly_with = touch(rules.setup.output.folder + "/assembly_with_skesa"),
     conda:
-        "../envs/bbmap.yaml"
+        "../envs/skesa.yaml"
     shell:
-        "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} 1> {log.out_file} 2> {log.err_file}"
+        "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} 1> {log.out_file} 2> {log.err_file}"
 
 
-rule_name = "assembly_check__quick_assembly_with_tadpole"
-rule assembly_check__quick_assembly_with_tadpole:
+rule_name = "assembly__selection"
+rule assembly__selection:
     # Static
     message:
         "Running step:" + rule_name
@@ -198,47 +138,13 @@ rule assembly_check__quick_assembly_with_tadpole:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        merged_reads = rules.assembly_check__combine_reads_with_bbmerge.output.merged_reads,
-        unmerged_reads = rules.assembly_check__combine_reads_with_bbmerge.output.unmerged_reads
+        assembly_with = rules.setup.output.folder + "/assembly_with_" + config["assembly_with"]
+    params:
+        rules.setup.output.folder + "/temp.fasta"
     output:
-        contigs = temp(rules.setup.output.folder + "/raw_contigs.fasta")
-    conda:
-        "../envs/bbmap.yaml"
+        rules.setup.output.folder + "/contigs.fasta"
     shell:
-        "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} 1> {log.out_file} 2> {log.err_file}"
-
-
-rule_name = "assembly_check__rename_contigs"
-rule assembly_check__rename_contigs:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        contigs = rules.assembly_check__quick_assembly_with_tadpole.output.contigs,
-    output:
-        contigs = rules.setup.output.folder + "/contigs.fasta"
-    run:
-        input_file = str(input.contigs)
-        output_file = str(output.contigs)
-
-        with open(input_file, "r") as fasta_input:
-            records = list(Bio.SeqIO.parse(fasta_input, "fasta"))
-        for record in records:
-            record.id = record.id.split(",")[0]
-            record.description = record.id
-        with open(output_file, "w") as output_handle:
-            Bio.SeqIO.write(records, output_handle, "fasta")
-
+        "mv {params} {output}"
 
 rule_name = "assembly_check__quast_on_contigs"
 rule assembly_check__quast_on_contigs:
@@ -255,10 +161,8 @@ rule assembly_check__quast_on_contigs:
     benchmark:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
-    message:
-        "Running step: {rule}"
     input:
-        contigs = rules.assembly_check__rename_contigs.output.contigs
+        contigs = rules.assembly__selection.output
     output:
         quast = directory(rules.setup.output.folder + "/quast")
     conda:
@@ -283,7 +187,7 @@ rule assembly_check__sketch_on_contigs:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly_check__rename_contigs.output.contigs
+        contigs = rules.assembly__selection.output
     output:
         sketch = rules.setup.output.folder + "/contigs.sketch"
     conda:
@@ -292,8 +196,35 @@ rule assembly_check__sketch_on_contigs:
         "sketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} 1> {log.out_file} 2> {log.err_file}"
 
 
-rule_name = "assembly_check__map_reads_to_assembly_with_bbmap"
-rule assembly_check__map_reads_to_assembly_with_bbmap:
+rule_name = "post_assembly__stats"
+rule post_assembly__stats:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = rules.assembly__selection.output
+    output:
+        stats = touch(rules.setup.output.folder + "/post_assermbly__stats")
+    conda:
+        "../envs/bbmap.yaml"
+    shell:
+        "stats.sh {input.contigs} 1> {log.out_file} 2> {log.err_file}"
+
+
+rule_name = "post_assembly__mapping"
+rule post_assembly__mapping:
     # Static
     message:
         "Running step:" + rule_name
@@ -308,14 +239,14 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly_check__rename_contigs.output.contigs,
-        filtered = rules.setup__filter_reads_with_bbduk.output.filtered_reads
+        contigs = rules.assembly__selection.output,
+        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
         mapped = temp(rules.setup.output.folder + "/contigs.sam")
     conda:
-        "../envs/bbmap.yaml"
+        "../envs/minimap2.yaml"
     shell:
-        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random 1> {log.out_file} 2> {log.err_file}"
+        "minimap2 -t {threads} --MD -ax sr {input.contigs} {input.filtered_reads} 1> {output.mapped} 2> {log.err_file}"
 
 
 rule_name = "post_assembly__samtools_stats"
@@ -334,7 +265,7 @@ rule post_assembly__samtools_stats:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped
+        mapped = rules.post_assembly__mapping.output.mapped
     output:
         stats = rules.setup.output.folder + "/contigs.stats",
     conda:
@@ -343,8 +274,8 @@ rule post_assembly__samtools_stats:
         "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log.err_file}"
 
 
-rule_name = "assembly_check__pileup_on_mapped_reads"
-rule assembly_check__pileup_on_mapped_reads:
+rule_name = "post_assembly__pileup"
+rule post_assembly__pileup:
     # Static
     message:
         "Running step:" + rule_name
@@ -359,7 +290,7 @@ rule assembly_check__pileup_on_mapped_reads:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped
+        mapped = rules.post_assembly__mapping.output.mapped
     output:
         coverage = temp(rules.setup.output.folder + "/contigs.cov"),
         pileup = rules.setup.output.folder + "/contigs.pileup"
@@ -385,7 +316,7 @@ rule summarize__depth:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        coverage = rules.assembly_check__pileup_on_mapped_reads.output.coverage
+        coverage = rules.post_assembly__pileup.output.coverage
     output:
         contig_depth_yaml = rules.setup.output.folder + "/contigs.sum.cov",
         binned_depth_yaml = rules.setup.output.folder + "/contigs.bin.cov"
@@ -395,8 +326,8 @@ rule summarize__depth:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
 
 
-rule_name = "assembly_check__call_variants"
-rule assembly_check__call_variants:
+rule_name = "post_assembly__call_variants"
+rule post_assembly__call_variants:
     # Static
     message:
         "Running step:" + rule_name
@@ -411,10 +342,10 @@ rule assembly_check__call_variants:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly_check__rename_contigs.output.contigs,
-        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped,
+        contigs = rules.assembly__selection.output,
+        mapped = rules.post_assembly__mapping.output.mapped
     output:
-        variants = temp(rules.setup.output.folder + "/contigs.vcf")
+        variants = temp(rules.setup.output.folder + "/contigs.vcf"),
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -437,7 +368,7 @@ rule summarize__variants:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        variants = rules.assembly_check__call_variants.output.variants,
+        variants = rules.post_assembly__call_variants.output.variants
     output:
         variants_yaml = rules.setup.output.folder + "/contigs.variants",
     conda:
@@ -446,8 +377,8 @@ rule summarize__variants:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_variants.py")
 
 
-rule_name = "contaminant_check__declare_contamination"
-rule contaminant_check__declare_contamination:
+rule_name = "post_assembly__annotate"
+rule post_assembly__annotate:
     # Static
     message:
         "Running step:" + rule_name
@@ -462,54 +393,22 @@ rule contaminant_check__declare_contamination:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken
+        contigs = rules.assembly__selection.output,
     output:
-        contaminantion_check = rules.setup.output.folder + "/contaminantion_check.txt"
-    run:
-        with open(output.contaminantion_check, "w") as contaminantion_check:
-            df = pandas.read_table(input.bracken)
-            if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
-                contaminantion_check.write("No contaminant detected\n")
-            else:
-                contaminantion_check.write("Contaminant found or Error")
-
-
-rule_name = "species_check__set_species"
-rule species_check__set_species:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
-    output:
-        species = rules.setup.output.folder + "/species.txt",
+        gff = rules.setup.output.folder + "/contigs.gff",
     params:
-        sample = sample,
-    run:
-        sample_db = datahandling.load_sample(sample)
-        with open(output.species, "w") as species_file:
-            df = pandas.read_table(input.bracken)
-            sample_db["properties"]["detected_species"] = df["name"].iloc[0]
-            sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
-            if sample_db["properties"]["provided_species"] is not None:
-                sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
-            else:
-                sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
-        datahandling.save_sample(sample_db, sample)
+        prokka = temp(directory(rules.setup.output.folder + "/prokka"))
+    conda:
+        "../envs/prokka.yaml"
+    shell:
+        """ 
+        prokka --cpus {threads} --centre XXX --compliant --outdir {params.prokka} {input.contigs} 1> {log.out_file} 2> {log.err_file};
+        mv {params.prokka}/*.gff {output.gff};
+        """ 
 
 
-rule_name = "datadump_qcquickie"
-rule datadump_qcquickie:
+rule_name = "datadump_assemblatron"
+rule datadump_assemblatron:
     # Static
     message:
         "Running step:" + rule_name
@@ -524,18 +423,17 @@ rule datadump_qcquickie:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.fastqc_on_reads.output.fastqc_summary,
-        rules.assembly_check__quast_on_contigs.output.quast,
-        rules.assembly_check__sketch_on_contigs.output.sketch,
-        rules.post_assembly__samtools_stats.output.stats,
+        rules.post_assembly__annotate.output.gff,
         rules.summarize__depth.output.contig_depth_yaml,
+        rules.summarize__depth.output.binned_depth_yaml,
         rules.summarize__variants.output.variants_yaml,
-        rules.contaminant_check__declare_contamination.output.contaminantion_check,
-        rules.species_check__set_species.output.species,
-        folder = rules.setup.output
+        rules.assembly_check__quast_on_contigs.output.quast,
+        rules.post_assembly__samtools_stats.output.stats,
+        rules.assembly_check__sketch_on_contigs.output.sketch,
+        folder = rules.setup.output,
     output:
         summary = touch(rules.all.input)
     params:
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_assemblatron.py")
