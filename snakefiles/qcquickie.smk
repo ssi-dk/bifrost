@@ -59,7 +59,7 @@ rule fastqc_on_reads:
         directory = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        folder = directory(rules.setup.output.folder + "/fastqc")
+        folder = directory(rules.setup.output.folder + "/fastqc"),
         fastqc_summary = rules.setup.output.folder + "/fastqc_data.txt"
     conda:
         "../envs/fastqc.yaml"
