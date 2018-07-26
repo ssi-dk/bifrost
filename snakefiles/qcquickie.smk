@@ -530,7 +530,7 @@ rule datadump_qcquickie:
         rules.post_assembly__samtools_stats.output.stats,
         rules.summarize__depth.output.contig_depth_yaml,
         rules.summarize__variants.output.variants_yaml,
-        rules.contaminant_check__declare_contamination.output.contamination_check,
+        rules.contaminant_check__declare_contamination.output.contaminantion_check,
         rules.species_check__set_species.output.species,
         folder = rules.setup.output
     output:
