@@ -391,20 +391,20 @@ rule add_components_to_samples:
                 sample_name = result.group("sample_name")
                 unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-            for sample_name in unique_sample_names:
-                sample_config = sample_name + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
-                sample_db["components"] = sample_db.get("components", [])
-                for component_name in components:
-                    component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-                    if component_id is not None:
-                        insert_component = True
-                        for sample_component in sample_db["components"]:
-                            if component_id == sample_component["_id"]:
-                                insert_component = False
-                        if insert_component is True:
-                            sample_db["components"].append({"name": component_name, "_id": component_id})
-                datahandling.save_sample(sample_db, sample_config)
+        for sample_name in unique_sample_names:
+            sample_config = sample_name + "/sample.yaml"
+            sample_db = datahandling.load_sample(sample_config)
+            sample_db["components"] = sample_db.get("components", [])
+            for component_name in components:
+                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                if component_id is not None:
+                    insert_component = True
+                    for sample_component in sample_db["components"]:
+                        if component_id == sample_component["_id"]:
+                            insert_component = False
+                    if insert_component is True:
+                        sample_db["components"].append({"name": component_name, "_id": component_id})
+            datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
