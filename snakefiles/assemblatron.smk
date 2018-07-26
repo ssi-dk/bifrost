@@ -59,7 +59,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
     params:
-        adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
+        adapters = config.get("adapter_file_override", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -88,7 +88,7 @@ rule assembly__spades:
         contigs = rules.setup.output.folder + "/temp.fasta",
         assembly_with = touch(rules.setup.output.folder + "/assembly_with_SPAdes"),
     params:
-        assembler = "assembler/assembler_SPAdes"
+        assembler = rules.setup.output.folder + "/assembler_SPAdes"
     conda:
         "../envs/spades.yaml"
     shell:

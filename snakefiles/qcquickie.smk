@@ -8,7 +8,6 @@ import Bio.SeqIO
 configfile: "../serumqc_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
-
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
@@ -16,12 +15,12 @@ config_sample = datahandling.load_sample(sample)
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
-# my understanding is all helps specify final output
 component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
     datahandling.update_sample_component_success(config_sample.get("name","ERROR") + "__" + component + ".yaml")
+
 
 onerror:
     print("Workflow error")
@@ -30,372 +29,443 @@ onerror:
 
 rule all:
     input:
-        "qcquickie/qcquickie_complete",
+        component + "/" + component + "_complete"
 
 
 rule setup:
     output:
-        directory = directory("qcquickie")
+        folder = directory(component)
     shell:
         "mkdir {output}"
 
 
+rule_name = "fastqc_on_reads"
 rule fastqc_on_reads:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        directory = "qcquickie",
-        reads = (R1, R2)
-    output:
-        fastqc_summary = "qcquickie/fastqc_data.txt"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+rule fastqc_on_reads:
+    input:
+        directory = rules.setup.output.folder,
+        reads = (R1, R2)
+    output:
+        folder = directory(rules.setup.output.folder + "/fastqc")
+        fastqc_summary = rules.setup.output.folder + "/fastqc_data.txt"
     conda:
         "../envs/fastqc.yaml"
-    log:
-        "qcquickie/log/fastqc_on_reads.log"
-    benchmark:
-        "qcquickie/benchmarks/fastqc_on_reads.benchmark"
     shell:
         """
-        mkdir qcquickie/fastqc
-        fastqc --extract -o qcquickie/fastqc -t {threads} {input.reads[0]} {input.reads[1]} &> {log}
-        cat qcquickie/fastqc/*/fastqc_data.txt > {output.fastqc_summary}
+        mkdir {output.folder}
+        fastqc --extract -o {output.folder} -t {threads} {input.reads[0]} {input.reads[1]} 1> {log.out_file} 2> {log.err_file}
+        cat {output.folder}/*/fastqc_data.txt > {output.fastqc_summary}
         """
 
+
+rule_name = "setup__filter_reads_with_bbduk"
 rule setup__filter_reads_with_bbduk:
+    # Static
     message:
-        "Running step: {rule}"
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
     input:
-        directory = "qcquickie",
+        directory = rules.setup.output.folder,
         reads = (R1, R2)
     output:
-        filtered_reads = temp("qcquickie/filtered.fastq")
+        filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
     params:
-        adapters = os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta")
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
+        adapters = config.get("adapter_file_override", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/setup__filter_reads_with_bbduk.log"
-    benchmark:
-        "qcquickie/benchmarks/setup__filter_reads_with_bbduk.benchmark"
     shell:
-        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 &> {log}"
+        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
 rule contaminant_check__classify_reads_kraken_minikraken_db:
+    # Static
     message:
-        "Running step: {rule}"
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
     input:
-        filtered_reads = "qcquickie/filtered.fastq",
+        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        kraken_report = "qcquickie/kraken_report.txt"
+        kraken_report = rules.setup.output.folder + "/kraken_report.txt"
     params:
         db = config["kraken"]["database"]
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
     conda:
         "../envs/kraken.yaml"
-    log:
-        "qcquickie/log/contaminant_check__classify_reads_kraken_minikraken_db.log"
-    benchmark:
-        "qcquickie/benchmarks/contaminant_check__classify_reads_kraken_minikraken_db.benchmark"
     shell:
-        "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
 
+rule_name = "contaminant_check__determine_species_bracken_on_minikraken_results"
 rule contaminant_check__determine_species_bracken_on_minikraken_results:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        kraken_report = "qcquickie/kraken_report.txt"
-    output:
-        bracken = "qcquickie/bracken.txt",
-        kraken_report_bracken = "qcquickie/kraken_report_bracken.txt"
-    params:
-        kmer_dist = config["kraken"]["kmer_dist"]
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.krakent_report,
+    output:
+        bracken = rules.setup.output.folder + "/bracken.txt",
+        kraken_report_bracken = rules.setup.output.folder + "/kraken_report_bracken.txt"
+    params:
+        kmer_dist = config["kraken"]["kmer_dist"]
     conda:
         "../envs/bracken.yaml"
-    log:
-        "qcquickie/log/contaminant_check__determine_species_bracken_on_minikraken_results.log"
-    benchmark:
-        "qcquickie/benchmarks/contaminant_check__determine_species_bracken_on_minikraken_results.benchmark"
     shell:
         """
-        est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} &> {log}
+        est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} 1> {log.out_file} 2> {log.err_file}
         sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
         """
 
+
+rule_name = "assembly_check__combine_reads_with_bbmerge"
 rule assembly_check__combine_reads_with_bbmerge:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        filtered_reads = "qcquickie/filtered.fastq"
-    output:
-        merged_reads = temp("qcquickie/merged.fastq"),
-        unmerged_reads = temp("qcquickie/unmerged.fastq")
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
+    output:
+        merged_reads = temp(rules.setup.output.folder + "/merged.fastq"),
+        unmerged_reads = temp(rules.setup.output.folder + "/unmerged.fastq")
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/assembly_check__combine_reads_with_bbmerge.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__combine_reads_with_bbmerge.benchmark"
     shell:
-        "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} &> {log}"
+        "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "assembly_check__quick_assembly_with_tadpole"
 rule assembly_check__quick_assembly_with_tadpole:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        merged_reads = "qcquickie/merged.fastq",
-        unmerged_reads = "qcquickie/unmerged.fastq"
-    output:
-        contigs = temp("qcquickie/raw_contigs.fasta")
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        merged_reads = rules.assembly_check__combine_reads_with_bbmerge.output.merged_reads,
+        unmerged_reads = rules.assembly_check__combine_reads_with_bbmerge.output.unmerged_reads
+    output:
+        contigs = temp(rules.setup.output.folder + "/raw_contigs.fasta")
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/assembly_check__quick_assembly_with_tadpole.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__quick_assembly_with_tadpole.benchmark"
     shell:
-        "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} &> {log}"
+        "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "assembly_check__rename_contigs"
 rule assembly_check__rename_contigs:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "qcquickie/raw_contigs.fasta",
-    output:
-        contigs = "qcquickie/contigs.fasta"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    conda:
-        "../envs/python_packages.yaml"
     log:
-        "qcquickie/log/assembly_check__rename_contigs.log"
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        "qcquickie/benchmarks/assembly_check__rename_contigs.benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        contigs = rules.assembly_check__quick_assembly_with_tadpole.output.contigs,
+    output:
+        contigs = rules.setup.output.folder + "/contigs.fasta"
     run:
-        with open(input.contigs, "r") as fasta_input:
+        input_file = str(input.contigs)
+        output_file = str(output.contigs)
+
+        with open(input_file, "r") as fasta_input:
             records = list(Bio.SeqIO.parse(fasta_input, "fasta"))
         for record in records:
             record.id = record.id.split(",")[0]
             record.description = record.id
-        with open(output.contigs, "w") as output_handle:
+        with open(output_file, "w") as output_handle:
             Bio.SeqIO.write(records, output_handle, "fasta")
 
 
+rule_name = "assembly_check__quast_on_contigs"
 rule assembly_check__quast_on_contigs:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "qcquickie/contigs.fasta"
-    output:
-        quast = directory("qcquickie/quast")
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    message:
+        "Running step: {rule}"
+    input:
+        contigs = rules.assembly_check__rename_contigs.output.contigs
+    output:
+        quast = directory(rules.setup.output.folder + "/quast")
     conda:
         "../envs/quast.yaml"
-    log:
-        "qcquickie/log/assembly_check__quast_on_tadpole_contigs.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__quast_on_tadpole_contigs.benchmark"
     shell:
-        "quast.py --threads {threads} {input.contigs} -o {output.quast} &> {log}"
+        "quast.py --threads {threads} {input.contigs} -o {output.quast} 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "assembly_check__sketch_on_contigs"
 rule assembly_check__sketch_on_contigs:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "qcquickie/contigs.fasta"
-    output:
-        sketch = "qcquickie/contigs.sketch"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        contigs = rules.assembly_check__rename_contigs.output.contigs
+    output:
+        sketch = rules.setup.output.folder + "/contigs.sketch"
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/assembly_check__sketch_on_contigs.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__sketch_on_contigs.benchmark"
     shell:
-        "sketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} &> {log}"
+        "sketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "assembly_check__map_reads_to_assembly_with_bbmap"
 rule assembly_check__map_reads_to_assembly_with_bbmap:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "qcquickie/contigs.fasta",
-        filtered = "qcquickie/filtered.fastq"
-    output:
-        mapped = temp("qcquickie/contigs.sam")
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        contigs = rules.assembly_check__rename_contigs.output.contigs,
+        filtered = rules.setup__filter_reads_with_bbduk.output.filtered_reads
+    output:
+        mapped = temp(rules.setup.output.folder + "/contigs.sam")
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/assembly_check__map_reads_to_assembly_with_bbmap.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__map_reads_to_assembly_with_bbmap.benchmark"
     shell:
-        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random &> {log}"
+        "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "post_assembly__samtools_stats"
 rule post_assembly__samtools_stats:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        mapped = "qcquickie/contigs.sam"
-    output:
-        stats = "qcquickie/contigs.stats",
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped
+    output:
+        stats = rules.setup.output.folder + "/contigs.stats",
     conda:
         "../envs/samtools.yaml"
-    log:
-        "qcquickie/log/post_assembly__samtools_stats.log"
-    benchmark:
-        "qcquickie/benchmarks/post_assembly__samtools_stats.benchmark"
     shell:
-        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log}"
+        "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log.err_file}"
 
 
+rule_name = "assembly_check__pileup_on_mapped_reads"
 rule assembly_check__pileup_on_mapped_reads:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        mapped = "qcquickie/contigs.sam"
-    output:
-        coverage = temp("qcquickie/contigs.cov"),
-        pileup = "qcquickie/contigs.pileup"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped
+    output:
+        coverage = temp(rules.setup.output.folder + "/contigs.cov"),
+        pileup = rules.setup.output.folder + "/contigs.pileup"
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/assembly_check__pileup_on_mapped_reads.log"
-    benchmark:
-        "qcquickie/benchmarks/assembly_check__pileup_on_mapped_reads.benchmark"
     shell:
-        "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} &> {log}"
+        "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "summarize__depth"
 rule summarize__depth:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        coverage = "qcquickie/contigs.cov"
-    output:
-        contig_depth_yaml = "qcquickie/contigs.sum.cov",
-        binned_depth_yaml = "qcquickie/contigs.bin.cov"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        coverage = rules.assembly_check__pileup_on_mapped_reads.coverage
+    output:
+        contig_depth_yaml = rules.setup.output.folder + "/contigs.sum.cov",
+        binned_depth_yaml = rules.setup.output.folder + "/contigs.bin.cov"
     conda:
         "../envs/python_packages.yaml"
-    log:
-        "qcquickie/log/summarize__bin_coverage.log"
-    benchmark:
-        "qcquickie/benchmarks/summarize__bin_coverage.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
 
 
+rule_name = "assembly_check__call_variants"
 rule assembly_check__call_variants:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        contigs = "qcquickie/contigs.fasta",
-        mapped = "qcquickie/contigs.sam",
-    output:
-        variants = temp("qcquickie/contigs.vcf")
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        contigs = rules.assembly_check__rename_contigs.output.contigs,
+        mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped,
+    output:
+        variants = temp(rules.setup.output.folder + "/contigs.vcf")
     conda:
         "../envs/bbmap.yaml"
-    log:
-        "qcquickie/log/post_assembly__call_variants.log"
-    benchmark:
-        "qcquickie/benchmarks/post_assembly__call_variants.benchmark"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters &> {log}"
+        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
 
 
+rule_name = "summarize__variants"
 rule summarize__variants:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        variants = "qcquickie/contigs.vcf",
-    output:
-        variants_yaml = "qcquickie/contigs.variants",
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        variants = rules.assembly_check__call_variants.output.variants,
+    output:
+        variants_yaml = rules.setup.output.folder + "/contigs.variants",
     conda:
         "../envs/python_packages.yaml"
-    log:
-        "qcquickie/log/summarize__variants.log"
-    benchmark:
-        "qcquickie/benchmarks/summarize__variants.benchmark"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_variants.py")
 
 
+rule_name = "contaminant_check__declare_contamination"
 rule contaminant_check__declare_contamination:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        bracken = "qcquickie/bracken.txt"
-    output:
-        contaminantion_check = "qcquickie/contaminantion_check.txt"
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/contaminant_check__declare_contamination.log"
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken
+    output:
+        contaminantion_check = rules.setup.output.folder + "/contaminantion_check.txt"
     run:
         with open(output.contaminantion_check, "w") as contaminantion_check:
             df = pandas.read_table(input.bracken)
@@ -405,23 +475,27 @@ rule contaminant_check__declare_contamination:
                 contaminantion_check.write("Contaminant found or Error")
 
 
+rule_name = "species_check__set_species"
 rule species_check__set_species:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        bracken = "qcquickie/bracken.txt",
-    output:
-        species = "qcquickie/species.txt",
-    params:
-        sample = sample,
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/contaminant_check__declare_contamination.log"
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        "qcquickie/benchmarks/contaminant_check__declare_contamination.benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
+    output:
+        species = rules.setup.output.folder + "/species.txt",
+    params:
+        sample = sample,
     run:
         sample_db = datahandling.load_sample(sample)
         with open(output.species, "w") as species_file:
@@ -432,39 +506,38 @@ rule species_check__set_species:
                 sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
             else:
                 sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
-
         datahandling.save_sample(sample_db, sample)
 
 
+rule_name = "datadump_qcquickie"
 rule datadump_qcquickie:
+    # Static
     message:
-        "Running step: {rule}"
-    input:
-        "qcquickie/fastqc_data.txt",
-        "qcquickie/contigs.bin.cov",
-        "qcquickie/contigs.sum.cov",
-        "qcquickie/bracken.txt",
-        "qcquickie/kraken_report_bracken.txt",
-        "qcquickie/contaminantion_check.txt",
-        "qcquickie/contigs.variants",
-        "qcquickie/quast",
-        "qcquickie/contigs.stats",
-        "qcquickie/contigs.sketch",
-        "qcquickie/species.txt",
-        "qcquickie",
-    output:
-        summary = touch("qcquickie/qcquickie_complete")
-    params:
-        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
-        folder = "qcquickie",
+        "Running step:" + rule_name
     threads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        "qcquickie/log/datadump_qcquickie.log"
+        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        "qcquickie/benchmarks/datadump_qcquickie.benchmark"
+        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        rules.fastqc_on_reads.output.fastqc_summary,
+        rules.assembly_check__quast_on_contigs.output.quast,
+        rules.assembly_check__sketch_on_contigs.output.sketch,
+        rules.post_assembly__samtools_stats.output.stats,
+        rules.summarize__depth.output.contig_depth_yaml,
+        rules.summarize__variants.output.variants_yaml,
+        rules.contaminant_check__declare_contamination.output.contamination_check,
+        rules.species_check__set_species.output.species,
+        folder = rules.setup.output
+    output:
+        summary = touch(rules.all.input)
+    params:
+        sample = config_sample.get("name","ERROR") + "__" + component + ".yaml",
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_qcquickie.py")
 
