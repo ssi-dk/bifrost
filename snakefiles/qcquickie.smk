@@ -54,7 +54,6 @@ rule fastqc_on_reads:
     benchmark:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
-rule fastqc_on_reads:
     input:
         directory = rules.setup.output.folder,
         reads = (R1, R2)
