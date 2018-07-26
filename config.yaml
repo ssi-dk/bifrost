@@ -11,9 +11,15 @@ mongo_db_key_location: ""
 run_type: "project" # run type (routine, project)
 read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
 samples_to_ignore: ["Undetermined"]
+memory: &memory 10 #in Gb
+threads: &threads 5
 
-# adapter_file_override: PATH # if used will use this path over default which is resources/adapter.fasta
-# run_name # if provided use that for db if not use folder
+# --Optional override values--
+# adapter_file_override: PATH   # if used will use this path over default which is resources/adapter.fasta
+# run_name: NAME                # if provided use that for db if not use folder
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+
 
 samplesheet_column_mapping:
   sample_name: "SampleID"
@@ -23,8 +29,6 @@ samplesheet_column_mapping:
   priority: "Priority"
   provided_species: "Organism"
 
-memory: &memory 10 #in Gb
-threads: &threads 5
 
 kraken:
   database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
