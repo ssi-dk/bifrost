@@ -175,11 +175,10 @@ def filter(projection=None, run_name=None,
         return list(db.samples.find(query, projection))
 
 
-def get_results(sample_ids, component_name):
+def get_results(sample_ids):
     with get_connection() as connection:
         db = connection.get_default_database()
         return list(db.sample_components.find({
-            'sample._id': {'$in': sample_ids},
-            'component.name': component_name
-        }, {'summary': 1, 'sample._id': 1}))
+            'sample._id': {'$in': sample_ids}
+        }, {'summary': 1, 'sample._id': 1, 'component.name' : 1}))
 

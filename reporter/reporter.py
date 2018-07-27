@@ -100,8 +100,8 @@ def main(argv):
                             html.Div(
                                 [
                                     html.Button(
-                                        "Assembly report",
-                                        id="update-assembly",
+                                        "Assemblatron report",
+                                        id="update-assemblatron",
                                         n_clicks_timestamp=0,
                                         className="button-primary u-full-width"
                                     )
@@ -364,18 +364,18 @@ def main(argv):
          State("selected-samples-ids", "children")]
          )
     def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
-        if not (data_content == "qcquickie" or data_content == "assembly"):
+        if not (data_content == "qcquickie" or data_content == "assemblatron"):
             return []
         page_n = int(page_n)
         if lasso_selected != '':
             samples = lasso_selected.split(',')  # lasso first
         else:
             samples = prefilter_samples.split(',')
-        dataframe = import_data.filter_all(samples=samples)
-        dataframe.sort_values('qcquickie.summary.name_classified_species_1')
+        dataframe = import_data.filter_all(sample_ids=samples)
+        dataframe.sort_values('species')
         page = paginate_df(dataframe, page_n)
         max_page = len(dataframe) // PAGESIZE
-        page_species = page['qcquickie.summary.name_classified_species_1'].unique().tolist()
+        page_species = page['species'].unique().tolist()
         species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
@@ -408,29 +408,30 @@ def main(argv):
     @app.callback(
         Output(component_id="current-report", component_property="children"),
         [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
-         Input(component_id="update-assembly", component_property="n_clicks_timestamp"),
+         Input(component_id="update-assemblatron",
+               component_property="n_clicks_timestamp"),
          Input(component_id="update-table", component_property="n_clicks_timestamp")],
         [State('lasso-sample-ids', 'children'),
          State("selected-samples-ids", "children")]
     )
-    def update_report(n_qcquickie_ts, n_assembly_ts, n_table_ts, lasso_selected, prefilter_samples):
+    def update_report(n_qcquickie_ts, n_assemblatron_ts, n_table_ts, lasso_selected, prefilter_samples):
         if lasso_selected != '':
             samples = lasso_selected.split(',')  # lasso first
         elif prefilter_samples != '':
             samples = prefilter_samples.split(',')
         else:
             samples = []
-        dataframe = import_data.filter_all(samples=samples)
+        dataframe = import_data.filter_all(sample_ids=samples)
     
         max_page = len(dataframe) // PAGESIZE
 
-        if max(n_qcquickie_ts, n_assembly_ts) > n_table_ts:  # samples was clicked
-            if n_qcquickie_ts > n_assembly_ts:
+        if max(n_qcquickie_ts, n_assemblatron_ts) > n_table_ts:  # samples was clicked
+            if n_qcquickie_ts > n_assemblatron_ts:
                 title = "QCQuickie Report"
                 content = "qcquickie"
             else:
-                title = "Assembly Report"
-                content = "assembly"
+                title = "Assemblatron Report"
+                content = "assemblatron"
             return [
                 html.H3(title),
                 html.Span("0", style={'display': 'none'}, id="page-n"),
@@ -463,7 +464,7 @@ def main(argv):
                 
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
-        elif n_table_ts > n_assembly_ts:  # table was clicked
+        elif n_table_ts > n_assemblatron_ts:  # table was clicked
             return [
                 html.H3("Table Report"),
 
@@ -529,7 +530,7 @@ def main(argv):
         plot_func = global_vars.PLOTS[plot_value].get("func")
         
         data = []
-        plot_df = import_data.filter_plot(species_list, group_list, run_name, plot_func)
+        plot_df = import_data.filter_all(species_list, group_list, run_name, plot_func)
         if species_list is None: species_list = []
         for species in species_list:
             species_df = plot_df[plot_df.species == species]

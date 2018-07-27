@@ -38,47 +38,57 @@ def filter_name(species=None, group=None, run_name=None):
                                     run_name, species, group)
     return list(result)
 
+##NOTE SPLIT/SHORTEN THIS FUNCTION
+def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=None):
+    if sample_ids is None:
+        query_result =  mongo_interface.filter(
+            {
+                "name" : 1,
+                "properties.species" : 1
+            },
+            run_name, species, group)
+        clean_result = {}
+        sample_ids = []
+        for item in query_result:
+            sample_ids.append(item['_id'])
+            clean_result[str(item["_id"])] = {
+                "_id": str(item["_id"]),
+                'name': item["name"],
+                'species': item["properties"]["species"]
+            }
+    else:
+        query_result = mongo_interface.filter(
+            {
+                "name": 1,
+                "properties.species": 1,
+                "sample_sheet" : 1
+            },
+            samples=sample_ids)
+        clean_result = {}
+        sample_ids = []
+        for item in query_result:
+            item_id = str(item["_id"])
+            sample_ids.append(item['_id'])
+            clean_result[item_id] = {
+                "_id": item_id,
+                'name': item["name"],
+                'species': item["properties"]["species"]
+            }
+            if 'sample_sheet' in item:
+                for sheet_key, sheet_value in item['sample_sheet'].items():
+                    clean_result[item_id]['sample_sheet.' +
+                                       sheet_key] = sheet_value
 
-def filter_plot(species=None, group=None, run_name=None, func=None):
-
-    query_result =  mongo_interface.filter(
-        {
-            "name" : 1,
-            "properties.species" : 1
-        },
-        run_name, species, group)
-    clean_result = {}
-    sample_ids = []
-    for item in query_result:
-        sample_ids.append(item['_id'])
-        clean_result[str(item["_id"])] = {
-            "_id": str(item["_id"]),
-            'name': item["name"],
-            'species': item["properties"]["species"]
-        }
-    component_result = mongo_interface.get_results(sample_ids, 'qcquickie')
-    
+    component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:
-        s_id = str(item["sample"]["_id"])
+        item_id = str(item["sample"]["_id"])
+        component = item['component']['name']
         if 'summary' in item:
             for summary_key, summary_value in item['summary'].items():
-                clean_result[s_id]['qcquickie_' + summary_key] = summary_value
+                clean_result[item_id][component + '.' +
+                                      summary_key] = summary_value
         else:
             print('Missing summary', item)
         if func is not None:
-            clean_result[s_id] = func(clean_result[s_id])
+            clean_result[item_id] = func(clean_result[item_id])
     return pd.DataFrame.from_dict(clean_result, orient='index')
-
-
-def filter_all(samples=[]):
-    projection = {
-        'sample': 1,
-        'qcquickie.summary': 1,
-        'assembly.summary': 1
-    }
-    query_result = mongo_interface.filter(projection=projection,
-                                          samples=samples)
-    dataframe = json_normalize(query_result)
-    if "_id" in dataframe: # False for empty results.
-        dataframe['_id'] = dataframe['_id'].astype(str)
-    return dataframe
