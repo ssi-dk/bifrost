@@ -40,66 +40,60 @@ columns = ['name', 'supplying_lab', 'run_name', '_id',
 PLOTS = collections.OrderedDict()
 
 PLOTS["qcquickie_bin_length_at_1x"] = {
-        "projection": "qcquickie.summary.bin_length_at_1x"
-    }
+    "projection": "qcquickie_bin_length_at_1x"
+}
 PLOTS["qcquickie_bin_length_at_10x"] = {
-        "projection": "qcquickie.summary.bin_length_at_10x"
-    }
+    "projection": "qcquickie_bin_length_at_10x"
+}
 PLOTS["qcquickie_bin_length_at_25x"] = {
-        "projection": "qcquickie.summary.bin_length_at_25x"
-    }
+    "projection": "qcquickie_bin_length_at_25x"
+}
+
+def qcquickie_diff(res):
+    if 'qcquickie_bin_length_at_1x' in res and 'qcquickie_bin_length_at_25x' in res:
+        res['qcquickie_bin_length_1x_25x_diff'] = res['qcquickie_bin_length_at_1x'] - \
+            res['qcquickie_bin_length_at_25x']
+    return res
+
 PLOTS["qcquickie_bin_length_1x_25x_diff"] = {
-        "projection": "value",
-        "aggregate": [
-            {
-                "$project": {
-                    "sample.name": 1,
-                    "qcquickie.summary.name_classified_species_1": 1,
-                    "value": {
-                        "$subtract": [
-                            "$qcquickie.summary.bin_length_at_1x",
-                            "$qcquickie.summary.bin_length_at_25x"
-                        ]
-                    }
-                },
-            },
-        ]
+    "projection": "qcquickie_bin_length_1x_25x_diff",
+        "func": qcquickie_diff
     }
 PLOTS["qcquickie_bin_contigs_at_1x"] = {
-        "projection": "qcquickie.summary.bin_contigs_at_1x"
-    }
+    "projection": "qcquickie_bin_contigs_at_1x"
+}
 PLOTS["qcquickie_bin_contigs_at_10x"] = {
-        "projection": "qcquickie.summary.bin_contigs_at_10x"
-    }
+    "projection": "qcquickie_bin_contigs_at_10x"
+}
 PLOTS["qcquickie_bin_contigs_at_25x"] = {
-        "projection": "qcquickie.summary.bin_contigs_at_25x"
-    }
+    "projection": "qcquickie_bin_contigs_at_25x"
+}
 PLOTS["qcquickie_N50"] = {
-        "projection": "qcquickie.quast/report_tsv/N50"
-    }
+    "projection": "qcquickie.quast/report_tsv/N50"
+}
 PLOTS["qcquickie_N75"] = {
-        "projection": "qcquickie.quast/report_tsv/N75"
-    }
+    "projection": "qcquickie.quast/report_tsv/N75"
+}
 PLOTS["assembly_bin_length_at_1x"] = {
-        "projection": "assembly.summary.bin_length_at_1x"
-    }
+    "projection": "assembly_bin_length_at_1x"
+}
 PLOTS["assembly_bin_length_at_10x"] = {
-        "projection": "assembly.summary.bin_length_at_10x"
-    }
+    "projection": "assembly_bin_length_at_10x"
+}
 PLOTS["assembly_bin_length_at_25x"] = {
-        "projection": "assembly.summary.bin_length_at_25x"
-    }
+    "projection": "assembly_bin_length_at_25x"
+}
 PLOTS["assembly_bin_length_1x_25x_diff"] = {
         "projection": "value",
         "aggregate": [
             {
                 "$project": {
                     "sample.name": 1,
-                    "qcquickie.summary.name_classified_species_1": 1,
+                    "qcquickie_name_classified_species_1": 1,
                     "value": {
                         "$subtract": [
-                            "$assembly.summary.bin_length_at_1x",
-                            "$assembly.summary.bin_length_at_25x"
+                            "$assembly_bin_length_at_1x",
+                            "$assembly_bin_length_at_25x"
                         ]
                     }
                 },
@@ -107,19 +101,19 @@ PLOTS["assembly_bin_length_1x_25x_diff"] = {
         ]
     }
 PLOTS["assembly_bin_contigs_at_1x"] = {
-        "projection": "assembly.summary.bin_contigs_at_1x"
-    }
+    "projection": "assembly_bin_contigs_at_1x"
+}
 PLOTS["assembly_bin_contigs_at_10x"] = {
-        "projection": "assembly.summary.bin_contigs_at_10x"
-    }
+    "projection": "assembly_bin_contigs_at_10x"
+}
 PLOTS["assembly_bin_contigs_at_25x"] = {
-        "projection": "assembly.summary.bin_contigs_at_25x"
-    }
+    "projection": "assembly_bin_contigs_at_25x"
+}
 PLOTS["assembly_N50"] = {
-        "projection": "assembly.quast/report_tsv/N50"
-    }
+    "projection": "assembly.quast/report_tsv/N50"
+}
 PLOTS["assembly_N75"] = {
-        "projection": "assembly.quast/report_tsv/N75"
-    }
+    "projection": "assembly.quast/report_tsv/N75"
+}
 
 DEFAULT_PLOT = 'qcquickie_bin_length_at_1x'

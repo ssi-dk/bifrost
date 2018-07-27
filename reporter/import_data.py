@@ -33,37 +33,41 @@ def get_group_list(run_name=None):
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
-
-# def filter(species=None, group=None, run_name=None, aggregate=None):
-#     result = mongo_interface.filter({path: 1},
-#                                     run_name, species, group, aggregate)
-#     return list(map(lambda x: get_from_path(path, x), result))
-
-
 def filter_name(species=None, group=None, run_name=None):
-    result = mongo_interface.filter({"sample.name": 1},
+    result = mongo_interface.filter({"name": 1},
                                     run_name, species, group)
     return list(result)
 
 
-def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
+def filter_plot(species=None, group=None, run_name=None, func=None):
 
     query_result =  mongo_interface.filter(
         {
-            path: 1,
-            "sample.name" : 1,
-            "qcquickie.summary.name_classified_species_1" : 1
+            "name" : 1,
+            "properties.species" : 1
         },
-        run_name, species, group, aggregate)
-    clean_result = []
+        run_name, species, group)
+    clean_result = {}
+    sample_ids = []
     for item in query_result:
-        clean_result.append({
+        sample_ids.append(item['_id'])
+        clean_result[str(item["_id"])] = {
             "_id": str(item["_id"]),
-            'name': item["sample"]["name"],
-            'value': get_from_path(path, item),
-            'species': item["qcquickie"]["summary"]["name_classified_species_1"]
-        })
-    return pd.DataFrame(clean_result)
+            'name': item["name"],
+            'species': item["properties"]["species"]
+        }
+    component_result = mongo_interface.get_results(sample_ids, 'qcquickie')
+    
+    for item in component_result:
+        s_id = str(item["sample"]["_id"])
+        if 'summary' in item:
+            for summary_key, summary_value in item['summary'].items():
+                clean_result[s_id]['qcquickie_' + summary_key] = summary_value
+        else:
+            print('Missing summary', item)
+        if func is not None:
+            clean_result[s_id] = func(clean_result[s_id])
+    return pd.DataFrame.from_dict(clean_result, orient='index')
 
 
 def filter_all(samples=[]):
@@ -72,7 +76,8 @@ def filter_all(samples=[]):
         'qcquickie.summary': 1,
         'assembly.summary': 1
     }
-    query_result = mongo_interface.filter(projection=projection,samples=samples)
+    query_result = mongo_interface.filter(projection=projection,
+                                          samples=samples)
     dataframe = json_normalize(query_result)
     if "_id" in dataframe: # False for empty results.
         dataframe['_id'] = dataframe['_id'].astype(str)

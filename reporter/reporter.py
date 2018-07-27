@@ -172,9 +172,9 @@ def main(argv):
             run_list = import_data.get_run_list()
             run_list_options = [
                 {
-                    "label": "{} ({})".format(run["run"]["name"],
+                    "label": "{} ({})".format(run["name"],
                                               len(run["samples"])),
-                    "value": run["run"]["name"]
+                    "value": run["name"]
                 } for run in run_list]
             return [
                 html.Div(
@@ -494,7 +494,7 @@ def main(argv):
         sample_names = []
         sample_ids = []
         for sample in samples:
-            sample_names.append(sample['sample']['name'])
+            sample_names.append(sample['name'])
             sample_ids.append(str(sample['_id']))
         return [
             html.Label(
@@ -526,10 +526,10 @@ def main(argv):
     )
     def update_coverage_figure(species_list, group_list, run_name, plot_value):
         plot_query = global_vars.PLOTS[plot_value]["projection"]
-        plot_aggregate = global_vars.PLOTS[plot_value].get("aggregate")
+        plot_func = global_vars.PLOTS[plot_value].get("func")
         
         data = []
-        plot_df = import_data.filter_plot(plot_query, species_list, group_list, run_name, plot_aggregate)
+        plot_df = import_data.filter_plot(species_list, group_list, run_name, plot_func)
         if species_list is None: species_list = []
         for species in species_list:
             species_df = plot_df[plot_df.species == species]
@@ -539,7 +539,7 @@ def main(argv):
                 species_name = "<i>{}</i>".format(short_species(species))
             data.append(
                 go.Box(
-                    x=species_df.loc[:, "value"],
+                    x=species_df.loc[:, plot_query],
                     text=species_df["name"],
                     marker=dict(
                         color=COLOR_DICT.get(species, None),
