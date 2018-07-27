@@ -230,7 +230,7 @@ rule initialize_samples_from_run_folder:
             sample_db = datahandling.load_sample(sample_config)
             sample_db["name"] = sample_name
             sample_db["reads"] = sample_db.get("reads", {})
-            files = glob.glob(os.path.join(run_folder, sample_name) + '*')
+            files = glob.glob(os.path.realpath(os.path.join(run_folder, sample_name)) + '*')
             for file in files:
                 result = re.search(config["read_pattern"], file)
                 if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
