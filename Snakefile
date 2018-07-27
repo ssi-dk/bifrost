@@ -218,6 +218,7 @@ rule initialize_samples_from_run_folder:
 
         sys.stdout.write("Started {}\n".format(rule_name))
 
+        unique_sample_names = {}
         for file in sorted(os.listdir(run_folder)):
             result = re.search(config["read_pattern"], file)
             if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
