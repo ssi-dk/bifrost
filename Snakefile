@@ -8,6 +8,7 @@ import datetime
 import pandas
 import pkg_resources
 import hashlib
+import glob
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 import datahandling
 
@@ -216,23 +217,32 @@ rule initialize_samples_from_run_folder:
         run_folder = str(input.run_folder)
 
         sys.stdout.write("Started {}\n".format(rule_name))
+
+        unique_sample_names = {}
         for file in sorted(os.listdir(run_folder)):
             result = re.search(config["read_pattern"], file)
             if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
                 sample_name = result.group("sample_name")
-                sample_config = sample_name + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
-                sample_db["name"] = sample_name
-                sample_db["reads"] = sample_db.get("reads",{})
-                sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
+                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+
+        for sample_name in unique_sample_names:
+            sample_config = sample_name + "/sample.yaml"
+            sample_db = datahandling.load_sample(sample_config)
+            sample_db["name"] = sample_name
+            sample_db["reads"] = sample_db.get("reads", {})
+            files = glob.glob(os.path.realpath(os.path.join(run_folder, sample_name)) + '*')
+            for file in files:
+                result = re.search(config["read_pattern"], file)
+                if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
+                    sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
                 # may be better to move this out
-                with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
-                    md5sum = hashlib.md5()
-                    for data in iter(lambda: fh.read(4096), b""):
-                        md5sum.update(data)
-                sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
-                sample_db["properties"] = {} # init for others
-                datahandling.save_sample(sample_db, sample_config)
+                    with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
+                        md5sum = hashlib.md5()
+                        for data in iter(lambda: fh.read(4096), b""):
+                            md5sum.update(data)
+                        sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                sample_db["properties"] = {}  # init for others
+            datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
