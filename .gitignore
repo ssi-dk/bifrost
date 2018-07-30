@@ -1,7 +1,7 @@
 testdata
 \.DS_Store
 .vscode
-resources/keys.py
+resources/keys.txt
 start.sh
 *.pyc
 reporter/keys.py
