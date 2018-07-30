@@ -610,8 +610,7 @@ def main(argv):
 
         return species_options
 
-
-    app.run_server(debug=True)
+    app.run_server(debug=True, host="0.0.0.0") # 0.0.0.0 exposes the app to the network.
 
 
 if __name__ == "__main__":
