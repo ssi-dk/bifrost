@@ -386,6 +386,7 @@ rule set_sample_species:
         rule_name = rule_name
     run:
         rule_name = str(params.rule_name)
+        corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
 
         sys.stdout.write("Started {}\n".format(rule_name))
         config = datahandling.load_config()
