@@ -341,7 +341,6 @@ rule set_samples_from_sample_info:
 
         sys.stdout.write("Started {}\n".format(rule_name))
         config = datahandling.load_config()
-        # TODO: handle no sample sheet
         try:
             df = pandas.read_table(corrected_sample_sheet_tsv)
             for index, row in df.iterrows():
@@ -354,6 +353,50 @@ rule set_samples_from_sample_info:
                         if config["samplesheet_column_mapping"][rename_column] == column:
                             column_name = rename_column
                     sample_db["sample_sheet"][column_name] = row[column]
+                datahandling.save_sample(sample_db, sample_config)
+        except pandas.io.common.EmptyDataError:
+            sys.stderr.write("No samplesheet data\n")
+        sys.stdout.write("Done {}\n".format(rule_name))
+
+
+rule_name = "set_sample_species"
+rule set_sample_species:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        rules.set_samples_from_sample_info.output,
+        corrected_sample_sheet_tsv = rules.check__provided_sample_info.output.sample_sheet_tsv,
+    output:
+        touch(rerun_folder + "/set_sample_species"),
+        touch(component + "/set_sample_species")
+    params:
+        rule_name = rule_name
+    run:
+        rule_name = str(params.rule_name)
+        corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
+
+        sys.stdout.write("Started {}\n".format(rule_name))
+        config = datahandling.load_config()
+        try:
+            df = pandas.read_table(corrected_sample_sheet_tsv)
+            for index, row in df.iterrows():
+                sample_config = row["SampleID"] + "/sample.yaml"
+                sample_db = datahandling.load_sample(sample_config)
+                sample_db["properties"] = sample_db.get("properties", {})
+                sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species",))
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
             sys.stderr.write("No samplesheet data\n")
@@ -379,7 +422,7 @@ rule add_components_to_samples:
     # Dynamic
     input:
         rules.initialize_components.output,
-        rules.set_samples_from_sample_info.output,
+        rules.set_sample_species.output,
         component = component,
         run_folder = run_folder
     output:
