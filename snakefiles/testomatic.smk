@@ -52,7 +52,7 @@ rule test_testomatic:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        qcquickie = "qcquickie.qcquickie_complete"  # Depends on qcquickie
+        qcquickie = "qcquickie.qcquickie_complete",  # Depends on qcquickie
         folder = rules.setup.output,
     output:
         test_results = rules.setup.output.folder + "/test_results.yaml",
