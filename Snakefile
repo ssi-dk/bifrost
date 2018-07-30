@@ -396,6 +396,9 @@ rule set_sample_species:
                 sample_config = row["SampleID"] + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
                 sample_db["properties"] = sample_db.get("properties", {})
+                print("Provided: ", sample_db["sample_sheet"].get("provided_species",))
+                print("Database: ", datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species",)))
+                print("")
                 sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species",))
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
