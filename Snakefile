@@ -6,14 +6,16 @@ import sys
 import os
 import datetime
 import pandas
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
-import datahandling
 import pkg_resources
 import hashlib
-configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+import glob
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
+import datahandling
 
+configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 #Saving the config
 component = "serumqc"
+rerun_folder = component + "/delete_to_update"
 
 datahandling.save_yaml(config, "serumqc_config.yaml")
 
@@ -38,12 +40,20 @@ onerror:
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        rerun_folder + "/" + component + "_complete"
 
 
 rule setup:
     output:
         folder = directory(component)
+    shell:
+        "mkdir {output}"
+
+rule setup_rerun:
+    input:
+        component
+    output:
+        rerun_folder = directory(component + "/delete_to_update")
     shell:
         "mkdir {output}"
 
@@ -68,9 +78,10 @@ rule export_conda_env:
     input:
         component
     output:
-        component + "/conda_env.yaml"
+        touch(rerun_folder + "/export_conda_env"),
+        conda_yaml = component + "/conda_env.yaml",
     shell:
-        "conda env export 1> {output} 2> {log.err_file}"
+        "conda env export 1> {output.conda_yaml} 2> {log.err_file}"
 
 
 rule_name = "generate_git_hash"
@@ -93,11 +104,45 @@ rule generate_git_hash:
     input:
         component
     output:
-        component + "/git_hash.txt"
+        touch(rerun_folder + "/generate_git_hash"),
+        git_hash = component + "/git_hash.txt"
     shell:
-        "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output} 2> {log.err_file}"
+        "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output.git_hash} 2> {log.err_file}"
 
 
+rule_name = "copy_run_info"
+rule copy_run_info:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component
+    output:
+        touch(rerun_folder + "/copy_run_info"),
+        touch(component + "/copy_run_info_complete")
+    params:
+        run_folder
+    shell:
+        """
+        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp ; fi;
+        if [ -f \"{params}/RunInfo.xml\" ]; then cp {params}/RunInfo.xml {input}/RunInfo.xml; fi;
+        if [ -f \"{params}/RunParams.xml\" ]; then cp {params}/RunParams.xml {input}/RunParams.xml; fi;
+        """
+
+
+rule_name = "initialize_components"
 rule initialize_components:
     # Static
     message:
@@ -116,11 +161,15 @@ rule initialize_components:
     # Dynamic
     input:
         component = component,
-        git_hash = rules.generate_git_hash.output,
-        conda_env = rules.export_conda_env.output
+        git_hash = rules.generate_git_hash.output.git_hash,
+        conda_env = rules.export_conda_env.output.conda_yaml,
     output:
+        touch(rerun_folder + "/initialize_components"),
         touch(component + "/initialize_components_complete"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         git_hash = str(input.git_hash)
         conda_env = str(input.conda_env)
         component = str(input.component)
@@ -159,27 +208,41 @@ rule initialize_samples_from_run_folder:
         component,
         run_folder = run_folder,
     output:
+        touch(rerun_folder + "/initialize_samples_from_run_folder"),
         touch(component + "/initialize_samples_from_run_folder")
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
 
         sys.stdout.write("Started {}\n".format(rule_name))
+
+        unique_sample_names = {}
         for file in sorted(os.listdir(run_folder)):
             result = re.search(config["read_pattern"], file)
             if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
                 sample_name = result.group("sample_name")
-                sample_config = sample_name + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
-                sample_db["name"] = sample_name
-                sample_db[result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
+                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+
+        for sample_name in unique_sample_names:
+            sample_config = sample_name + "/sample.yaml"
+            sample_db = datahandling.load_sample(sample_config)
+            sample_db["name"] = sample_name
+            sample_db["reads"] = sample_db.get("reads", {})
+            files = glob.glob(os.path.realpath(os.path.join(run_folder, sample_name)) + '*')
+            for file in files:
+                result = re.search(config["read_pattern"], file)
+                if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
+                    sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
                 # may be better to move this out
-                with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
-                    md5sum = hashlib.md5()
-                    for data in iter(lambda: fh.read(4096), b""):
-                        md5sum.update(data)
-                sample_db[result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
-                sample_db["properties"] = {} # init for others
-                datahandling.save_sample(sample_db, sample_config)
+                    with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
+                        md5sum = hashlib.md5()
+                        for data in iter(lambda: fh.read(4096), b""):
+                            md5sum.update(data)
+                        sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                sample_db["properties"] = {}  # init for others
+            datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
@@ -203,11 +266,14 @@ rule check__provided_sample_info:
     input:
         rules.initialize_samples_from_run_folder.output,
     output:
+        touch(rerun_folder + "/check__provided_sample_info"),
         sample_sheet_tsv = component + "/sample_sheet.tsv",
     params:
-        sample_sheet
+        rule_name = rule_name,
+        sample_sheet = sample_sheet
     run:
-        sample_sheet = str(params)
+        rule_name = str(params.rule_name)
+        sample_sheet = str(params.sample_sheet)
         corrected_sample_sheet_tsv = str(output.sample_sheet_tsv)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -263,10 +329,14 @@ rule set_samples_from_sample_info:
         "Running step: {rule}"
     # Dynamic
     input:
-        corrected_sample_sheet_tsv = rules.check__provided_sample_info.output,
+        corrected_sample_sheet_tsv = rules.check__provided_sample_info.output.sample_sheet_tsv,
     output:
+        touch(rerun_folder + "/set_samples_from_sample_info"),
         touch(component + "/set_samples_from_sample_info")
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -280,12 +350,13 @@ rule set_samples_from_sample_info:
                 sample_db["sample_sheet"] = {}
                 for column in df:
                     column_name = column
-                    if column in config["samplesheet_column_mapping"]:
-                        column_name = config["samplesheet_column_mapping"][column]
+                    for rename_column in config["samplesheet_column_mapping"]:
+                        if config["samplesheet_column_mapping"][rename_column] == column:
+                            column_name = rename_column
                     sample_db["sample_sheet"][column_name] = row[column]
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
-            sys.stderr.write("No samplesheet data")
+            sys.stderr.write("No samplesheet data\n")
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
@@ -312,8 +383,12 @@ rule add_components_to_samples:
         component = component,
         run_folder = run_folder
     output:
+        touch(rerun_folder + "/add_components_to_samples"),
         touch(component + "/add_components_to_samples"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
 
@@ -326,20 +401,20 @@ rule add_components_to_samples:
                 sample_name = result.group("sample_name")
                 unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-            for sample_name in unique_sample_names:
-                sample_config = sample_name + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
-                sample_db["components"] = sample_db.get("components", [])
-                for component_name in components:
-                    component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-                    if component_id is not None:
-                        insert_component = True
-                        for sample_component in sample_db["components"]:
-                            if component_id == sample_component["_id"]:
-                                insert_component = False
-                        if insert_component is True:
-                            sample_db["components"].append({"name": component_name, "_id": component_id})
-                datahandling.save_sample(sample_db, sample_config)
+        for sample_name in unique_sample_names:
+            sample_config = sample_name + "/sample.yaml"
+            sample_db = datahandling.load_sample(sample_config)
+            sample_db["components"] = sample_db.get("components", [])
+            for component_name in components:
+                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                if component_id is not None:
+                    insert_component = True
+                    for sample_component in sample_db["components"]:
+                        if component_id == sample_component["_id"]:
+                            insert_component = False
+                    if insert_component is True:
+                        sample_db["components"].append({"name": component_name, "_id": component_id})
+            datahandling.save_sample(sample_db, sample_config)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 
@@ -365,8 +440,12 @@ rule initialize_sample_components_for_each_sample:
         component = component,
         run_folder = run_folder
     output:
+        touch(rerun_folder + "/initialize_sample_components_for_each_sample"),
         touch(component + "/initialize_sample_components_for_each_sample"),
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
 
         sys.stdout.write("Started {}\n".format(rule_name))
@@ -414,14 +493,17 @@ rule initialize_run:
         "Running step: {rule}"
     # Dynamic
     input:
+        rules.copy_run_info.output,
         rules.initialize_sample_components_for_each_sample.output,
         run_folder = run_folder,
         component = component
     output:
+        touch(rerun_folder + "/initialize_run"),
         touch(component + "/initialize_run"),
     params:
-        sample_sheet
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
 
@@ -444,7 +526,13 @@ rule initialize_run:
             sample_config = sample_name + "/sample.yaml"
             sample_db = datahandling.load_sample(sample_config)
             sample_id = sample_db.get("_id",)
-            run_db["samples"].append({"name": sample_name, "_id": sample_id})
+            if sample_id is not None:
+                insert_sample = True
+                for sample in run_db["samples"]:
+                    if sample_id == sample["_id"]:
+                        insert_sample = False
+                if insert_sample is True:
+                    run_db["samples"].append({"name": sample_name, "_id": sample_id})
 
         run_db["components"] = run_db.get("components", [])
         for component_name in components:
@@ -483,8 +571,12 @@ rule setup_sample_components_to_run:
         component = component,
         run_folder = run_folder
     output:
+        touch(rerun_folder + "/setup_sample_components_to_run"),
         bash_file = "run_cmd_serumqc.sh"
+    params:
+        rule_name = rule_name
     run:
+        rule_name = str(params.rule_name)
         run_folder = str(input.run_folder)
         component = str(input.component)
         run_cmd = str(output.bash_file)
@@ -509,7 +601,7 @@ rule setup_sample_components_to_run:
 
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
-                    if sample_name not in config["samples_to_ignore"] and "R1" in sample_db and "R2" in sample_db:
+                    if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                         for component_name in components:
                             component_file = os.path.dirname(workflow.snakefile) + "/snakefiles/" + component_name + ".smk"
                             if os.path.isfile(component_file):
