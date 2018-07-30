@@ -378,6 +378,7 @@ rule set_sample_species:
     # Dynamic
     input:
         rules.set_samples_from_sample_info.output,
+        corrected_sample_sheet_tsv = rules.check__provided_sample_info.output.sample_sheet_tsv,
     output:
         touch(rerun_folder + "/set_sample_species"),
         touch(component + "/set_sample_species")
