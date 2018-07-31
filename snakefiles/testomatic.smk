@@ -42,8 +42,8 @@ rule setup:
     #     """
 
 
-rule_name = "test_testomatic"
-rule test_testomatic:
+rule_name = "run_testomatic"
+rule run_testomatic:
     # Static
     message:
         "Running step:" + rule_name
@@ -57,39 +57,17 @@ rule test_testomatic:
     benchmark:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
+    params:
+        sample = config_sample,
+        sample_component = config_sample.get("name", "ERROR") + \
+            "__" + component + ".yaml",
     input:
         qcquickie = "qcquickie/qcquickie_complete",  # Depends on qcquickie
         qcquickie_yaml = config_sample['name'] + "__qcquickie.yaml",
         folder = rules.setup.output,
     output:
-        test_results = temp(rules.setup.params.folder + "/test_results.yaml"),
+        test_results = rules.setup.params.folder + "/test_results.yaml",
+        complete = rules.all.input
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
                      "../scripts/testomatic.py")
-
-rule_name = "datadump_testomatic"
-rule datadump_testomatic:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        results = rules.test_testomatic.output,
-        folder = rules.setup.output,
-    output:
-        summary = touch(rules.all.input)
-    # params:
-    #     sample = config_sample.get("name", "ERROR") + \
-    #         "__" + component + ".yaml",
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile),
-                     "../scripts/datadump_testomatic.py")
