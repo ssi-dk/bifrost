@@ -1,5 +1,6 @@
 import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
 configfile: "../serumqc_config.yaml"
@@ -7,7 +8,7 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-sample_doc = datahandling.load_sample(sample)
+config_sample = datahandling.load_sample(sample)
 
 component = "testomatic"
 
@@ -23,6 +24,7 @@ onerror:
     datahandling.update_sample_component_failure(
         config_sample.get("name", "ERROR") + "__" + component + ".yaml")
 
+# ruleorder: setup > test_testomatic > datadump_testomatic > all
 
 rule all:
     input:
@@ -31,9 +33,13 @@ rule all:
 
 rule setup:
     output:
-        folder = directory(component)
-    shell:
-        "mkdir {output}"
+        init_file = touch(temp(component + "/" + component + "_initialized")),
+    params:
+        folder = component,
+    # shell:
+    #     """
+    #     mkdir {output}
+    #     """
 
 
 rule_name = "test_testomatic"
@@ -46,18 +52,17 @@ rule test_testomatic:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        qcquickie = "qcquickie.qcquickie_complete",  # Depends on qcquickie
+        qcquickie = "qcquickie/qcquickie_complete",  # Depends on qcquickie
+        qcquickie_yaml = config_sample['name'] + "__qcquickie.yaml",
         folder = rules.setup.output,
     output:
-        test_results = rules.setup.output.folder + "/test_results.yaml",
-    params:
-        sample = sample
+        test_results = temp(rules.setup.params.folder + "/test_results.yaml"),
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
                      "../scripts/testomatic.py")
@@ -72,18 +77,19 @@ rule datadump_testomatic:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.test_testomatic.output,
+        results = rules.test_testomatic.output,
+        folder = rules.setup.output,
     output:
         summary = touch(rules.all.input)
-    params:
-        sample = config_sample.get("name", "ERROR") + \
-            "__" + component + ".yaml",
+    # params:
+    #     sample = config_sample.get("name", "ERROR") + \
+    #         "__" + component + ".yaml",
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
                      "../scripts/datadump_testomatic.py")
