@@ -61,7 +61,7 @@ def get_run_list():
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        runs = list(db.runs.find({"type": "routine"},
+        runs = list(db.runs.find({"type": "default"}, #Leave in routine
                                  {"name": 1,
                                   "_id": 0,
                                   "samples": 1}))
@@ -147,11 +147,11 @@ def filter(projection=None, run_name=None,
            species=None, group=None, samples=None):
     with get_connection() as connection:
         db = connection.get_default_database()
-        query = {}
+        query = []
         sample_set = set()
         if samples is not None:
             sample_set = {ObjectId(id) for id in samples}
-            query["_id"] = {"$in": list(sample_set)}
+            query.append({"_id": {"$in": list(sample_set)}})
         if run_name is not None and run_name != "":
             run_samples = db.runs.find_one(
                 {"name": run_name},
@@ -164,15 +164,24 @@ def filter(projection=None, run_name=None,
         
             if len(sample_set):
                 inter = run_sample_set.intersect(sample_set)
-                query["_id"] = {"$in": list(inter)}
+                query.append({"_id": {"$in": list(inter)}})
             else:
-                query["_id"] = {"$in": list(run_sample_set)}
+                query.append({"_id": {"$in": list(run_sample_set)}})
         if species is not None and len(species) != 0:
-            query["properties.species"] = {
-                "$in": species}
+            query.append({"properties.species": {
+                "$in": species}})
         if group is not None and len(group) != 0:
-            query["sample_sheet.group"] = {"$in": group}
-        return list(db.samples.find(query, projection))
+            if "Not defined" in group:
+                query.append({"$or":
+                    [
+                        {"sample_sheet.group": None},
+                        {"sample_sheet.group": {"$in": group}},
+                        {'sample_sheet.group': {'$exists': False}}
+                    ]
+                })
+            else:
+                query.append({"sample_sheet.group": {"$in": group}})
+        return list(db.samples.find({'$and': query}, projection))
 
 
 def get_results(sample_ids):

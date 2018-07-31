@@ -34,6 +34,7 @@ def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
 def filter_name(species=None, group=None, run_name=None):
+    print('group: ', group)
     result = mongo_interface.filter({"name": 1},
                                     run_name, species, group)
     return list(result)
