@@ -90,17 +90,38 @@ def html_sample_tables(sample_data, data_content, **kwargs):
         )
     else:
         img = []
-    if type(sample_data["sample_sheet.emails"]) is str:
-        n_emails = len(sample_data["sample_sheet.emails"].split(";"))
-        if (n_emails > 1):
-            emails = ", ".join(
-                sample_data["sample_sheet.emails"].split(";")[:2])
-            if (n_emails > 2):
-                emails += ", ..."
+    if 'sample_sheet.sample_name' in sample_data:
+        if 'sample_sheet.emails' in sample_data and type(sample_data["sample_sheet.emails"]) is str:
+            n_emails = len(sample_data["sample_sheet.emails"].split(";"))
+            if (n_emails > 1):
+                emails = ", ".join(
+                    sample_data["sample_sheet.emails"].split(";")[:2])
+                if (n_emails > 2):
+                    emails += ", ..."
+            else:
+                emails = sample_data["sample_sheet.emails"]
         else:
-            emails = sample_data["sample_sheet.emails"]
+            emails = ''
+        sample_sheet_div = [
+            html.H5("Sample Sheet", className="table-header"),
+            html.Div([
+                html.Div([
+                    html_table([
+                        ["Supplied name", sample_data["sample_sheet.sample_name"]],
+                        ["Supplying lab", sample_data["sample_sheet.group"]],
+                        ["Submitter emails", emails],
+                        ["Provided species", html.I(
+                            sample_data["sample_sheet.provided_species"])]
+                    ])
+                ], className="six columns"),
+                html.Div([
+                    html.H6("User Comments", className="table-header"),
+                    sample_data["sample_sheet.Comments"]
+                ], className="six columns"),
+            ], className="row"),
+        ]
     else:
-        emails = ''
+        sample_sheet_div = []
 
     if data_content == "qcquickie":
         title = "QCQuickie Results"
@@ -175,22 +196,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
 
     return html.Div([
         html.Div(img, className="bact_div"),
-        html.H5("Sample Sheet", className="table-header"),
-        html.Div([
-            html.Div([
-                html_table([
-                    ["Supplied name", sample_data["sample_sheet.sample_name"]],
-                    ["Supplying lab", sample_data["sample_sheet.group"]],
-                    ["Submitter emails", emails],
-                    ["Provided species", html.I(
-                        sample_data["sample_sheet.provided_species"])]
-                ])
-            ], className="six columns"),
-            html.Div([
-                html.H6("User Comments", className="table-header"),
-                sample_data["sample_sheet.Comments"]
-            ], className="six columns"),
-        ], className="row"),
+        html.Div(sample_sheet_div),
         html.H5(title, className="table-header"),
         html.Div(report, className="row")
     ], **kwargs)

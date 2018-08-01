@@ -531,7 +531,6 @@ def main(argv):
         
         data = []
         plot_df = import_data.filter_all(species_list, group_list, run_name, plot_func)
-        print(plot_df)
         if species_list is None: species_list = []
         for species in species_list:
             species_df = plot_df[plot_df.species == species]
