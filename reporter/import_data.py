@@ -81,7 +81,6 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
 
     component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:
-        print(item)
         item_id = str(item["sample"]["_id"])
         component = item['component']['name']
         if 'summary' in item:

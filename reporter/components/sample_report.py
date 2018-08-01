@@ -6,6 +6,14 @@ import plotly.graph_objs as go
 import pandas as pd
 import math
 
+def check_test(test_name, sample):
+    if sample['testomatic.' + test_name].startswith('pass'):
+        return ''
+    elif sample['testomatic.' + test_name].startswith('fail'):
+        return 'test-fail'
+    else:
+        return 'test-warning'
+
 def generate_sample_report(dataframe, sample, data_content, plot_data):
     return (
         html.Div(
@@ -23,7 +31,7 @@ def generate_sample_report(dataframe, sample, data_content, plot_data):
                               == sample["species"]],
                     plot_data
                 ),
-                # graph_sample_cov_plot(sample, plot_data[data_content]["contig_coverage"])
+                html_test_table(sample, className='row')
             ],
             className="border-box"
         )
@@ -57,6 +65,7 @@ def html_organisms_table(sample_data, **kwargs):
 #   color_u = COLOR_DICT.get("", "#fee1cd")  # Default
     color_u = "#fee1cd"  # Default
 
+
     return html.Div([
         html.H6("Detected Organisms", className="table-header"),
         html.Table([
@@ -64,7 +73,7 @@ def html_organisms_table(sample_data, **kwargs):
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_1"])),
                 html_td_percentage(percentages[0], color_1)
-            ]),
+            ], className=check_test('species>=95', sample_data)),
             html.Tr([
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_2"])),
@@ -77,6 +86,12 @@ def html_organisms_table(sample_data, **kwargs):
         ])
     ], **kwargs)
 
+def html_test_table(sample_data, **kwargs):
+    rows = []
+    for key, value in sample_data.items():
+        if key.startswith('testomatic'):
+            rows.append([key.split('.')[-1], value])
+    return html.Div(html_table(rows, className="six columns"), **kwargs)
 
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
@@ -111,7 +126,8 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         ["Supplying lab", sample_data["sample_sheet.group"]],
                         ["Submitter emails", emails],
                         ["Provided species", html.I(
-                            sample_data["sample_sheet.provided_species"])]
+                            sample_data["sample_sheet.provided_species"],
+                            className=check_test('submitted==detected', sample_data))]
                     ])
                 ], className="six columns"),
                 html.Div([
@@ -138,21 +154,29 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "{:,}".format(
                             sample_data.get("qcquickie.N50", math.nan))
                     ],
-                    [
-                        "bin length at 1x depth",
-                        "{:,}".format(
-                            sample_data.get("qcquickie.bin_length_at_1x", math.nan))
-                    ],
-                    [
-                        "bin length at 10x depth",
-                        "{:,}".format(
-                            sample_data.get("qcquickie.bin_length_at_10x", math.nan))
-                    ],
+                    {
+                        'list': [
+                            "bin length at 1x depth",
+                            "{:,}".format(
+                                sample_data.get("qcquickie.bin_length_at_1x", math.nan))
+                        ],
+                        'className': check_test('1xgenomesize', sample_data)
+                    },
                     [
                         "bin length at 25x depth",
                         "{:,}".format(
                             sample_data.get("qcquickie.bin_length_at_25x", math.nan))
-                    ]
+                    ],
+                    {
+                        'list': [
+                            "bin length 1x - 25x diff",
+                            "{:,}".format(
+                                sample_data.get("qcquickie.bin_length_at_1x", math.nan) \
+                                - sample_data.get("qcquickie.bin_length_at_25x", math.nan)
+                                )
+                        ],
+                        'className': check_test('1x25xsizediff', sample_data)
+                    }
                 ])
             ], className="six columns"),
             html_organisms_table(sample_data, className="six columns")

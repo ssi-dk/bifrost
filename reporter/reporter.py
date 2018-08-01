@@ -35,6 +35,8 @@ PAGESIZE = 25
 
 def short_species(species):
     words = species.split(' ')
+    if len(words) == 1:
+        return species
     return '{}. {}'.format(words[0][0], ' '.join(words[1:]))
 
 def paginate_df(dataframe, page_n):
