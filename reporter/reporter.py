@@ -42,11 +42,6 @@ def short_species(species):
 def paginate_df(dataframe, page_n):
     return dataframe.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
 
-def html_table_run_information(run_data):
-    return html_table([
-        ["Run Name", run_data["run_name"]]
-    ])
-
 def main(argv):
 
     app = dash.Dash()
@@ -74,7 +69,7 @@ def main(argv):
             html.H1("QC REPORT"),
             html.H2("", id="run-name"),
             dcc.Location(id="url", refresh=False),
-            html.Div(html_table_run_information({'run_name': ""}), id="run-table"),
+            html.Div(html_table([['run_name', ""]]), id="run-table"),
             html_div_summary(),
             html.Div(
                 [
@@ -164,6 +159,20 @@ def main(argv):
             return ""
         else:
             return "Not found"
+
+    @app.callback(
+        Output('group-form', 'className'),
+        [Input('url', 'pathname')]
+    )
+    def hide_group_if_in_url(pathname):
+        if pathname is None:
+            pathname = "/"
+        path = pathname.split('/')
+        print(path)
+        if len(path) > 2 and path[2] != '':
+            return 'hidden'
+        else:
+            return ''
 
     @app.callback(
         Output('run-selector', 'children'),
@@ -267,9 +276,10 @@ def main(argv):
 
     @app.callback(
         Output('group-div', 'children'),
-        [Input('run-name', 'children')]
+        [Input('run-name', 'children'),
+        Input('url', 'pathname')]
     )
-    def update_group_list(run_name):
+    def update_group_list(run_name, pathname):
         if len(run_name) == 0:
             group_list = import_data.get_group_list()
         else:
@@ -289,6 +299,11 @@ def main(argv):
                     "label": "{} ({})".format(item["_id"], item["count"]),
                     "value": item["_id"]
                 })
+        if pathname is None:
+            pathname = "/"
+        path = pathname.split('/')
+        if len(path) > 2 and path[2] != '':
+            group_options = [path[2]]
         return dcc.Dropdown(
             id="group-list",
             options=group_list_options,
@@ -330,16 +345,23 @@ def main(argv):
 
     @app.callback(
         Output('run-table', 'children'),
-        [Input('run-name', 'children')]
+        [Input('run-name', 'children'),
+         Input('url', 'pathname')]
     )
-    def update_run_name(run_name):
+    def update_run_table(run_name, url):
+        if pathname is None:
+            pathname = "/"
+        path = pathname.split('/')
+        if len(path) > 2 and path[2] != '':
+            group = path[2]
         if run_name == "Not found":
-            return html_table_run_information({'run_name': "Run not found!"})
+            run = "Run not found!"
         elif run_name == None:
-            return html_table_run_information({'run_name': "No run selected"})
+            run = "No run selected"
         else:
-            return html_table_run_information({'run_name': run_name})
+            run = run_name
 
+            return html_table([['Run Name', "Run not found!"]])
     @app.callback(
         Output(component_id="page-n",
                component_property="children"),
@@ -576,10 +598,17 @@ def main(argv):
 
     @app.callback(
         Output('group-list', 'value'),
-        [Input('group-all', 'n_clicks')],
+        [Input('group-all', 'n_clicks'),
+         Input('url', 'pathname')],
         [State("run-name", "children")]
     )
-    def all_groups(n_clicks, run_name):
+    def all_groups(n_clicks, pathname, run_name):
+        if pathname is None:
+            pathname = "/"
+        path = pathname.split('/')
+        if len(path) > 2 and path[2] != '':
+            print('path', path)
+            return [path[2]]
         if len(run_name) == 0:
             group_list = import_data.get_group_list()
         else:

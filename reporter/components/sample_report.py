@@ -7,8 +7,11 @@ import pandas as pd
 import math
 
 def check_test(test_name, sample):
+    test_path = 'testomatic.' + test_name
+    if test_path not in sample:
+        return 'test-missing'
     if sample['testomatic.' + test_name].startswith('pass'):
-        return ''
+        return 'test-pass'
     elif sample['testomatic.' + test_name].startswith('fail'):
         return 'test-fail'
     else:
@@ -125,9 +128,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         ["Supplied name", sample_data["sample_sheet.sample_name"]],
                         ["Supplying lab", sample_data["sample_sheet.group"]],
                         ["Submitter emails", emails],
-                        ["Provided species", html.I(
-                            sample_data["sample_sheet.provided_species"],
-                            className=check_test('submitted==detected', sample_data))]
+                        {
+                            'list': ["Provided species", html.I(
+                                sample_data["sample_sheet.provided_species"])],
+                            'className': check_test('submitted==detected', sample_data)
+                        }
                     ])
                 ], className="six columns"),
                 html.Div([

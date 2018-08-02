@@ -52,7 +52,8 @@ def html_div_summary():
                                                 id="group-div"
                                             )
                                         ],
-                                        className="twelve columns"
+                                        className="twelve columns",
+                                        id="group-form"
                                     )
                                 ],
                                 className="row"

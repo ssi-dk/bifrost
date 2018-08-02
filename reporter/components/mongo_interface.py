@@ -61,7 +61,7 @@ def get_run_list():
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+        runs = list(db.runs.find({"type": "testing"}, #Leave in routine
                                  {"name": 1,
                                   "_id": 0,
                                   "samples": 1}))
@@ -168,8 +168,13 @@ def filter(projection=None, run_name=None,
             else:
                 query.append({"_id": {"$in": list(run_sample_set)}})
         if species is not None and len(species) != 0:
-            query.append({"properties.species": {
-                "$in": species}})
+            query.append({"$or":
+                [
+                    {"properties.species": None},
+                    {"properties.species": {"$in": species}},
+                    {'properties.species': {'$exists': False}}
+                ]
+            })
         if group is not None and len(group) != 0:
             if "Not defined" in group:
                 query.append({"$or":
