@@ -344,6 +344,7 @@ rule set_samples_from_sample_info:
         # TODO: handle no sample sheet
         try:
             df = pandas.read_table(corrected_sample_sheet_tsv)
+            unnamed_sample_count = 0
             for index, row in df.iterrows():
                 sample_config = row["SampleID"] + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
@@ -354,6 +355,15 @@ rule set_samples_from_sample_info:
                         if config["samplesheet_column_mapping"][rename_column] == column:
                             column_name = rename_column
                     sample_db["sample_sheet"][column_name] = row[column]
+                # If sample has no name (most likely because there were no reads
+                # in the sample folder) we have to specify a name.
+                if "name" not in sample_db:
+                    if "sample_name" in sample_db["sample_sheet"]:
+                        sample_db["name"] = sample_db["sample_sheet"]["sample_name"]
+                    else:
+                        # Increasing counter before so it starts with Unnamed_1
+                        unnamed_sample_count += 1
+                        sample_db["name"] = "Unnamed_" + unnamed_sample_count
                 datahandling.save_sample(sample_db, sample_config)
         except pandas.io.common.EmptyDataError:
             sys.stderr.write("No samplesheet data\n")
