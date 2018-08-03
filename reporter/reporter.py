@@ -519,6 +519,8 @@ def main(argv):
         sample_names = []
         sample_ids = []
         for sample in samples:
+            if 'name' not in sample:
+                print('noname', sample)
             sample_names.append(sample['name'])
             sample_ids.append(str(sample['_id']))
         return [
