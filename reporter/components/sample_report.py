@@ -9,7 +9,8 @@ import math
 def check_test(test_name, sample):
     test_path = 'testomatic.' + test_name
     if test_path not in sample:
-        return 'test-missing'
+        return "" # show nothing
+        #return 'test-missing'
     if sample['testomatic.' + test_name].startswith('pass'):
         return 'test-pass'
     elif sample['testomatic.' + test_name].startswith('fail'):
