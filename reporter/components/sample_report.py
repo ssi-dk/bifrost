@@ -77,7 +77,7 @@ def html_organisms_table(sample_data, **kwargs):
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_1"])),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test('species>=95', sample_data)),
+            ], className=check_test('qcquickie.minspecies', sample_data)),
             html.Tr([
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_2"])),
@@ -132,7 +132,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         {
                             'list': ["Provided species", html.I(
                                 sample_data["sample_sheet.provided_species"])],
-                            'className': check_test('submitted==detected', sample_data)
+                            'className': check_test('qcquickie.submitted==detected', sample_data)
                         }
                     ])
                 ], className="six columns"),
@@ -166,7 +166,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                             "{:,}".format(
                                 sample_data.get("qcquickie.bin_length_at_1x", math.nan))
                         ],
-                        'className': check_test('1xgenomesize', sample_data)
+                        'className': check_test('qcquickie.1xgenomesize', sample_data)
                     },
                     [
                         "bin length at 25x depth",
@@ -181,7 +181,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                                 - sample_data.get("qcquickie.bin_length_at_25x", math.nan)
                                 )
                         ],
-                        'className': check_test('1x25xsizediff', sample_data)
+                        'className': check_test('qcquickie.1x25xsizediff', sample_data)
                     }
                 ])
             ], className="six columns"),
