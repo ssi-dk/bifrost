@@ -7,16 +7,16 @@ import pandas as pd
 import math
 
 def check_test(test_name, sample):
-    test_path = 'testomatic.' + test_name
+    test_path = "testomatic." + test_name
     if test_path not in sample:
         return "" # show nothing
-        #return 'test-missing'
-    if sample['testomatic.' + test_name].startswith('pass'):
-        return 'test-pass'
-    elif sample['testomatic.' + test_name].startswith('fail'):
-        return 'test-fail'
+        #return "test-missing"
+    if sample["testomatic." + test_name].startswith("pass"):
+        return "test-pass"
+    elif sample["testomatic." + test_name].startswith("fail"):
+        return "test-fail"
     else:
-        return 'test-warning'
+        return "test-warning"
 
 def generate_sample_report(dataframe, sample, data_content, plot_data):
     return (
@@ -35,7 +35,7 @@ def generate_sample_report(dataframe, sample, data_content, plot_data):
                               == sample["species"]],
                     plot_data
                 ),
-                html_test_table(sample, className='row')
+                html_test_table(sample, className="row")
             ],
             className="border-box"
         )
@@ -77,7 +77,7 @@ def html_organisms_table(sample_data, **kwargs):
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_1"])),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test('qcquickie.minspecies', sample_data)),
+            ], className=check_test("qcquickie.minspecies", sample_data)),
             html.Tr([
                 html.Td(
                     html.I(sample_data["qcquickie.name_classified_species_2"])),
@@ -93,8 +93,8 @@ def html_organisms_table(sample_data, **kwargs):
 def html_test_table(sample_data, **kwargs):
     rows = []
     for key, value in sample_data.items():
-        if key.startswith('testomatic'):
-            rows.append([key.split('.')[-1], value])
+        if key.startswith("testomatic"):
+            rows.append([key.split(".")[-1], value])
     return html.Div(html_table(rows, className="six columns"), **kwargs)
 
 def html_sample_tables(sample_data, data_content, **kwargs):
@@ -109,8 +109,8 @@ def html_sample_tables(sample_data, data_content, **kwargs):
         )
     else:
         img = []
-    if 'sample_sheet.sample_name' in sample_data:
-        if 'sample_sheet.emails' in sample_data and type(sample_data["sample_sheet.emails"]) is str:
+    if "sample_sheet.sample_name" in sample_data:
+        if "sample_sheet.emails" in sample_data and type(sample_data["sample_sheet.emails"]) is str:
             n_emails = len(sample_data["sample_sheet.emails"].split(";"))
             if (n_emails > 1):
                 emails = ", ".join(
@@ -120,7 +120,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
             else:
                 emails = sample_data["sample_sheet.emails"]
         else:
-            emails = ''
+            emails = ""
         sample_sheet_div = [
             html.H5("Sample Sheet", className="table-header"),
             html.Div([
@@ -130,9 +130,9 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         ["Supplying lab", sample_data["sample_sheet.group"]],
                         ["Submitter emails", emails],
                         {
-                            'list': ["Provided species", html.I(
+                            "list": ["Provided species", html.I(
                                 sample_data["sample_sheet.provided_species"])],
-                            'className': check_test('qcquickie.submitted==detected', sample_data)
+                            "className": check_test("qcquickie.submitted==detected", sample_data)
                         }
                     ])
                 ], className="six columns"),
@@ -161,12 +161,12 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                             sample_data.get("qcquickie.N50", math.nan))
                     ],
                     {
-                        'list': [
+                        "list": [
                             "bin length at 1x depth",
                             "{:,}".format(
                                 sample_data.get("qcquickie.bin_length_at_1x", math.nan))
                         ],
-                        'className': check_test('qcquickie.1xgenomesize', sample_data)
+                        "className": check_test("qcquickie.1xgenomesize", sample_data)
                     },
                     [
                         "bin length at 25x depth",
@@ -174,14 +174,14 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                             sample_data.get("qcquickie.bin_length_at_25x", math.nan))
                     ],
                     {
-                        'list': [
+                        "list": [
                             "bin length 1x - 25x diff",
                             "{:,}".format(
                                 sample_data.get("qcquickie.bin_length_at_1x", math.nan) \
                                 - sample_data.get("qcquickie.bin_length_at_25x", math.nan)
                                 )
                         ],
-                        'className': check_test('qcquickie.1x25xsizediff', sample_data)
+                        "className": check_test("qcquickie.1x25xsizediff", sample_data)
                     }
                 ])
             ], className="six columns"),
@@ -236,7 +236,7 @@ def graph_sample_depth_plot(sample, run_species, background):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
     return dcc.Graph(
-        id="coverage-1-" + sample['name'],
+        id="coverage-1-" + sample["name"],
         figure={
             "data": [
                 go.Box(
@@ -250,7 +250,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                     marker=dict(
                         size=4,
                         color=get_species_color(
-                            sample['qcquickie.name_classified_species_1'])
+                            sample["qcquickie.name_classified_species_1"])
                     )
                 ),
                 go.Box(
@@ -267,7 +267,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                 )
             ],
             "layout": go.Layout(
-                title="{}: Binned Depth 1x size".format(sample['name']),
+                title="{}: Binned Depth 1x size".format(sample["name"]),
                 hovermode="closest",
                 margin=go.Margin(
                     l=75,
@@ -316,17 +316,17 @@ def graph_sample_cov_plot(sample, sample_coverage):
                     x= df.total_length,
                     y= df.coverage,
                     text= df.index,
-                    mode= 'markers'
+                    mode= "markers"
                 )
             ],
             "layout": go.Layout(
                 title="{}: Binned Depth 1x size".format("something"),
                 xaxis=dict(
-                    type='log',
+                    type="log",
                     autorange=True
                 ),
                 yaxis=dict(
-                    type='log',
+                    type="log",
                     autorange=True
                 )
             )
@@ -336,7 +336,7 @@ def graph_sample_cov_plot(sample, sample_coverage):
 
 def children_sample_list_report(filtered_df, data_content, plot_data):
     report = []
-    for species in filtered_df['species'].unique():
+    for species in filtered_df["species"].unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),

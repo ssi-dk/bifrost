@@ -128,9 +128,9 @@ def html_div_summary():
                                 value=[""],
                                 id="selected-samples-list"
                             ),
-                            html.Div('',
-                                     style={'display': 'none'},
-                                     id='selected-samples-ids')
+                            html.Div("",
+                                     style={"display": "none"},
+                                     id="selected-samples-ids")
                         ],
                         className="four columns",
                         id="selected-samples"
@@ -148,9 +148,9 @@ def html_div_summary():
                                 [
                                     html.Div(
                                         [
-                                            html.Div('',
-                                                     style={'display': 'none'},
-                                                     id='lasso-sample-ids')
+                                            html.Div("",
+                                                     style={"display": "none"},
+                                                     id="lasso-sample-ids")
                                         ],
                                         className="twelve columns",
                                         id="lasso-div"

@@ -230,13 +230,13 @@ rule initialize_samples_from_run_folder:
             sample_db = datahandling.load_sample(sample_config)
             sample_db["name"] = sample_name
             sample_db["reads"] = sample_db.get("reads", {})
-            files = glob.glob(os.path.realpath(os.path.join(run_folder, sample_name)) + '*')
+            files = glob.glob(os.path.realpath(os.path.join(run_folder, sample_name)) + "*")
             for file in files:
                 result = re.search(config["read_pattern"], file)
                 if result and os.path.isfile(os.path.realpath(os.path.join(run_folder, file))):
                     sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(run_folder, file))
                 # may be better to move this out
-                    with open(os.path.realpath(os.path.join(run_folder, file)), 'rb') as fh:
+                    with open(os.path.realpath(os.path.join(run_folder, file)), "rb") as fh:
                         md5sum = hashlib.md5()
                         for data in iter(lambda: fh.read(4096), b""):
                             md5sum.update(data)
@@ -279,7 +279,7 @@ rule check__provided_sample_info:
         sys.stdout.write("Started {}\n".format(rule_name))
         if not os.path.isfile(sample_sheet):
             df = pandas.DataFrame()
-            df.to_csv(corrected_sample_sheet_tsv, sep='\t', index=False)
+            df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
             return 0
         if sample_sheet.endswith(".xlsx"):
             df = pandas.read_excel(sample_sheet)
@@ -307,7 +307,7 @@ rule check__provided_sample_info:
                 else:
                     df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
                 duplicates[row["SampleID"]] -= 1
-        df.to_csv(corrected_sample_sheet_tsv, sep='\t', index=False)
+        df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
         sys.stdout.write("Done {}\n".format(rule_name))
 
 

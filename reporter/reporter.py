@@ -25,7 +25,7 @@ import components.global_vars as global_vars
 
 
 def hex_to_rgb(value):
-    value = value.lstrip('#')
+    value = value.lstrip("#")
     lv = len(value)
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
@@ -34,10 +34,10 @@ def hex_to_rgb(value):
 PAGESIZE = 25
 
 def short_species(species):
-    words = species.split(' ')
+    words = species.split(" ")
     if len(words) == 1:
         return species
-    return '{}. {}'.format(words[0][0], ' '.join(words[1:]))
+    return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
 def paginate_df(dataframe, page_n):
     return dataframe.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
@@ -45,7 +45,7 @@ def paginate_df(dataframe, page_n):
 def main(argv):
 
     app = dash.Dash()
-    app.config['suppress_callback_exceptions'] = True
+    app.config["suppress_callback_exceptions"] = True
 
     # Temp css to make it look nice
     # Dash CSS
@@ -61,15 +61,15 @@ def main(argv):
     app.layout = html.Div([
         html.Div(className="container", children=[
             dash_scroll_up.DashScrollUp(
-                id='input',
-                label='UP',
+                id="input",
+                label="UP",
                 className="button button-primary no-print"
             ),
-            html.Div(dt.DataTable(rows=[{}], editable=False), style={'display': 'none'}),
+            html.Div(dt.DataTable(rows=[{}], editable=False), style={"display": "none"}),
             html.H1("QC REPORT"),
             html.H2("", id="run-name"),
             dcc.Location(id="url", refresh=False),
-            html.Div(html_table([['run_name', ""]]), id="run-table"),
+            html.Div(html_table([["run_name", ""]]), id="run-table"),
             html_div_summary(),
             html.Div(
                 [
@@ -125,8 +125,9 @@ def main(argv):
             html.Div(id="current-report"),
         ]),
         html.Footer(
-            "Created with 🔬 at SSI."
-        , className='footer container')
+            "Created with 🔬 at SSI. Bacteria icons from ",
+            html.A("Flaticon", href="https://www.flaticon.com/"),
+            ".", className="footer container")
     ], className="appcontainer")
 
 
@@ -137,47 +138,47 @@ def main(argv):
 
     #While dev
 
-    @app.server.route('{}<image_path>.svg'.format(static_image_route))
+    @app.server.route("{}<image_path>.svg".format(static_image_route))
     def serve_image(image_path):
-        image_name = '{}.svg'.format(image_path)
+        image_name = "{}.svg".format(image_path)
         if image_name not in list_of_images:
             raise Exception(
-                '"{}" is excluded from the allowed static files'.format(image_path))
+                ""{}" is excluded from the allowed static files".format(image_path))
         return flask.send_from_directory(image_directory, image_name)
 
     @app.callback(
-        Output('run-name', 'children'),
-        [Input('url', 'pathname')]
+        Output("run-name", "children"),
+        [Input("url", "pathname")]
     )
     def update_run_name(pathname):
         if pathname is None:
             pathname = "/"
-        path = pathname.split('/')
-        print('path', path)
+        path = pathname.split("/")
+        print("path", path)
         if import_data.check_run_name(path[1]):
             return path[1]
         elif path[1] == "":
             return ""
         else:
-            print('____________________________________________________________________________________________nortfound', path)
+            print("____________________________________________________________________________________________nortfound", path)
             return "Not found"
 
     @app.callback(
-        Output('group-form', 'className'),
-        [Input('url', 'pathname')]
+        Output("group-form", "className"),
+        [Input("url", "pathname")]
     )
     def hide_group_if_in_url(pathname):
         if pathname is None:
             pathname = "/"
-        path = pathname.split('/')
-        if len(path) > 2 and path[2] != '':
-            return 'hidden'
+        path = pathname.split("/")
+        if len(path) > 2 and path[2] != "":
+            return "hidden"
         else:
-            return ''
+            return ""
 
     @app.callback(
-        Output('run-selector', 'children'),
-        [Input('run-name', 'children')]
+        Output("run-selector", "children"),
+        [Input("run-name", "children")]
     )
     def update_run_list(run_name):
         if len(run_name) == 0:
@@ -227,30 +228,30 @@ def main(argv):
             return "/"
 
     @app.callback(
-        Output('report-count', 'children'),
-        [Input('summary-plot', 'selectedData'),
+        Output("report-count", "children"),
+        [Input("summary-plot", "selectedData"),
          Input("selected-samples-list", "value")]
     )
     def display_selected_data(plot_selected, selected_samples_list):
         if plot_selected is not None and len(plot_selected["points"]):
-            return len([sample['text']
+            return len([sample["text"]
                       for sample in plot_selected["points"]])
         else:
             return len(selected_samples_list[0].split("\n"))
 
     @app.callback(
-        Output('lasso-div', 'children'),
-        [Input('summary-plot', 'selectedData'),
-         Input('report-count', 'children')]
+        Output("lasso-div", "children"),
+        [Input("summary-plot", "selectedData"),
+         Input("report-count", "children")]
     )
     def display_selected_data(selected_data, ignore_this):
         # ignore_this is there so the function is called 
         # when the sample list is updated.
         if selected_data is not None and len(selected_data["points"]):
-            points = [sample['text']
+            points = [sample["text"]
                       for sample in selected_data["points"]]
-            sample_ids = [sample['customdata']
-                          for sample in selected_data['points']] 
+            sample_ids = [sample["customdata"]
+                          for sample in selected_data["points"]] 
             return [
                 html.Label(
                     [
@@ -266,19 +267,19 @@ def main(argv):
                     readOnly=True,
                     value=", ".join(points)
                 ),
-                html.Div(','.join(sample_ids),
-                            style={'display': 'none'},
-                            id='lasso-sample-ids')
+                html.Div(",".join(sample_ids),
+                            style={"display": "none"},
+                            id="lasso-sample-ids")
             ]
         else:
-            return [html.Div('',
-                            style={'display': 'none'},
-                            id='lasso-sample-ids')]
+            return [html.Div("",
+                            style={"display": "none"},
+                            id="lasso-sample-ids")]
 
     @app.callback(
-        Output('group-div', 'children'),
-        [Input('run-name', 'children'),
-        Input('url', 'pathname')]
+        Output("group-div", "children"),
+        [Input("run-name", "children"),
+        Input("url", "pathname")]
     )
     def update_group_list(run_name, pathname):
         if len(run_name) == 0:
@@ -302,8 +303,8 @@ def main(argv):
                 })
         if pathname is None:
             pathname = "/"
-        path = pathname.split('/')
-        if len(path) > 2 and path[2] != '':
+        path = pathname.split("/")
+        if len(path) > 2 and path[2] != "":
             group_options = [path[2]]
         return dcc.Dropdown(
             id="group-list",
@@ -313,8 +314,8 @@ def main(argv):
         )
 
     @app.callback(
-        Output('species-div', 'children'),
-        [Input('run-name', 'children')]
+        Output("species-div", "children"),
+        [Input("run-name", "children")]
     )
     def update_species_list(run_name):
         if len(run_name) == 0:
@@ -345,24 +346,24 @@ def main(argv):
 
 
     @app.callback(
-        Output('run-table', 'children'),
-        [Input('run-name', 'children'),
-         Input('url', 'pathname')]
+        Output("run-table", "children"),
+        [Input("run-name", "children"),
+         Input("url", "pathname")]
     )
     def update_run_table(run_name, pathname):
         if pathname is None:
             pathname = "/"
-        path = pathname.split('/')
-        if len(path) > 2 and path[2] != '':
+        path = pathname.split("/")
+        if len(path) > 2 and path[2] != "":
             group = path[2]
         if run_name == "Not found":
             run = "Run not found!"
-        elif run_name == None or run_name == '':
+        elif run_name == None or run_name == "":
             run = "No run selected"
         else:
             run = run_name
 
-        return html_table([['Run Name', run]])
+        return html_table([["Run Name", run]])
 
     @app.callback(
         Output(component_id="page-n",
@@ -386,22 +387,22 @@ def main(argv):
         Output(component_id="sample-report", component_property="children"),
         [Input(component_id="page-n", component_property="children"),
          Input(component_id="sample-report", component_property="data-content")],
-        [State('lasso-sample-ids', 'children'),
+        [State("lasso-sample-ids", "children"),
          State("selected-samples-ids", "children")]
          )
     def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
         if not (data_content == "qcquickie" or data_content == "assemblatron"):
             return []
         page_n = int(page_n)
-        if lasso_selected != '':
-            samples = lasso_selected.split(',')  # lasso first
+        if lasso_selected != "":
+            samples = lasso_selected.split(",")  # lasso first
         else:
-            samples = prefilter_samples.split(',')
+            samples = prefilter_samples.split(",")
         dataframe = import_data.filter_all(sample_ids=samples)
-        dataframe.sort_values('species')
+        dataframe.sort_values("species")
         page = paginate_df(dataframe, page_n)
         max_page = len(dataframe) // PAGESIZE
-        page_species = page['species'].unique().tolist()
+        page_species = page["species"].unique().tolist()
         species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
         return [
             html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
@@ -437,14 +438,14 @@ def main(argv):
          Input(component_id="update-assemblatron",
                component_property="n_clicks_timestamp"),
          Input(component_id="update-table", component_property="n_clicks_timestamp")],
-        [State('lasso-sample-ids', 'children'),
+        [State("lasso-sample-ids", "children"),
          State("selected-samples-ids", "children")]
     )
     def update_report(n_qcquickie_ts, n_assemblatron_ts, n_table_ts, lasso_selected, prefilter_samples):
-        if lasso_selected != '':
-            samples = lasso_selected.split(',')  # lasso first
-        elif prefilter_samples != '':
-            samples = prefilter_samples.split(',')
+        if lasso_selected != "":
+            samples = lasso_selected.split(",")  # lasso first
+        elif prefilter_samples != "":
+            samples = prefilter_samples.split(",")
         else:
             samples = []
         dataframe = import_data.filter_all(sample_ids=samples)
@@ -460,8 +461,8 @@ def main(argv):
                 content = "assemblatron"
             return [
                 html.H3(title),
-                html.Span("0", style={'display': 'none'}, id="page-n"),
-                html.Span(max_page, style={'display': 'none'}, id="max-page"),
+                html.Span("0", style={"display": "none"}, id="page-n"),
+                html.Span(max_page, style={"display": "none"}, id="max-page"),
                 html.Div(
                     [
                         html.Div(
@@ -503,7 +504,7 @@ def main(argv):
                     filterable=True,
                     sortable=True,
                     selected_row_indices=[],
-                    id='datatable-samples'
+                    id="datatable-samples"
                 )
             ]
         return []
@@ -521,12 +522,12 @@ def main(argv):
         sample_names = []
         sample_ids = []
         for sample in samples:
-            if 'name' not in sample:
-                print('-' * 30 + '  SAMPLE WITH NO NAME:', sample)
-                sample['name'] = sample['sample_sheet']['sample_name']
+            if "name" not in sample:
+                print("-" * 30 + "  SAMPLE WITH NO NAME:", sample)
+                sample["name"] = sample["sample_sheet"]["sample_name"]
 
-            sample_names.append(sample['name'])
-            sample_ids.append(str(sample['_id']))
+            sample_names.append(sample["name"])
+            sample_ids.append(str(sample["_id"]))
         return [
             html.Label(
                 [
@@ -543,9 +544,9 @@ def main(argv):
                 value=["\n".join(sample_names)],
                 id="selected-samples-list"
             ),
-            html.Div(','.join(sample_ids),
-                     style={'display': 'none'},
-                     id='selected-samples-ids')
+            html.Div(",".join(sample_ids),
+                     style={"display": "none"},
+                     id="selected-samples-ids")
         ]
 
     @app.callback(
@@ -581,7 +582,7 @@ def main(argv):
                     pointpos=-1.8,
                     name="{} ({})".format(species_name,species_df["_id"].count()),
                     showlegend=False,
-                    customdata=species_df['_id']
+                    customdata=species_df["_id"]
                 )
             )
         height = max(450, len(species_list)*20 + 200)
@@ -603,16 +604,16 @@ def main(argv):
         }
 
     @app.callback(
-        Output('group-list', 'value'),
-        [Input('group-all', 'n_clicks'),
-         Input('url', 'pathname')],
+        Output("group-list", "value"),
+        [Input("group-all", "n_clicks"),
+         Input("url", "pathname")],
         [State("run-name", "children")]
     )
     def all_groups(n_clicks, pathname, run_name):
         if pathname is None:
             pathname = "/"
-        path = pathname.split('/')
-        if len(path) > 2 and path[2] != '':
+        path = pathname.split("/")
+        if len(path) > 2 and path[2] != "":
             return [path[2]]
         if len(run_name) == 0:
             group_list = import_data.get_group_list()
@@ -628,8 +629,8 @@ def main(argv):
         return group_options
 
     @app.callback(
-        Output('species-list', 'value'),
-        [Input('species-all', 'n_clicks')],
+        Output("species-list", "value"),
+        [Input("species-all", "n_clicks")],
         [State("run-name", "children")]
     )
     def all_species(n_clicks, run_name):
