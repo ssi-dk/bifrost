@@ -34,7 +34,7 @@ def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
 def filter_name(species=None, group=None, run_name=None):
-    result = mongo_interface.filter({"name": 1},
+    result = mongo_interface.filter({"name": 1, 'sample_sheet.sample_name': 1},
                                     run_name, species, group)
     return list(result)
 
@@ -44,17 +44,27 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
         query_result =  mongo_interface.filter(
             {
                 "name" : 1,
-                "properties.species" : 1
+                "properties.species": 1,
+                "sample_sheet.sample_name": 1
             },
             run_name, species, group)
         clean_result = {}
         sample_ids = []
+        unnamed_count = 0
         for item in query_result:
             sample_ids.append(item['_id'])
+            sample_sheet_name = ''
+            if 'name' not in item:
+                if 'sample_sheet' in item:
+                    sample_sheet_name = item['sample_sheet']["sample_name"]
+                else:
+                    print("No sample sheet here: ", item)
+                    sample_sheet_name = 'UNNAMED_' + unnamed_count
+                    unnamed_count += 1
             clean_result[str(item["_id"])] = {
                 "_id": str(item["_id"]),
-                'name': item["name"],
-                'species': item["properties"]["species"]
+                'name': item.get("name", sample_sheet_name),
+                'species': item["properties"].get("species", "Not classified")
             }
     else:
         query_result = mongo_interface.filter(

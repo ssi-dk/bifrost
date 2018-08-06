@@ -153,11 +153,13 @@ def main(argv):
         if pathname is None:
             pathname = "/"
         path = pathname.split('/')
+        print('path', path)
         if import_data.check_run_name(path[1]):
             return path[1]
         elif path[1] == "":
             return ""
         else:
+            print('____________________________________________________________________________________________nortfound', path)
             return "Not found"
 
     @app.callback(
@@ -168,7 +170,6 @@ def main(argv):
         if pathname is None:
             pathname = "/"
         path = pathname.split('/')
-        print(path)
         if len(path) > 2 and path[2] != '':
             return 'hidden'
         else:
@@ -348,7 +349,7 @@ def main(argv):
         [Input('run-name', 'children'),
          Input('url', 'pathname')]
     )
-    def update_run_table(run_name, url):
+    def update_run_table(run_name, pathname):
         if pathname is None:
             pathname = "/"
         path = pathname.split('/')
@@ -356,12 +357,13 @@ def main(argv):
             group = path[2]
         if run_name == "Not found":
             run = "Run not found!"
-        elif run_name == None:
+        elif run_name == None or run_name == '':
             run = "No run selected"
         else:
             run = run_name
 
-            return html_table([['Run Name', "Run not found!"]])
+        return html_table([['Run Name', run]])
+
     @app.callback(
         Output(component_id="page-n",
                component_property="children"),
@@ -520,7 +522,9 @@ def main(argv):
         sample_ids = []
         for sample in samples:
             if 'name' not in sample:
-                print('noname', sample)
+                print('-' * 30 + '  SAMPLE WITH NO NAME:', sample)
+                sample['name'] = sample['sample_sheet']['sample_name']
+
             sample_names.append(sample['name'])
             sample_ids.append(str(sample['_id']))
         return [
@@ -609,7 +613,6 @@ def main(argv):
             pathname = "/"
         path = pathname.split('/')
         if len(path) > 2 and path[2] != '':
-            print('path', path)
             return [path[2]]
         if len(run_name) == 0:
             group_list = import_data.get_group_list()
