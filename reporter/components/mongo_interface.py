@@ -77,8 +77,8 @@ def get_group_list(run_name=None):
                     "_id": 0,
                     "samples._id": 1
                 }
-            )['samples']
-            sample_ids = [s['_id'] for s in run_samples]
+            )["samples"]
+            sample_ids = [s["_id"] for s in run_samples]
             groups = list(db.samples.aggregate([
                 {
                     "$match": {
@@ -115,8 +115,8 @@ def get_species_list(run_name=None):
                     "_id": 0,
                     "samples._id": 1
                 }
-            )['samples']
-            sample_ids = [s['_id'] for s in run_samples]
+            )["samples"]
+            sample_ids = [s["_id"] for s in run_samples]
             species = list(db.samples.aggregate([
                 {
                     "$match": {
@@ -159,8 +159,8 @@ def filter(projection=None, run_name=None,
                     "_id": 0,
                     "samples._id": 1
                 }
-            )['samples']
-            run_sample_set = {s['_id'] for s in run_samples}
+            )["samples"]
+            run_sample_set = {s["_id"] for s in run_samples}
         
             if len(sample_set):
                 inter = run_sample_set.intersect(sample_set)
@@ -172,7 +172,7 @@ def filter(projection=None, run_name=None,
                 [
                     {"properties.species": None},
                     {"properties.species": {"$in": species}},
-                    {'properties.species': {'$exists': False}}
+                    {"properties.species": {"$exists": False}}
                 ]
             })
         if group is not None and len(group) != 0:
@@ -181,18 +181,18 @@ def filter(projection=None, run_name=None,
                     [
                         {"sample_sheet.group": None},
                         {"sample_sheet.group": {"$in": group}},
-                        {'sample_sheet.group': {'$exists': False}}
+                        {"sample_sheet.group": {"$exists": False}}
                     ]
                 })
             else:
                 query.append({"sample_sheet.group": {"$in": group}})
-        return list(db.samples.find({'$and': query}, projection))
+        return list(db.samples.find({"$and": query}, projection))
 
 
 def get_results(sample_ids):
     with get_connection() as connection:
         db = connection.get_default_database()
         return list(db.sample_components.find({
-            'sample._id': {'$in': sample_ids}
-        }, {'summary': 1, 'sample._id': 1, 'component.name' : 1}))
+            "sample._id": {"$in": sample_ids}
+        }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 

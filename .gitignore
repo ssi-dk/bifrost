@@ -1,5 +1,5 @@
-testdata
-\.DS_Store
+*\__pycache__
+*\.DS_Store
 .vscode
 resources/keys.txt
 start.sh

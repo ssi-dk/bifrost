@@ -246,9 +246,9 @@ rule datadump_analysis:
         rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.ariba_mlst.output.folder,
         rules.abricate_on_ariba_resfinder.output.report,
         rules.abricate_on_ariba_plasmidfinder.output.report,
+        folder = rules.ariba_mlst.output.folder,
     output:
         summary = touch(rules.all.input)
     params:

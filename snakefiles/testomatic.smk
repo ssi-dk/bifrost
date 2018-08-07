@@ -63,7 +63,7 @@ rule run_testomatic:
             "__" + component + ".yaml",
     input:
         qcquickie = "qcquickie/qcquickie_complete",  # Depends on qcquickie
-        qcquickie_yaml = config_sample['name'] + "__qcquickie.yaml",
+        qcquickie_yaml = config_sample["name"] + "__qcquickie.yaml",
         folder = rules.setup.output,
     output:
         test_results = rules.setup.params.folder + "/test_results.yaml",

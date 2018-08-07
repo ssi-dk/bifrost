@@ -7,8 +7,8 @@ def html_table(data, **kwargs):
         if isinstance(data_row, list):
             rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row]))
         else:
-            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row['list']],
-                               className=data_row['className']))
+            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row["list"]],
+                               className=data_row["className"]))
     return html.Table(rows, **kwargs)
 
 
