@@ -37,3 +37,11 @@ Then start the program running:
 ```
 snakemake -s code/Snakefile --config components=qcquickie
 ```
+
+You can change any option in config.yaml using the `--config` argument. Here is an example with some useful ones:
+
+```
+--config components=qcquickie,assemblatron,analyzer partition=project run_name=myrun assembly_with=spades
+```
+
+For more info on each parameter, check the sample config file.

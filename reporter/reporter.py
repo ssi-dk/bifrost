@@ -124,10 +124,10 @@ def main(argv):
             ),
             html.Div(id="current-report"),
         ]),
-        html.Footer(
+        html.Footer([
             "Created with 🔬 at SSI. Bacteria icons from ",
             html.A("Flaticon", href="https://www.flaticon.com/"),
-            ".", className="footer container")
+            "."], className="footer container")
     ], className="appcontainer")
 
 
@@ -143,7 +143,7 @@ def main(argv):
         image_name = "{}.svg".format(image_path)
         if image_name not in list_of_images:
             raise Exception(
-                ""{}" is excluded from the allowed static files".format(image_path))
+                "'{}' is excluded from the allowed static files".format(image_path))
         return flask.send_from_directory(image_directory, image_name)
 
     @app.callback(
