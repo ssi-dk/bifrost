@@ -21,12 +21,12 @@ component = "analyzer"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
+    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 rule all:

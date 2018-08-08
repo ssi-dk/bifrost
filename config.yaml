@@ -32,4 +32,4 @@ samplesheet_column_mapping:
   emails: "Initials"
   run_name: "ExperimentName"
   priority: "Priority"
-  provided_species: "Organism"
+  provided_species: "Organism" # a required name
