@@ -57,7 +57,7 @@ rule species_checker_and_setter:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.params.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
         check_file = touch(rules.setup.params.folder + "/species_set"),
