@@ -1,4 +1,5 @@
 import dash_html_components as html
+import dash_table_experiments as dt
 import dash_core_components as dcc
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
@@ -19,6 +20,17 @@ def check_test(test_name, sample):
         return "test-warning"
 
 def generate_sample_report(dataframe, sample, data_content, plot_data):
+    if data_content in ["qcquickie", "assemblatron"]:
+        plot = graph_sample_depth_plot(
+            sample,
+            dataframe[dataframe["species"]
+                    == sample["species"]],
+            plot_data
+        )
+        tests = html_test_table(sample, className="row")
+    else:
+        plot = None
+        tests = None
     return (
         html.Div(
             [
@@ -29,13 +41,8 @@ def generate_sample_report(dataframe, sample, data_content, plot_data):
                 ),
                 html_sample_tables(sample, data_content, className="row"),
 
-                graph_sample_depth_plot(
-                    sample,
-                    dataframe[dataframe["species"]
-                              == sample["species"]],
-                    plot_data
-                ),
-                html_test_table(sample, className="row")
+                plot,
+                tests
             ],
             className="border-box"
         )
@@ -219,6 +226,25 @@ def html_sample_tables(sample_data, data_content, **kwargs):
             ], className="six columns"),
             html_organisms_table(sample_data, className="six columns")
         ]
+    elif data_content == "analyzer":
+        title = "Resfinder Results"
+        resfinder = sample_data['analyzer.ariba_resfinder']
+        if len(resfinder):
+            header = list(resfinder[0].keys())
+            rows = [list(row.values()) for row in resfinder]
+            report = [
+                html.Div([
+                    dt.DataTable(
+                        rows=resfinder,
+                        editable=False,
+                        sortable=False,
+                        column_widths=[100]*len(header)
+                        ),
+                    #html_table([header] + rows)
+                ], className="twelve columns")
+            ]
+        else:
+            report = []
     else:
         title = "No report selected"
         report = []

@@ -86,24 +86,35 @@ def main(argv):
                             html.Div(
                                 [
                                     html.Button(
-                                        "QCQuickie report",
+                                        "QCQuickie",
                                         id="update-qcquickie",
                                         n_clicks_timestamp=0,
                                         className="button-primary u-full-width"
                                     )
                                 ],
-                                className="four columns"
+                                className="three columns"
                             ),
                             html.Div(
                                 [
                                     html.Button(
-                                        "Assemblatron report",
+                                        "Assemblatron",
                                         id="update-assemblatron",
                                         n_clicks_timestamp=0,
                                         className="button-primary u-full-width"
                                     )
                                 ],
-                                className="four columns"
+                                className="three columns"
+                            ),
+                            html.Div(
+                                [
+                                    html.Button(
+                                        "Analyzer",
+                                        id="update-analyzer",
+                                        n_clicks_timestamp=0,
+                                        className="button-primary u-full-width"
+                                    )
+                                ],
+                                className="three columns"
                             ),
                             html.Div(
                                 [
@@ -114,7 +125,7 @@ def main(argv):
                                         className="button-primary u-full-width"
                                     )
                                 ],
-                                className="four columns"
+                                className="three columns"
                             )
                         ],
                         className="row"
@@ -160,7 +171,6 @@ def main(argv):
         elif path[1] == "":
             return ""
         else:
-            print("____________________________________________________________________________________________nortfound", path)
             return "Not found"
 
     @app.callback(
@@ -391,7 +401,7 @@ def main(argv):
          State("selected-samples-ids", "children")]
          )
     def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
-        if not (data_content == "qcquickie" or data_content == "assemblatron"):
+        if data_content not in ["qcquickie", "assemblatron", "analyzer"]:
             return []
         page_n = int(page_n)
         if lasso_selected != "":
@@ -433,15 +443,15 @@ def main(argv):
             return False
 
     @app.callback(
-        Output(component_id="current-report", component_property="children"),
-        [Input(component_id="update-qcquickie", component_property="n_clicks_timestamp"),
-         Input(component_id="update-assemblatron",
-               component_property="n_clicks_timestamp"),
-         Input(component_id="update-table", component_property="n_clicks_timestamp")],
+        Output("current-report", "children"),
+        [Input("update-qcquickie", "n_clicks_timestamp"),
+         Input("update-assemblatron", "n_clicks_timestamp"),
+         Input("update-analyzer", "n_clicks_timestamp"),
+         Input("update-table", "n_clicks_timestamp")],
         [State("lasso-sample-ids", "children"),
          State("selected-samples-ids", "children")]
     )
-    def update_report(n_qcquickie_ts, n_assemblatron_ts, n_table_ts, lasso_selected, prefilter_samples):
+    def update_report(n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts, n_table_ts, lasso_selected, prefilter_samples):
         if lasso_selected != "":
             samples = lasso_selected.split(",")  # lasso first
         elif prefilter_samples != "":
@@ -452,13 +462,17 @@ def main(argv):
     
         max_page = len(dataframe) // PAGESIZE
 
-        if max(n_qcquickie_ts, n_assemblatron_ts) > n_table_ts:  # samples was clicked
-            if n_qcquickie_ts > n_assemblatron_ts:
+        last_module_ts = max(n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts)
+        if last_module_ts > n_table_ts:  # samples was clicked
+            if n_qcquickie_ts == last_module_ts:
                 title = "QCQuickie Report"
                 content = "qcquickie"
-            else:
+            elif n_assemblatron_ts == last_module_ts:
                 title = "Assemblatron Report"
                 content = "assemblatron"
+            else:
+                title = "Analyzer Report"
+                content = "analyzer"
             return [
                 html.H3(title),
                 html.Span("0", style={"display": "none"}, id="page-n"),
@@ -491,12 +505,13 @@ def main(argv):
                 
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
-        elif n_table_ts > n_assemblatron_ts:  # table was clicked
+        elif n_table_ts > last_module_ts:  # table was clicked
             return [
                 html.H3("Table Report"),
-
+                # We have to drop those columns with nested values for the table
                 dt.DataTable(
-                    rows=dataframe.to_dict("records"),
+                    rows=dataframe.drop(
+                        columns="analyzer.ariba_resfinder").to_dict("records"),
 
                     # columns=global_vars.columns, # sets the order
                     # column_widths=[150]*len(global_vars.columns),
