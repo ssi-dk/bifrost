@@ -93,7 +93,7 @@ rule ariba_resfinder:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.params.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
         folder = directory(rules.setup.params.folder + "/ariba_resfinder")
@@ -153,7 +153,7 @@ rule ariba_plasmidfinder:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.params.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
         folder = directory(rules.setup.params.folder + "/ariba_plasmidfinder")
@@ -214,7 +214,7 @@ rule ariba_mlst:
     # Dynamic
     input:
         check_file = rules.species_checker_and_setter.output,
-        folder = rules.setup.params.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
         folder = directory(rules.setup.params.folder + "/ariba_mlst")
@@ -252,6 +252,7 @@ rule datadump_analysis:
     output:
         summary = touch(rules.all.input)
     params:
+        folder = rules.setup.params.folder,
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     conda:
         "../envs/python_packages.yaml"
