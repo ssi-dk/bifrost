@@ -1,5 +1,5 @@
+import sys
 import pandas as pd
-import datetime
 import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 # Utils
@@ -70,11 +70,15 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
                 print("No sample sheet here: ", item)
                 sample_sheet_name = "UNNAMED_" + unnamed_count
                 unnamed_count += 1
-        clean_result[str(item["_id"])] = {
-            "_id": str(item["_id"]),
-            "name": item.get("name", sample_sheet_name),
-            "species": item["properties"].get("species", "Not classified")
-        }
+        try:
+            clean_result[str(item["_id"])] = {
+                "_id": str(item["_id"]),
+                "name": item.get("name", sample_sheet_name),
+                "species": item["properties"].get("species", "Not classified")
+            }
+        except KeyError as e:
+            # we'll just ignore this for now
+            sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
     component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:
         item_id = str(item["sample"]["_id"])
@@ -84,7 +88,8 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
                 clean_result[item_id][component + "." +
                                       summary_key] = summary_value
         else:
-            print("Missing summary", item)
+            pass
+            # print("Missing summary", item)
         if func is not None:
             clean_result[item_id] = func(clean_result[item_id])
     return pd.DataFrame.from_dict(clean_result, orient="index")

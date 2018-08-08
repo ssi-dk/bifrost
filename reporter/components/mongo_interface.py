@@ -61,7 +61,7 @@ def get_run_list():
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+        runs = list(db.runs.find({"type": "testing"}, #Leave in routine
                                  {"name": 1,
                                   "_id": 0,
                                   "samples": 1}))
