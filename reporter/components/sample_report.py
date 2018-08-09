@@ -9,12 +9,12 @@ import math
 
 def check_test(test_name, sample):
     test_path = "testomatic." + test_name
-    if test_path not in sample:
+    if test_path not in sample or pd.isnull(sample[test_path]):
         return "" # show nothing
         #return "test-missing"
-    if sample["testomatic." + test_name].startswith("pass"):
+    if sample[test_path].startswith("pass"):
         return "test-pass"
-    elif sample["testomatic." + test_name].startswith("fail"):
+    elif sample[test_path].startswith("fail"):
         return "test-fail"
     else:
         return "test-warning"
@@ -229,7 +229,8 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     elif data_content == "analyzer":
         title = "Resfinder Results"
         resfinder = sample_data['analyzer.ariba_resfinder']
-        if len(resfinder):
+
+        if not pd.isnull(resfinder) and len(resfinder):
             header = list(resfinder[0].keys())
             rows = [list(row.values()) for row in resfinder]
             report = [
@@ -244,7 +245,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 ], className="twelve columns")
             ]
         else:
-            report = []
+            report = ["No results found"]
     else:
         title = "No report selected"
         report = []
