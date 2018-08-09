@@ -165,7 +165,6 @@ def main(argv):
         if pathname is None:
             pathname = "/"
         path = pathname.split("/")
-        print("path", path)
         if import_data.check_run_name(path[1]):
             return path[1]
         elif path[1] == "":
@@ -506,12 +505,15 @@ def main(argv):
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
         elif n_table_ts > last_module_ts:  # table was clicked
+            if "analyzer.ariba_resfinder" in dataframe:
+                dataframe = dataframe.drop(
+                columns="analyzer.ariba_resfinder")
             return [
                 html.H3("Table Report"),
                 # We have to drop those columns with nested values for the table
+
                 dt.DataTable(
-                    rows=dataframe.drop(
-                        columns="analyzer.ariba_resfinder").to_dict("records"),
+                    rows=dataframe.to_dict("records"),
 
                     # columns=global_vars.columns, # sets the order
                     # column_widths=[150]*len(global_vars.columns),
@@ -537,10 +539,6 @@ def main(argv):
         sample_names = []
         sample_ids = []
         for sample in samples:
-            if "name" not in sample:
-                print("-" * 30 + "  SAMPLE WITH NO NAME:", sample)
-                sample["name"] = sample["sample_sheet"]["sample_name"]
-
             sample_names.append(sample["name"])
             sample_ids.append(str(sample["_id"]))
         return [
@@ -584,21 +582,22 @@ def main(argv):
                 species_name = species
             else:
                 species_name = "<i>{}</i>".format(short_species(species))
-            data.append(
-                go.Box(
-                    x=species_df.loc[:, plot_query],
-                    text=species_df["name"],
-                    marker=dict(
-                        color=COLOR_DICT.get(species, None),
-                        size=4
-                    ),
-                    boxpoints="all",
-                    jitter=0.3,
-                    pointpos=-1.8,
-                    name="{} ({})".format(species_name,species_df["_id"].count()),
-                    showlegend=False,
-                    customdata=species_df["_id"]
-                )
+            if (plot_query in species_df):
+                data.append(
+                    go.Box(
+                        x=species_df.loc[:, plot_query],
+                        text=species_df["name"],
+                        marker=dict(
+                            color=COLOR_DICT.get(species, None),
+                            size=4
+                        ),
+                        boxpoints="all",
+                        jitter=0.3,
+                        pointpos=-1.8,
+                        name="{} ({})".format(species_name,species_df["_id"].count()),
+                        showlegend=False,
+                        customdata=species_df["_id"]
+                    )
             )
         height = max(450, len(species_list)*20 + 200)
         return {

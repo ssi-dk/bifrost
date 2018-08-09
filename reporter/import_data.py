@@ -74,7 +74,7 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
             clean_result[str(item["_id"])] = {
                 "_id": str(item["_id"]),
                 "name": item.get("name", sample_sheet_name),
-                "species": item["properties"].get("species", "Not classified")
+                "species": item.get("properties", {}).get("species", "Not classified")
             }
         except KeyError as e:
             # we'll just ignore this for now

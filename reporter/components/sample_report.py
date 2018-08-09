@@ -262,11 +262,11 @@ def graph_sample_depth_plot(sample, run_species, background):
     # With real data, we should be getting sample data (where to put 1, 10
     # and 25x annotation) and the info for the rest of that species box.
     return dcc.Graph(
-        id="coverage-1-" + sample["name"],
+        id="coverage-1-" + sample["_id"],
         figure={
             "data": [
                 go.Box(
-                    x=run_species["qcquickie.bin_length_at_1x"],
+                    x=run_species.get("qcquickie.bin_length_at_1x"),
                     text=run_species["name"],
                     name="Current run",
                     showlegend=False,
@@ -276,7 +276,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                     marker=dict(
                         size=4,
                         color=get_species_color(
-                            sample["qcquickie.name_classified_species_1"])
+                            sample.get("qcquickie.name_classified_species_1"))
                     )
                 ),
                 go.Box(
@@ -303,7 +303,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                 ),
                 annotations=go.Annotations([
                     go.Annotation(
-                        x=sample["qcquickie.bin_length_at_1x"],
+                        x=sample.get("qcquickie.bin_length_at_1x", []),
                         y=0,
                         text="1x",
                         showarrow=True,
@@ -311,7 +311,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                         ay=0
                     ),
                     go.Annotation(
-                        x=sample["qcquickie.bin_length_at_10x"],
+                        x=sample.get("qcquickie.bin_length_at_10x", []),
                         y=0.0,
                         text="10x",
                         showarrow=True,
@@ -319,7 +319,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                         ay=35
                     ),
                     go.Annotation(
-                        x=sample["qcquickie.bin_length_at_25x"],
+                        x=sample.get("qcquickie.bin_length_at_25x", []),
                         y=0,
                         text="25x",
                         showarrow=True,
