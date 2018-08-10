@@ -61,6 +61,7 @@ rule run_testomatic:
         sample = config_sample,
         sample_component = config_sample.get("name", "ERROR") + \
             "__" + component + ".yaml",
+        assemblatron = config_sample["name"] + "__assemblatron.yaml", # optional
     input:
         qcquickie = "qcquickie/qcquickie_complete",  # Depends on qcquickie
         qcquickie_yaml = config_sample["name"] + "__qcquickie.yaml",

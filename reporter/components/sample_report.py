@@ -207,11 +207,14 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "N50",
                         "{:,}".format(sample_data.get("assemblatron.N50", math.nan))
                     ],
-                    [
-                        "bin length at 1x depth",
-                        "{:,}".format(
-                            sample_data.get("assemblatron.bin_length_at_1x", math.nan))
-                    ],
+                    {
+                        "list": [
+                            "bin length at 1x depth",
+                            "{:,}".format(
+                                sample_data.get("assemblatron.bin_length_at_1x", math.nan))
+                        ],
+                        "className": check_test("assemblatron.1xgenomesize", sample_data)
+                    },
                     [
                         "bin length at 10x depth",
                         "{:,}".format(
@@ -221,14 +224,25 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "bin length at 25x depth",
                         "{:,}".format(
                             sample_data.get("assemblatron.bin_length_at_25x", math.nan))
-                    ]
+                    ],
+                    {
+                        "list": [
+                            "bin length 1x - 25x diff",
+                            "{:,}".format(
+                                sample_data.get(
+                                    "assemblatron.bin_length_at_1x", math.nan)
+                                - sample_data.get("assemblatron.bin_length_at_25x", math.nan)
+                            )
+                        ],
+                        "className": check_test("assemblatron.1x25xsizediff", sample_data)
+                    }
                 ])
             ], className="six columns"),
             html_organisms_table(sample_data, className="six columns")
         ]
     elif data_content == "analyzer":
         title = "Resfinder Results"
-        resfinder = sample_data['analyzer.ariba_resfinder']
+        resfinder = sample_data.get('analyzer.ariba_resfinder', None)
 
         if not pd.isnull(resfinder) and len(resfinder):
             header = list(resfinder[0].keys())
