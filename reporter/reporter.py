@@ -539,7 +539,10 @@ def main(argv):
         sample_names = []
         sample_ids = []
         for sample in samples:
-            sample_names.append(sample["name"])
+            try:
+                sample_names.append(sample["name"])
+            except KeyError:
+                sample_names.append(sample["sample_sheet"]["sample_name"])
             sample_ids.append(str(sample["_id"]))
         return [
             html.Label(
@@ -606,7 +609,7 @@ def main(argv):
                 hovermode="closest",
                 title=plot_value.replace("_", " "),
                 height=height,
-                margin=go.Margin(
+                margin=go.layout.Margin(
                     l=175,
                     r=50,
                     b=25,
