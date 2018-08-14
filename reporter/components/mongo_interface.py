@@ -36,15 +36,15 @@ def get_species_plot_data(species_list, id_list):
         samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
-        res = db.samples.aggregate([
+        res = db.sample_components.aggregate([
             {"$match": {
-                "qcquickie.summary.name_classified_species_1": {"$in": species_list},
-                "_id": {"$not": {"$in": id_list}}
+                "summary.name_classified_species_1": {"$in": species_list},
+                "sample._id": {"$not": {"$in": id_list}}
                 }
             },
             {"$group": {
-                "_id": "$qcquickie.summary.name_classified_species_1",
-                "bin_coverage_at_1x": {"$push": "$qcquickie.summary.bin_length_at_1x"}
+                "_id": "$summary.name_classified_species_1",
+                "bin_coverage_at_1x": {"$push": "$summary.bin_length_at_1x"}
                 }
             }
         ])
@@ -61,7 +61,7 @@ def get_run_list():
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        runs = list(db.runs.find({"type": "testing"}, #Leave in routine
+        runs = list(db.runs.find({"type": "routine"}, #Leave in routine
                                  {"name": 1,
                                   "_id": 0,
                                   "samples": 1}).sort([['name', pymongo.ASCENDING]]))
@@ -71,13 +71,17 @@ def get_group_list(run_name=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         if run_name is not None:
-            run_samples = db.runs.find_one(
+            run = db.runs.find_one(
                 {"name": run_name},
                 {
                     "_id": 0,
                     "samples._id": 1
                 }
-            )["samples"]
+            )
+            if run is None:
+                run_samples = []
+            else:
+                run_samples = run["samples"]
             sample_ids = [s["_id"] for s in run_samples]
             groups = list(db.samples.aggregate([
                 {
@@ -109,13 +113,17 @@ def get_species_list(run_name=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         if run_name is not None:
-            run_samples = db.runs.find_one(
+            run = db.runs.find_one(
                 {"name": run_name},
                 {
                     "_id": 0,
                     "samples._id": 1
                 }
-            )["samples"]
+            )
+            if run is None:
+                run_samples = []
+            else:
+                run_samples = run["samples"]
             sample_ids = [s["_id"] for s in run_samples]
             species = list(db.samples.aggregate([
                 {
@@ -153,14 +161,17 @@ def filter(projection=None, run_name=None,
             sample_set = {ObjectId(id) for id in samples}
             query.append({"_id": {"$in": list(sample_set)}})
         if run_name is not None and run_name != "":
-            run_samples = db.runs.find_one(
+            run = db.runs.find_one(
                 {"name": run_name},
                 {
                     "_id": 0,
                     "samples._id": 1
                 }
-            )["samples"]
-            run_sample_set = {s["_id"] for s in run_samples}
+            )
+            if run is None:
+                run_sample_set = set()
+            else:
+                run_sample_set = {s["_id"] for s in run['samples']}
         
             if len(sample_set):
                 inter = run_sample_set.intersect(sample_set)

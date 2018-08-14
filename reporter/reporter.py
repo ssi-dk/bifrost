@@ -579,29 +579,31 @@ def main(argv):
         data = []
         plot_df = import_data.filter_all(species_list, group_list, run_name, plot_func)
         if species_list is None: species_list = []
-        for species in species_list:
-            species_df = plot_df[plot_df.species == species]
-            if species == "Not classified":
-                species_name = species
-            else:
-                species_name = "<i>{}</i>".format(short_species(species))
-            if (plot_query in species_df):
-                data.append(
-                    go.Box(
-                        x=species_df.loc[:, plot_query],
-                        text=species_df["name"],
-                        marker=dict(
-                            color=COLOR_DICT.get(species, None),
-                            size=4
-                        ),
-                        boxpoints="all",
-                        jitter=0.3,
-                        pointpos=-1.8,
-                        name="{} ({})".format(species_name,species_df["_id"].count()),
-                        showlegend=False,
-                        customdata=species_df["_id"]
-                    )
-            )
+        if 'species' in plot_df:
+            for species in species_list:
+                species_df = plot_df[plot_df.species == species]
+                if species == "Not classified":
+                    species_name = species
+                else:
+                    species_name = "<i>{}</i>".format(short_species(species))
+                if (plot_query in species_df):
+                    data.append(
+                        go.Box(
+                            x=species_df.loc[:, plot_query],
+                            text=species_df["name"],
+                            marker=dict(
+                                color=COLOR_DICT.get(species, None),
+                                size=4
+                            ),
+                            
+                            #boxpoints="all",
+                            jitter=0.3,
+                            pointpos=-1.8,
+                            name="{} ({})".format(species_name,species_df["_id"].count()),
+                            showlegend=False,
+                            customdata=species_df["_id"]
+                        )
+                )
         height = max(450, len(species_list)*20 + 200)
         return {
             "data": data,

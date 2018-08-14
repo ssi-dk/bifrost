@@ -19,13 +19,13 @@ def check_test(test_name, sample):
     else:
         return "test-warning"
 
-def generate_sample_report(dataframe, sample, data_content, plot_data):
+def generate_sample_report(dataframe, sample, data_content, background):
     if data_content in ["qcquickie", "assemblatron"]:
         plot = graph_sample_depth_plot(
             sample,
             dataframe[dataframe["species"]
                     == sample["species"]],
-            plot_data
+            background
         )
         tests = html_test_table(sample, className="row")
     else:
@@ -309,14 +309,14 @@ def graph_sample_depth_plot(sample, run_species, background):
             "layout": go.Layout(
                 title="{}: Binned Depth 1x size".format(sample["name"]),
                 hovermode="closest",
-                margin=go.Margin(
+                margin=go.layout.Margin(
                     l=75,
                     r=50,
                     b=25,
                     t=50
                 ),
-                annotations=go.Annotations([
-                    go.Annotation(
+                annotations=[
+                    dict(
                         x=sample.get("qcquickie.bin_length_at_1x", []),
                         y=0,
                         text="1x",
@@ -324,7 +324,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                         ax=35,
                         ay=0
                     ),
-                    go.Annotation(
+                    dict(
                         x=sample.get("qcquickie.bin_length_at_10x", []),
                         y=0.0,
                         text="10x",
@@ -332,7 +332,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                         ax=0,
                         ay=35
                     ),
-                    go.Annotation(
+                    dict(
                         x=sample.get("qcquickie.bin_length_at_25x", []),
                         y=0,
                         text="25x",
@@ -340,7 +340,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                         ax=-35,
                         ay=0
                     ),
-                ])
+                ]
             )
         },
         style={"height": "200px"}
@@ -380,7 +380,6 @@ def children_sample_list_report(filtered_df, data_content, plot_data):
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            
             html_species_report(filtered_df, species, data_content, plot_data.get(species,[]))
         ]))
     return report
