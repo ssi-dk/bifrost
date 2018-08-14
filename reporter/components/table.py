@@ -2,10 +2,14 @@
 import dash_html_components as html
 
 def html_table(data, **kwargs):
-    return html.Table([
-        html.Tr([html.Td(data_cell) for data_cell in data_row])
-        for data_row in data
-    ], **kwargs)
+    rows = []
+    for data_row in data:
+        if isinstance(data_row, list):
+            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row]))
+        else:
+            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row["list"]],
+                               className=data_row["className"]))
+    return html.Table(rows, **kwargs)
 
 
 def html_td_percentage(value, color):

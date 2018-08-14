@@ -1,6 +1,19 @@
 import pymongo
-from bson.objectid import ObjectId
 import keys  # .gitgnored file
+from bson.objectid import ObjectId
+def get_from_path(path_string, response):
+    fields = path_string.split(".")
+
+    for field in fields:
+        response = response.get(field, None)
+        if response is None:
+            return response
+    return response
+
+def flatten(l, path):
+    """Flattens a list of dicts into a list"""
+    return [get_from_path(path, el) for el in l]
+
 
 def get_connection():
     "Return mongodb connection"
@@ -23,15 +36,15 @@ def get_species_plot_data(species_list, id_list):
         samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
-        res = db.samples.aggregate([
+        res = db.sample_components.aggregate([
             {"$match": {
-                "qcquickie.summary.name_classified_species_1": {"$in": species_list},
-                "_id": {"$not": {"$in": id_list}}
+                "summary.name_classified_species_1": {"$in": species_list},
+                "sample._id": {"$not": {"$in": id_list}}
                 }
             },
             {"$group": {
-                "_id": "$qcquickie.summary.name_classified_species_1",
-                "bin_coverage_at_1x": {"$push": "$qcquickie.summary.bin_length_at_1x"}
+                "_id": "$summary.name_classified_species_1",
+                "bin_coverage_at_1x": {"$push": "$summary.bin_length_at_1x"}
                 }
             }
         ])
@@ -41,41 +54,44 @@ def check_run_name(name):
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        run = db.runs.find({"run.name": name}).limit(1).count(True)
+        run = db.runs.find({"name": name}).limit(1).count(True)
     return run is not 0
 
 def get_run_list():
     with get_connection() as connection:
         db = connection.get_default_database()
         # Fastest.
-        # Change run type when this is fixed in the db
-        runs = list(db.runs.find({"run.type": "project"},
-                                 {"run.name": 1,
+        runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+                                 {"name": 1,
                                   "_id": 0,
-                                  "samples": 1}))
+                                  "samples": 1}).sort([['name', pymongo.ASCENDING]]))
     return runs
 
 def get_group_list(run_name=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         if run_name is not None:
-            sample_ids = list(db.runs.find_one( #Should be taking _id
-                {"run.name": run_name},
+            run = db.runs.find_one(
+                {"name": run_name},
                 {
-                    "_id": -1,
-                    "samples" : 1
+                    "_id": 0,
+                    "samples._id": 1
                 }
-            )["samples"].keys())
+            )
+            if run is None:
+                run_samples = []
+            else:
+                run_samples = run["samples"]
+            sample_ids = [s["_id"] for s in run_samples]
             groups = list(db.samples.aggregate([
                 {
                     "$match": {
-                        "sample.name": {"$in": sample_ids},  # Should be id
-                        "sample.run_folder" : {"$regex" : run_name} # Delete when we switch to id
+                        "_id": {"$in": sample_ids},
                     }
                 },
                 {
                     "$group": {
-                        "_id": "$sample.sample_sheet.group",
+                        "_id": "$sample_sheet.group",
                         "count": {"$sum": 1}
                     }
                 }
@@ -84,7 +100,7 @@ def get_group_list(run_name=None):
             groups = list(db.samples.aggregate([
                 {
                     "$group": {
-                        "_id": "$sample.sample_sheet.group",
+                        "_id": "$sample_sheet.group",
                         "count": { "$sum":1 }
                     }
                 }
@@ -97,24 +113,27 @@ def get_species_list(run_name=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         if run_name is not None:
-            sample_ids = list(db.runs.find_one(  # Should be taking _id
-                {"run.name": run_name},
+            run = db.runs.find_one(
+                {"name": run_name},
                 {
-                    "_id": -1,
-                    "samples": 1
+                    "_id": 0,
+                    "samples._id": 1
                 }
-            )["samples"].keys())
+            )
+            if run is None:
+                run_samples = []
+            else:
+                run_samples = run["samples"]
+            sample_ids = [s["_id"] for s in run_samples]
             species = list(db.samples.aggregate([
                 {
                     "$match": {
-                        "sample.name": {"$in": sample_ids},  # Should be id
-                        # Delete when we switch to id
-                        "sample.run_folder": {"$regex": run_name}
+                        "_id": {"$in": sample_ids}
                     }
                 },
                 {
                     "$group": {
-                        "_id": "$qcquickie.summary.name_classified_species_1",
+                        "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
                 }
@@ -123,7 +142,7 @@ def get_species_list(run_name=None):
             species = list(db.samples.aggregate([
                 {
                     "$group": {
-                        "_id": "$qcquickie.summary.name_classified_species_1",
+                        "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
                 }
@@ -132,24 +151,59 @@ def get_species_list(run_name=None):
     return species
 
 
-def filter(projection=None, run_name=None, species=None, group=None, aggregate=None, samples=None):
+def filter(projection=None, run_name=None,
+           species=None, group=None, samples=None):
     with get_connection() as connection:
         db = connection.get_default_database()
-        query = {}
+        query = []
+        sample_set = set()
         if samples is not None:
-            samples = [ObjectId(id) for id in samples]
-            query["_id"] = {"$in": samples}
+            sample_set = {ObjectId(id) for id in samples}
+            query.append({"_id": {"$in": list(sample_set)}})
         if run_name is not None and run_name != "":
-            query["sample.run_folder"] = {"$regex": run_name} # Fix this when update is done.
-        if species is not None:
-            query["qcquickie.summary.name_classified_species_1"] = {
-                "$in": species}
-        if group is not None:
-            query["sample.sample_sheet.group"] = {"$in": group}
-        if aggregate is None:
-            return list(db.samples.find(query, projection))
-        else:
-            return list(db.samples.aggregate([
-                {'$match': query}
-            ] + aggregate))
+            run = db.runs.find_one(
+                {"name": run_name},
+                {
+                    "_id": 0,
+                    "samples._id": 1
+                }
+            )
+            if run is None:
+                run_sample_set = set()
+            else:
+                run_sample_set = {s["_id"] for s in run['samples']}
+        
+            if len(sample_set):
+                inter = run_sample_set.intersect(sample_set)
+                query.append({"_id": {"$in": list(inter)}})
+            else:
+                query.append({"_id": {"$in": list(run_sample_set)}})
+        if species is not None and len(species) != 0:
+            query.append({"$or":
+                [
+                    {"properties.species": None},
+                    {"properties.species": {"$in": species}},
+                    {"properties.species": {"$exists": False}}
+                ]
+            })
+        if group is not None and len(group) != 0:
+            if "Not defined" in group:
+                query.append({"$or":
+                    [
+                        {"sample_sheet.group": None},
+                        {"sample_sheet.group": {"$in": group}},
+                        {"sample_sheet.group": {"$exists": False}}
+                    ]
+                })
+            else:
+                query.append({"sample_sheet.group": {"$in": group}})
+        return list(db.samples.find({"$and": query}, projection))
+
+
+def get_results(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        return list(db.sample_components.find({
+            "sample._id": {"$in": sample_ids}
+        }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 

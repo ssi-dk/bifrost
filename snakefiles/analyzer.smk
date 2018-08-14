@@ -36,9 +36,9 @@ rule all:
 
 rule setup:
     output:
-        folder = directory(component)
-    shell:
-        "mkdir {output}"
+        init_file = touch(temp(component + "/" + component + "_initialized")),
+    params:
+        folder = component
 
 
 rule_name = "species_checker_and_setter"
@@ -51,16 +51,16 @@ rule species_checker_and_setter:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.output.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        check_file = touch(rules.setup.output.folder + "/species_set"),
+        check_file = touch(rules.setup.params.folder + "/species_set"),
     params:
         kraken_db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
     run:
@@ -87,16 +87,16 @@ rule ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.output.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        folder = directory(rules.setup.output.folder + "/ariba_resfinder")
+        folder = directory(rules.setup.params.folder + "/ariba_resfinder")
     params:
         database = config.get("ariba_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_resfinder_database"))
     conda:
@@ -115,15 +115,15 @@ rule abricate_on_ariba_resfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.ariba_resfinder.output.folder
     output:
-        report = rules.setup.output.folder + "/abricate_on_resfinder_from_ariba.tsv",
+        report = rules.setup.params.folder + "/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = config.get("abricate_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_resfinder_database")),
     conda:
@@ -147,16 +147,16 @@ rule ariba_plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.output.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        folder = directory(rules.setup.output.folder + "/ariba_plasmidfinder")
+        folder = directory(rules.setup.params.folder + "/ariba_plasmidfinder")
     params:
         database = config.get("ariba_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_plasmidfinder_database")),
     conda:
@@ -175,15 +175,15 @@ rule abricate_on_ariba_plasmidfinder:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         folder = rules.ariba_plasmidfinder.output
     output:
-        report = rules.setup.output.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
+        report = rules.setup.params.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
         database = config.get("abricate_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_plasmidfinder_database")),
     conda:
@@ -207,17 +207,17 @@ rule ariba_mlst:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         check_file = rules.species_checker_and_setter.output,
-        folder = rules.setup.output.folder,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        folder = directory(rules.setup.output.folder + "/ariba_mlst")
+        folder = directory(rules.setup.params.folder + "/ariba_mlst")
     params:
         sample = sample
     conda:
@@ -240,18 +240,19 @@ rule datadump_analysis:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.ariba_mlst.output.folder,
         rules.abricate_on_ariba_resfinder.output.report,
         rules.abricate_on_ariba_plasmidfinder.output.report,
+        folder = rules.ariba_mlst.output.folder,
     output:
         summary = touch(rules.all.input)
     params:
+        folder = rules.setup.params.folder,
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     conda:
         "../envs/python_packages.yaml"

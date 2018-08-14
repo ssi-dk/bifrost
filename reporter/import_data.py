@@ -1,5 +1,5 @@
+import sys
 import pandas as pd
-import datetime
 import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 # Utils
@@ -33,47 +33,63 @@ def get_group_list(run_name=None):
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
-
-# def filter(species=None, group=None, run_name=None, aggregate=None):
-#     result = mongo_interface.filter({path: 1},
-#                                     run_name, species, group, aggregate)
-#     return list(map(lambda x: get_from_path(path, x), result))
-
-
 def filter_name(species=None, group=None, run_name=None):
-    result = mongo_interface.filter({"sample.name": 1},
+    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1},
                                     run_name, species, group)
     return list(result)
 
-
-def filter_plot(path, species=None, group=None, run_name=None, aggregate=None):
-
-    query_result =  mongo_interface.filter(
-        {
-            path: 1,
-            "sample.name" : 1,
-            "qcquickie.summary.name_classified_species_1" : 1
-        },
-        run_name, species, group, aggregate)
-    clean_result = []
+##NOTE SPLIT/SHORTEN THIS FUNCTION
+def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=None):
+    if sample_ids is None:
+        query_result =  mongo_interface.filter(
+            {
+                "name" : 1,
+                "properties.species": 1,
+                "sample_sheet.sample_name": 1
+            },
+            run_name, species, group)
+    else:
+        query_result = mongo_interface.filter(
+            {
+                "name": 1,
+                "properties.species": 1,
+                "sample_sheet" : 1
+            },
+            samples=sample_ids)
+    
+    clean_result = {}
+    sample_ids = []
+    unnamed_count = 0
     for item in query_result:
-        clean_result.append({
-            "_id": str(item["_id"]),
-            'name': item["sample"]["name"],
-            'value': get_from_path(path, item),
-            'species': item["qcquickie"]["summary"]["name_classified_species_1"]
-        })
-    return pd.DataFrame(clean_result)
-
-
-def filter_all(samples=[]):
-    projection = {
-        'sample': 1,
-        'qcquickie.summary': 1,
-        'assembly.summary': 1
-    }
-    query_result = mongo_interface.filter(projection=projection,samples=samples)
-    dataframe = json_normalize(query_result)
-    if "_id" in dataframe: # False for empty results.
-        dataframe['_id'] = dataframe['_id'].astype(str)
-    return dataframe
+        sample_ids.append(item["_id"])
+        sample_sheet_name = ""
+        if "name" not in item:
+            if "sample_sheet" in item:
+                sample_sheet_name = item["sample_sheet"]["sample_name"]
+            else:
+                print("No sample sheet here: ", item)
+                sample_sheet_name = "UNNAMED_" + unnamed_count
+                unnamed_count += 1
+        try:
+            clean_result[str(item["_id"])] = {
+                "_id": str(item["_id"]),
+                "name": item.get("name", sample_sheet_name),
+                "species": item.get("properties", {}).get("species", "Not classified")
+            }
+        except KeyError as e:
+            # we'll just ignore this for now
+            sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
+    component_result = mongo_interface.get_results(sample_ids)
+    for item in component_result:
+        item_id = str(item["sample"]["_id"])
+        component = item["component"]["name"]
+        if "summary" in item:
+            for summary_key, summary_value in item["summary"].items():
+                clean_result[item_id][component + "." +
+                                      summary_key] = summary_value
+        else:
+            pass
+            # print("Missing summary", item)
+        if func is not None:
+            clean_result[item_id] = func(clean_result[item_id])
+    return pd.DataFrame.from_dict(clean_result, orient="index")
