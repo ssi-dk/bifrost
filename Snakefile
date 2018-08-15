@@ -347,10 +347,7 @@ rule set_samples_from_sample_info:
             for index, row in df.iterrows():
                 sample_config = row["SampleID"] + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
-                try:
-                    sample_db["sample_sheet"] = {}
-                except:
-                    print(row["SampleID"])
+                sample_db["sample_sheet"] = {}
                 for column in df:
                     column_name = column
                     for rename_column in config["samplesheet_column_mapping"]:
@@ -408,12 +405,11 @@ rule set_sample_species:
             for index, row in df.iterrows():
                 sample_config = row["SampleID"] + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
-                try:
-                    sample_db["properties"] = sample_db.get("properties", {})
-                    sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
-                    datahandling.save_sample(sample_db, sample_config)
-                except AttributeError:
-                    print(row['SampleID'])
+
+                sample_db["properties"] = sample_db.get("properties", {})
+                sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
+                datahandling.save_sample(sample_db, sample_config)
+
         except pandas.io.common.EmptyDataError:
             sys.stderr.write("No samplesheet data\n")
         sys.stdout.write("Done {}\n".format(rule_name))
