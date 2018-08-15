@@ -116,7 +116,10 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     else:
         img = []
 
-    runs = "Run: " + ",".join(sample_data["runs"])
+    if pd.isna(sample_data["runs"]):
+        runs = "Run: None"
+    else:
+        runs = "Run: " + ",".join(sample_data["runs"])
     if "sample_sheet.sample_name" in sample_data:
         if "sample_sheet.emails" in sample_data and type(sample_data["sample_sheet.emails"]) is str:
             n_emails = len(sample_data["sample_sheet.emails"].split(";"))

@@ -5,6 +5,8 @@ from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
 
 pd.options.mode.chained_assignment = None
+
+
 # Utils
 
 def get_from_path(path_string, response):
@@ -42,7 +44,8 @@ def filter_name(species=None, group=None, run_name=None):
     return list(result)
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
-def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=None):
+def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=None, page=None):
+
     if sample_ids is None:
         query_result =  mongo_interface.filter(
             {
@@ -50,7 +53,7 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
                 "properties.species": 1,
                 "sample_sheet": 1
             },
-            run_name, species, group)
+            run_name, species, group, page=page)
     else:
         query_result = mongo_interface.filter(
             {
@@ -58,7 +61,7 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
                 "properties.species": 1,
                 "sample_sheet" : 1
             },
-            samples=sample_ids)
+            samples=sample_ids, page=page)
     
     clean_result = {}
     sample_ids = []
@@ -114,5 +117,5 @@ def add_sample_runs(sample_df):
                 s = sample_runs.get(str(sample["_id"]), [])
                 s.append(run["name"])
                 sample_runs[str(sample["_id"])] = s
-    sample_df.loc[:,'runs'] = sample_df["_id"].map(sample_runs)
+    sample_df.loc[:, 'runs'] = sample_df["_id"].map(sample_runs)
     return sample_df

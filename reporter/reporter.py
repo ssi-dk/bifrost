@@ -23,15 +23,16 @@ from components.sample_report import children_sample_list_report
 from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
 import components.global_vars as global_vars
 
+#Globals
+#also defined in mongo_interface.py
+PAGESIZE = 25
+
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
     lv = len(value)
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
-# Globals
-
-PAGESIZE = 25
 
 def short_species(species):
     words = species.split(" ")
@@ -39,8 +40,6 @@ def short_species(species):
         return species
     return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
-def paginate_df(dataframe, page_n):
-    return dataframe.iloc[page_n*PAGESIZE:(page_n+1)*PAGESIZE]
 
 def main(argv):
 
@@ -409,11 +408,10 @@ def main(argv):
         else:
             samples = prefilter_samples.split(",")
         #NOTE Could optimize this by not getting all sample's info from mongo before paginating
-        dataframe = import_data.filter_all(sample_ids=samples)
-        dataframe.sort_values("species")
-        page = paginate_df(dataframe, page_n)
+        page = import_data.filter_all(sample_ids=samples, page=page_n)
+        page = page.sort_values("name")
         page = import_data.add_sample_runs(page)
-        max_page = len(dataframe) // PAGESIZE
+        max_page = len(samples) // PAGESIZE
         page_species = page["species"].unique().tolist()
         species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
         return [
@@ -444,7 +442,6 @@ def main(argv):
         else:
             return False
 
-    #This one took 3 seconds to respond
     @app.callback(
         Output("current-report", "children"),
         [Input("update-qcquickie", "n_clicks_timestamp"),
