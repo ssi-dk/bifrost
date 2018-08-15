@@ -407,9 +407,11 @@ def main(argv):
             samples = lasso_selected.split(",")  # lasso first
         else:
             samples = prefilter_samples.split(",")
+        #NOTE Could optimize this by not getting all sample's info from mongo before paginating
         dataframe = import_data.filter_all(sample_ids=samples)
         dataframe.sort_values("species")
         page = paginate_df(dataframe, page_n)
+        page = import_data.add_sample_runs(page)
         max_page = len(dataframe) // PAGESIZE
         page_species = page["species"].unique().tolist()
         species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
