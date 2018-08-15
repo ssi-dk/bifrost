@@ -392,6 +392,7 @@ def main(argv):
         else:
             return 0
 
+# 4 seconds to respond
     @app.callback(
         Output(component_id="sample-report", component_property="children"),
         [Input(component_id="page-n", component_property="children"),
@@ -443,6 +444,7 @@ def main(argv):
         else:
             return False
 
+    #This one took 3 seconds to respond
     @app.callback(
         Output("current-report", "children"),
         [Input("update-qcquickie", "n_clicks_timestamp"),
@@ -459,9 +461,8 @@ def main(argv):
             samples = prefilter_samples.split(",")
         else:
             samples = []
-        dataframe = import_data.filter_all(sample_ids=samples)
-    
-        max_page = len(dataframe) // PAGESIZE
+        
+        max_page = len(samples) // PAGESIZE
 
         last_module_ts = max(n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts)
         if last_module_ts > n_table_ts:  # samples was clicked
@@ -507,6 +508,7 @@ def main(argv):
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
         elif n_table_ts > last_module_ts:  # table was clicked
+            dataframe = import_data.filter_all(sample_ids=samples)
             if "analyzer.ariba_resfinder" in dataframe:
                 dataframe = dataframe.drop(
                 columns="analyzer.ariba_resfinder")
