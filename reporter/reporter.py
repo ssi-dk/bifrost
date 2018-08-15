@@ -580,6 +580,7 @@ def main(argv):
         data = []
         plot_df = import_data.filter_all(species_list, group_list, run_name, plot_func)
         if species_list is None: species_list = []
+        species_count = 0
         if 'species' in plot_df:
             for species in species_list:
                 species_df = plot_df[plot_df.species == species]
@@ -588,6 +589,7 @@ def main(argv):
                 else:
                     species_name = "<i>{}</i>".format(short_species(species))
                 if (plot_query in species_df):
+                    if (len(species_df)): species_count += 1
                     data.append(
                         go.Box(
                             x=species_df.loc[:, plot_query],
@@ -605,7 +607,7 @@ def main(argv):
                             customdata=species_df["_id"]
                         )
                 )
-        height = max(450, len(species_list)*20 + 200)
+        height = max(450, species_count*20 + 200)
         return {
             "data": data,
             "layout": go.Layout(
