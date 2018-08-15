@@ -391,7 +391,7 @@ def main(argv):
         else:
             return 0
 
-# 4 seconds to respond
+
     @app.callback(
         Output(component_id="sample-report", component_property="children"),
         [Input(component_id="page-n", component_property="children"),
@@ -409,7 +409,7 @@ def main(argv):
             samples = prefilter_samples.split(",")
         #NOTE Could optimize this by not getting all sample's info from mongo before paginating
         page = import_data.filter_all(sample_ids=samples, page=page_n)
-        page = page.sort_values("name")
+        page = page.sort_values(["species","name"])
         page = import_data.add_sample_runs(page)
         max_page = len(samples) // PAGESIZE
         page_species = page["species"].unique().tolist()

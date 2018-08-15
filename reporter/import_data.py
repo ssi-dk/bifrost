@@ -102,6 +102,7 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
             # print("Missing summary", item)
         if func is not None:
             clean_result[item_id] = func(clean_result[item_id])
+    
     return pd.DataFrame.from_dict(clean_result, orient="index")
 
 def add_sample_runs(sample_df):
