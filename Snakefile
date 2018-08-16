@@ -405,9 +405,11 @@ rule set_sample_species:
             for index, row in df.iterrows():
                 sample_config = row["SampleID"] + "/sample.yaml"
                 sample_db = datahandling.load_sample(sample_config)
+
                 sample_db["properties"] = sample_db.get("properties", {})
                 sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
                 datahandling.save_sample(sample_db, sample_config)
+
         except pandas.io.common.EmptyDataError:
             sys.stderr.write("No samplesheet data\n")
         sys.stdout.write("Done {}\n".format(rule_name))
