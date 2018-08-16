@@ -115,6 +115,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
         )
     else:
         img = []
+
+    if pd.isna(sample_data["runs"]):
+        runs = "Run: None"
+    else:
+        runs = "Run: " + ",".join(sample_data["runs"])
     if "sample_sheet.sample_name" in sample_data:
         if "sample_sheet.emails" in sample_data and type(sample_data["sample_sheet.emails"]) is str:
             n_emails = len(sample_data["sample_sheet.emails"].split(";"))
@@ -266,6 +271,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
 
     return html.Div([
         html.Div(img, className="bact_div"),
+        html.H6(runs),
         html.Div(sample_sheet_div),
         html.H5(title, className="table-header"),
         html.Div(report, className="row")

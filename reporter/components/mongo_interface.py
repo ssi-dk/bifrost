@@ -1,6 +1,10 @@
 import pymongo
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
+
+
+PAGESIZE = 25
+
 def get_from_path(path_string, response):
     fields = path_string.split(".")
 
@@ -152,7 +156,7 @@ def get_species_list(run_name=None):
 
 
 def filter(projection=None, run_name=None,
-           species=None, group=None, samples=None):
+           species=None, group=None, samples=None, page=None):
     with get_connection() as connection:
         db = connection.get_default_database()
         query = []
@@ -197,7 +201,16 @@ def filter(projection=None, run_name=None,
                 })
             else:
                 query.append({"sample_sheet.group": {"$in": group}})
-        return list(db.samples.find({"$and": query}, projection))
+        if page is None:
+            return list(db.samples.find({"$and": query}, projection)
+                .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
+        else:
+            skips = PAGESIZE * (page)
+            return list(db.samples
+                .find({"$and": query}, projection)
+                .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)])
+                .skip(skips)
+                .limit(PAGESIZE))
 
 
 def get_results(sample_ids):
@@ -207,3 +220,7 @@ def get_results(sample_ids):
             "sample._id": {"$in": sample_ids}
         }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 
+def get_sample_runs(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        return list(db.runs.find({"samples": {"$elemMatch": {"_id": {"$in": sample_ids}}}}))
