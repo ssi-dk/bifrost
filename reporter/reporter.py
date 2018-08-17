@@ -599,7 +599,7 @@ def main(argv):
                                 size=4
                             ),
                             
-                            #boxpoints="all",
+                            boxpoints="all",
                             jitter=0.3,
                             pointpos=-1.8,
                             name="{} ({})".format(species_name,species_df["_id"].count()),
