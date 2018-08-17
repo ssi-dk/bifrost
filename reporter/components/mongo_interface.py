@@ -183,13 +183,16 @@ def filter(projection=None, run_name=None,
             else:
                 query.append({"_id": {"$in": list(run_sample_set)}})
         if species is not None and len(species) != 0:
-            query.append({"$or":
-                [
-                    {"properties.species": None},
-                    {"properties.species": {"$in": species}},
-                    {"properties.species": {"$exists": False}}
-                ]
-            })
+            if "Not classified" in species:
+                query.append({"$or":
+                    [
+                        {"properties.species": None},
+                        {"properties.species": {"$in": species}},
+                        {"properties.species": {"$exists": False}}
+                    ]
+                })
+            else:
+                query.append({"properties.species": {"$in": species}})
         if group is not None and len(group) != 0:
             if "Not defined" in group:
                 query.append({"$or":
