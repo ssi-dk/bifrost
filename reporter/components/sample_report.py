@@ -248,8 +248,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     elif data_content == "analyzer":
         title = "Resfinder Results"
         resfinder = sample_data.get('analyzer.ariba_resfinder', None)
-
-        if not pd.isnull(resfinder) and len(resfinder):
+        if (isinstance(resfinder, list) and len(resfinder)):
             header = list(resfinder[0].keys())
             rows = [list(row.values()) for row in resfinder]
             report = [

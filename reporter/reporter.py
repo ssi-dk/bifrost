@@ -217,7 +217,6 @@ def main(argv):
                             id="run-link",
                             href="/",
                             className="button button-primary")
-
                     ],
                     className="three columns"
                 )
