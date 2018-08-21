@@ -362,16 +362,17 @@ def main(argv):
         if pathname is None:
             pathname = "/"
         path = pathname.split("/")
-        if len(path) > 2 and path[2] != "":
-            group = path[2]
         if run_name == "Not found":
             run = "Run not found!"
         elif run_name == None or run_name == "":
             run = "No run selected"
         else:
             run = run_name
-
-        return html_table([["Run Name", run]])
+        if len(path) > 2 and path[2] != "":
+            group = path[2]
+            return html_table([["Run Name", run], ["Supplying lab", group]])
+        else:
+            return html_table([["Run Name", run]])
 
     @app.callback(
         Output(component_id="page-n",
@@ -541,7 +542,7 @@ def main(argv):
         sample_ids = []
         for sample in samples:
             try:
-                sample_names.append(sample["name"])
+                sample_names.append("{}".format(sample["name"]))
             except KeyError:
                 sample_names.append(sample["sample_sheet"]["sample_name"])
             sample_ids.append(str(sample["_id"]))
@@ -556,7 +557,8 @@ def main(argv):
             dcc.Textarea(
                 className="u-full-width",
                 style={"resize": "none",
-                        "height": "300px"},
+                        "height": "300px",
+                        "white-space": "pre"},
                 readOnly=True,
                 value=["\n".join(sample_names)],
                 id="selected-samples-list"
