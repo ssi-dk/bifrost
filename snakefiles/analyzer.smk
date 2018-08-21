@@ -64,18 +64,25 @@ rule species_checker_and_setter:
     params:
         kraken_db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
     run:
-        sample_db = datahandling.load_sample(sample)
-        if sample_db["properties"].get("species",) is None:
-            shell("kraken --threads {threads} --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} > kraken_report.txt")
-            shell("grep -oPm1 '.*\sS\s[0-9]+\s+(\K.*)' kraken_report.txt > {output.check_file}")
-            with open(output.check_file) as species_check:
-                species = species_check.readlines()
-                if len(species) == 1:
-                    sample_db["properties"]["species"] = species[0].strip()
-                    datahandling.save_sample(sample_db, sample)
-        else:
-            shell("touch {output.check_file}")
+        try:
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            sample_db = datahandling.load_sample(sample)
+            if sample_db["properties"].get("species",) is None:
+                shell("kraken --threads {threads} --db {params.kraken_db} {input.reads[0]} {input.reads[1]} | kraken-report --db {params.kraken_db} > kraken_report.txt")
+                shell("grep -oPm1 '.*\sS\s[0-9]+\s+(\K.*)' kraken_report.txt > {output.check_file}")
+                with open(output.check_file) as species_check:
+                    species = species_check.readlines()
+                    if len(species) == 1:
+                        sample_db["properties"]["species"] = species[0].strip()
+                        datahandling.save_sample(sample_db, sample)
+            else:
+                shell("touch {output.check_file}")
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 rule_name = "ariba_resfinder"
 rule ariba_resfinder:
@@ -223,12 +230,19 @@ rule ariba_mlst:
     conda:
         "../envs/ariba.yaml"
     run:
-        mlst_species_DB = datahandling.get_mlst_species_DB(sample)
-        if mlst_species_DB is None:
-            touch(output.folder)
-        else:
-            shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
+        try:
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            mlst_species_DB = datahandling.get_mlst_species_DB(sample)
+            if mlst_species_DB is None:
+                touch(output.folder)
+            else:
+                shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 rule_name = "datadump_analyzer"
 rule datadump_analysis:
