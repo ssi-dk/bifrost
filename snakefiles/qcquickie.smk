@@ -499,7 +499,11 @@ rule species_check__set_species:
         sample_db = datahandling.load_sample(sample)
         with open(output.species, "w") as species_file:
             df = pandas.read_table(input.bracken)
-            sample_db["properties"]["detected_species"] = df["name"].iloc[0]
+            # This try-except will avoid a crash when no species is found by bracken.
+            try:
+                sample_db["properties"]["detected_species"] = df["name"].iloc[0]
+            except IndexError:
+                sample_db["properties"]["detected_species"] = None
             sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
             if sample_db["properties"]["provided_species"] is not None:
                 sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
