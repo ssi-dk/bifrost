@@ -228,17 +228,23 @@ rule assembly_check__rename_contigs:
     output:
         contigs = rules.setup.output.folder + "/contigs.fasta"
     run:
-        input_file = str(input.contigs)
-        output_file = str(output.contigs)
+        try:
+            input_file = str(input.contigs)
+            output_file = str(output.contigs)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        with open(input_file, "r") as fasta_input:
-            records = list(Bio.SeqIO.parse(fasta_input, "fasta"))
-        for record in records:
-            record.id = record.id.split(",")[0]
-            record.description = record.id
-        with open(output_file, "w") as output_handle:
-            Bio.SeqIO.write(records, output_handle, "fasta")
-
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            with open(input_file, "r") as fasta_input:
+                records = list(Bio.SeqIO.parse(fasta_input, "fasta"))
+            for record in records:
+                record.id = record.id.split(",")[0]
+                record.description = record.id
+            with open(output_file, "w") as output_handle:
+                Bio.SeqIO.write(records, output_handle, "fasta")
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 rule_name = "assembly_check__quast_on_contigs"
 rule assembly_check__quast_on_contigs:
@@ -466,13 +472,19 @@ rule contaminant_check__declare_contamination:
     output:
         contaminantion_check = rules.setup.output.folder + "/contaminantion_check.txt"
     run:
-        with open(output.contaminantion_check, "w") as contaminantion_check:
-            df = pandas.read_table(input.bracken)
-            if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
-                contaminantion_check.write("No contaminant detected\n")
-            else:
-                contaminantion_check.write("Contaminant found or Error")
+        try:
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            with open(output.contaminantion_check, "w") as contaminantion_check:
+                df = pandas.read_table(input.bracken)
+                if df[df["fraction_total_reads"] > 0.05].shape[0] == 1:
+                    contaminantion_check.write("No contaminant detected\n")
+                else:
+                    contaminantion_check.write("Contaminant found or Error")
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 rule_name = "species_check__set_species"
 rule species_check__set_species:
@@ -496,21 +508,27 @@ rule species_check__set_species:
     params:
         sample = sample,
     run:
-        sample_db = datahandling.load_sample(sample)
-        with open(output.species, "w") as species_file:
-            df = pandas.read_table(input.bracken)
-            # This try-except will avoid a crash when no species is found by bracken.
-            try:
-                sample_db["properties"]["detected_species"] = df["name"].iloc[0]
-            except IndexError:
-                sample_db["properties"]["detected_species"] = None
-            sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
-            if sample_db["properties"]["provided_species"] is not None:
-                sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
-            else:
-                sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
-        datahandling.save_sample(sample_db, sample)
+        try:
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            sample_db = datahandling.load_sample(sample)
+            with open(output.species, "w") as species_file:
+                df = pandas.read_table(input.bracken)
+                # This try-except will avoid a crash when no species is found by bracken.
+                try:
+                    sample_db["properties"]["detected_species"] = df["name"].iloc[0]
+                except IndexError:
+                    sample_db["properties"]["detected_species"] = None
+                sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
+                if sample_db["properties"]["provided_species"] is not None:
+                    sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
+                else:
+                    sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
+            datahandling.save_sample(sample_db, sample)
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 rule_name = "datadump_qcquickie"
 rule datadump_qcquickie:
