@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 # TODO: should refactor a lot of this Snakefile into a more snakemake orientated solution utilizing wildcards
 import re
 import sys
