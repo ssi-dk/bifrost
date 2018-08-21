@@ -74,7 +74,7 @@ def filter_all(species=None, group=None, run_name=None, func=None, sample_ids=No
                 sample_sheet_name = item["sample_sheet"]["sample_name"]
             else:
                 print("No sample sheet here: ", item)
-                sample_sheet_name = "UNNAMED_" + unnamed_count
+                sample_sheet_name = "UNNAMED_" + str(unnamed_count)
                 unnamed_count += 1
         try:
             clean_result[str(item["_id"])] = {

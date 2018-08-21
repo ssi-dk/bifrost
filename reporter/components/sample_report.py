@@ -301,7 +301,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                 ),
                 go.Box(
                     x=background,
-                    # boxpoints="all",
+                    boxpoints="all",
                     showlegend=False,
                     name="Prev. runs",
                     jitter=0.3,

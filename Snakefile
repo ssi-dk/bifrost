@@ -137,7 +137,7 @@ rule copy_run_info:
         run_folder
     shell:
         """
-        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp ; fi;
+        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp ; chmod g+w {input}/InterOp; fi;
         if [ -f \"{params}/RunInfo.xml\" ]; then cp {params}/RunInfo.xml {input}/RunInfo.xml; fi;
         if [ -f \"{params}/RunParams.xml\" ]; then cp {params}/RunParams.xml {input}/RunParams.xml; fi;
         """
