@@ -283,43 +283,48 @@ rule check__provided_sample_info:
         rule_name = rule_name,
         sample_sheet = sample_sheet
     run:
-        rule_name = str(params.rule_name)
-        sample_sheet = str(params.sample_sheet)
-        corrected_sample_sheet_tsv = str(output.sample_sheet_tsv)
+        try:
+            rule_name = str(params.rule_name)
+            sample_sheet = str(params.sample_sheet)
+            corrected_sample_sheet_tsv = str(output.sample_sheet_tsv)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        sys.stdout.write("Started {}\n".format(rule_name))
-        if not os.path.isfile(sample_sheet):
-            df = pandas.DataFrame()
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            if not os.path.isfile(sample_sheet):
+                df = pandas.DataFrame()
+                df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
+                return 0
+            if sample_sheet.endswith(".xlsx"):
+                df = pandas.read_excel(sample_sheet)
+            else:  # assume it's a tsv
+                df = pandas.read_table(sample_sheet)
+            item_rename_dict = {}
+            badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
+            for item in badly_named_samples["SampleID"].tolist():
+                datahandling.log(log_out, "Renaming '{}' to '{}'".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())))
+            for item in df["SampleID"].tolist():
+                item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())
+            df["SampleID"] = df["SampleID"].map(item_rename_dict)
+            duplicates = {}
+            for item in df["SampleID"].tolist():
+                if df["SampleID"].tolist().count(item) > 1:
+                    datahandling.log(log_out, "Duplicate SampleID's exist {}".format(item))
+                    duplicates[item] = df["SampleID"].tolist().count(item)
+                    # duplicates have to be done on id basis
+            ridiculous_count = 0
+            for i, row in df.iterrows():
+                if df.loc[i, "SampleID"] in duplicates:
+                    if df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]]) in df["SampleID"].tolist():
+                        ridiculous_count += 1
+                        df.loc[i, "SampleID"] = "VERY_BAD_SAMPLE_NAME_" + str(ridiculous_count)
+                    else:
+                        df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
+                    duplicates[row["SampleID"]] -= 1
             df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
-            return 0
-        if sample_sheet.endswith(".xlsx"):
-            df = pandas.read_excel(sample_sheet)
-        else:  # assume it's a tsv
-            df = pandas.read_table(sample_sheet)
-        item_rename_dict = {}
-        badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
-        for item in badly_named_samples["SampleID"].tolist():
-            sys.stdout.write("Renaming '{}' to '{}'".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())))
-        for item in df["SampleID"].tolist():
-            item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())
-        df["SampleID"] = df["SampleID"].map(item_rename_dict)
-        duplicates = {}
-        for item in df["SampleID"].tolist():
-            if df["SampleID"].tolist().count(item) > 1:
-                sys.stdout.write("Duplicate SampleID's exist {}".format(item))
-                duplicates[item] = df["SampleID"].tolist().count(item)
-                # duplicates have to be done on id basis
-        ridiculous_count = 0
-        for i, row in df.iterrows():
-            if df.loc[i, "SampleID"] in duplicates:
-                if df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]]) in df["SampleID"].tolist():
-                    ridiculous_count += 1
-                    df.loc[i, "SampleID"] = "VERY_BAD_SAMPLE_NAME_" + str(ridiculous_count)
-                else:
-                    df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
-                duplicates[row["SampleID"]] -= 1
-        df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
-        sys.stdout.write("Done {}\n".format(rule_name))
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "set_samples_from_sample_info"
@@ -347,37 +352,42 @@ rule set_samples_from_sample_info:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
-
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
         try:
-            df = pandas.read_table(corrected_sample_sheet_tsv)
-            unnamed_sample_count = 0
-            for index, row in df.iterrows():
-                sample_config = row["SampleID"] + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
-                sample_db["sample_sheet"] = {}
-                for column in df:
-                    column_name = column
-                    for rename_column in config["samplesheet_column_mapping"]:
-                        if config["samplesheet_column_mapping"][rename_column] == column:
-                            column_name = rename_column
-                    sample_db["sample_sheet"][column_name] = row[column]
-                # If sample has no name (most likely because there were no reads
-                # in the sample folder) we have to specify a name.
-                if "name" not in sample_db:
-                    if "sample_name" in sample_db["sample_sheet"]:
-                        sample_db["name"] = sample_db["sample_sheet"]["sample_name"]
-                    else:
-                        # Increasing counter before so it starts with Unnamed_1
-                        unnamed_sample_count += 1
-                        sample_db["name"] = "Unnamed_" + unnamed_sample_count
-                datahandling.save_sample(sample_db, sample_config)
-        except pandas.io.common.EmptyDataError:
-            sys.stderr.write("No samplesheet data\n")
-        sys.stdout.write("Done {}\n".format(rule_name))
+            rule_name = str(params.rule_name)
+            corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
+
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            try:
+                df = pandas.read_table(corrected_sample_sheet_tsv)
+                unnamed_sample_count = 0
+                for index, row in df.iterrows():
+                    sample_config = row["SampleID"] + "/sample.yaml"
+                    sample_db = datahandling.load_sample(sample_config)
+                    sample_db["sample_sheet"] = {}
+                    for column in df:
+                        column_name = column
+                        for rename_column in config["samplesheet_column_mapping"]:
+                            if config["samplesheet_column_mapping"][rename_column] == column:
+                                column_name = rename_column
+                        sample_db["sample_sheet"][column_name] = row[column]
+                    # If sample has no name (most likely because there were no reads
+                    # in the sample folder) we have to specify a name.
+                    if "name" not in sample_db:
+                        if "sample_name" in sample_db["sample_sheet"]:
+                            sample_db["name"] = sample_db["sample_sheet"]["sample_name"]
+                        else:
+                            # Increasing counter before so it starts with Unnamed_1
+                            unnamed_sample_count += 1
+                            sample_db["name"] = "Unnamed_" + unnamed_sample_count
+                    datahandling.save_sample(sample_db, sample_config)
+            except pandas.io.common.EmptyDataError:
+                datahandling.log(log_err, ("No samplesheet data\n"))
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "set_sample_species"
@@ -406,24 +416,29 @@ rule set_sample_species:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
-
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
         try:
-            df = pandas.read_table(corrected_sample_sheet_tsv)
-            for index, row in df.iterrows():
-                sample_config = row["SampleID"] + "/sample.yaml"
-                sample_db = datahandling.load_sample(sample_config)
+            rule_name = str(params.rule_name)
+            corrected_sample_sheet_tsv = str(input.corrected_sample_sheet_tsv)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-                sample_db["properties"] = sample_db.get("properties", {})
-                sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
-                datahandling.save_sample(sample_db, sample_config)
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            try:
+                df = pandas.read_table(corrected_sample_sheet_tsv)
+                for index, row in df.iterrows():
+                    sample_config = row["SampleID"] + "/sample.yaml"
+                    sample_db = datahandling.load_sample(sample_config)
 
-        except pandas.io.common.EmptyDataError:
-            sys.stderr.write("No samplesheet data\n")
-        sys.stdout.write("Done {}\n".format(rule_name))
+                    sample_db["properties"] = sample_db.get("properties", {})
+                    sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
+                    datahandling.save_sample(sample_db, sample_config)
+
+            except pandas.io.common.EmptyDataError:
+                datahandling.log(log_err, "No samplesheet data\n")
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "add_components_to_samples"
@@ -454,34 +469,39 @@ rule add_components_to_samples:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        sample_folder = str(input.sample_folder)
-        component = str(input.component)
+        try:
+            rule_name = str(params.rule_name)
+            sample_folder = str(input.sample_folder)
+            component = str(input.component)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
-        unique_sample_names = {}
-        for file in sorted(os.listdir(sample_folder)):
-            result = re.search(config["read_pattern"], file)
-            if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                sample_name = result.group("sample_name")
-                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            unique_sample_names = {}
+            for file in sorted(os.listdir(sample_folder)):
+                result = re.search(config["read_pattern"], file)
+                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
+                    sample_name = result.group("sample_name")
+                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-        for sample_name in unique_sample_names:
-            sample_config = sample_name + "/sample.yaml"
-            sample_db = datahandling.load_sample(sample_config)
-            sample_db["components"] = sample_db.get("components", [])
-            for component_name in components:
-                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-                if component_id is not None:
-                    insert_component = True
-                    for sample_component in sample_db["components"]:
-                        if component_id == sample_component["_id"]:
-                            insert_component = False
-                    if insert_component is True:
-                        sample_db["components"].append({"name": component_name, "_id": component_id})
-            datahandling.save_sample(sample_db, sample_config)
-        sys.stdout.write("Done {}\n".format(rule_name))
+            for sample_name in unique_sample_names:
+                sample_config = sample_name + "/sample.yaml"
+                sample_db = datahandling.load_sample(sample_config)
+                sample_db["components"] = sample_db.get("components", [])
+                for component_name in components:
+                    component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                    if component_id is not None:
+                        insert_component = True
+                        for sample_component in sample_db["components"]:
+                            if component_id == sample_component["_id"]:
+                                insert_component = False
+                        if insert_component is True:
+                            sample_db["components"].append({"name": component_name, "_id": component_id})
+                datahandling.save_sample(sample_db, sample_config)
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "initialize_sample_components_for_each_sample"
@@ -511,34 +531,39 @@ rule initialize_sample_components_for_each_sample:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        sample_folder = str(input.sample_folder)
+        try:
+            rule_name = str(params.rule_name)
+            sample_folder = str(input.sample_folder)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
-        unique_sample_names = {}
-        for file in sorted(os.listdir(sample_folder)):
-            result = re.search(config["read_pattern"], file)
-            if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                sample_name = result.group("sample_name")
-                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            unique_sample_names = {}
+            for file in sorted(os.listdir(sample_folder)):
+                result = re.search(config["read_pattern"], file)
+                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
+                    sample_name = result.group("sample_name")
+                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-        for sample_name in unique_sample_names:
-            sample_config = sample_name + "/sample.yaml"
-            sample_db = datahandling.load_sample(sample_config)
+            for sample_name in unique_sample_names:
+                sample_config = sample_name + "/sample.yaml"
+                sample_db = datahandling.load_sample(sample_config)
 
-            sample_id = sample_db.get("_id",)
-            component_dict = sample_db.get("components",[])
-            for item in component_dict:
-                component_name = item.get("name",)
-                component_id = item.get("_id",)
-                sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
-                sample_component_db = datahandling.load_sample_component(sample_component_path)
-                sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
-                sample_component_db["component"] = {"name": component_name, "_id": component_id}
-                sample_component_db["status"] = "initialized"
-                datahandling.save_sample_component(sample_component_db, sample_component_path)
-        sys.stdout.write("Done {}\n".format(rule_name))
+                sample_id = sample_db.get("_id",)
+                component_dict = sample_db.get("components",[])
+                for item in component_dict:
+                    component_name = item.get("name",)
+                    component_id = item.get("_id",)
+                    sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
+                    sample_component_db = datahandling.load_sample_component(sample_component_path)
+                    sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
+                    sample_component_db["component"] = {"name": component_name, "_id": component_id}
+                    sample_component_db["status"] = "initialized"
+                    datahandling.save_sample_component(sample_component_db, sample_component_path)
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "initialize_run"
@@ -569,49 +594,54 @@ rule initialize_run:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        sample_folder = str(input.sample_folder)
-        run_folder = str(input.run_folder)
+        try:
+            rule_name = str(params.rule_name)
+            sample_folder = str(input.sample_folder)
+            run_folder = str(input.run_folder)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
-        unique_sample_names = {}
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            unique_sample_names = {}
 
-        run_db = datahandling.load_run(run_folder + "/run.yaml")
-        run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
-        run_db["type"] = config.get("type", "default")
-        for folder in sorted(os.listdir(run_folder)):
-            if os.path.isfile(os.path.realpath(os.path.join(run_folder, folder, "sample.yaml"))):
-                sample_name = folder
-                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+            run_db = datahandling.load_run(run_folder + "/run.yaml")
+            run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
+            run_db["type"] = config.get("type", "default")
+            for folder in sorted(os.listdir(".")):
+                if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
+                    sample_name = folder
+                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
-        run_db["samples"] = run_db.get("samples", [])
-        # Todo: handle change in samples properly
-        for sample_name in unique_sample_names:
-            sample_config = sample_name + "/sample.yaml"
-            sample_db = datahandling.load_sample(sample_config)
-            sample_id = sample_db.get("_id",)
-            if sample_id is not None:
-                insert_sample = True
-                for sample in run_db["samples"]:
-                    if sample_id == sample["_id"]:
-                        insert_sample = False
-                if insert_sample is True:
-                    run_db["samples"].append({"name": sample_name, "_id": sample_id})
+            run_db["samples"] = run_db.get("samples", [])
+            # Todo: handle change in samples properly
+            for sample_name in unique_sample_names:
+                sample_config = sample_name + "/sample.yaml"
+                sample_db = datahandling.load_sample(sample_config)
+                sample_id = sample_db.get("_id",)
+                if sample_id is not None:
+                    insert_sample = True
+                    for sample in run_db["samples"]:
+                        if sample_id == sample["_id"]:
+                            insert_sample = False
+                    if insert_sample is True:
+                        run_db["samples"].append({"name": sample_name, "_id": sample_id})
 
-        run_db["components"] = run_db.get("components", [])
-        for component_name in components:
-            component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
-            if component_id is not None:
-                insert_component = True
-                for run_components in run_db["components"]:
-                    if component_id == run_components["_id"]:
-                        insert_component = False
-                if insert_component is True:
-                    run_db["components"].append({"name": component_name, "_id": component_id})
+            run_db["components"] = run_db.get("components", [])
+            for component_name in components:
+                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                if component_id is not None:
+                    insert_component = True
+                    for run_components in run_db["components"]:
+                        if component_id == run_components["_id"]:
+                            insert_component = False
+                    if insert_component is True:
+                        run_db["components"].append({"name": component_name, "_id": component_id})
 
-        datahandling.save_run(run_db, component + "/run.yaml")
-        sys.stdout.write("Done {}\n".format(rule_name))
+            datahandling.save_run(run_db, component + "/run.yaml")
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule_name = "setup_sample_components_to_run"
@@ -641,62 +671,68 @@ rule setup_sample_components_to_run:
     params:
         rule_name = rule_name
     run:
-        rule_name = str(params.rule_name)
-        sample_folder = str(input.sample_folder)
-        component = str(input.component)
-        run_cmd = str(output.bash_file)
-        sys.stdout.write("Started {}\n".format(rule_name))
-        config = datahandling.load_config()
-        unique_sample_names = {}
-        for file in sorted(os.listdir(sample_folder)):
-            result = re.search(config["read_pattern"], file)
-            if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                sample_name = result.group("sample_name")
-                unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+        try:
+            rule_name = str(params.rule_name)
+            sample_folder = str(input.sample_folder)
+            component = str(input.component)
+            run_cmd = str(output.bash_file)
+            log_out = str(log.out_file)
+            log_err = str(log.err_file)
 
-        with open(run_cmd, "w") as run_cmd_handle:
-            for sample_name in unique_sample_names:
-                current_time = datetime.datetime.now()
-                with open(sample_name + "/cmd_serumqc_{}.sh".format(current_time), "w") as command:
-                    command.write("#!/bin/sh\n")
+            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            config = datahandling.load_config()
+            unique_sample_names = {}
+            for file in sorted(os.listdir(sample_folder)):
+                result = re.search(config["read_pattern"], file)
+                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
+                    sample_name = result.group("sample_name")
+                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+
+            with open(run_cmd, "w") as run_cmd_handle:
+                for sample_name in unique_sample_names:
+                    current_time = datetime.datetime.now()
+                    with open(sample_name + "/cmd_serumqc_{}.sh".format(current_time), "w") as command:
+                        command.write("#!/bin/sh\n")
+                        if config["grid"] == "torque":
+                            command.write("#PBS -V -d . -w . -l ncpus={},mem={}gb -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], config["threads"], sample, group, group))
+                        elif config["grid"] == "slurm":
+                            command.write("#SBATCH --mem={}G -p {} -c {} -J 'serumqc_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
+
+                        sample_config = sample_name + "/sample.yaml"
+                        sample_db = datahandling.load_sample(sample_config)
+                        if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
+                            for component_name in components:
+                                component_file = os.path.dirname(workflow.snakefile) + "/snakefiles/" + component_name + ".smk"
+                                if os.path.isfile(component_file):
+                                    command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
+                                    command.write("snakemake --cores {} -s {} --config Sample={};\n".format(config["threads"], component_file, "sample.yaml"))
+
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "queued to run"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                else:
+                                    datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "component_missing"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+
+                    os.chmod(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time)), 0o777)
+                    if os.path.islink(os.path.join(sample_name, "cmd_serumqc.sh")):
+                        os.remove(os.path.join(sample_name, "cmd_serumqc.sh"))
+                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_serumqc.sh"))
+                    run_cmd_handle.write("cd {};\n".format(sample_name))
                     if config["grid"] == "torque":
-                        command.write("#PBS -V -d . -w . -l ncpus={},mem={}gb -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], config["threads"], sample, group, group))
+                        run_cmd_handle.write("qsub cmd_serumqc.sh;\n")  # dependent on grid engine
                     elif config["grid"] == "slurm":
-                        command.write("#SBATCH --mem={}G -p {} -c {} -J 'serumqc_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
-
-                    sample_config = sample_name + "/sample.yaml"
-                    sample_db = datahandling.load_sample(sample_config)
-                    if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
-                        for component_name in components:
-                            component_file = os.path.dirname(workflow.snakefile) + "/snakefiles/" + component_name + ".smk"
-                            if os.path.isfile(component_file):
-                                command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-                                command.write("snakemake --cores {} -s {} --config Sample={};\n".format(config["threads"], component_file, "sample.yaml"))
-
-                                sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                sample_component_db["status"] = "queued to run"
-                                sample_component_db["setup_date"] = current_time
-                                datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                            else:
-                                sys.stderr.write("Error component not found:{} {}".format(component_name, component_file))
-                                sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                sample_component_db["status"] = "component_missing"
-                                sample_component_db["setup_date"] = current_time
-                                datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-
-                os.chmod(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time)), 0o777)
-                if os.path.islink(os.path.join(sample_name, "cmd_serumqc.sh")):
-                    os.remove(os.path.join(sample_name, "cmd_serumqc.sh"))
-                os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_serumqc.sh"))
-                run_cmd_handle.write("cd {};\n".format(sample_name))
-                if config["grid"] == "torque":
-                    run_cmd_handle.write("qsub cmd_serumqc.sh;\n")  # dependent on grid engine
-                elif config["grid"] == "slurm":
-                    run_cmd_handle.write("sbatch cmd_serumqc.sh;\n")  # dependent on grid engine
-                else:
-                    run_cmd_handle.write("bash cmd_serumqc.sh;\n")
-                run_cmd_handle.write("cd {};\n".format(os.getcwd()))
-        sys.stdout.write("Started {}\n".format(rule_name))
+                        run_cmd_handle.write("sbatch cmd_serumqc.sh;\n")  # dependent on grid engine
+                    else:
+                        run_cmd_handle.write("bash cmd_serumqc.sh;\n")
+                    run_cmd_handle.write("cd {};\n".format(os.getcwd()))
+            datahandling.log(log_out, "Done {}\n".format(rule_name))
+        except Exception as e:
+            datahandling.log(log_err, str(e))
 
 
 rule create_end_file:
