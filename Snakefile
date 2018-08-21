@@ -572,13 +572,12 @@ rule initialize_run:
         rule_name = str(params.rule_name)
         sample_folder = str(input.sample_folder)
         run_folder = str(input.run_folder)
-        component = str(input.component)
 
         sys.stdout.write("Started {}\n".format(rule_name))
         config = datahandling.load_config()
         unique_sample_names = {}
 
-        run_db = datahandling.load_run(component + "/run.yaml")
+        run_db = datahandling.load_run(run_folder + "/run.yaml")
         run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
         run_db["type"] = config.get("type", "default")
         for folder in sorted(os.listdir(run_folder)):
