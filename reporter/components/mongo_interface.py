@@ -140,6 +140,9 @@ def get_species_list(run_name=None):
                         "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
+                },
+                {
+                    "$sort": {"_id": 1}
                 }
             ]))
         else:
@@ -149,6 +152,9 @@ def get_species_list(run_name=None):
                         "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
+                },
+                {
+                    "$sort": {"_id": 1}
                 }
             ]))
 

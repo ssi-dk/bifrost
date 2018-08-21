@@ -1,4 +1,4 @@
-
+import pandas as pd
 import dash_html_components as html
 
 def html_table(data, **kwargs):
@@ -14,12 +14,16 @@ def html_table(data, **kwargs):
 
 def html_td_percentage(value, color):
     string = str(round(float(value) * 100, 2)) + "%"
+    if pd.isna(value):
+        fill = "0%"
+    else:
+        fill = string
     return html.Td(
         html.Div([
             html.Span(string, className="val"),
             html.Span(
                 className="bar",
-                style={"backgroundColor": color, "width": string}
+                style={"backgroundColor": color, "width": fill}
             )
         ], className="wrapper"
         ), className="data-colored")

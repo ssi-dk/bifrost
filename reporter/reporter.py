@@ -584,7 +584,8 @@ def main(argv):
         if species_list is None: species_list = []
         species_count = 0
         if 'species' in plot_df:
-            for species in species_list:
+            # reverse the list so it looks right on plot
+            for species in reversed(species_list):
                 species_df = plot_df[plot_df.species == species]
                 if species == "Not classified":
                     species_name = species
