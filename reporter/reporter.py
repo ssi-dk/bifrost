@@ -19,7 +19,7 @@ import components.mongo_interface
 import import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary
-from components.sample_report import children_sample_list_report
+from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
 import components.global_vars as global_vars
 
@@ -120,6 +120,22 @@ def main(argv):
                                     html.Button(
                                         "Table report",
                                         id="update-table",
+                                        n_clicks_timestamp=0,
+                                        className="button-primary u-full-width"
+                                    )
+                                ],
+                                className="three columns"
+                            )
+                        ],
+                        className="row",
+                        style={"marginBottom": "15px"}
+                    ),
+                    html.Div([
+                            html.Div(
+                                [
+                                    html.Button(
+                                        "Sample folder",
+                                        id="generate-folder",
                                         n_clicks_timestamp=0,
                                         className="button-primary u-full-width"
                                     )
@@ -447,11 +463,14 @@ def main(argv):
         [Input("update-qcquickie", "n_clicks_timestamp"),
          Input("update-assemblatron", "n_clicks_timestamp"),
          Input("update-analyzer", "n_clicks_timestamp"),
-         Input("update-table", "n_clicks_timestamp")],
+         Input("update-table", "n_clicks_timestamp"),
+         Input("generate-folder", "n_clicks_timestamp")],
         [State("lasso-sample-ids", "children"),
          State("selected-samples-ids", "children")]
     )
-    def update_report(n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts, n_table_ts, lasso_selected, prefilter_samples):
+    def update_report(n_qcquickie_ts, n_assemblatron_ts,
+                    n_analyzer_ts, n_table_ts, n_generate_ts,
+                    lasso_selected, prefilter_samples):
         if lasso_selected != "":
             samples = lasso_selected.split(",")  # lasso first
         elif prefilter_samples != "":
@@ -461,17 +480,25 @@ def main(argv):
         
         max_page = len(samples) // PAGESIZE
 
-        last_module_ts = max(n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts)
-        if last_module_ts > n_table_ts:  # samples was clicked
-            if n_qcquickie_ts == last_module_ts:
-                title = "QCQuickie Report"
-                content = "qcquickie"
-            elif n_assemblatron_ts == last_module_ts:
-                title = "Assemblatron Report"
-                content = "assemblatron"
-            else:
-                title = "Analyzer Report"
-                content = "analyzer"
+        last_module_ts = max(
+            n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts, n_generate_ts, n_table_ts)
+        if min(n_qcquickie_ts, n_assemblatron_ts,
+               n_analyzer_ts, n_generate_ts, n_table_ts) == last_module_ts:
+            return []
+        report = False
+        if n_qcquickie_ts == last_module_ts:
+            title = "QCQuickie Report"
+            content = "qcquickie"
+            report = True
+        elif n_assemblatron_ts == last_module_ts:
+            title = "Assemblatron Report"
+            content = "assemblatron"
+            report = True
+        elif n_analyzer_ts == last_module_ts:
+            title = "Analyzer Report"
+            content = "analyzer"
+            report = True
+        if report:
             return [
                 html.H3(title),
                 html.Span("0", style={"display": "none"}, id="page-n"),
@@ -504,7 +531,7 @@ def main(argv):
                 
                 html.Div(id="sample-report", **{"data-content": content}),
             ]
-        elif n_table_ts > last_module_ts:  # table was clicked
+        elif n_table_ts == last_module_ts:  # table was clicked
             dataframe = import_data.filter_all(sample_ids=samples)
             if "analyzer.ariba_resfinder" in dataframe:
                 dataframe = dataframe.drop(
@@ -525,6 +552,8 @@ def main(argv):
                     id="datatable-samples"
                 )
             ]
+        elif n_generate_ts == last_module_ts:
+            return generate_sample_folder(samples)
         return []
 
     @app.callback(

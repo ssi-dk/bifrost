@@ -3,6 +3,7 @@ import dash_table_experiments as dt
 import dash_core_components as dcc
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
+from import_data import get_read_paths
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -388,5 +389,16 @@ def children_sample_list_report(filtered_df, data_content, plot_data):
             html_species_report(filtered_df, species, data_content, plot_data.get(species,[]))
         ]))
     return report
+
+def generate_sample_folder(samples):
+    """Generates a script string """
+    reads = get_read_paths(samples)
+    script = "mkdir samples\ncd samples\n"
+    for sample in reads:
+        script += "#{}\nln -s {} .\nln -s {} .\n".format(
+            sample["name"],
+            sample["reads"]["R1"],
+            sample["reads"]["R2"])
+    return [html.Pre(script, style={"border": "1px solid black", "padding": "1em"})]
 
 
