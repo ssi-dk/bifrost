@@ -237,6 +237,5 @@ def get_sample_runs(sample_ids):
 
 def get_read_paths(sample_ids):
     with get_connection() as connection:
-        print(list(map(lambda x: ObjectId(x), sample_ids)))
         db = connection.get_default_database()
         return list(db.samples.find({"_id": {"$in": list(map(lambda x:ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
