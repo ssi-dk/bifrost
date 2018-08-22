@@ -181,6 +181,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "className": check_test("qcquickie.1xgenomesize", sample_data)
                     },
                     [
+                        "average coverage (1x)",
+                        "{:,.2f}".format(
+                            sample_data.get("qcquickie.bin_coverage_at_1x", math.nan))
+                    ],
+                    [
                         "bin length at 25x depth",
                         "{:,}".format(
                             sample_data.get("qcquickie.bin_length_at_25x", math.nan))
@@ -221,6 +226,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         ],
                         "className": check_test("assemblatron.1xgenomesize", sample_data)
                     },
+                    [
+                        "average coverage (1x)",
+                        "{:,.2f}".format(
+                            sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
+                    ],
                     [
                         "bin length at 10x depth",
                         "{:,}".format(
