@@ -57,7 +57,7 @@ rule check_required_components:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.output.init_file
+        folder = rules.setup.output.init_file,
     output:
         check_file = rules.setup.params.folder + "/required_components_present"),
     run:
