@@ -1,5 +1,5 @@
 # Input parameters with default values
-run_folder: "samples"
+sample_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
