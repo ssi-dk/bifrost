@@ -56,7 +56,8 @@ rule setup__filter_reads_with_bbduk:
     # Dynamic
     input:
         directory = rules.setup.params.folder,
-        reads = (R1, R2)
+        reads = (R1, R2),
+        rules.etup.output.init_file
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
