@@ -5,6 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - snakemake>=5.2
+  - "conda-forge::openjdk"
   - abricate
   - python
   - ariba
@@ -12,11 +13,25 @@ dependencies:
   - bracken
   - fastqc
   - kraken
+  - perl-xml-simple # missing in prokka
+  - perl
   - prokka
   - pandas
   - cyvcf2
   - ruamel.yaml
   - biopython
   - skesa
+  - spades
   - xlrd
+  - minimap2
   - pymongo
+  - dash
+  - dash-core-components
+  - dash-html-components
+  - dash-renderer
+  - plotly
+  - pip
+  - pip:
+    - dash-table-experiments
+    - dash_scroll_up
+    - quast # done because quast conda installs a version for python 2.7 and everything else is python3
