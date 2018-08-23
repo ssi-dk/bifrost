@@ -59,7 +59,7 @@ rule check_required_components:
     input:
         folder = rules.setup.output.init_file,
     output:
-        check_file = rules.setup.params.folder + "/required_components_present"),
+        check_file = rules.setup.params.folder + "/required_components_present",
     run:
         try:
             log_out=str(log.out_file)
