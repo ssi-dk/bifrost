@@ -142,6 +142,7 @@ rule species_check__set_species:
     input:
         bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
     output:
+        species = rules.setup.output.folder + "/species.txt",
         summary = touch(rules.all.input),
     params:
         sample = sample,
