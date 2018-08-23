@@ -56,6 +56,16 @@ def qcquickie_diff(res):
             res["qcquickie.bin_length_at_25x"]
     return res
 
+
+PLOTS["qcquickie.bin_coverage_at_1x"] = {
+    "projection": "qcquickie.bin_coverage_at_1x"
+}
+PLOTS["qcquickie.bin_coverage_at_10x"] = {
+    "projection": "qcquickie.bin_coverage_at_10x"
+}
+PLOTS["qcquickie.bin_coverage_at_25x"] = {
+    "projection": "qcquickie.bin_coverage_at_25x"
+}
 PLOTS["qcquickie.bin_length_1x_25x_diff"] = {
     "projection": "qcquickie.bin_length_1x_25x_diff",
         "func": qcquickie_diff
@@ -88,6 +98,17 @@ def assemblatron_diff(res):
     else:
         res["assemblatron.bin_length_1x_25x_diff"] = math.nan
     return res
+
+
+PLOTS["assemblatron.bin_coverage_at_1x"] = {
+    "projection": "assemblatron.bin_coverage_at_1x"
+}
+PLOTS["assemblatron.bin_coverage_at_10x"] = {
+    "projection": "assemblatron.bin_coverage_at_10x"
+}
+PLOTS["assemblatron.bin_coverage_at_25x"] = {
+    "projection": "assemblatron.bin_coverage_at_25x"
+}
 PLOTS["assemblatron.bin_contigs_at_1x"] = {
     "projection": "assemblatron.bin_contigs_at_1x"
 }

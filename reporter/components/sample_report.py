@@ -3,6 +3,7 @@ import dash_table_experiments as dt
 import dash_core_components as dcc
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
+from import_data import get_read_paths
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -180,6 +181,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "className": check_test("qcquickie.1xgenomesize", sample_data)
                     },
                     [
+                        "average coverage (1x)",
+                        "{:,.2f}".format(
+                            sample_data.get("qcquickie.bin_coverage_at_1x", math.nan))
+                    ],
+                    [
                         "bin length at 25x depth",
                         "{:,}".format(
                             sample_data.get("qcquickie.bin_length_at_25x", math.nan))
@@ -221,6 +227,11 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         "className": check_test("assemblatron.1xgenomesize", sample_data)
                     },
                     [
+                        "average coverage (1x)",
+                        "{:,.2f}".format(
+                            sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
+                    ],
+                    [
                         "bin length at 10x depth",
                         "{:,}".format(
                             sample_data.get("assemblatron.bin_length_at_10x", math.nan))
@@ -248,8 +259,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
     elif data_content == "analyzer":
         title = "Resfinder Results"
         resfinder = sample_data.get('analyzer.ariba_resfinder', None)
-
-        if not pd.isnull(resfinder) and len(resfinder):
+        if (isinstance(resfinder, list) and len(resfinder)):
             header = list(resfinder[0].keys())
             rows = [list(row.values()) for row in resfinder]
             report = [
@@ -389,5 +399,34 @@ def children_sample_list_report(filtered_df, data_content, plot_data):
             html_species_report(filtered_df, species, data_content, plot_data.get(species,[]))
         ]))
     return report
+
+def generate_sample_folder(samples):
+    """Generates a script string """
+    reads = get_read_paths(samples)
+    script = "mkdir samples\ncd samples\n"
+    errors = []
+    for sample in reads:
+        try:
+            script += "#{}\nln -s {} .\nln -s {} .\n".format(
+                sample["name"],
+                sample["reads"]["R1"],
+                sample["reads"]["R2"])
+        except KeyError as e:
+            errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
+                sample.get("name", "None"),
+                sample["_id"],
+                sample.get("reads", "No data")
+                ))
+    if len(errors):
+        return [
+            "A few errors occurred locating the read paths. If you need more info, " +
+            "please contact an admin.",
+            html.Pre("\n".join(errors), style={
+                "border": "1px solid red", "padding": "1em", "marginBottom": "20px"}),
+            html.Pre(script, style={
+                  "border": "1px solid black", "padding": "1em"})
+        ]
+    else:
+        return [html.Pre(script, style={"border": "1px solid black", "padding": "1em"})]
 
 

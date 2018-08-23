@@ -120,3 +120,6 @@ def add_sample_runs(sample_df):
                 sample_runs[str(sample["_id"])] = s
     sample_df.loc[:, 'runs'] = sample_df["_id"].map(sample_runs)
     return sample_df
+
+def get_read_paths(samples):
+    return mongo_interface.get_read_paths(samples)

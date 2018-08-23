@@ -140,6 +140,9 @@ def get_species_list(run_name=None):
                         "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
+                },
+                {
+                    "$sort": {"_id": 1}
                 }
             ]))
         else:
@@ -149,6 +152,9 @@ def get_species_list(run_name=None):
                         "_id": "$properties.species",
                         "count": {"$sum": 1}
                     }
+                },
+                {
+                    "$sort": {"_id": 1}
                 }
             ]))
 
@@ -227,3 +233,9 @@ def get_sample_runs(sample_ids):
     with get_connection() as connection:
         db = connection.get_default_database()
         return list(db.runs.find({"samples": {"$elemMatch": {"_id": {"$in": sample_ids}}}}))
+
+
+def get_read_paths(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_default_database()
+        return list(db.samples.find({"_id": {"$in": list(map(lambda x:ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
