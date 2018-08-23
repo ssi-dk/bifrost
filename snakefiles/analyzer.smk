@@ -71,9 +71,9 @@ rule check_required_components:
             for component in required_components:
                 if not datahandling.sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component):
                     required_components_successful = False
-            if required_components_success
+            if required_components_success:
                 with open(check_file, "w") as out_file:
-                    outfile.write("Success")
+                    pass
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(e))
