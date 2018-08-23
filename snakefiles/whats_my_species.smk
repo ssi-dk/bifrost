@@ -34,9 +34,9 @@ rule all:
 
 rule setup:
     output:
-        folder = directory(component)
-    shell:
-        "mkdir {output}"
+        init_file = touch(temp(component + "/" + component + "_initialized")),
+    params:
+        folder = component
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -49,16 +49,16 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        directory = rules.setup.output.folder,
+        directory = rules.setup.params.folder,
         reads = (R1, R2)
     output:
-        filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
+        filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
         adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
@@ -77,15 +77,15 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        kraken_report = rules.setup.output.folder + "/kraken_report.txt"
+        kraken_report = rules.setup.params.folder + "/kraken_report.txt"
     params:
         db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
     conda:
@@ -104,16 +104,16 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.kraken_report,
     output:
-        bracken = rules.setup.output.folder + "/bracken.txt",
-        kraken_report_bracken = rules.setup.output.folder + "/kraken_report_bracken.txt"
+        bracken = rules.setup.params.folder + "/bracken.txt",
+        kraken_report_bracken = rules.setup.params.folder + "/kraken_report_bracken.txt"
     params:
         kmer_dist = config.get("kraken_kmer_dist", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_kmer_dist.txt"))
     conda:
@@ -134,10 +134,10 @@ rule species_check__set_species:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
