@@ -14,7 +14,7 @@ dependencies:
   - fastqc
   - kraken
   - perl-xml-simple # missing in prokka
-  - perl
+  - perl=5.22 # due to prokka
   - prokka
   - pandas
   - cyvcf2
