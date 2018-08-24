@@ -33,9 +33,9 @@ rule all:
 
 rule setup:
     output:
-        folder = directory(component)
-    shell:
-        "mkdir {output}"
+        init_file = touch(temp(component + "/" + component + "_initialized")),
+    params:
+        folder = component
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -48,16 +48,16 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        directory = rules.setup.output.folder,
+        folderinit = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        filtered_reads = temp(rules.setup.output.folder + "/filtered.fastq")
+        filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
         adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
     conda:
@@ -76,17 +76,17 @@ rule assembly__spades:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
         spades_folder = temp(directory("spades")),
-        contigs = rules.setup.output.folder + "/temp.fasta",
-        assembly_with = touch(rules.setup.output.folder + "/assembly_with_SPAdes"),
+        contigs = rules.setup.params.folder + "/temp.fasta",
+        assembly_with = touch(rules.setup.params.folder + "/assembly_with_SPAdes"),
     conda:
         "../envs/spades.yaml"
     shell:
@@ -106,16 +106,16 @@ rule assembly__skesa:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        contigs = rules.setup.output.folder + "/temp.fasta",
-        assembly_with = touch(rules.setup.output.folder + "/assembly_with_skesa"),
+        contigs = rules.setup.params.folder + "/temp.fasta",
+        assembly_with = touch(rules.setup.params.folder + "/assembly_with_skesa"),
     conda:
         "../envs/skesa.yaml"
     shell:
@@ -132,17 +132,17 @@ rule assembly__selection:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        assembly_with = rules.setup.output.folder + "/assembly_with_" + config["assembly_with"]
+        assembly_with = rules.setup.params.folder + "/assembly_with_" + config["assembly_with"]
     params:
-        rules.setup.output.folder + "/temp.fasta"
+        rules.setup.params.folder + "/temp.fasta"
     output:
-        rules.setup.output.folder + "/contigs.fasta"
+        rules.setup.params.folder + "/contigs.fasta"
     shell:
         "mv {params} {output}"
 
@@ -156,15 +156,15 @@ rule assembly_check__quast_on_contigs:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output
     output:
-        quast = directory(rules.setup.output.folder + "/quast")
+        quast = directory(rules.setup.params.folder + "/quast")
     conda:
         "../envs/quast.yaml"
     shell:
@@ -181,15 +181,15 @@ rule assembly_check__sketch_on_contigs:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output
     output:
-        sketch = rules.setup.output.folder + "/contigs.sketch"
+        sketch = rules.setup.params.folder + "/contigs.sketch"
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -206,17 +206,17 @@ rule post_assembly__stats:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     message:
         "Running step: {rule}"
     input:
         contigs = rules.assembly__selection.output
     output:
-        stats = touch(rules.setup.output.folder + "/post_assermbly__stats")
+        stats = touch(rules.setup.params.folder + "/post_assermbly__stats")
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -233,16 +233,16 @@ rule post_assembly__mapping:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output,
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
-        mapped = temp(rules.setup.output.folder + "/contigs.sam")
+        mapped = temp(rules.setup.params.folder + "/contigs.sam")
     conda:
         "../envs/minimap2.yaml"
     shell:
@@ -259,15 +259,15 @@ rule post_assembly__samtools_stats:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         mapped = rules.post_assembly__mapping.output.mapped
     output:
-        stats = rules.setup.output.folder + "/contigs.stats",
+        stats = rules.setup.params.folder + "/contigs.stats",
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -284,16 +284,16 @@ rule post_assembly__pileup:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         mapped = rules.post_assembly__mapping.output.mapped
     output:
-        coverage = temp(rules.setup.output.folder + "/contigs.cov"),
-        pileup = rules.setup.output.folder + "/contigs.pileup"
+        coverage = temp(rules.setup.params.folder + "/contigs.cov"),
+        pileup = rules.setup.params.folder + "/contigs.pileup"
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -310,16 +310,16 @@ rule summarize__depth:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         coverage = rules.post_assembly__pileup.output.coverage
     output:
-        contig_depth_yaml = rules.setup.output.folder + "/contigs.sum.cov",
-        binned_depth_yaml = rules.setup.output.folder + "/contigs.bin.cov"
+        contig_depth_yaml = rules.setup.params.folder + "/contigs.sum.cov",
+        binned_depth_yaml = rules.setup.params.folder + "/contigs.bin.cov"
     conda:
         "../envs/python_packages.yaml"
     script:
@@ -336,16 +336,16 @@ rule post_assembly__call_variants:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output,
         mapped = rules.post_assembly__mapping.output.mapped
     output:
-        variants = temp(rules.setup.output.folder + "/contigs.vcf"),
+        variants = temp(rules.setup.params.folder + "/contigs.vcf"),
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -362,15 +362,15 @@ rule summarize__variants:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         variants = rules.post_assembly__call_variants.output.variants
     output:
-        variants_yaml = rules.setup.output.folder + "/contigs.variants",
+        variants_yaml = rules.setup.params.folder + "/contigs.variants",
     conda:
         "../envs/python_packages.yaml"
     script:
@@ -387,17 +387,17 @@ rule post_assembly__annotate:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         contigs = rules.assembly__selection.output,
     output:
-        gff = rules.setup.output.folder + "/contigs.gff",
+        gff = rules.setup.params.folder + "/contigs.gff",
     params:
-        prokka = temp(directory(rules.setup.output.folder + "/prokka"))
+        prokka = temp(directory(rules.setup.params.folder + "/prokka"))
     conda:
         "../envs/prokka.yaml"
     shell:
@@ -417,10 +417,10 @@ rule datadump_assemblatron:
     resources:
         memory_in_GB = global_memory_in_GB
     log:
-        out_file = rules.setup.output.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.output.folder + "/log/" + rule_name + ".err.log",
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.output.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         rules.post_assembly__annotate.output.gff,
@@ -430,7 +430,7 @@ rule datadump_assemblatron:
         rules.assembly_check__quast_on_contigs.output.quast,
         rules.post_assembly__samtools_stats.output.stats,
         rules.assembly_check__sketch_on_contigs.output.sketch,
-        folder = rules.setup.output,
+        folder = rules.setup.output.init_file,
     output:
         summary = touch(rules.all.input)
     params:
