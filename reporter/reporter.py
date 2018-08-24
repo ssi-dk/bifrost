@@ -66,7 +66,7 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(dt.DataTable(rows=[{}], editable=False), style={"display": "none"}),
-        html.H1("QC REPORT"),
+        html.H1("SerumQC REPORT"),
         html.H2("", id="run-name"),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
