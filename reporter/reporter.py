@@ -51,9 +51,6 @@ app.config["suppress_callback_exceptions"] = True
 # Dash CSS
 app.css.append_css(
     {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
-# Custom CSS, host elsewere for production
-app.css.append_css(
-    {"external_url": "https://codepen.io/martinbaste/pen/JZKeRv.css"})
 # Lato font
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
@@ -163,15 +160,6 @@ app.layout = html.Div([
 # We could make this one much faster by hiding the unused species with CSS
 # by adding a new hidden class.
 
-#While dev
-
-@app.server.route("{}<image_path>.svg".format(static_image_route))
-def serve_image(image_path):
-    image_name = "{}.svg".format(image_path)
-    if image_name not in list_of_images:
-        raise Exception(
-            "'{}' is excluded from the allowed static files".format(image_path))
-    return flask.send_from_directory(image_directory, image_name)
 
 @app.callback(
     Output("run-name", "children"),
