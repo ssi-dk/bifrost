@@ -68,7 +68,7 @@ def get_run_list():
         runs = list(db.runs.find({"type": "routine"}, #Leave in routine
                                  {"name": 1,
                                   "_id": 0,
-                                  "samples": 1}).sort([['name', pymongo.ASCENDING]]))
+                                  "samples": 1}).sort([['name', pymongo.DESCENDING]]))
     return runs
 
 def get_group_list(run_name=None):

@@ -107,11 +107,11 @@ def html_test_table(sample_data, **kwargs):
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
-    genus = str(sample_data.get(["qcquickie.name_classified_species_1"])).split()[
+    genus = str(sample_data.get("qcquickie.name_classified_species_1")).split()[
         0].lower()
     if "{}.svg".format(genus) in list_of_images:
         img = html.Img(
-            src="/static/" + genus + ".svg",
+            src="/assets/img/" + genus + ".svg",
             className="svg_bact"
         )
     else:

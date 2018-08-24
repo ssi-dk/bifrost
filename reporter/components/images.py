@@ -4,9 +4,9 @@ from components.mongo_interface import get_species_colors
 
 
 #DEV images
-image_directory = "assets/img/"
+image_directory = "./assets/img/"
 list_of_images = [os.path.basename(x) for x in glob.glob(
-    "{}*.svg".format(image_directory))]
+    "./assets/img/*.svg")]
 static_image_route = "/assets/"
 
 COLOR_DICT = get_species_colors()
