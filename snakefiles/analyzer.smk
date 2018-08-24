@@ -77,6 +77,9 @@ rule check_required_components:
             if required_components_success:
                 with open(check_file, "w") as out_file:
                     pass
+            else:
+                datahandling.log(log_err, "Required components not all completed {}".format(",".join(required_components)))
+
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(e))
