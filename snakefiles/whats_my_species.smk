@@ -181,14 +181,14 @@ rule datadump_whats_my_species:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
-        rrules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.species_check__set_species.output.species,
-        folder = rules.setup.params.folder
+        species = rules.species_check__set_species.output.species,
     output:
         summary = touch(rules.all.input)
     params:
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        folder = rules.setup.params.folder
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_whats_my_species.py")
