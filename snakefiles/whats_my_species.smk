@@ -143,7 +143,6 @@ rule species_check__set_species:
         bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
     output:
         species = rules.setup.params.folder + "/species.txt",
-        summary = touch(rules.all.input),
     params:
         sample = sample,
     run:
@@ -168,3 +167,28 @@ rule species_check__set_species:
             datahandling.save_sample(sample_db, sample)
         except Exception as e:
             datahandling.log(log_err, str(e))
+
+rule_name = "datadump_whats_my_species"
+rule datadump_whats_my_species:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rrules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        rules.species_check__set_species.output.species,
+        folder = rules.setup.params.folder
+    output:
+        summary = touch(rules.all.input)
+    params:
+        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_whats_my_species.py")
