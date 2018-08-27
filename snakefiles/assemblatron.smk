@@ -430,10 +430,10 @@ rule datadump_assemblatron:
         rules.assembly_check__quast_on_contigs.output.quast,
         rules.post_assembly__samtools_stats.output.stats,
         rules.assembly_check__sketch_on_contigs.output.sketch,
-        folder = rules.setup.output.init_file,
     output:
         summary = touch(rules.all.input)
     params:
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        folder = rules.setup.params.folder,
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_assemblatron.py")
