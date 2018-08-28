@@ -77,7 +77,7 @@ rule sam_to_sorted_bam:
     shell:
         """
         samtools view -S -b {output.sam} > {output.unsorted_bam}
-        samtools sort -@{threads} -o {output.bam} {unsorted_bam}
+        samtools sort -@{threads} -o {output.bam} {output.unsorted_bam}
         """
 
 rule_name = "post_assembly__pileup"
