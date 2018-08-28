@@ -9,8 +9,8 @@ global_threads = 4
 global_memory_in_GB = 20
 
 config_sample = datahandling.load_sample(sample)
-reads = config_sample["reads"]
-reference = config_sample["reference"]
+reads = config["reads"]
+reference = config["reference"]
 
 component = "long_reads_to_vcf"
 
