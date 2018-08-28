@@ -70,15 +70,12 @@ rule check_required_components:
             required_components = ["whats_my_species"]
             required_components_success = True
             for component in required_components:
-                print(config_sample.get("name", "ERROR") + "__" + component + ".yaml")
                 if not datahandling.sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component):
                     required_components_successful = False
-            print(required_components_success)
+                    datahandling.log(log_out, "Missing component: {}\n".format(component))
             if required_components_success:
                 with open(check_file, "w") as out_file:
-                    pass
-            else:
-                datahandling.log(log_err, "Required components not all completed {}".format(",".join(required_components)))
+                    datahandling.log(log_out, "Required components found: {}\n".format(",".join(required_components)))
 
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
