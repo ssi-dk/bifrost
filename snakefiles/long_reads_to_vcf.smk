@@ -54,8 +54,7 @@ rule setup__filter_reads_with_bbduk:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folderinit = rules.setup.output.init_file,
-        reads = reads
+
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
@@ -82,8 +81,9 @@ rule post_assembly__mapping:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
+        folderinit = rules.setup.output.init_file,
+        filtered_reads = reads
         contigs = reference,
-        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
         mapped = temp(rules.setup.params.folder + "/contigs.sam")
     conda:
