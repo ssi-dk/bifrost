@@ -69,14 +69,13 @@ rule sam_to_sorted_bam:
     input:
         mapped = rules.post_assembly__mapping.output.mapped,
     output:
-        sam = temp(rules.setup.params.folder + "/contigs.sam"),
         unsorted_bam = temp(rules.setup.params.folder + "/contigs.unsorted.bam"),
         bam = rules.setup.params.folder + "/contigs.bam",
     conda:
         "../envs/minimap2.yaml"
     shell:
         """
-        samtools view -S -b {output.sam} > {output.unsorted_bam}
+        samtools view -S -b {input.mapped} > {output.unsorted_bam}
         samtools sort -@{threads} -o {output.bam} {output.unsorted_bam}
         """
 
