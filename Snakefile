@@ -698,7 +698,7 @@ rule setup_sample_components_to_run:
                                 torque_node = ",nodes=" + config["torque_node"]
                             else:
                                 torque_node = ""
-                            command.write("#PBS -V -d . -w . -l ncpus={},mem={}gb{} -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], config["threads"], torque_node, sample, group, group))
+                            command.write("#PBS -V -d . -w . -l ncpus={},mem={}gb{} -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], config["threads"], torque_node, sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J 'serumqc_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
 
