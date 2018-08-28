@@ -122,10 +122,11 @@ rule post_assembly__call_variants:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output,
+        contigs = reference,
         mapped = rules.sam_to_sorted_bam.output.bam
     output:
         variants = temp(rules.setup.params.folder + "/contigs.vcf"),
+        final = touch(rules.all.input)
     conda:
         "../envs/bbmap.yaml"
     shell:
