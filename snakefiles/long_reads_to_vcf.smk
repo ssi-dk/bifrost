@@ -74,6 +74,7 @@ rule sam_to_sorted_bam:
     conda:
         "../envs/minimap2.yaml"
     shell:
+        # Be aware of samtools version
         """
         samtools view -S -b {input.mapped} > {output.unsorted_bam}
         samtools sort -@{threads} -o {output.bam} {output.unsorted_bam}
