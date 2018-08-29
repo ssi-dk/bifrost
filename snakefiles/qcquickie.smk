@@ -441,7 +441,7 @@ rule datadump_qcquickie:
         rules.fastqc_on_reads.output.fastqc_summary,
         rules.assembly_check__quast_on_contigs.output.quast,
         rules.assembly_check__sketch_on_contigs.output.sketch,
-        rules.post_assermbly__stats.output.stats,
+        rules.post_assembly__stats.output.stats,
         rules.post_assembly__samtools_stats.output.stats,
         rules.summarize__depth.output.contig_depth_yaml,
         rules.summarize__variants.output.variants_yaml,
