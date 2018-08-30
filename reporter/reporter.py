@@ -44,6 +44,7 @@ def short_species(species):
 
 
 app = dash.Dash()
+app.title = "Serum QC"
 app.config["suppress_callback_exceptions"] = True
 
 # Temp css to make it look nice
