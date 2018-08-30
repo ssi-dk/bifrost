@@ -434,7 +434,6 @@ rule datadump_assemblatron:
     output:
         summary = touch(rules.all.input)
     params:
-        folder = rules.setup.output.init_file,
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder,
     script:
