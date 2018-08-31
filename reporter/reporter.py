@@ -65,6 +65,7 @@ app.layout = html.Div([
         html.Div(dt.DataTable(rows=[{}], editable=False), style={"display": "none"}),
         html.H1("SerumQC REPORT"),
         html.H2("", id="run-name"),
+        html.H3(html.A("Wiki is here", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e")),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
