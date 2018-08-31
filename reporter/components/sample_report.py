@@ -63,13 +63,14 @@ def html_species_report(dataframe, species, data_content, species_plot_data, **k
 
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
-        sample_data.get("qcquickie.percent_classified_species_1", math.nan),
-        sample_data.get("qcquickie.percent_classified_species_2", math.nan),
-        sample_data.get("qcquickie.percent_unclassified", math.nan)
+        sample_data.get("whats_my_species.percent_classified_species_1", math.nan),
+        sample_data.get(
+            "whats_my_species.percent_classified_species_2", math.nan),
+        sample_data.get("whats_my_species.percent_unclassified", math.nan)
     ]
 
     color_1 = get_species_color(
-        sample_data.get("qcquickie.name_classified_species_1"))  # Default
+        sample_data.get("whats_my_species.name_classified_species_1"))  # Default
 #    color_2 = COLOR_DICT.get(
 #        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
@@ -82,12 +83,12 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("qcquickie.name_classified_species_1", "No data"))),
+                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data"))),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test("qcquickie.minspecies", sample_data)),
+            ], className=check_test("whats_my_species.minspecies", sample_data)),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("qcquickie.name_classified_species_2", "No data"))),
+                    html.I(sample_data.get("whats_my_species.name_classified_species_2", "No data"))),
                 html_td_percentage(percentages[1], color_2)
             ]),
             html.Tr([
@@ -101,13 +102,14 @@ def html_test_table(sample_data, **kwargs):
     rows = []
     for key, value in sample_data.items():
         if key.startswith("testomatic"):
-            rows.append([key.split(".")[-1], value])
+            rows.append([key, value])
+            #rows.append([key.split(".")[-1], value])
     return html.Div(html_table(rows, className="six columns"), **kwargs)
 
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
-    genus = str(sample_data.get("qcquickie.name_classified_species_1")).split()[
+    genus = str(sample_data.get("whats_my_species.name_classified_species_1")).split()[
         0].lower()
     if "{}.svg".format(genus) in list_of_images:
         img = html.Img(
@@ -306,7 +308,7 @@ def graph_sample_depth_plot(sample, run_species, background):
                     marker=dict(
                         size=4,
                         color=get_species_color(
-                            sample.get("qcquickie.name_classified_species_1"))
+                            sample.get("whats_my_species.name_classified_species_1"))
                     )
                 ),
                 go.Box(
