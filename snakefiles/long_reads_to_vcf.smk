@@ -49,7 +49,7 @@ rule post_assembly__mapping:
     output:
         mapped = temp(rules.setup.params.folder + "/contigs.sam")
     shell:
-        "minimap2 -t {threads} --MD -ax map-ont {input.reference} {input.reads} 1> {output.mapped} 2> {log.err_file}"
+        "minimap2 -t {threads} --MD -L -ax map-ont {input.reference} {input.reads} 1> {output.mapped} 2> {log.err_file}"
 
 
 rule_name = "sam_to_sorted_bam"
