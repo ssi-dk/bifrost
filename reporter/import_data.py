@@ -123,3 +123,7 @@ def add_sample_runs(sample_df):
 
 def get_read_paths(samples):
     return mongo_interface.get_read_paths(samples)
+
+# For run_checker
+def get_sample_component_status(run):
+    sample_components = mongo_interface.get_sample_component_status(run_name)

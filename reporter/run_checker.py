@@ -17,6 +17,7 @@ import import_data
 
 #Globals
 PAGESIZE = 100
+COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'testomatic']
 
 app = dash.Dash()
 app.config["suppress_callback_exceptions"] = True
@@ -123,6 +124,48 @@ def update_run_button(run):
         return "/" + run
     else:
         return "/"
+
+@app.callback(
+    Output("run-report", "children"),
+    [Input("run-name", "children")]
+)
+def update_run_report(run):
+    data []
+    if run != "":
+        x = []
+        y = COMPONENTS
+        z = []
+        for sample in samples:
+            sample_z = []
+            x.append(sample['name'])
+            for component in COMPONENTS:
+                if component in sample["components"].keys():
+                    sample_z.append(sample["components"][component])
+                else:
+                    sample_z.append(0)
+            z.append(sample_z)
+        data=[go.Heatmap(z=z,x=x,y=y)]
+
+    figure = {
+        "data": data,
+        "layout": go.Layout(
+            hovermode="closest",
+            title="Run plot",
+            margin=go.layout.Margin(
+                l=175,
+                r=50,
+                b=25,
+                t=50
+            ),
+            yaxis={"tickfont": {"size": 10}},
+            xaxis={"showgrid": True}
+        )
+    }
+    return [dcc.Graph(
+        figure=figure
+    )]
+    
+
 
 
 application = app.server  # Required for uwsgi
