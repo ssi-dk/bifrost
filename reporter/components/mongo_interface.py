@@ -26,7 +26,7 @@ def get_connection():
 def get_species_colors(): 
     """Get a dict with ncbi species name and color"""
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         species_col = db.species
         colors = {}
         for species in species_col.find():
@@ -36,7 +36,7 @@ def get_species_colors():
 def get_species_plot_data(species_list, id_list):
     """Get plot data for many samples using a list of Ids"""
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
@@ -56,14 +56,14 @@ def get_species_plot_data(species_list, id_list):
 
 def check_run_name(name):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         # Fastest.
         run = db.runs.find({"name": name}).limit(1).count(True)
     return run is not 0
 
 def get_run_list():
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         # Fastest.
         runs = list(db.runs.find({"type": "routine"}, #Leave in routine
                                  {"name": 1,
@@ -73,7 +73,7 @@ def get_run_list():
 
 def get_group_list(run_name=None):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         if run_name is not None:
             run = db.runs.find_one(
                 {"name": run_name},
@@ -115,7 +115,7 @@ def get_group_list(run_name=None):
 
 def get_species_list(run_name=None):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         if run_name is not None:
             run = db.runs.find_one(
                 {"name": run_name},
@@ -164,7 +164,7 @@ def get_species_list(run_name=None):
 def filter(projection=None, run_name=None,
            species=None, group=None, samples=None, page=None):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         query = []
         sample_set = set()
         if samples is not None:
@@ -224,18 +224,26 @@ def filter(projection=None, run_name=None,
 
 def get_results(sample_ids):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         return list(db.sample_components.find({
             "sample._id": {"$in": sample_ids}
         }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 
 def get_sample_runs(sample_ids):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         return list(db.runs.find({"samples": {"$elemMatch": {"_id": {"$in": sample_ids}}}}))
 
 
 def get_read_paths(sample_ids):
     with get_connection() as connection:
-        db = connection.get_default_database()
+        db = connection.get_database()
         return list(db.samples.find({"_id": {"$in": list(map(lambda x:ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
+
+# Run_checker.py
+def get_sample_component_status(run_name):
+    with get_connection() as connection:
+        db = connection.get_database()
+        run = db.runs.find_one({"run_name": run_name})
+        samples = run['samples']
+        components = []
