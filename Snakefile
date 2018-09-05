@@ -553,14 +553,15 @@ rule initialize_sample_components_for_each_sample:
                 sample_id = sample_db.get("_id",)
                 component_dict = sample_db.get("components",[])
                 for item in component_dict:
-                    component_name = item.get("name",)
-                    component_id = item.get("_id",)
-                    sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
-                    sample_component_db = datahandling.load_sample_component(sample_component_path)
-                    sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
-                    sample_component_db["component"] = {"name": component_name, "_id": component_id}
-                    sample_component_db["status"] = "initialized"
-                    datahandling.save_sample_component(sample_component_db, sample_component_path)
+                    if item in components:
+                        component_name = item.get("name",)
+                        component_id = item.get("_id",)
+                        sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
+                        sample_component_db = datahandling.load_sample_component(sample_component_path)
+                        sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
+                        sample_component_db["component"] = {"name": component_name, "_id": component_id}
+                        sample_component_db["status"] = "initialized"
+                        datahandling.save_sample_component(sample_component_db, sample_component_path)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(e))
