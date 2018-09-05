@@ -1,17 +1,18 @@
 # WIP Don't use yet
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
-import datahandling
+# sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+# import datahandling
 
 # requires --config reads={read_location},reference={ref_location}
-sample = config["Sample"]
+#sample = config["Sample"]
 global_threads = 4
 global_memory_in_GB = 20
 
-config_sample = datahandling.load_sample(sample)
-reads = config["reads"]
-reference = config["reference"]
+#config_sample = datahandling.load_sample(sample)
+reads = config.get("reads","reads.fastq.gz")
+reference = config.get("reference","reference.fasta")
+sample_name = config.get("sample",os.getcwd().split("/")[-1])
 
 component = "long_reads_to_vcf"
 
@@ -52,8 +53,8 @@ rule post_assembly__mapping:
         "minimap2 -t {threads} --MD -L -ax map-ont {input.reference} {input.reads} 1> {output.mapped} 2> {log.err_file}"
 
 
-rule_name = "sam_to_sorted_bam"
-rule sam_to_sorted_bam:
+rule_name = "adjust_sam_header"
+rule adjust_sam_header:
     # Static
     message:
         "Running step:" + rule_name
@@ -70,6 +71,33 @@ rule sam_to_sorted_bam:
     input:
         mapped = rules.post_assembly__mapping.output.mapped,
     output:
+        sam = temp(rules.setup.params.folder + "/contigs.modified.sam"),
+    params:
+        sample_name = sample_name
+    conda:
+        "../envs/minimap2.yaml"
+    shell:
+        "gatk AddOrReplaceReadGroups -I {input.mapped} -O {output.sam} -LB lib -PL illumina -PU unit1 -SM {params.sample_name}"
+
+
+rule_name = "sam_to_sorted_bam"
+rule sam_to_sorted_bam:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+   # Dynamic
+    input:
+        mapped = rules.adjust_sam_header.output.sam,
+    output:
         unsorted_bam = temp(rules.setup.params.folder + "/contigs.unsorted.bam"),
         bam = rules.setup.params.folder + "/contigs.bam",
     conda:
@@ -77,8 +105,8 @@ rule sam_to_sorted_bam:
     shell:
         # Be aware of samtools version
         """
-        samtools view -S -b {input.mapped} > {output.unsorted_bam}
-        samtools sort -@{threads} -o {output.bam} {output.unsorted_bam}
+        samtools view -S -b {input.mapped} > {output.unsorted_bam};
+        samtools sort -@{threads} {output.bam} contigs;
         """
 
 rule_name = "post_assembly__pileup"
@@ -126,9 +154,39 @@ rule post_assembly__call_variants:
         contigs = reference,
         mapped = rules.sam_to_sorted_bam.output.bam
     output:
-        variants = rules.setup.params.folder + "/contigs.vcf",
-        final = touch(rules.all.input)
+        variants = rules.setup.params.folder + "/contigs.callvariants.vcf",
     conda:
         "../envs/bbmap.yaml"
     shell:
         "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
+
+
+rule_name = "post_assembly__call_variants_gatk"
+rule post_assembly__call_variants_gatk:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        rules.post_assembly__call_variants.output.variants,
+        contigs = reference,
+        mapped = rules.sam_to_sorted_bam.output.bam
+    output:
+        variants = rules.setup.params.folder + "/contigs.gatk.vcf",
+        final = touch(rules.all.input)
+    conda:
+        "../envs/bbmap.yaml"
+    shell:
+        """
+        samtools index {input.mapped};
+        gatk HaplotypeCaller -I {input.mapped} -O {output.variants} -R {input.contigs} -ploidy 1 -stand-call-conf 5 --base-quality-score-threshold 6 --do-not-run-physical-phasing 1> {log.out_file} 2> {log.err_file}
+        """
