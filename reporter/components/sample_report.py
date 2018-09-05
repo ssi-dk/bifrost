@@ -146,7 +146,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         {
                             "list": ["Provided species", html.I(
                                 sample_data["sample_sheet.provided_species"])],
-                            "className": check_test("qcquickie.submitted==detected", sample_data)
+                            "className": check_test("whats_my_species.submitted==detected", sample_data)
                         }
                     ])
                 ], className="six columns"),

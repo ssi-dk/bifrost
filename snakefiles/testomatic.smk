@@ -62,13 +62,13 @@ rule run_testomatic:
         sample_component = config_sample.get("name", "ERROR") + \
             "__" + component + ".yaml",
         assemblatron_yaml = config_sample["name"] + "__assemblatron.yaml", # optional
+        whats_my_species_yaml = config_sample["name"] + "__whats_my_species.yaml", # optional
     input:
         qcquickie = "qcquickie/qcquickie_complete",  # Depends on qcquickie
         qcquickie_yaml = config_sample["name"] + "__qcquickie.yaml",
         folder = rules.setup.output,
     output:
-        test_results = rules.setup.params.folder + "/test_results.yaml",
-        complete = rules.all.input
+        complete = touch(rules.all.input)
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
                      "../scripts/testomatic.py")
