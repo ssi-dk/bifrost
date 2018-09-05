@@ -68,8 +68,7 @@ rule run_testomatic:
         qcquickie_yaml = config_sample["name"] + "__qcquickie.yaml",
         folder = rules.setup.output,
     output:
-        test_results = rules.setup.params.folder + "/test_results.yaml",
-        complete = rules.all.input
+        complete = touch(rules.all.input)
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
                      "../scripts/testomatic.py")
