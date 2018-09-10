@@ -261,6 +261,8 @@ def get_sample_component_status(run_name):
                 status_code = 1
             elif status == "Failure":
                 status_code = -1
+            else:
+                status_code = 0
             sample[s_c["component"]["name"]] = (status_code, status)
             output[s_c["sample"]["name"]] = sample
         return output
