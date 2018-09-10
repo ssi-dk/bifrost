@@ -9,7 +9,6 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
-import colorlover as cl
 
 import dash_scroll_up
 
