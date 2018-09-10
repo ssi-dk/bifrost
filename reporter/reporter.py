@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import urllib
 
 import dash
 import dash_core_components as dcc
@@ -526,10 +527,12 @@ def update_report(n_qcquickie_ts, n_assemblatron_ts,
         if "analyzer.ariba_resfinder" in dataframe:
             dataframe = dataframe.drop(
             columns="analyzer.ariba_resfinder")
+        csv_string = dataframe.to_csv(index=False, encoding="utf-8", sep="\t")
+        csv_string = "data:text/tsv;charset=utf-8," + urllib.parse.quote(csv_string)
         return [
             html.H3("Table Report"),
             # We have to drop those columns with nested values for the table
-
+            html.A("Download run (csv)", href=csv_string),
             dt.DataTable(
                 rows=dataframe.to_dict("records"),
 

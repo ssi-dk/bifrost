@@ -244,6 +244,24 @@ def get_read_paths(sample_ids):
 def get_sample_component_status(run_name):
     with get_connection() as connection:
         db = connection.get_database()
-        run = db.runs.find_one({"run_name": run_name})
-        samples = run['samples']
-        components = []
+        run = db.runs.find_one({"name": run_name})
+        samples_ids = list(map(lambda x:x["_id"], run["samples"]))
+        components_ids = list(map(lambda x: x["_id"], run["components"]))
+        s_c_list = db.sample_components.find({
+            "sample._id": {"$in": samples_ids},
+            "component._id": {"$in": components_ids}
+        })
+        output = {}
+        for s_c in s_c_list:
+            sample = output.get(s_c["sample"]["name"], {})
+            status = s_c["status"]
+            if status == "Success":
+                status_code = 2
+            elif status == "initialized":
+                status_code = 1
+            elif status == "Failure":
+                status_code = -1
+            sample[s_c["component"]["name"]] = (status_code, status)
+            output[s_c["sample"]["name"]] = sample
+        return output
+
