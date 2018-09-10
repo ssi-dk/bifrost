@@ -559,7 +559,8 @@ rule initialize_sample_components_for_each_sample:
                     sample_component_db = datahandling.load_sample_component(sample_component_path)
                     sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
                     sample_component_db["component"] = {"name": component_name, "_id": component_id}
-                    sample_component_db["status"] = "initialized"
+                    if item in components:
+                        sample_component_db["status"] = "initialized"
                     datahandling.save_sample_component(sample_component_db, sample_component_path)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -695,12 +696,10 @@ rule setup_sample_components_to_run:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
                             if config["torque_node"]:
-                                torque_node = ",nodes=" + config["torque_node"]
-                                ncpus = ""
+                                torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
-                                torque_node = ""
-                                ncpus = "ncpus={},".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l {}mem={}gb{} -N 'serumqc_{}' -W group_list={} -A {} \n".format(ncpus, config["memory"], torque_node, sample_name, group, group))
+                                torque_node = ",nodes=1:ppn={}".format(config["threads"])
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J 'serumqc_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
 
