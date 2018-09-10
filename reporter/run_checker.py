@@ -7,7 +7,9 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
+import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
+import colorlover as cl
 
 import dash_scroll_up
 
@@ -41,8 +43,8 @@ app.layout = html.Div([
         html.H1("SerumQC Run Checker"),
         html.H2("", id="run-name"),
         dcc.Location(id="url", refresh=False),
-        html.Div(id="run-table"),
-        html.Div(id="run-selector")
+        html.Div(id="run-selector", className="row"),
+        html.Div(id="run-report")
 
     ]),
     html.Footer([
@@ -130,39 +132,55 @@ def update_run_button(run):
     [Input("run-name", "children")]
 )
 def update_run_report(run):
-    data []
+    data = []
+    figure = {}
     if run != "":
-        x = []
-        y = COMPONENTS
+        y = []
+        x = COMPONENTS
         z = []
-        for sample in samples:
+        z_text = []
+        samples = import_data.get_sample_component_status(run)
+        for name, s_components in samples.items():
             sample_z = []
-            x.append(sample['name'])
+            sample_z_text = []
+            y.append(name)
             for component in COMPONENTS:
-                if component in sample["components"].keys():
-                    sample_z.append(sample["components"][component])
+                if component in s_components.keys():
+                    sample_z.append(s_components[component][0])
+                    sample_z_text.append(s_components[component][1])
                 else:
                     sample_z.append(0)
+                    sample_z_text.append("None")
             z.append(sample_z)
-        data=[go.Heatmap(z=z,x=x,y=y)]
+            z_text.append(sample_z_text)
+        # transpose z
+        #z = [list(x) for x in zip(*z)]
+        #z_text = [list(x) for x in zip(*z_text)]
+        # print(x)
+        # print(y)
+        # print(z)
+        figure = ff.create_annotated_heatmap(z=z,
+                                             x=x,
+                                             y=y,
+                                             annotation_text=z_text,
+                                             colorscale=[[0, 'red'], [0.33, 'white'], [1, 'green']])
+    # figure["layout"] = go.Layout(
+    #     hovermode="closest",
+    #     title="Run plot",
+    #     margin=go.layout.Margin(
+    #         l=175,
+    #         r=50,
+    #         b=125,
+    #         t=50
+    #     ),
+    #     yaxis={"tickfont": {"size": 10}},
+    #     xaxis={"showgrid": True}
+    # )
 
-    figure = {
-        "data": data,
-        "layout": go.Layout(
-            hovermode="closest",
-            title="Run plot",
-            margin=go.layout.Margin(
-                l=175,
-                r=50,
-                b=25,
-                t=50
-            ),
-            yaxis={"tickfont": {"size": 10}},
-            xaxis={"showgrid": True}
-        )
-    }
     return [dcc.Graph(
-        figure=figure
+        id="run-graph",
+        figure=figure,
+        style={"height": "1600px"}
     )]
     
 
@@ -170,4 +188,4 @@ def update_run_report(run):
 
 application = app.server  # Required for uwsgi
 
-app.run_server(debug=True, host="0.0.0.0")
+#app.run_server(debug=True, host="0.0.0.0")
