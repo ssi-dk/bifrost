@@ -528,11 +528,11 @@ def update_report(n_qcquickie_ts, n_assemblatron_ts,
             dataframe = dataframe.drop(
             columns="analyzer.ariba_resfinder")
         csv_string = dataframe.to_csv(index=False, encoding="utf-8", sep="\t")
-        csv_string = "data:text/tsv;charset=utf-8," + urllib.parse.quote(csv_string)
+        csv_string = 'data:text/tab-separated-values;charset=utf-8,' + urllib.parse.quote(csv_string)
         return [
             html.H3("Table Report"),
             # We have to drop those columns with nested values for the table
-            html.A("Download run (csv)", href=csv_string),
+            html.A("Download run (tsv)", href=csv_string, download='report.tsv'),
             dt.DataTable(
                 rows=dataframe.to_dict("records"),
 
