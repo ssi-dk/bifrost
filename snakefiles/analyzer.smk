@@ -236,9 +236,9 @@ rule ariba_mlst:
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
             mlst_species_DB = datahandling.get_mlst_species_DB(sample)
-            datahandling.log(log_out, "mlst species {} for {}\n".format(mlst_species_DB, sample))
+            datahandling.log(log_out, "mlst species: {}\n".format(mlst_species_DB))
             if mlst_species_DB is None:
-                touch(output.folder)
+                shell("touch {}".format(output.folder))
             else:
                 shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
