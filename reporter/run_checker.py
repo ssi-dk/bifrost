@@ -161,6 +161,8 @@ def update_run_report(run):
         figure = ff.create_annotated_heatmap(z=z,
                                              x=x,
                                              y=y,
+                                             zmin=-1,
+                                             zmax=2,
                                              annotation_text=z_text,
                                              colorscale=[[0, 'red'], [0.33, 'white'], [1, 'green']])
     # figure["layout"] = go.Layout(
