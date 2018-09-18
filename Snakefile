@@ -15,10 +15,10 @@ import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 #Saving the config
-component = "serumqc"
+component = "bifrost"
 rerun_folder = component + "/delete_to_update"
 
-datahandling.save_yaml(config, "serumqc_config.yaml")
+datahandling.save_yaml(config, "run_config.yaml")
 
 components = config["components"].split(",")
 sample_folder = config["sample_folder"]
@@ -31,12 +31,12 @@ global_memory_in_GB = config["memory"]
 
 onsuccess:
     print("Workflow complete")
-    shell("touch serumqc_successfully_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
+    shell("touch " + component + "_successfully_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
 
 
 onerror:
     print("Workflow error")
-    shell("touch serumqc_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
+    shell("touch " + component + "_failed_to_initialized_on_" + str(datetime.datetime.now()).replace(" ", "_"))
 
 
 rule all:
@@ -668,7 +668,7 @@ rule setup_sample_components_to_run:
         sample_folder = sample_folder
     output:
         touch(rerun_folder + "/setup_sample_components_to_run"),
-        bash_file = "run_cmd_serumqc.sh"
+        bash_file = "run_cmd_" + component + ".sh"
     params:
         rule_name = rule_name
     run:
@@ -692,22 +692,22 @@ rule setup_sample_components_to_run:
             with open(run_cmd, "w") as run_cmd_handle:
                 for sample_name in unique_sample_names:
                     current_time = datetime.datetime.now()
-                    with open(sample_name + "/cmd_serumqc_{}.sh".format(current_time), "w") as command:
+                    with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
                             if config["torque_node"]:
                                 torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
                                 torque_node = ",nodes=1:ppn={}".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N 'serumqc_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], sample_name, group, group))
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '" + component + "{}' - W group_list={} - A {} \n".format(config["memory"], torque_node, config["walltime"], sample_name, group, group))
                         elif config["grid"] == "slurm":
-                            command.write("#SBATCH --mem={}G -p {} -c {} -J 'serumqc_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
+                            command.write("#SBATCH --mem={}G -p {} -c {} -J '" + component + "_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
 
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
                         if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                             for component_name in components:
-                                component_file = os.path.dirname(workflow.snakefile) + "/snakefiles/" + component_name + ".smk"
+                                component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
                                 if os.path.isfile(component_file):
                                     command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                     command.write("snakemake --cores {} -s {} --config Sample={};\n".format(config["threads"], component_file, "sample.yaml"))
@@ -723,17 +723,17 @@ rule setup_sample_components_to_run:
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
-                    os.chmod(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time)), 0o777)
-                    if os.path.islink(os.path.join(sample_name, "cmd_serumqc.sh")):
-                        os.remove(os.path.join(sample_name, "cmd_serumqc.sh"))
-                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_serumqc_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_serumqc.sh"))
+                    os.chmod(os.path.join(sample_name, "cmd_" + component + "_{}.sh".format(current_time)), 0o777)
+                    if os.path.islink(os.path.join(sample_name, "cmd_" + component + ".sh")):
+                        os.remove(os.path.join(sample_name, "cmd_" + component + ".sh"))
+                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_" + component + "_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
                     run_cmd_handle.write("cd {};\n".format(sample_name))
                     if config["grid"] == "torque":
-                        run_cmd_handle.write("qsub cmd_serumqc.sh;\n")  # dependent on grid engine
+                        run_cmd_handle.write("qsub cmd_" + component + ".sh;\n")  # dependent on grid engine
                     elif config["grid"] == "slurm":
-                        run_cmd_handle.write("sbatch cmd_serumqc.sh;\n")  # dependent on grid engine
+                        run_cmd_handle.write("sbatch cmd_" + component + ".sh;\n")  # dependent on grid engine
                     else:
-                        run_cmd_handle.write("bash cmd_serumqc.sh;\n")
+                        run_cmd_handle.write("bash cmd_" + component + ".sh;\n")
                     run_cmd_handle.write("cd {};\n".format(os.getcwd()))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -747,6 +747,6 @@ rule create_end_file:
         rules.all.input
     shell:
         """
-        bash run_cmd_serumqc.sh
+        bash run_cmd_" + component + ".sh
         touch {output}
         """

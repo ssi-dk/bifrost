@@ -5,7 +5,7 @@ import Bio.SeqIO
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
-configfile: "../serumqc_config.yaml"
+configfile: "../run_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
 global_threads = config["threads"]

@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
-configfile: "../serumqc_config.yaml"
+configfile: "../run_config.yaml"
 sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]

@@ -4,7 +4,7 @@ sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
-components: "whats_my_species,qcquickie,analyzer,assemblatron,testomatic" # available options are in snakefiles
+components: "whats_my_species,qcquickie,analyzer,assemblatron,testomatic" # available options are in components directory
 group: "" # group for sbatch on torque system
 use_mongodb: True 
 run_type: "project" # run type (routine, project)
@@ -14,6 +14,8 @@ memory: &memory 10 #in Gb
 threads: &threads 5
 
 # --Optional override values--  # if not set will look in resources folder for all files
+#relative to samples components folder
+adapters_fasta: "../resources/adapters.fasta")
 # adapters_fasta: PATH/adapters.fasta     # fasta File
 # run_name: NAME                              # if provided use that for db if not use folder
 # mongo_db_key_location: PATH                 # location of keys.py used for accessing mongodb
