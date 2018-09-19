@@ -699,9 +699,9 @@ rule setup_sample_components_to_run:
                                 torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
                                 torque_node = ",nodes=1:ppn={}".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '" + component + "{}' - W group_list={} - A {} \n".format(config["memory"], torque_node, config["walltime"], sample_name, group, group))
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '{}_{}' - W group_list={} - A {} \n".format(config["memory"], torque_node, config["walltime"], component, sample_name, group, group))
                         elif config["grid"] == "slurm":
-                            command.write("#SBATCH --mem={}G -p {} -c {} -J '" + component + "_{}'\n".format(config["memory"], config["partition"], config["threads"], sample_name))
+                            command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
 
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
@@ -723,17 +723,17 @@ rule setup_sample_components_to_run:
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
-                    os.chmod(os.path.join(sample_name, "cmd_" + component + "_{}.sh".format(current_time)), 0o777)
-                    if os.path.islink(os.path.join(sample_name, "cmd_" + component + ".sh")):
-                        os.remove(os.path.join(sample_name, "cmd_" + component + ".sh"))
-                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_" + component + "_{}.sh".format(current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
+                    os.chmod(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time)), 0o777)
+                    if os.path.islink(os.path.join(sample_name, "cmd_{}.sh").format(component)):
+                        os.remove(os.path.join(sample_name, "cmd_{}.sh").format(component))
+                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
                     run_cmd_handle.write("cd {};\n".format(sample_name))
                     if config["grid"] == "torque":
-                        run_cmd_handle.write("qsub cmd_" + component + ".sh;\n")  # dependent on grid engine
+                        run_cmd_handle.write("qsub cmd_{}.sh;\n".format(comonent))  # dependent on grid engine
                     elif config["grid"] == "slurm":
-                        run_cmd_handle.write("sbatch cmd_" + component + ".sh;\n")  # dependent on grid engine
+                        run_cmd_handle.write("sbatch cmd_{}.sh;\n".format(component))  # dependent on grid engine
                     else:
-                        run_cmd_handle.write("bash cmd_" + component + ".sh;\n")
+                        run_cmd_handle.write("bash cmd_{}.sh;\n".format(component))
                     run_cmd_handle.write("cd {};\n".format(os.getcwd()))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -746,7 +746,7 @@ rule create_end_file:
     output:
         rules.all.input
     params:
-        bashcmd = "run_cmd_" + component + ".sh"
+        bashcmd = "run_cmd_{}.sh".format(component)
     shell:
         """
         bash {params.bashcmd}
