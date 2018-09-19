@@ -1,6 +1,4 @@
-SerumQC-private
-
-## Running SerumQC:
+## Running bifrost:
 
 Activate conda environment. `env_qcquickie` is the name of the environment in the SSI servers:
 ```
