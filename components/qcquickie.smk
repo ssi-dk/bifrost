@@ -91,7 +91,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
-        adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
+        adapters = os.path.join(os.path.dirname(workflow.snakefile), config["adapters_fasta"])
     conda:
         "../envs/bbmap.yaml"
     shell:

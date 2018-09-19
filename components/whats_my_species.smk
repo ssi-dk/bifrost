@@ -60,7 +60,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
-        adapters = config.get("adapters_fasta", os.path.join(os.path.dirname(workflow.snakefile), "../resources/adapters.fasta"))
+        adapters = os.path.join(os.path.dirname(workflow.snakefile), config["adapters_fasta"])
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -87,7 +87,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     output:
         kraken_report = rules.setup.params.folder + "/kraken_report.txt"
     params:
-        db = config.get("kraken_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_database"))
+        db = os.path.join(os.path.dirname(workflow.snakefile), config["kraken_database"])
     conda:
         "../envs/kraken.yaml"
     shell:
@@ -115,7 +115,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         bracken = rules.setup.params.folder + "/bracken.txt",
         kraken_report_bracken = rules.setup.params.folder + "/kraken_report_bracken.txt"
     params:
-        kmer_dist = config.get("kraken_kmer_dist", os.path.join(os.path.dirname(workflow.snakefile), "../resources/kraken_kmer_dist.txt"))
+        kmer_dist = os.path.join(os.path.dirname(workflow.snakefile), config["kraken_kmer_dist"])
     conda:
         "../envs/bracken.yaml"
     shell:

@@ -11,20 +11,21 @@ run_type: "project" # run type (routine, project)
 read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
 samples_to_ignore: ["Undetermined"]
 memory: &memory 10 #in Gb
-threads: &threads 5
+threads: &threads 4
 
-# --Optional override values--  # if not set will look in resources folder for all files
-#relative to samples components folder
-adapters_fasta: "../resources/adapters.fasta"
-# adapters_fasta: PATH/adapters.fasta     # fasta File
+# --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder
-# mongo_db_key_location: PATH                 # location of keys.py used for accessing mongodb
-kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # Directory
-kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # TXT File
-abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" # Directory
-abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" # Directory
-ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
-ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+
+# --Required resource files--   # if not set will look in resources folder for all files
+# relative to components/scripts folder (so ../ to return to base snakemake folder) if not an absolute path
+adapters_fasta: "../resources/adapters.fasta" #required for qcquickie, assemblatron,
+mongo_db_key_location: "../resources/keys.txt"  # location of keys.py used for accessing mongodb (required for all components when using mongodb)
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # required for whats_my_species
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # required for analyzer
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" # Directory # required for analyzer
+abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" # Directory # required for analyzer
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/" # Directory # required for analyzer
+ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/" # Directory # required for analyzer
 # MLST DB's is handled in species DB
 
 # For processing sample sheets

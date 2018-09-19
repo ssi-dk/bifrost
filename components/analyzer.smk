@@ -104,7 +104,7 @@ rule ariba_resfinder:
     output:
         folder = directory(rules.setup.params.folder + "/ariba_resfinder")
     params:
-        database = config.get("ariba_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_resfinder_database"))
+        database = os.path.join(os.path.dirname(workflow.snakefile), config["ariba_resfinder_database"])
     conda:
         "../envs/ariba.yaml"
     shell:
@@ -131,7 +131,7 @@ rule abricate_on_ariba_resfinder:
     output:
         report = rules.setup.params.folder + "/abricate_on_resfinder_from_ariba.tsv",
     params:
-        database = config.get("abricate_resfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_resfinder_database")),
+        database = os.path.join(os.path.dirname(workflow.snakefile), config["abricate_resfinder_database"])
     conda:
         "../envs/abricate.yaml"
     shell:
@@ -165,7 +165,7 @@ rule ariba_plasmidfinder:
     output:
         folder = directory(rules.setup.params.folder + "/ariba_plasmidfinder")
     params:
-        database = config.get("ariba_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/ariba_plasmidfinder_database")),
+        database = os.path.join(os.path.dirname(workflow.snakefile), config["ariba_plasmidfinder_database"])
     conda:
         "../envs/ariba.yaml"
     shell:
@@ -192,7 +192,7 @@ rule abricate_on_ariba_plasmidfinder:
     output:
         report = rules.setup.params.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
-        database = config.get("abricate_plasmidfinder_database", os.path.join(os.path.dirname(workflow.snakefile), "../resources/abricate_plasmidfinder_database")),
+        database = os.path.join(os.path.dirname(workflow.snakefile), config["abricate_plasmidfinder_database"])
     conda:
         "../envs/abricate.yaml"
     shell:
