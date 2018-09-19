@@ -745,8 +745,10 @@ rule create_end_file:
         rules.setup_sample_components_to_run.output
     output:
         rules.all.input
+    params:
+        bashcmd = "run_cmd_" + component + ".sh"
     shell:
         """
-        bash run_cmd_" + component + ".sh
+        bash {params.bashcmd}
         touch {output}
         """
