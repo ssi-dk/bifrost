@@ -21,7 +21,7 @@ threads: &threads 4
 adapters_fasta: "../resources/adapters.fasta" #required for qcquickie, assemblatron,
 mongo_db_key_location: "../resources/keys.txt"  # location of keys.py used for accessing mongodb (required for all components when using mongodb)
 kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # required for whats_my_species
-kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # required for analyzer
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # required for whats_my_species
 abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" # Directory # required for analyzer
 abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" # Directory # required for analyzer
 ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/" # Directory # required for analyzer
