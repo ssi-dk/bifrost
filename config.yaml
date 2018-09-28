@@ -2,6 +2,7 @@
 sample_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
+#torque_node: # for use on specifying a torque node
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
 components: "whats_my_species,qcquickie,analyzer,assemblatron,testomatic" # available options are in components directory
