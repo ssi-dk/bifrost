@@ -225,10 +225,10 @@ table {
   color: #ffffff;
   background: #2980b9;
 }
-.trow.green {
+.cell.green {
   background: #27ae60;
 }
-.trow.red {
+.cell.red {
   background: #ea6153;
 }
 @media screen and (max-width: 580px) {
