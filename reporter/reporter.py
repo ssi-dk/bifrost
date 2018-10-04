@@ -630,12 +630,10 @@ def update_test_table(species_list, group_list, run_name):
     for sample in samples_df.iterrows():
         row = []
         for value, column in zip(sample[1][columns], columns):
-            print(value)
-            print(type(value))
             if str(value).startswith("fail") or str(value).startswith("undefined") \
             or value == "supplying lab" or value =="core facility":
                 td = html.Td(str(value), className="cell red")
-            elif str(value).startswith("KeyError") or (column.endswith("QC") and pd.isnull(value)):
+            elif str(value).startswith("KeyError") or (column.endswith("QC") and np.isnan(value)):
                 td = html.Td(str(value), className="cell yellow")
             else:
                 td = html.Td(str(value), className="cell")
