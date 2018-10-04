@@ -598,7 +598,7 @@ def update_selected_samples(species_list, group_list, run_name):
 )
 def update_test_table(species_list, group_list, run_name):
 
-    columns = ["name", "species", "sample_sheet.supplying_lab", 'testomatic.qcquickie.action',
+    columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie.action',
             'testomatic.assemblatron.action', 'testomatic.assemblatron.10xgenomesize',
             'testomatic.assemblatron.1x25xsizediff',
             'testomatic.assemblatron.1xgenomesize', 'testomatic.assemblatron.avgcoverage',
@@ -611,7 +611,7 @@ def update_test_table(species_list, group_list, run_name):
             'testomatic.whats_my_species.minspecies',
             'testomatic.whats_my_species.nosubmitted',
             'testomatic.whats_my_species.submitted==detected', "_id"]
-    column_names = ['name', 'Species', 'supplying lab', 'qcquickie QC',
+    column_names = ['name', 'Species', 'supplying lab', "Comments", 'qcquickie QC',
                     'assemblatron QC', 'assemblatron 10xgenomesize',
                     'assemblatron 1x25xsizediff', 'assemblatron 1xgenomesize',
                     'assemblatron avgcoverage', 'assemblatron numreads', 'base readspresent',
@@ -623,17 +623,25 @@ def update_test_table(species_list, group_list, run_name):
     samples_df = import_data.filter_all(
         species_list, group_list, run_name)
 
-    samples_df.species = list(map(lambda x:short_species(x), samples_df.species))
-    table = [{"list":column_names,"className":"header"}]
+    samples_df.species = list(map(lambda x: short_species(x), samples_df.species))
+    th = html.Thead(
+        html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
+    tbody = []
     for sample in samples_df.iterrows():
         row = []
-        for value in sample[1][columns]:
-            row.append(str(value))
-        if sample[1][["testomatic.assemblatron.action"]].all() != "OK" or sample[1][["testomatic.qcquickie.action"]].all() != "OK":
-            table.append({"list": row, "className":"red"})
-        else:
-            table.append(row)
-    return [html_table(table)]
+        for value, column in zip(sample[1][columns], columns):
+            if str(value).startswith("fail") or str(value).startswith("undefined") \
+            or value == "supplying lab" or value =="core facility":
+                td = html.Td(str(value), className="cell red")
+            elif str(value).startswith("KeyError") or (pd.isnull(value) and column.endswith("action")):
+                td = html.Td(str(value), className="cell yellow")
+            else:
+                td = html.Td(str(value), className="cell")
+            row.append(td)
+        tbody.append(html.Tr(row, className="trow"))
+    tb = html.Tbody(tbody)
+
+    return [html.Table([th, tb], className="fixed-header")]
 
 
 @app.callback(
