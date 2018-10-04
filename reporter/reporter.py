@@ -8,7 +8,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
 import pandas as pd
-import numpy as np
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
 
@@ -634,7 +633,7 @@ def update_test_table(species_list, group_list, run_name):
             if str(value).startswith("fail") or str(value).startswith("undefined") \
             or value == "supplying lab" or value =="core facility":
                 td = html.Td(str(value), className="cell red")
-            elif str(value).startswith("KeyError") or (np.isnan(value)):
+            elif str(value).startswith("KeyError") or (pd.isnull(value)):
                 td = html.Td(str(value), className="cell yellow")
             else:
                 td = html.Td(str(value), className="cell")
