@@ -28,7 +28,7 @@ def generate_sample_report(dataframe, sample, data_content, background):
                     == sample["species"]],
             background
         )
-        tests = html_test_table(sample, className="row")
+        tests = html_test_table(sample, data_content, className="row")
     else:
         plot = None
         tests = None
@@ -43,6 +43,7 @@ def generate_sample_report(dataframe, sample, data_content, background):
                 html_sample_tables(sample, data_content, className="row"),
 
                 plot,
+                html.H6("QC Tests", className="table-header"),
                 tests
             ],
             className="border-box"
@@ -83,28 +84,37 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data"))),
+                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test("whats_my_species.minspecies", sample_data)),
+            ], className=check_test("whats_my_species.minspecies", sample_data) + " trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("whats_my_species.name_classified_species_2", "No data"))),
+                    html.I(sample_data.get("whats_my_species.name_classified_species_2", "No data")), className="cell"),
                 html_td_percentage(percentages[1], color_2)
-            ]),
+            ], className="trow"),
             html.Tr([
-                html.Td("Unclassified"),
+                html.Td("Unclassified", className="cell"),
                 html_td_percentage(percentages[2], color_u)
-            ])
+            ], className=check_test("whats_my_species.maxunclassified", sample_data) + " trow")
         ])
     ], **kwargs)
 
-def html_test_table(sample_data, **kwargs):
+def html_test_table(sample_data, data_content,**kwargs):
     rows = []
     for key, value in sample_data.items():
-        if key.startswith("testomatic"):
-            rows.append([key, value])
-            #rows.append([key.split(".")[-1], value])
-    return html.Div(html_table(rows, className="six columns"), **kwargs)
+        if key.startswith("testomatic.whats_my_species") \
+        or key.startswith("testomatic." + data_content):
+            if pd.isnull(value):
+                value = "nan"
+            name_v = key.split(".")
+            values = value.split(':')
+            if len(values) == 3:
+                if values[0] != "pass":
+                    rows.append([name_v[2].capitalize(), "{}. Reason: {}. Detected value: {}".format(
+                        values[0], values[1], values[2])])
+            if (key.endswith(".action")):
+                rows.append(["QC Action", value])
+    return html.Div(html_table(rows, className="twelve columns"), **kwargs)
 
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,

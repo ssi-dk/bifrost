@@ -5,10 +5,11 @@ def html_table(data, **kwargs):
     rows = []
     for data_row in data:
         if isinstance(data_row, list):
-            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row]))
+            rows.append(
+                html.Tr([html.Td(data_cell, className="cell") for data_cell in data_row], className="trow"))
         else:
-            rows.append(html.Tr([html.Td(data_cell) for data_cell in data_row["list"]],
-                               className=data_row["className"]))
+            rows.append(html.Tr([html.Td(data_cell, className="cell") for data_cell in data_row["list"]],
+                               className=data_row["className"] + " trow"))
     return html.Table(rows, **kwargs)
 
 
@@ -26,4 +27,4 @@ def html_td_percentage(value, color):
                 style={"backgroundColor": color, "width": fill}
             )
         ], className="wrapper"
-        ), className="data-colored")
+        ), className="data-colored cell")
