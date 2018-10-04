@@ -140,6 +140,7 @@ def html_div_summary():
                 className="row"
             ),
             dcc.Graph(id="summary-plot"),
+            html.Div(id="testomatic-report", className="bigtable"),
             html.Div(
                 [
                     html.Div(

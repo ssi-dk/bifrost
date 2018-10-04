@@ -589,6 +589,53 @@ def update_selected_samples(species_list, group_list, run_name):
                     id="selected-samples-ids")
     ]
 
+
+@app.callback(
+    Output(component_id="testomatic-report", component_property="children"),
+    [Input(component_id="species-list", component_property="value"),
+        Input(component_id="group-list", component_property="value"),
+        Input(component_id="run-name", component_property="children")]
+)
+def update_test_table(species_list, group_list, run_name):
+
+    columns = ["name", "species", "sample_sheet.supplying_lab", 'testomatic.qcquickie.action',
+            'testomatic.assemblatron.action', 'testomatic.assemblatron.10xgenomesize',
+            'testomatic.assemblatron.1x25xsizediff',
+            'testomatic.assemblatron.1xgenomesize', 'testomatic.assemblatron.avgcoverage',
+            'testomatic.assemblatron.numreads', 'testomatic.base.readspresent',
+            'testomatic.qcquickie.10xgenomesize',
+            'testomatic.qcquickie.1x25xsizediff',
+            'testomatic.qcquickie.1xgenomesize',
+            'testomatic.qcquickie.avgcoverage', 'testomatic.qcquickie.numreads',
+            'testomatic.whats_my_species.maxunclassified',
+            'testomatic.whats_my_species.minspecies',
+            'testomatic.whats_my_species.nosubmitted',
+            'testomatic.whats_my_species.submitted==detected', "_id"]
+    column_names = ['name', 'Species', 'supplying lab', 'qcquickie QC',
+                    'assemblatron QC', 'assemblatron 10xgenomesize',
+                    'assemblatron 1x25xsizediff', 'assemblatron 1xgenomesize',
+                    'assemblatron avgcoverage', 'assemblatron numreads', 'base readspresent',
+                    'qcquickie 10xgenomesize', 'qcquickie 1x25xsizediff',
+                    'qcquickie 1xgenomesize', 'qcquickie avgcoverage',
+                    'qcquickie numreads', 'whats_my_species maxunclassified',
+                    'whats_my_species minspecies', 'whats_my_species nosubmitted',
+                    'whats_my_species submitted==detected', '_id']
+    samples_df = import_data.filter_all(
+        species_list, group_list, run_name)
+
+    samples_df.species = list(map(lambda x:short_species(x), samples_df.species))
+    table = [{"list":column_names,"className":"header"}]
+    for sample in samples_df.iterrows():
+        row = []
+        for value in sample[1][columns]:
+            row.append(str(value))
+        if sample[1][["testomatic.assemblatron.action"]].all() != "OK" or sample[1][["testomatic.qcquickie.action"]].all() != "OK":
+            table.append({"list": row, "className":"red"})
+        else:
+            table.append(row)
+    return [html_table(table)]
+
+
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="species-list", component_property="value"),

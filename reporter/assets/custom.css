@@ -1,8 +1,8 @@
 td, td:first-child {
-  font-size: 1.75rem;
+  font-size: 14px;
   padding: 2px;
   padding-left: 15px;
-  border: 1px solid #E1E1E1;
+  border: none;
 }
 .data-colored {
   height: 34px;
@@ -15,6 +15,10 @@ td, td:first-child {
 
 h6 .table-header {
   margin-top: 1px;
+}
+
+.bigtable {
+  overflow-x: auto
 }
 
 table {
@@ -59,7 +63,7 @@ h2 {
     position: relative;
     height: 100%;
     width: 100%;
-    z-index: -10;
+    z-index: 1;
 }
 .bar {
     display: block;
@@ -68,7 +72,7 @@ h2 {
     left: 0;
     bottom: 0;
     background-color: #dedede;
-    z-index: -1;
+    z-index: 2;
 }
 
 .val {
@@ -76,6 +80,7 @@ h2 {
     position: absolute;
     padding: 5px;
     left: 0;
+    z-index: 3;
 }
 
 .svg_bact {
@@ -191,4 +196,75 @@ body, .appcontainer {
 @-o-keyframes fadein {
     from { opacity: 0; }
     to   { opacity: 1; }
+}
+
+
+
+
+table {
+  margin: 0 0 40px 0;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  display: table;
+}
+@media screen and (max-width: 580px) {
+  table {
+    display: block;
+  }
+}
+
+.trow {
+  display: table-row;
+  background: #f6f6f6;
+}
+.trow:nth-of-type(odd) {
+  background: #e9e9e9;
+}
+.trow.header {
+  font-weight: 900;
+  color: #ffffff;
+  background: #2980b9;
+}
+.trow.green {
+  background: #27ae60;
+}
+.trow.red {
+  background: #ea6153;
+}
+@media screen and (max-width: 580px) {
+  .trow {
+    padding: 14px 0 7px;
+    display: block;
+  }
+  .trow.header {
+    padding: 0;
+    height: 6px;
+  }
+  .trow.header .cell {
+    display: none;
+  }
+  .trow .cell {
+    margin-bottom: 10px;
+  }
+  .trow .cell:before {
+    margin-bottom: 3px;
+    content: attr(data-title);
+    min-width: 98px;
+    font-size: 10px;
+    line-height: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #969696;
+    display: block;
+  }
+}
+
+.cell {
+  white-space: nowrap;
+}
+@media screen and (max-width: 580px) {
+  .cell {
+    padding: 2px 16px;
+    display: block;
+  }
 }
