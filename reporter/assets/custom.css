@@ -1,4 +1,4 @@
-td, td:first-child {
+td, td:first-child, th, th:first-child {
   font-size: 14px;
   padding: 2px;
   padding-left: 15px;
@@ -231,6 +231,11 @@ table {
 .cell.red {
   background: #ea6153;
 }
+
+.cell.yellow {
+  background: #f1c40f;
+}
+
 @media screen and (max-width: 580px) {
   .trow {
     padding: 14px 0 7px;
@@ -268,3 +273,13 @@ table {
     display: block;
   }
 }
+
+
+.fixed_headers tbody {
+  overflow-y: auto;
+  height: 120px;
+}
+.fixed_headers thead tr {
+
+}
+

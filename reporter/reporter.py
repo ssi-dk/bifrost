@@ -623,20 +623,25 @@ def update_test_table(species_list, group_list, run_name):
     samples_df = import_data.filter_all(
         species_list, group_list, run_name)
 
-    samples_df.species = list(map(lambda x:short_species(x), samples_df.species))
-    table = [{"list":column_names,"className":"header"}]
+    samples_df.species = list(map(lambda x: short_species(x), samples_df.species))
+    th = html.Thead(
+        html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
+    tbody = []
     for sample in samples_df.iterrows():
         row = []
         for value, column in zip(sample[1][columns], columns):
-            if value.startswith("fail") or value.startswith("undefined") \
+            if str(value).startswith("fail") or str(value).startswith("undefined") \
             or value == "supplying lab" or value =="core facility":
                 td = html.Td(str(value), className="cell red")
+            elif str(value).startswith("KeyError"):
+                td = html.Td(str(value), className="cell yellow")
             else:
                 td = html.Td(str(value), className="cell")
             row.append(td)
-        table.append(html.Tr(row, className="trow"))
+        tbody.append(html.Tr(row, className="trow"))
+    tb = html.Tbody(tbody)
 
-    return [html.Table(table)]
+    return [html.Table([th, tb], className="fixed-header")]
 
 
 @app.callback(
