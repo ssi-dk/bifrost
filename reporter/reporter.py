@@ -633,6 +633,8 @@ def update_test_table(species_list, group_list, run_name):
             if str(value).startswith("fail") or str(value).startswith("undefined") \
             or value == "supplying lab" or value =="core facility":
                 td = html.Td(str(value), className="cell red")
+            print(value)
+            print(type(value))
             elif str(value).startswith("KeyError") or (column.endswith("QC") and pd.isnull(value)):
                 td = html.Td(str(value), className="cell yellow")
             else:
