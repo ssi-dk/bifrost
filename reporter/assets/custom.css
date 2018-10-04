@@ -1,7 +1,6 @@
 td, td:first-child, th, th:first-child {
   font-size: 14px;
-  padding: 2px;
-  padding-left: 15px;
+  padding: 2px 15px;
   border: none;
 }
 .data-colored {
