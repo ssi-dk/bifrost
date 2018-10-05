@@ -360,6 +360,38 @@ def update_species_list(run_name):
 
 
 @app.callback(
+    Output("qc-div", "children"),
+    [Input("run-name", "children")]
+)
+def update_qc_list(run_name):
+    if len(run_name) == 0:
+        qc_list = import_data.get_qc_list()
+    else:
+        qc_list = import_data.get_qc_list(run_name)
+    qc_options = []
+    qc_list_options = []
+    for item in qc_list:
+        if item["_id"] == None:
+            qc_options.append("Not classified")
+            qc_list_options.append({
+                "label": "Not classified ({})".format(item["count"]),
+                "value": "Not classified"
+            })
+        else:
+            qc_options.append(item["_id"])
+            qc_list_options.append({
+                "label": "{} ({})".format(short_species(item["_id"]), item["count"]),
+                "value": item["_id"]
+            })
+    return dcc.Dropdown(
+        id="qc-list",
+        options=qc_list_options,
+        multi=True,
+        value=qc_options
+    )
+
+
+@app.callback(
     Output("run-table", "children"),
     [Input("run-name", "children"),
         Input("url", "pathname")]
@@ -594,9 +626,10 @@ def update_selected_samples(species_list, group_list, run_name):
     Output(component_id="testomatic-report", component_property="children"),
     [Input(component_id="species-list", component_property="value"),
         Input(component_id="group-list", component_property="value"),
-        Input(component_id="run-name", component_property="children")]
+        Input(component_id="run-name", component_property="children"),
+        Input(component_id="qc-list", component_property="value")]
 )
-def update_test_table(species_list, group_list, run_name):
+def update_test_table(species_list, group_list, run_name, qc_list):
 
     columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie.action',
             'testomatic.assemblatron.action', 'testomatic.assemblatron.10xgenomesize',
@@ -621,7 +654,7 @@ def update_test_table(species_list, group_list, run_name):
                     'whats_my_species minspecies', 'whats_my_species nosubmitted',
                     'whats_my_species submitted==detected', '_id']
     samples_df = import_data.filter_all(
-        species_list, group_list, run_name)
+        species_list, group_list, qc_list, run_name)
 
     samples_df.species = list(map(lambda x: short_species(x), samples_df.species))
     th = html.Thead(
@@ -648,15 +681,16 @@ def update_test_table(species_list, group_list, run_name):
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="species-list", component_property="value"),
         Input(component_id="group-list", component_property="value"),
+        Input(component_id="qc-list", component_property="value"),
         Input(component_id="run-name", component_property="children"),
         Input(component_id="plot-list", component_property="value")]
 )
-def update_coverage_figure(species_list, group_list, run_name, plot_value):
+def update_coverage_figure(species_list, group_list, qc_list, run_name, plot_value):
     plot_query = global_vars.PLOTS[plot_value]["projection"]
     plot_func = global_vars.PLOTS[plot_value].get("func")
     
     data = []
-    plot_df = import_data.filter_all(species_list, group_list, run_name, plot_func)
+    plot_df = import_data.filter_all(species_list, group_list, qc_list, run_name, plot_func)
     if species_list is None: species_list = []
     species_count = 0
     if 'species' in plot_df:
@@ -747,6 +781,26 @@ def all_species(n_clicks, run_name):
             species_options.append(item["_id"])
 
     return species_options
+
+
+@app.callback(
+    Output("qc-list", "value"),
+    [Input("qc-all", "n_clicks")],
+    [State("run-name", "children")]
+)
+def all_QCs(n_clicks, run_name):
+    if len(run_name) == 0:
+        qc_list = import_data.get_qc_list()
+    else:
+        qc_list = import_data.get_qc_list(run_name)
+    qc_options = []
+    for item in qc_list:
+        if item["_id"] == None:
+            qc_options.append("Not classified")
+        else:
+            qc_options.append(item["_id"])
+
+    return qc_options
 
 application = app.server # Required for uwsgi
 
