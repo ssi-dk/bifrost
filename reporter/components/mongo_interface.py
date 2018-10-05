@@ -161,8 +161,66 @@ def get_species_list(run_name=None):
     return species
 
 
+def get_qc_list(run_name=None):
+    with get_connection() as connection:
+        db = connection.get_database()
+        if run_name is not None:
+            run = db.runs.find_one(
+                {"name": run_name},
+                {
+                    "_id": 0,
+                    "samples._id": 1
+                }
+            )
+            if run is None:
+                run_samples = []
+            else:
+                run_samples = run["samples"]
+            sample_ids = [s["_id"] for s in run_samples]
+            qcs = list(db.sample_components.aggregate([
+                {
+                    "$match": {
+                        "sample._id": {"$in": sample_ids}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$summary.assemblatron:action",
+                        "count": {"$sum": 1}
+                    }
+                },
+                {
+                    "$sort": {"_id": 1}
+                }
+            ]))
+        else:
+            qcs = list(db.samples.aggregate([
+                {
+                    "$group": {
+                        "_id": "$summary.assemblatron:action",
+                        "count": {"$sum": 1}
+                    }
+                },
+                {
+                    "$sort": {"_id": 1}
+                }
+            ]))
+
+    return qcs
+
+def filter_qc(db, qc_list, results):
+    sample_ids = list(map(lambda x: x["_id"], results))
+    qc_query = list(db.sample_components.find(
+        {
+            "_id": {"$in": sample_ids},
+            "summary.assemblatron:": {"$in": qc_list}
+        }
+    ))
+    qc_ids = list(map(lambda x: x["sample._id"], qc_query))
+    return [result for result in results if result["_id"] in qc_ids]
+
 def filter(projection=None, run_name=None,
-           species=None, group=None, samples=None, page=None):
+           species=None, group=None, qc_list=None, samples=None, page=None):
     with get_connection() as connection:
         db = connection.get_database()
         query = []
@@ -210,16 +268,19 @@ def filter(projection=None, run_name=None,
                 })
             else:
                 query.append({"sample_sheet.group": {"$in": group}})
+
+        query_result = db.samples.find({"$and": query}, projection)\
+            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)])
+
+        if qc_list is not None and len(qc_list) != 0:
+            query_result = filter_qc(db, qc_list, query_result)
+
         if page is None:
-            return list(db.samples.find({"$and": query}, projection)
-                .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
+            return query_result
         else:
             skips = PAGESIZE * (page)
-            return list(db.samples
-                .find({"$and": query}, projection)
-                .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)])
-                .skip(skips)
-                .limit(PAGESIZE))
+            return query_result[skips, skips+PAGESIZE]
+
 
 
 def get_results(sample_ids):

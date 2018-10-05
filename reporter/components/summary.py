@@ -97,6 +97,41 @@ def html_div_summary():
                                 [
                                     html.Div(
                                         [
+                                            html.Label(
+                                                [
+                                                    "Passed testomatic ",
+                                                    html.Small(
+                                                        [
+                                                            "(",
+                                                            html.A(
+                                                                "all",
+                                                                href="#",
+                                                                n_clicks=0,
+                                                                id="qc-all"
+                                                            ),
+                                                            ")"
+                                                        ]
+                                                    )
+                                                ],
+                                                htmlFor="qc-list"
+                                            ),
+                                            html.Div(
+                                                dcc.Dropdown(
+                                                    id="qc-list",
+                                                    multi=True
+                                                ),
+                                                id="qc-div"
+                                            )
+                                        ],
+                                        className="twelve columns"
+                                    )
+                                ],
+                                className="row"
+                            ),
+                            html.Div(
+                                [
+                                    html.Div(
+                                        [
                                             html.Label("Plot value",
                                                        htmlFor="plot-list"),
                                             dcc.Dropdown(
