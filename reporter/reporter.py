@@ -361,27 +361,41 @@ def update_species_list(run_name):
 
 @app.callback(
     Output("qc-div", "children"),
-    [Input("run-name", "children")]
+    [Input("run-name", "children"),
+    Input("selected-samples-ids", "children")]
 )
-def update_qc_list(run_name):
+def update_qc_list(run_name, selected_samples_ids):
+    print(selected_samples_ids)
+    num_samples = len(selected_samples_ids.split(","))
     if len(run_name) == 0:
         qc_list = import_data.get_qc_list()
     else:
         qc_list = import_data.get_qc_list(run_name)
     qc_options = []
     qc_list_options = []
+    sum_items = 0
     for item in qc_list:
         if item["_id"] == None:
-            qc_options.append("Not classified")
+            sum_items += item["count"]
+            qc_options.append("Not determined")
             qc_list_options.append({
-                "label": "Not classified ({})".format(item["count"]),
-                "value": "Not classified"
+                "label": "Not determined ({})".format(item["count"]),
+                "value": "Not determined"
             })
         else:
+            sum_items += item["count"]
             qc_options.append(item["_id"])
             qc_list_options.append({
-                "label": "{} ({})".format(short_species(item["_id"]), item["count"]),
+                "label": "{} ({})".format(item["_id"], item["count"]),
                 "value": item["_id"]
+            })
+    print(num_samples)
+    print(sum_items)
+    if sum_items < num_samples:
+            qc_options.append("Not tested")
+            qc_list_options.append({
+                "label": "Not tested ({})".format(num_samples - sum_items),
+                "value": "Not tested"
             })
     return dcc.Dropdown(
         id="qc-list",
@@ -631,19 +645,19 @@ def update_selected_samples(species_list, group_list, run_name):
 )
 def update_test_table(species_list, group_list, run_name, qc_list):
 
-    columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie.action',
-            'testomatic.assemblatron.action', 'testomatic.assemblatron.10xgenomesize',
-            'testomatic.assemblatron.1x25xsizediff',
-            'testomatic.assemblatron.1xgenomesize', 'testomatic.assemblatron.avgcoverage',
-            'testomatic.assemblatron.numreads', 'testomatic.base.readspresent',
-            'testomatic.qcquickie.10xgenomesize',
-            'testomatic.qcquickie.1x25xsizediff',
-            'testomatic.qcquickie.1xgenomesize',
-            'testomatic.qcquickie.avgcoverage', 'testomatic.qcquickie.numreads',
-            'testomatic.whats_my_species.maxunclassified',
-            'testomatic.whats_my_species.minspecies',
-            'testomatic.whats_my_species.nosubmitted',
-            'testomatic.whats_my_species.submitted==detected', "_id"]
+    columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie:action',
+            'testomatic.assemblatron:action', 'testomatic.assemblatron:10xgenomesize',
+            'testomatic.assemblatron:1x25xsizediff',
+            'testomatic.assemblatron:1xgenomesize', 'testomatic.assemblatron:avgcoverage',
+            'testomatic.assemblatron:numreads', 'testomatic.base:readspresent',
+            'testomatic.qcquickie:10xgenomesize',
+            'testomatic.qcquickie:1x25xsizediff',
+            'testomatic.qcquickie:1xgenomesize',
+            'testomatic.qcquickie:avgcoverage', 'testomatic.qcquickie:numreads',
+            'testomatic.whats_my_species:maxunclassified',
+            'testomatic.whats_my_species:minspecies',
+            'testomatic.whats_my_species:nosubmitted',
+            'testomatic.whats_my_species:submitted==detected', "_id"]
     column_names = ['name', 'Species', 'supplying lab', "Comments", 'qcquickie QC',
                     'assemblatron QC', 'assemblatron 10xgenomesize',
                     'assemblatron 1x25xsizediff', 'assemblatron 1xgenomesize',
@@ -655,7 +669,6 @@ def update_test_table(species_list, group_list, run_name, qc_list):
                     'whats_my_species submitted==detected', '_id']
     samples_df = import_data.filter_all(
         species_list, group_list, qc_list, run_name)
-
     samples_df.species = list(map(lambda x: short_species(x), samples_df.species))
     th = html.Thead(
         html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
@@ -796,10 +809,10 @@ def all_QCs(n_clicks, run_name):
     qc_options = []
     for item in qc_list:
         if item["_id"] == None:
-            qc_options.append("Not classified")
+            qc_options.append("Not determined")
         else:
             qc_options.append(item["_id"])
-
+    qc_options.append("Not tested")
     return qc_options
 
 application = app.server # Required for uwsgi

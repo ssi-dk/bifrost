@@ -86,7 +86,7 @@ def html_organisms_table(sample_data, **kwargs):
                 html.Td(
                     html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test("whats_my_species.minspecies", sample_data) + " trow"),
+            ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
             html.Tr([
                 html.Td(
                     html.I(sample_data.get("whats_my_species.name_classified_species_2", "No data")), className="cell"),
@@ -95,7 +95,7 @@ def html_organisms_table(sample_data, **kwargs):
             html.Tr([
                 html.Td("Unclassified", className="cell"),
                 html_td_percentage(percentages[2], color_u)
-            ], className=check_test("whats_my_species.maxunclassified", sample_data) + " trow")
+            ], className=check_test("whats_my_species:maxunclassified", sample_data) + " trow")
         ])
     ], **kwargs)
 
@@ -156,7 +156,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         {
                             "list": ["Provided species", html.I(
                                 sample_data["sample_sheet.provided_species"])],
-                            "className": check_test("whats_my_species.submitted==detected", sample_data)
+                            "className": check_test("whats_my_species:submitted==detected", sample_data)
                         }
                     ])
                 ], className="six columns"),
@@ -190,7 +190,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                             "{:,}".format(
                                 sample_data.get("qcquickie.bin_length_at_1x", math.nan))
                         ],
-                        "className": check_test("qcquickie.1xgenomesize", sample_data)
+                        "className": check_test("qcquickie:1xgenomesize", sample_data)
                     },
                     [
                         "average coverage (1x)",
@@ -210,7 +210,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                                 - sample_data.get("qcquickie.bin_length_at_25x", math.nan)
                                 )
                         ],
-                        "className": check_test("qcquickie.1x25xsizediff", sample_data)
+                        "className": check_test("qcquickie:1x25xsizediff", sample_data)
                     }
                 ])
             ], className="six columns"),
@@ -236,7 +236,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                             "{:,}".format(
                                 sample_data.get("assemblatron.bin_length_at_1x", math.nan))
                         ],
-                        "className": check_test("assemblatron.1xgenomesize", sample_data)
+                        "className": check_test("assemblatron:1xgenomesize", sample_data)
                     },
                     [
                         "average coverage (1x)",
@@ -262,7 +262,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                                 - sample_data.get("assemblatron.bin_length_at_25x", math.nan)
                             )
                         ],
-                        "className": check_test("assemblatron.1x25xsizediff", sample_data)
+                        "className": check_test("assemblatron:1x25xsizediff", sample_data)
                     }
                 ])
             ], className="six columns"),
