@@ -106,11 +106,11 @@ def html_test_table(sample_data, data_content,**kwargs):
         or key.startswith("testomatic." + data_content):
             if pd.isnull(value):
                 value = "nan"
-            name_v = key.split(".")
+            name_v = key.split(":")
             values = value.split(':')
             if len(values) == 3:
                 if values[0] != "pass":
-                    rows.append([name_v[2].capitalize(), "{}. Reason: {}. Detected value: {}".format(
+                    rows.append([name_v[1].capitalize(), "{}. Reason: {}. Detected value: {}".format(
                         values[0], values[1], values[2])])
             if (key.endswith(".action")):
                 rows.append(["QC Action", value])

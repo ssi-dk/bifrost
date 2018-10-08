@@ -300,7 +300,7 @@ def filter(projection=None, run_name=None,
             return query_result
         else:
             skips = PAGESIZE * (page)
-            return query_result[skips, skips+PAGESIZE]
+            return query_result[skips:skips+PAGESIZE]
 
 
 

@@ -362,11 +362,11 @@ def update_species_list(run_name):
 @app.callback(
     Output("qc-div", "children"),
     [Input("run-name", "children"),
-    Input("selected-samples-ids", "children")]
+     Input(component_id="species-list", component_property="value"),
+     Input(component_id="group-list", component_property="value")]
 )
-def update_qc_list(run_name, selected_samples_ids):
-    print(selected_samples_ids)
-    num_samples = len(selected_samples_ids.split(","))
+def update_qc_list(run_name, species, group):
+    num_samples = len(import_data.filter_name(species, group, run_name=run_name))
     if len(run_name) == 0:
         qc_list = import_data.get_qc_list()
     else:
@@ -389,8 +389,6 @@ def update_qc_list(run_name, selected_samples_ids):
                 "label": "{} ({})".format(item["_id"], item["count"]),
                 "value": item["_id"]
             })
-    print(num_samples)
-    print(sum_items)
     if sum_items < num_samples:
             qc_options.append("Not tested")
             qc_list_options.append({
@@ -599,12 +597,13 @@ def update_report(n_qcquickie_ts, n_assemblatron_ts,
     Output(component_id="selected-samples", component_property="children"),
     [Input(component_id="species-list", component_property="value"),
         Input(component_id="group-list", component_property="value"),
+        Input(component_id="qc-list", component_property="value"),
         Input(component_id="run-name", component_property="children")]
 )
-def update_selected_samples(species_list, group_list, run_name):
+def update_selected_samples(species_list, group_list, qc_list, run_name):
 
     samples = import_data.filter_name(species=species_list,
-        group=group_list, run_name=run_name)
+        group=group_list, qc_list=qc_list, run_name=run_name)
     sample_names = []
     sample_ids = []
     for sample in samples:
@@ -692,29 +691,44 @@ def update_test_table(species_list, group_list, run_name, qc_list):
 
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="qc-list", component_property="value"),
-        Input(component_id="run-name", component_property="children"),
-        Input(component_id="plot-list", component_property="value")]
+    [Input("selected-samples-ids", "children"),
+     Input(component_id="plot-list", component_property="value")]
 )
-def update_coverage_figure(species_list, group_list, qc_list, run_name, plot_value):
+# def update_coverage_figure(species_list, group_list, qc_list, run_name, plot_value):
+#     plot_query = global_vars.PLOTS[plot_value]["projection"]
+#     plot_func = global_vars.PLOTS[plot_value].get("func")
+    
+#     data = []
+#     plot_df = import_data.filter_all(species_list, group_list, qc_list, run_name, plot_func)
+def update_coverage_figure(sample_ids, plot_value):
+    samples = sample_ids.split(",")
+    if len(samples) == 1 and samples[0] == "":
+        return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
     plot_func = global_vars.PLOTS[plot_value].get("func")
-    
+
     data = []
-    plot_df = import_data.filter_all(species_list, group_list, qc_list, run_name, plot_func)
-    if species_list is None: species_list = []
+    plot_df = import_data.filter_all(
+        sample_ids=sample_ids.split(","), func=plot_func)
     species_count = 0
+    print("pre-if")
     if 'species' in plot_df:
+        print("post-if")
+
         # reverse the list so it looks right on plot
+        species_list = plot_df.species.unique()
+        print(species_list)
+
         for species in reversed(species_list):
             species_df = plot_df[plot_df.species == species]
             if species == "Not classified":
                 species_name = species
             else:
                 species_name = "<i>{}</i>".format(short_species(species))
+            print("p", plot_query)
+            print("species_df", species_df.columns)
             if (plot_query in species_df):
+                print("passed if")
                 if (len(species_df)): species_count += 1
                 data.append(
                     go.Box(
