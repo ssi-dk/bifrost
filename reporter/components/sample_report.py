@@ -114,7 +114,10 @@ def html_test_table(sample_data, data_content,**kwargs):
                         values[0], values[1], values[2])])
             if (key.endswith(".action")):
                 rows.append(["QC Action", value])
-    return html.Div(html_table(rows, className="twelve columns"), **kwargs)
+    if len(rows):
+        return html.Div(html_table(rows, className="twelve columns"), **kwargs)
+    else:
+        return html.Div(html.P("No failed tests."), **kwargs)
 
 def html_sample_tables(sample_data, data_content, **kwargs):
     """Generate the tables for each sample containing submitter information,

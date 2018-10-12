@@ -180,12 +180,21 @@ def get_qc_list(run_name=None):
             qcs = list(db.sample_components.aggregate([
                 {
                     "$match": {
-                        "sample._id": {"$in": sample_ids}
+                        "sample._id": {"$in": sample_ids},
+                        #"status": "Success",
+                        "component.name": "testomatic"
+                    }
+                },
+                {"$sort": {"sample._id": 1, "_id": 1}},
+                {
+                    "$group": {
+                        "_id": "$sample._id",
+                        "action": {"$last": "$summary.assemblatron:action"}
                     }
                 },
                 {
                     "$group": {
-                        "_id": "$summary.assemblatron:action",
+                        "_id": "$action",
                         "count": {"$sum": 1}
                     }
                 },
@@ -208,36 +217,51 @@ def get_qc_list(run_name=None):
 
     return qcs
 
-def filter_qc(db, qc_list, results):
-    sample_ids = list(map(lambda x: x["_id"], results))
+def filter_qc(db, qc_list, query):
+    qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
     if "Not determined" in qc_list:
-        qc_query = {
-            "sample._id": {"$in": sample_ids},
-            "$or":
-                [
-                    {"summary.assemblatron:action": None},
-                    {"summary.assemblatron:action": {"$in": qc_list}},
-                    {"summary.assemblatron:action": {"$exists": False}}
+        qc_query += [
+                    {"sample_components.summary.assemblatron:action": None},
+                    {"$and": [
+                        {"sample_components.summary.assemblatron:action": {
+                            "$exists": False}},
+                        {"sample_components.1" : {"$exists" :True}}
+                    ]}
                 ]
-            }
-    else:
-        qc_query = {
-            "sample._id": {"$in": sample_ids},
-            "summary.assemblatron:action": {"$in": qc_list}
-        }
-    qc_query_res = list(db.sample_components.find(qc_query))
-    qc_ids = list(map(lambda x: x["sample"]["_id"], qc_query_res))
-    filtered = [result for result in results if result["_id"] in qc_ids]
     if "Not tested" in qc_list:
-        not_tested_rev = db.sample_components.find({
-            "sample._id": {"$in": sample_ids},
-            "component.name": "testomatic"
-        })
-        not_tested_rev_ids = list(map(lambda x:x["sample"]["_id"], not_tested_rev))
-        for sample in results:
-            if sample["_id"] not in not_tested_rev_ids:
-                filtered.append(sample)
-    return filtered
+        qc_query += [
+            {"sample_components" : {"$size": 0 }}
+        ]
+
+    result = db.samples.aggregate([
+        {
+            "$match": {"$and" :query},
+        },
+        {
+            "$lookup": {
+                "from": "sample_components",
+                "let": {"sample_id": "$_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    { "$eq" : ["$component.name", "testomatic"]},
+                                    {"$eq": ["$sample._id", "$$sample_id"]}
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "as": "sample_components"
+            }
+        },
+        {
+            "$match": {"$or": qc_query}
+            
+        }
+    ])
+    return list(result)
 
 
 def filter(projection=None, run_name=None,
@@ -290,12 +314,12 @@ def filter(projection=None, run_name=None,
             else:
                 query.append({"sample_sheet.group": {"$in": group}})
 
-        query_result = list(db.samples.find({"$and": query}, projection)\
-            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
-
-        if qc_list is not None and len(qc_list) != 0:
-            query_result = filter_qc(db, qc_list, query_result)
-
+        if qc_list is not None and run_name is not None and len(qc_list) != 0:
+            #pass
+            query_result = filter_qc(db, qc_list, query)
+        else:
+            query_result = list(db.samples.find({"$and": query}, projection)
+                            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
         if page is None:
             return query_result
         else:

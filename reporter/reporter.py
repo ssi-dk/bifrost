@@ -36,6 +36,8 @@ def hex_to_rgb(value):
 
 
 def short_species(species):
+    if species is None:
+        return None
     words = species.split(" ")
     if len(words) == 1:
         return species
@@ -65,7 +67,7 @@ app.layout = html.Div([
         ),
         html.Div(dt.DataTable(rows=[{}], editable=False), style={"display": "none"}),
         html.H1("SerumQC REPORT"),
-        html.H2("", id="run-name"),
+        html.H2("Loading...", id="run-name"),
         html.H3(html.A("Wiki is here", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e")),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
@@ -196,7 +198,7 @@ def hide_group_if_in_url(pathname):
     [Input("run-name", "children")]
 )
 def update_run_list(run_name):
-    if len(run_name) == 0:
+    if len(run_name) == 0 or run_name == "Loading...":
         run_list = import_data.get_run_list()
         run_list_options = [
             {
@@ -296,6 +298,8 @@ def display_selected_data(selected_data, ignore_this):
     Input("url", "pathname")]
 )
 def update_group_list(run_name, pathname):
+    if run_name == "Loading...":
+        return None
     if len(run_name) == 0:
         group_list = import_data.get_group_list()
     else:
@@ -332,6 +336,8 @@ def update_group_list(run_name, pathname):
     [Input("run-name", "children")]
 )
 def update_species_list(run_name):
+    if run_name == "Loading...":
+        return None
     if len(run_name) == 0:
         species_list = import_data.get_species_list()
     else:
@@ -366,6 +372,12 @@ def update_species_list(run_name):
      Input(component_id="group-list", component_property="value")]
 )
 def update_qc_list(run_name, species, group):
+    if run_name == "Loading..." or \
+        None in (species, group):
+        return dcc.Dropdown(
+            id="qc-list",
+            multi=True
+        )
     num_samples = len(import_data.filter_name(species, group, run_name=run_name))
     if len(run_name) == 0:
         qc_list = import_data.get_qc_list()
@@ -375,6 +387,7 @@ def update_qc_list(run_name, species, group):
     qc_list_options = []
     sum_items = 0
     for item in qc_list:
+        print("qcitem", item)
         if item["_id"] == None:
             sum_items += item["count"]
             qc_options.append("Not determined")
@@ -409,6 +422,8 @@ def update_qc_list(run_name, species, group):
         Input("url", "pathname")]
 )
 def update_run_table(run_name, pathname):
+    if run_name == "Loading...":
+        return None
     if pathname is None:
         pathname = "/"
     path = pathname.split("/")
@@ -601,7 +616,9 @@ def update_report(n_qcquickie_ts, n_assemblatron_ts,
         Input(component_id="run-name", component_property="children")]
 )
 def update_selected_samples(species_list, group_list, qc_list, run_name):
-
+    if run_name == "Loading..." or \
+        None in (species_list, group_list, qc_list, run_name):
+        return None
     samples = import_data.filter_name(species=species_list,
         group=group_list, qc_list=qc_list, run_name=run_name)
     sample_names = []
@@ -636,14 +653,18 @@ def update_selected_samples(species_list, group_list, qc_list, run_name):
 
 
 @app.callback(
-    Output(component_id="testomatic-report", component_property="children"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="run-name", component_property="children"),
-        Input(component_id="qc-list", component_property="value")]
+    Output(component_id="testomatic-report",
+           component_property="children"), 
+    [Input(component_id="selected-samples-list", component_property="value")],
+     [State(component_id="species-list", component_property="value"),
+        State(component_id="group-list", component_property="value"),
+        State(component_id="run-name", component_property="children"),
+        State(component_id="qc-list", component_property="value")]
 )
-def update_test_table(species_list, group_list, run_name, qc_list):
-
+def update_test_table(selected_samples, species_list, group_list, run_name, qc_list):
+    if run_name == "Loading..." or run_name == "" or \
+            None in (species_list, group_list, qc_list, run_name):
+        return None
     columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie:action',
             'testomatic.assemblatron:action', 'testomatic.assemblatron:10xgenomesize',
             'testomatic.assemblatron:1x25xsizediff',
@@ -711,13 +732,10 @@ def update_coverage_figure(sample_ids, plot_value):
     plot_df = import_data.filter_all(
         sample_ids=sample_ids.split(","), func=plot_func)
     species_count = 0
-    print("pre-if")
     if 'species' in plot_df:
-        print("post-if")
 
         # reverse the list so it looks right on plot
         species_list = plot_df.species.unique()
-        print(species_list)
 
         for species in reversed(species_list):
             species_df = plot_df[plot_df.species == species]
@@ -725,10 +743,7 @@ def update_coverage_figure(sample_ids, plot_value):
                 species_name = species
             else:
                 species_name = "<i>{}</i>".format(short_species(species))
-            print("p", plot_query)
-            print("species_df", species_df.columns)
             if (plot_query in species_df):
-                print("passed if")
                 if (len(species_df)): species_count += 1
                 data.append(
                     go.Box(
@@ -772,6 +787,8 @@ def update_coverage_figure(sample_ids, plot_value):
     [State("run-name", "children")]
 )
 def all_groups(n_clicks, pathname, run_name):
+    if run_name == "Loading...":
+        return None
     if pathname is None:
         pathname = "/"
     path = pathname.split("/")
@@ -796,6 +813,8 @@ def all_groups(n_clicks, pathname, run_name):
     [State("run-name", "children")]
 )
 def all_species(n_clicks, run_name):
+    if run_name == "Loading...":
+        return None
     if len(run_name) == 0:
         species_list = import_data.get_species_list()
     else:
@@ -816,6 +835,8 @@ def all_species(n_clicks, run_name):
     [State("run-name", "children")]
 )
 def all_QCs(n_clicks, run_name):
+    if run_name == "Loading...":
+        return None
     if len(run_name) == 0:
         qc_list = import_data.get_qc_list()
     else:
