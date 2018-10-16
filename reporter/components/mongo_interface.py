@@ -203,10 +203,44 @@ def get_qc_list(run_name=None):
                 }
             ]))
         else:
+            runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
+            sample_ids = set()
+            for run in runs:
+                for sample in run["samples"]:
+                    sample_ids.add(sample["_id"])
+            sample_list = list(sample_ids)
             qcs = list(db.samples.aggregate([
                 {
+                    "$match": {
+                        "_id": {"$in": sample_list}
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "sample_components",
+                        "let": {"sample_id": "$_id"},
+                        "pipeline": [
+                            {"$match": {
+                                "component.name": "testomatic",
+                                "summary.assemblatron:action" : {"$exists" : True}
+                                }},
+                            { "$match": {
+                                    "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
+                                }
+                            },
+                            {"$project": {"summary.assemblatron:action" : 1}},
+                            {"$sort": {"_id": -1}},
+                            {"$limit": 1}
+                        ],
+                        "as": "sample_components"
+                    }
+                },
+                {
+                    "$unwind": "$sample_components"
+                },
+                {
                     "$group": {
-                        "_id": "$summary.assemblatron:action",
+                        "_id": "$sample_components.summary.assemblatron:action",
                         "count": {"$sum": 1}
                     }
                 },
