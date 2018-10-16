@@ -687,13 +687,12 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
                     'qcquickie numreads', 'whats_my_species maxunclassified',
                     'whats_my_species minspecies', 'whats_my_species nosubmitted',
                     'whats_my_species submitted==detected', '_id']
-    samples_df = import_data.filter_all(
+    tests_df = import_data.filter_all(
         species_list, group_list, qc_list, run_name)
-    samples_df.species = list(map(lambda x: short_species(x), samples_df.species))
     th = html.Thead(
         html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
     tbody = []
-    for sample in samples_df.iterrows():
+    for sample in tests_df.iterrows():
         row = []
         for value, column in zip(sample[1][columns], columns):
             if str(value).startswith("fail") or str(value).startswith("undefined") \
@@ -707,7 +706,15 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
         tbody.append(html.Tr(row, className="trow"))
     tb = html.Tbody(tbody)
 
-    return [html.Table([th, tb], className="fixed-header")]
+    tests_df = tests_df[columns]
+    tests_df.columns = column_names
+    csv_string = tests_df.to_csv(index=False, encoding="utf-8", sep="\t")
+    csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
+        urllib.parse.quote(csv_string)
+    return [
+        html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
+        html.Table([th, tb], className="fixed-header")
+        ]
 
 
 @app.callback(
