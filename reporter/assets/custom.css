@@ -4,7 +4,7 @@ td, td:first-child, th, th:first-child {
   border: none;
 }
 .data-colored {
-  height: 34px;
+  height: 22px;
 }
 
 .table-header {
@@ -77,7 +77,7 @@ h2 {
 .val {
     display: block;
     position: absolute;
-    padding: 5px;
+    padding: 2px 5px;
     left: 0;
     z-index: 3;
 }

@@ -129,23 +129,6 @@ def html_div_summary():
                                     )
                                 ],
                                 className="row"
-                            ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.Label("Plot value",
-                                                       htmlFor="plot-list"),
-                                            dcc.Dropdown(
-                                                id="plot-list",
-                                                options=plot_values_options,
-                                                value=DEFAULT_PLOT
-                                            )
-                                        ],
-                                        className="twelve columns"
-                                    )
-                                ],
-                                className="row"
                             )
                         ],
                         className="twelve columns"
@@ -179,6 +162,23 @@ def html_div_summary():
             ),
             html.Div([html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])],
                      id="testomatic-report", className="bigtable"),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Label("Plot value",
+                                       htmlFor="plot-list"),
+                            dcc.Dropdown(
+                                id="plot-list",
+                                options=plot_values_options,
+                                value=DEFAULT_PLOT
+                            )
+                        ],
+                        className="twelve columns"
+                    )
+                ],
+                className="row"
+            ),
             dcc.Graph(id="summary-plot"),
             html.Div(
                 [
