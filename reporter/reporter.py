@@ -84,17 +84,17 @@ app.layout = html.Div([
                     ),
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                html.Button(
-                                    "QCQuickie",
-                                    id="update-qcquickie",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="three columns"
-                        ),
+                        # html.Div(
+                        #     [
+                        #         html.Button(
+                        #             "QCQuickie",
+                        #             id="update-qcquickie",
+                        #             n_clicks_timestamp=0,
+                        #             className="button-primary u-full-width"
+                        #         )
+                        #     ],
+                        #     className="three columns"
+                        # ),
                         html.Div(
                             [
                                 html.Button(
@@ -104,7 +104,7 @@ app.layout = html.Div([
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="three columns"
+                            className="four columns"
                         ),
                         html.Div(
                             [
@@ -115,24 +115,19 @@ app.layout = html.Div([
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="three columns"
+                            className="four columns"
                         ),
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Table report",
-                                    id="update-table",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="three columns"
-                        )
-                    ],
-                    className="row",
-                    style={"marginBottom": "15px"}
-                ),
-                html.Div([
+                        # html.Div(
+                        #     [
+                        #         html.Button(
+                        #             "Table report",
+                        #             id="update-table",
+                        #             n_clicks_timestamp=0,
+                        #             className="button-primary u-full-width"
+                        #         )
+                        #     ],
+                        #     className="three columns"
+                        # )
                         html.Div(
                             [
                                 html.Button(
@@ -142,10 +137,11 @@ app.layout = html.Div([
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="three columns"
+                            className="four columns"
                         )
                     ],
-                    className="row"
+                    className="row",
+                    style={"marginBottom": "15px"}
                 )
             ],
             className="border-box"
@@ -262,7 +258,7 @@ def display_selected_data(ids):
 def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
     # when the sample list is updated.
-    if rows == [{}]:
+    if rows == [{}] or rows == []:
         return [
             html.Label(
                 [
@@ -533,17 +529,21 @@ def update_nextpage(page_n, max_page):
 
 @app.callback(
     Output("current-report", "children"),
-    [Input("update-qcquickie", "n_clicks_timestamp"),
+    [
+        # Input("update-qcquickie", "n_clicks_timestamp"),
         Input("update-assemblatron", "n_clicks_timestamp"),
         Input("update-analyzer", "n_clicks_timestamp"),
-        Input("update-table", "n_clicks_timestamp"),
+        # Input("update-table", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
     [State("lasso-sample-ids", "children"),
         State("selected-samples-ids", "children")]
 )
-def update_report(n_qcquickie_ts, n_assemblatron_ts,
-                n_analyzer_ts, n_table_ts, n_generate_ts,
+# def update_report(n_qcquickie_ts, n_assemblatron_ts,
+def update_report(n_assemblatron_ts,
+                n_analyzer_ts, n_generate_ts,
                 lasso_selected, prefilter_samples):
+    n_qcquickie_ts = -1
+    n_table_ts = -1
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif prefilter_samples != "":
@@ -696,29 +696,30 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
             'testomatic.assemblatron:1x10xsizediff', 'testomatic.assemblatron:avgcoverage',
             'assemblatron.bin_contigs_at_1x',
             'testomatic.assemblatron:numreads', 'testomatic.base:readspresent',
-            'testomatic.qcquickie:action',
-            'testomatic.qcquickie:1xgenomesize',
-            'testomatic.qcquickie:10xgenomesize',
-            'testomatic.qcquickie:1x10xsizediff',
-            'testomatic.qcquickie:avgcoverage',
-            'qcquickie.bin_contigs_at_1x',
-            'testomatic.qcquickie:numreads',
+            # 'testomatic.qcquickie:action',
+            # 'testomatic.qcquickie:1xgenomesize',
+            # 'testomatic.qcquickie:10xgenomesize',
+            # 'testomatic.qcquickie:1x10xsizediff',
+            # 'testomatic.qcquickie:avgcoverage',
+            # 'qcquickie.bin_contigs_at_1x',
+            # 'testomatic.qcquickie:numreads',
             'testomatic.whats_my_species:maxunclassified',
             'testomatic.whats_my_species:minspecies',
             'testomatic.whats_my_species:nosubmitted',
             'testomatic.whats_my_species:submitted==detected', "_id"]
-    column_names = ['name', 'assemblatron QC', "Comments", 'Supplying lab', 'Provided Species',
-                    'Detected Species', 'assemblatron 1xgenomesize', 'assemblatron 10xgenomesize',
-                    'assemblatron 1x10xsizediff',
-                    'assemblatron avgcoverage', 'assemblatron # contigs',
-                    'assemblatron numreads', 'base readspresent',
-                    'qcquickie QC',
-                    'qcquickie 1xgenomesize', 'qcquickie 10xgenomesize',
-                    'qcquickie 1x10xsizediff', 'qcquickie avgcoverage',
-                    'qcquickie # contigs',
-                    'qcquickie numreads', 'whats_my_species maxunclassified',
-                    'whats_my_species minspecies', 'whats_my_species nosubmitted',
-                    'whats_my_species submitted==detected', '_id']
+    column_names = ['name', 'QC action', "Comments", 'Supplying lab', 'Provided Species',
+                    'Detected Species', 'Genome size (1x)', 'Genome size (10x)',
+                    'G. size difference (1x - 10x)',
+                    'Avg. coverage', '# contigs',
+                    '# reads', 'Reads path',
+                    # 'qcquickie QC',
+                    # 'qcquickie 1xgenomesize', 'qcquickie 10xgenomesize',
+                    # 'qcquickie 1x10xsizediff', 'qcquickie avgcoverage',
+                    # 'qcquickie # contigs',
+                    # 'qcquickie numreads',
+                    'Unclassified reads',
+                    'Main species read %', 'Detected species in DB',
+                    'Submitted sp. is same as detected', 'DB ID']
     tests_df = import_data.filter_all(
         species_list, group_list, qc_list, run_name)
     
@@ -729,7 +730,7 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
         rows=tests_df.to_dict("records"),
 
         # columns=global_vars.columns, # sets the order
-        column_widths=[150] * len(columns),
+        column_widths=[175] * len(columns),
         row_selectable=True,
         editable=False,
         filterable=True,
@@ -789,7 +790,7 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 )
 def update_coverage_figure(sample_ids, plot_value, rows, selected_rows):
     samples = sample_ids.split(",")
-    if rows == [{}] or (len(samples) == 1 and samples[0] == ""):
+    if rows == [{}] or rows == [] or (len(samples) == 1 and samples[0] == ""):
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
     plot_func = global_vars.PLOTS[plot_value].get("func")
