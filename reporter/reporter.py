@@ -279,7 +279,7 @@ def display_selected_data(selected_data, rows, selected_rows):
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
     points = list(dtdf["name"])
-    sample_ids = list(dtdf["_id"])
+    sample_ids = list(dtdf["DB ID"])
 
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
@@ -488,7 +488,7 @@ def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
     if data_content not in ["qcquickie", "assemblatron", "analyzer"]:
         return []
     page_n = int(page_n)
-    if lasso_selected != "":
+    if lasso_selected != "" and lasso_selected is not None:
         samples = lasso_selected.split(",")  # lasso first
     else:
         samples = prefilter_samples.split(",")
@@ -763,7 +763,7 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
-        html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
+        html.H6("Filtered samples ({}):".format(len(tests_df["DB ID"]))),
         html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
         table
         # html.Table([th, tb], className="fixed-header")
@@ -843,7 +843,7 @@ def update_coverage_figure(sample_ids, plot_value, rows, selected_rows):
         "layout": go.Layout(
             hovermode="closest",
             title="{} - selected samples ({})".format(plot_value.replace("_",
-                                                               " "), len(dtdf["_id"])),
+                                                               " "), len(dtdf["DB ID"])),
             height=height,
             margin=go.layout.Margin(
                 l=175,
