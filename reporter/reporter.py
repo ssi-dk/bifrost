@@ -492,6 +492,7 @@ def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
         samples = lasso_selected.split(",")  # lasso first
     else:
         samples = prefilter_samples.split(",")
+    if samples == [""]: return []
     #NOTE Could optimize this by not getting all sample's info from mongo before paginating
     page = import_data.filter_all(sample_ids=samples, page=page_n)
     page = page.sort_values(["species","name"])
