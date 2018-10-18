@@ -726,6 +726,10 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
     
     tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
+    mask = pd.isnull(tests_df["QC action"])
+    tests_df.loc[mask, "QC action"] = "core facility"
+    slmask = tests_df["QC action"] == "supplying lab"
+    tests_df.loc[slmask, "QC action"] = "warning: supplying lab"
 
     table = dt.DataTable(
         rows=tests_df.to_dict("records"),
