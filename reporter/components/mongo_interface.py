@@ -33,25 +33,56 @@ def get_species_colors():
             colors[species["organism"]] = species["color"]
     return colors
 
-def get_species_plot_data(species_list, id_list):
+def get_species_plot_data(species_list, id_list, component="assemblatron"):
     """Get plot data for many samples using a list of Ids"""
     with get_connection() as connection:
         db = connection.get_database()
         samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
-        res = db.sample_components.aggregate([
-            {"$match": {
-                "summary.name_classified_species_1": {"$in": species_list},
-                "sample._id": {"$not": {"$in": id_list}}
+        runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
+        routine_ids = set()
+        for run in runs:
+            for sample in run["samples"]:
+                routine_ids.add(sample["_id"])
+        routine_list = list(routine_ids)
+        res = list(db.samples.aggregate([
+            {
+                "$match": {
+                    "_id": {"$in": routine_list, "$nin": id_list},
+                    "properties.species": {"$in": species_list}
                 }
             },
-            {"$group": {
-                "_id": "$summary.name_classified_species_1",
-                "bin_coverage_at_1x": {"$push": "$summary.bin_length_at_1x"}
+            {
+                "$lookup": {
+                    "from": "sample_components",
+                    "let": {"sample_id": "$_id"},
+                    "pipeline": [
+                        {"$match": {
+                            "component.name": component,
+                            "summary.bin_length_at_1x": {"$exists": True}
+                        }},
+                        {"$match": {
+                            "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
+                        }
+                        },
+                        {"$project": {"summary.bin_length_at_1x": 1}},
+                        {"$sort": {"_id": -1}},
+                        {"$limit": 1}
+                    ],
+                    "as": "sample_components"
+                }
+            },
+            {
+                "$unwind": "$sample_components"
+            },
+            {
+                "$group": {
+                    "_id": "$properties.species",
+                    "bin_coverage_at_1x": {"$push": "$sample_components.summary.bin_length_at_1x"}
                 }
             }
-        ])
+        ]))
     return res
 
 def check_run_name(name):

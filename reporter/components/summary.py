@@ -1,5 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_table_experiments as dt
+
 
 from components.global_vars import PLOTS, DEFAULT_PLOT
 
@@ -146,7 +148,7 @@ def html_div_summary():
                                 className="row"
                             )
                         ],
-                        className="eight columns"
+                        className="twelve columns"
                     ),
                     html.Div(
                         [
@@ -167,15 +169,17 @@ def html_div_summary():
                                      style={"display": "none"},
                                      id="selected-samples-ids")
                         ],
-                        className="four columns",
+                        style={"display": "none"},
+                        #className="four columns",
                         id="selected-samples"
                     ),
                     
                 ],
                 className="row"
             ),
+            html.Div([html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])],
+                     id="testomatic-report", className="bigtable"),
             dcc.Graph(id="summary-plot"),
-            html.Div(id="testomatic-report", className="bigtable"),
             html.Div(
                 [
                     html.Div(

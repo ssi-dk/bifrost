@@ -53,7 +53,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         query_result =  mongo_interface.filter(
             {
                 "name" : 1,
-                "properties.species": 1,
+                "properties": 1,
                 "sample_sheet": 1
             },
             run_name, species, group, qc_list=qc_list, page=page)
@@ -61,7 +61,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         query_result = mongo_interface.filter(
             {
                 "name": 1,
-                "properties.species": 1,
+                "properties": 1,
                 "sample_sheet" : 1
             },
             samples=sample_ids, page=page)
@@ -85,6 +85,10 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "name": item.get("name", sample_sheet_name),
                 "species": item.get("properties", {}).get("species", "Not classified")
             }
+            if "properties" in item:
+                for summary_key, summary_value in item["properties"].items():
+                    clean_result[str(item["_id"])]["properties." +
+                                        summary_key] = summary_value
         except KeyError as e:
             # we'll just ignore this for now
             sys.stderr.write("Error in sample. Ignored: {}\n".format(item))

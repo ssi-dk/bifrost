@@ -245,35 +245,28 @@ def update_run_button(run):
 
 @app.callback(
     Output("report-count", "children"),
-    [Input("summary-plot", "selectedData"),
-        Input("selected-samples-list", "value")]
+    [Input("lasso-sample-ids", "children")]
 )
-def display_selected_data(plot_selected, selected_samples_list):
-    if plot_selected is not None and len(plot_selected["points"]):
-        return len([sample["text"]
-                    for sample in plot_selected["points"]])
+def display_selected_data(ids):
+    if ids is not None and len(ids):
+        return len(ids.split(","))
     else:
-        return len(selected_samples_list[0].split("\n"))
+        return 0
 
 @app.callback(
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
-        Input("report-count", "children")]
+     Input('datatable-testomatic', 'rows'),
+     Input('datatable-testomatic', 'selected_row_indices')]
 )
-def display_selected_data(selected_data, ignore_this):
+def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
     # when the sample list is updated.
-    if selected_data is not None and len(selected_data["points"]):
-        points = [sample["text"]
-                    for sample in selected_data["points"]]
-        sample_ids = [sample["customdata"]
-                        for sample in selected_data["points"]] 
+    if rows == [{}]:
         return [
             html.Label(
                 [
-                    "Selected from plot lasso (",
-                        str(len(points)),
-                    "):"
+                    "Selected from table/lasso (0):"
                 ],
                 htmlFor="selected-from-plot"),
             dcc.Textarea(
@@ -281,16 +274,47 @@ def display_selected_data(selected_data, ignore_this):
                 className="u-full-width",
                 style={"resize": "none"},
                 readOnly=True,
-                value=", ".join(points)
+                value=""
             ),
-            html.Div(",".join(sample_ids),
-                        style={"display": "none"},
+            html.Div(style={"display": "none"},
                         id="lasso-sample-ids")
         ]
-    else:
-        return [html.Div("",
-                        style={"display": "none"},
-                        id="lasso-sample-ids")]
+    dtdf = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        dtdf = dtdf.iloc[selected_rows]
+    points = list(dtdf["name"])
+    sample_ids = list(dtdf["_id"])
+
+    if selected_data is not None and len(selected_data["points"]):
+        lasso_points = set([sample["text"]
+                    for sample in selected_data["points"]])
+        lasso_sample_ids = set([sample["customdata"]
+                        for sample in selected_data["points"]])
+        union_points = set(points).intersection(lasso_points)
+        union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
+        # This way we keep the table order.
+        points = [point for point in points if point in union_points]
+        sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
+    return [
+        html.Label(
+            [
+                "Selected from table/lasso (",
+                    str(len(points)),
+                "):"
+            ],
+            htmlFor="selected-from-plot"),
+        dcc.Textarea(
+            id="selected-from-plot",
+            className="u-full-width",
+            style={"resize": "none"},
+            readOnly=True,
+            value=", ".join(points)
+        ),
+        html.Div(",".join(sample_ids),
+                    style={"display": "none"},
+                    id="lasso-sample-ids")
+    ]
+
 
 @app.callback(
     Output("group-div", "children"),
@@ -387,7 +411,6 @@ def update_qc_list(run_name, species, group):
     qc_list_options = []
     sum_items = 0
     for item in qc_list:
-        print("qcitem", item)
         if item["_id"] == None:
             sum_items += item["count"]
             qc_options.append("Not determined")
@@ -664,73 +687,109 @@ def update_selected_samples(species_list, group_list, qc_list, run_name):
 def update_test_table(selected_samples, species_list, group_list, run_name, qc_list):
     if run_name == "Loading..." or run_name == "" or \
             None in (species_list, group_list, qc_list, run_name):
-        return None
-    columns = ["name", "species", "sample_sheet.group", "sample_sheet.Comments", 'testomatic.qcquickie:action',
-            'testomatic.assemblatron:action', 'testomatic.assemblatron:10xgenomesize',
-            'testomatic.assemblatron:1x25xsizediff',
-            'testomatic.assemblatron:1xgenomesize', 'testomatic.assemblatron:avgcoverage',
+        #return None
+        return [html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])]
+    columns = ["name", 'testomatic.assemblatron:action',  "sample_sheet.Comments",
+            "sample_sheet.group", "properties.provided_species", "properties.detected_species",
+            'testomatic.assemblatron:1xgenomesize',
+            'testomatic.assemblatron:10xgenomesize',
+            'testomatic.assemblatron:1x10xsizediff', 'testomatic.assemblatron:avgcoverage',
+            'assemblatron.bin_contigs_at_1x',
             'testomatic.assemblatron:numreads', 'testomatic.base:readspresent',
-            'testomatic.qcquickie:10xgenomesize',
-            'testomatic.qcquickie:1x25xsizediff',
+            'testomatic.qcquickie:action',
             'testomatic.qcquickie:1xgenomesize',
-            'testomatic.qcquickie:avgcoverage', 'testomatic.qcquickie:numreads',
+            'testomatic.qcquickie:10xgenomesize',
+            'testomatic.qcquickie:1x10xsizediff',
+            'testomatic.qcquickie:avgcoverage',
+            'qcquickie.bin_contigs_at_1x',
+            'testomatic.qcquickie:numreads',
             'testomatic.whats_my_species:maxunclassified',
             'testomatic.whats_my_species:minspecies',
             'testomatic.whats_my_species:nosubmitted',
             'testomatic.whats_my_species:submitted==detected', "_id"]
-    column_names = ['name', 'Species', 'supplying lab', "Comments", 'qcquickie QC',
-                    'assemblatron QC', 'assemblatron 10xgenomesize',
-                    'assemblatron 1x25xsizediff', 'assemblatron 1xgenomesize',
-                    'assemblatron avgcoverage', 'assemblatron numreads', 'base readspresent',
-                    'qcquickie 10xgenomesize', 'qcquickie 1x25xsizediff',
-                    'qcquickie 1xgenomesize', 'qcquickie avgcoverage',
+    column_names = ['name', 'assemblatron QC', "Comments", 'Supplying lab', 'Provided Species',
+                    'Detected Species', 'assemblatron 1xgenomesize', 'assemblatron 10xgenomesize',
+                    'assemblatron 1x10xsizediff',
+                    'assemblatron avgcoverage', 'assemblatron # contigs',
+                    'assemblatron numreads', 'base readspresent',
+                    'qcquickie QC',
+                    'qcquickie 1xgenomesize', 'qcquickie 10xgenomesize',
+                    'qcquickie 1x10xsizediff', 'qcquickie avgcoverage',
+                    'qcquickie # contigs',
                     'qcquickie numreads', 'whats_my_species maxunclassified',
                     'whats_my_species minspecies', 'whats_my_species nosubmitted',
                     'whats_my_species submitted==detected', '_id']
     tests_df = import_data.filter_all(
         species_list, group_list, qc_list, run_name)
-    th = html.Thead(
-        html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
-    tbody = []
-    for sample in tests_df.iterrows():
-        row = []
-        for value, column in zip(sample[1][columns], columns):
-            if str(value).startswith("fail") or str(value).startswith("undefined") \
-            or value == "supplying lab" or value =="core facility":
-                td = html.Td(str(value), className="cell red")
-            elif str(value).startswith("KeyError") or (pd.isnull(value) and column.endswith("action")):
-                td = html.Td(str(value), className="cell yellow")
-            else:
-                td = html.Td(str(value), className="cell")
-            row.append(td)
-        tbody.append(html.Tr(row, className="trow"))
-    tb = html.Tbody(tbody)
-
-    tests_df = tests_df[columns]
+    
+    tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
+
+    table = dt.DataTable(
+        rows=tests_df.to_dict("records"),
+
+        # columns=global_vars.columns, # sets the order
+        column_widths=[150] * len(columns),
+        row_selectable=True,
+        editable=False,
+        filterable=True,
+        sortable=True,
+        selected_row_indices=[],
+        id="datatable-testomatic"
+    )
+
+    # th = html.Thead(
+    #     html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
+    # tbody = []
+    # for sample in tests_df.iterrows():
+    #     row = []
+    #     for value, column in zip(sample[1][columns], columns):
+    #         if str(value).startswith("fail") or str(value).startswith("undefined") \
+    #         or value == "supplying lab" or value =="core facility":
+    #             td = html.Td(str(value), className="cell red")
+    #         elif str(value).startswith("KeyError") or (pd.isnull(value) and column.endswith("action")):
+    #             td = html.Td(str(value), className="cell yellow")
+    #         else:
+    #             td = html.Td(str(value), className="cell")
+    #         row.append(td)
+    #     tbody.append(html.Tr(row, className="trow"))
+    # tb = html.Tbody(tbody)
+
+    # tests_df = tests_df[columns]
+    
+    #tests_df.columns = column_names
     csv_string = tests_df.to_csv(index=False, encoding="utf-8", sep="\t")
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
+        html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
         html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
-        html.Table([th, tb], className="fixed-header")
+        table
+        # html.Table([th, tb], className="fixed-header")
         ]
+
+
+@app.callback(
+    Output(component_id="summary-plot", component_property="selectedData"),
+    [Input("selected-samples-ids", "children"),
+     Input(component_id="plot-list", component_property="value"),
+     Input('datatable-testomatic', 'rows'),
+     Input('datatable-testomatic', 'selected_row_indices')]
+)
+def reset_selection(sample_ids, plot_value, rows, selected_rows):
+    return {"points":[]}
 
 
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
     [Input("selected-samples-ids", "children"),
-     Input(component_id="plot-list", component_property="value")]
+     Input(component_id="plot-list", component_property="value"),
+     Input('datatable-testomatic', 'rows'),
+     Input('datatable-testomatic', 'selected_row_indices')]
 )
-# def update_coverage_figure(species_list, group_list, qc_list, run_name, plot_value):
-#     plot_query = global_vars.PLOTS[plot_value]["projection"]
-#     plot_func = global_vars.PLOTS[plot_value].get("func")
-    
-#     data = []
-#     plot_df = import_data.filter_all(species_list, group_list, qc_list, run_name, plot_func)
-def update_coverage_figure(sample_ids, plot_value):
+def update_coverage_figure(sample_ids, plot_value, rows, selected_rows):
     samples = sample_ids.split(",")
-    if len(samples) == 1 and samples[0] == "":
+    if rows == [{}] or (len(samples) == 1 and samples[0] == ""):
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
     plot_func = global_vars.PLOTS[plot_value].get("func")
@@ -738,6 +797,13 @@ def update_coverage_figure(sample_ids, plot_value):
     data = []
     plot_df = import_data.filter_all(
         sample_ids=sample_ids.split(","), func=plot_func)
+
+    dtdf = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        dtdf = dtdf.iloc[selected_rows]
+        df_ids = dtdf["_id"]
+        plot_df = plot_df[plot_df._id.isin(df_ids)]
+
     species_count = 0
     if 'species' in plot_df:
 
@@ -764,6 +830,7 @@ def update_coverage_figure(sample_ids, plot_value):
                         boxpoints="all",
                         jitter=0.3,
                         pointpos=-1.8,
+                        selectedpoints=list(range(species_df["_id"].count())),
                         name="{} ({})".format(species_name,species_df["_id"].count()),
                         showlegend=False,
                         customdata=species_df["_id"]
@@ -774,7 +841,8 @@ def update_coverage_figure(sample_ids, plot_value):
         "data": data,
         "layout": go.Layout(
             hovermode="closest",
-            title=plot_value.replace("_", " "),
+            title="{} - selected samples ({})".format(plot_value.replace("_",
+                                                               " "), len(dtdf["_id"])),
             height=height,
             margin=go.layout.Margin(
                 l=175,
@@ -790,7 +858,7 @@ def update_coverage_figure(sample_ids, plot_value):
 @app.callback(
     Output("group-list", "value"),
     [Input("group-all", "n_clicks"),
-        Input("url", "pathname")],
+     Input("url", "pathname")],
     [State("run-name", "children")]
 )
 def all_groups(n_clicks, pathname, run_name):
