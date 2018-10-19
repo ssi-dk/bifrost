@@ -246,7 +246,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
         if (isinstance(resfinder, list) and len(resfinder)):
             header = list(resfinder[0].keys())
             rows = [list(row.values()) for row in resfinder]
-            report = [
+            report = html.Div([
                 html.H5(title),
                 html.Div([
                     dt.DataTable(
@@ -257,7 +257,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         ),
                     #html_table([header] + rows)
                 ], className="twelve columns")
-            ]
+            ])
         else:
             report = html.Div([html.H5(title), "No results found"])
     else:
