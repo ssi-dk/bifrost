@@ -241,25 +241,30 @@ def html_sample_tables(sample_data, data_content, **kwargs):
             ], className="six columns")
         ], className="row")
     elif data_content == "analyzer":
-        title = "Resfinder Results"
+        title = "Analyzer Results"
         resfinder = sample_data.get('analyzer.ariba_resfinder', None)
         if (isinstance(resfinder, list) and len(resfinder)):
             header = list(resfinder[0].keys())
             rows = [list(row.values()) for row in resfinder]
-            report = html.Div([
-                html.H5(title),
-                html.Div([
-                    dt.DataTable(
-                        rows=resfinder,
-                        editable=False,
-                        sortable=False,
-                        column_widths=[100]*len(header)
-                        ),
-                    #html_table([header] + rows)
-                ], className="twelve columns")
+            datatable = html.Div([
+                dt.DataTable(
+                    rows=resfinder,
+                    editable=False,
+                    sortable=False,
+                    column_widths=[100]*len(header)
+                ),
+                #html_table([header] + rows)
             ])
         else:
-            report = html.Div([html.H5(title), "No results found"])
+            datatable = "No results found"
+    
+        report = html.Div([
+            html.H5(title),
+            html.H6("MLST"),
+            html.P(sample_data.get("analyzer.mlst_report", "No results")),
+            html.H6("Resfinder"),
+            datatable
+        ])
     else:
         title = "No report selected"
         report = title

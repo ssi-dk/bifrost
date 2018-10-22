@@ -698,6 +698,7 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
             'assemblatron.bin_contigs_at_1x',
             'assemblatron.snp_filter_10x_10%',
             'testomatic.assemblatron:numreads',
+            "analyzer.mlst_report",
             # 'testomatic.qcquickie:action',
             # 'testomatic.qcquickie:1xgenomesize',
             # 'testomatic.qcquickie:10xgenomesize',
@@ -715,6 +716,7 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
                     'Avg. coverage', '# contigs',
                     'Ambiguous sites',
                     '# reads',
+                    'mlst',
                     # 'qcquickie QC',
                     # 'qcquickie 1xgenomesize', 'qcquickie 10xgenomesize',
                     # 'qcquickie 1x10xsizediff', 'qcquickie avgcoverage',
@@ -809,7 +811,7 @@ def update_coverage_figure(sample_ids, plot_value, rows, selected_rows):
     dtdf = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
-        df_ids = dtdf["_id"]
+        df_ids = dtdf["DB ID"]
         plot_df = plot_df[plot_df._id.isin(df_ids)]
 
     species_count = 0
