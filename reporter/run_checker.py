@@ -166,7 +166,7 @@ def update_run_report(run):
                                              annotation_text=z_text,
                                              colorscale=[[0, 'red'], [0.33, 'white'], [1, 'green']])
     
-    figure.layout.margin.update({"l":200})
+        figure.layout.margin.update({"l":200})
     # figure["layout"] = go.Layout(
     #     hovermode="closest",
     #     title="Run plot",
