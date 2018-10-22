@@ -41,6 +41,7 @@ app.layout = html.Div([
         ),
         html.H1("SerumQC Run Checker"),
         html.H2("", id="run-name"),
+        html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
         html.Div(id="run-selector", className="row"),
         html.Div(id="run-report")
@@ -74,6 +75,16 @@ def update_run_name(pathname):
     else:
         return "Not found"
 
+
+@app.callback(
+    Output("report-link", "children"),
+    [Input("run-name", "children")]
+)
+def update_run_name(run_name):
+    if run_name == "" or run_name == "Not found":
+        return None
+    else:
+        return html.H3(html.A("Link to QC Report", href=":8050/{}".format(run_name)))
 
 @app.callback(
     Output("run-selector", "children"),
