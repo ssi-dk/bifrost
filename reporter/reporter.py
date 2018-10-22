@@ -70,7 +70,7 @@ app.layout = html.Div([
         html.H1("SerumQC REPORT"),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
-        html.H3(html.A("Wiki is here", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e")),
+        html.H4(html.A("Wiki is here", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e")),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
@@ -249,7 +249,7 @@ def update_run_name(run_name):
     if run_name == "" or run_name == "Not found":
         return None
     else:
-        return html.H3(html.A("Link to Run Status", href="{}/{}".format(keys.run_checker_url, run_name)))
+        return html.H4(html.A("Link to Run Checker", href="{}/{}".format(keys.run_checker_url, run_name)))
 
 @app.callback(
     Output("report-count", "children"),
