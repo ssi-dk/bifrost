@@ -383,10 +383,8 @@ def generate_sample_folder(samples):
         return [
             "A few errors occurred locating the read paths. If you need more info, " +
             "please contact an admin.",
-            html.Pre("\n".join(errors), style={
-                "border": "1px solid red", "padding": "1em", "marginBottom": "20px"}),
-            html.Pre(script, style={
-                  "border": "1px solid black", "padding": "1em"})
+            html.Pre("\n".join(errors), className="error-pre"),
+            html.Pre(script, className="folder-pre")
         ]
     else:
         return [html.Pre(script, style={"border": "1px solid black", "padding": "1em"})]

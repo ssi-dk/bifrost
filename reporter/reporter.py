@@ -748,26 +748,6 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
         id="datatable-testomatic"
     )
 
-    # th = html.Thead(
-    #     html.Tr(list(map(lambda x: html.Th(x), column_names)), className="trow header"))
-    # tbody = []
-    # for sample in tests_df.iterrows():
-    #     row = []
-    #     for value, column in zip(sample[1][columns], columns):
-    #         if str(value).startswith("fail") or str(value).startswith("undefined") \
-    #         or value == "supplying lab" or value =="core facility":
-    #             td = html.Td(str(value), className="cell red")
-    #         elif str(value).startswith("KeyError") or (pd.isnull(value) and column.endswith("action")):
-    #             td = html.Td(str(value), className="cell yellow")
-    #         else:
-    #             td = html.Td(str(value), className="cell")
-    #         row.append(td)
-    #     tbody.append(html.Tr(row, className="trow"))
-    # tb = html.Tbody(tbody)
-
-    # tests_df = tests_df[columns]
-    
-    #tests_df.columns = column_names
     csv_string = tests_df.to_csv(index=False, encoding="utf-8", sep="\t")
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
