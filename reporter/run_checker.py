@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
+import keys
 
 import dash_scroll_up
 
@@ -84,7 +85,7 @@ def update_run_name(run_name):
     if run_name == "" or run_name == "Not found":
         return None
     else:
-        return html.H3(html.A("Link to QC Report", href=":8050/{}".format(run_name)))
+        return html.H3(html.A("Link to QC Report", href="{}/{}".format(keys.qc_report_url, run_name)))
 
 @app.callback(
     Output("run-selector", "children"),
