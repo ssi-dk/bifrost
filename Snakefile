@@ -695,7 +695,7 @@ rule setup_sample_components_to_run:
                     with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
-                            if config["torque_node"]:
+                            if "torque_node" in config and config["torque_node"]:
                                 torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
                                 torque_node = ",nodes=1:ppn={}".format(config["threads"])
