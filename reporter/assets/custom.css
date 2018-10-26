@@ -291,3 +291,19 @@ table {
   padding: 1em;
   overflow-x: auto;
 }
+
+.status-1 {
+  background-color: #f1c40f;
+}
+
+.status--1 {
+  background-color: #ea6153;
+}
+
+.status-2 {
+  background-color: #27ae60;
+}
+
+.run_checker_report {
+  margin-top: 15px;
+}
