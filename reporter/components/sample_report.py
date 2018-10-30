@@ -387,6 +387,6 @@ def generate_sample_folder(samples):
             html.Pre(script, className="folder-pre")
         ]
     else:
-        return [html.Pre(script, style={"border": "1px solid black", "padding": "1em"})]
+        return [html.Pre(script, className="folder-pre")]
 
 
