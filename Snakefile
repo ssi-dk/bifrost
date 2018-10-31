@@ -140,7 +140,7 @@ rule create_sample_folder:
         else:
             shell("mkdir {sample_folder}")
             for file in sorted(os.listdir(sample_folder)):
-                    result = re.search(config["read_pattern"], file)
+                result = re.search(config["read_pattern"], file)
                 i = 0
                 if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                     i = i + 1
@@ -171,7 +171,7 @@ rule copy_run_info:
         touch(rerun_folder + "/copy_run_info"),
         touch(component + "/copy_run_info_complete")
     params:
-        sample_folder
+        rules.create_sample_folder.output.sample_folder
     shell:
         """
         if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp; fi;
@@ -249,7 +249,7 @@ rule initialize_samples_from_sample_folder:
     # Dynamic
     input:
         component,
-        sample_folder = sample_folder,
+        sample_folder = rules.create_sample_folder.output.sample_folder,
     output:
         touch(rerun_folder + "/initialize_samples_from_sample_folder"),
         touch(component + "/initialize_samples_from_sample_folder")
