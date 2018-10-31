@@ -145,10 +145,11 @@ rule create_sample_folder:
             shell("ln -s {raw_data_folder} {sample_folder}")
         else:
             shell("mkdir {sample_folder}")
+            i = 0
             for file in sorted(os.listdir(raw_data_folder)):
                 print(file)
                 result = re.search(config["read_pattern"], file)
-                i = 0
+                
                 if result and os.path.isfile(os.path.realpath(os.path.join(raw_data_folder, file))):
                     i = i + 1
                     new_sample_name = "SSI{}".format(i)
