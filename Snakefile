@@ -113,7 +113,7 @@ rule generate_git_hash:
 
 
 rule_name = "create_sample_folder"
-rule generate_git_hash:
+rule create_sample_folder:
     # Static
     message:
         "Running step:" + rule_name
