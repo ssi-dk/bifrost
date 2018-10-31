@@ -22,6 +22,12 @@ PAGESIZE = 100
 COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'testomatic']
 
 app = dash.Dash()
+if hasattr(keys, 'USERNAME_PASSWORD'):
+    auth = dash_auth.BasicAuth(
+        app,
+        keys.USERNAME_PASSWORD
+    )
+
 app.config["suppress_callback_exceptions"] = True
 app.title = "Serum QC Run Checker"
 
