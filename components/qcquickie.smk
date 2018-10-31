@@ -394,7 +394,7 @@ rule assembly_check__call_variants:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
+        "callvariants.sh -Xmx{resources.memory_in_GB}G in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "summarize__variants"
