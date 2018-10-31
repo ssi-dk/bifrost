@@ -7,6 +7,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
+import dash_auth
 import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
@@ -48,6 +49,12 @@ def short_species(species):
 
 
 app = dash.Dash()
+
+if hasattr(keys, 'USERNAME_PASSWORD'):
+    auth = dash_auth.BasicAuth(
+        app,
+        keys.USERNAME_PASSWORD
+    )
 app.title = "Serum QC"
 app.config["suppress_callback_exceptions"] = True
 
