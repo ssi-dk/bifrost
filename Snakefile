@@ -135,6 +135,8 @@ rule create_sample_folder:
     output:
         sample_folder = directory(sample_folder)
     run:
+        print(rename_samples, type(rename_samples))
+        rename_samples = bool(rename_samples)
         if rename_samples is False:
             shell("ln -s {raw_data_folder} {sample_folder}")
         else:
