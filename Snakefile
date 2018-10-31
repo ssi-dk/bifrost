@@ -19,9 +19,10 @@ component = "bifrost"
 rerun_folder = component + "/delete_to_update"
 
 datahandling.save_yaml(config, "run_config.yaml")
-
 components = config["components"].split(",")
+raw_data_folder = config["raw_data_folder"]
 sample_folder = config["sample_folder"]
+rename_samples = config["rename_samples"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
@@ -109,6 +110,42 @@ rule generate_git_hash:
         git_hash = component + "/git_hash.txt"
     shell:
         "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output.git_hash} 2> {log.err_file}"
+
+
+rule_name = "create_sample_folder"
+rule generate_git_hash:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = component + "/log/" + rule_name + ".out.log",
+        err_file = component + "/log/" + rule_name + ".err.log",
+    benchmark:
+        component + "/benchmarks/" + rule_name + ".benchmark"
+    message:
+        "Running step: {rule}"
+    # Dynamic
+    input:
+        component,
+        run_folder = run_folder
+    output:
+        sample_folder = sample_folder
+    run:
+        if rename_samples is False:
+            shell("ln -s {run_folder} {sample_folder}")
+        else:
+            shell("mkdir {sample_folder}")
+            for file in sorted(os.listdir(sample_folder)):
+                    result = re.search(config["read_pattern"], file)
+                i = 0
+                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
+                    i = i + 1
+                    new_sample_name = "SSI{}".format(i)
+                    shell("ln -s {} {};".format(os.path.realpath(os.path.join(sample_folder, file), new_sample_name))
 
 
 rule_name = "copy_run_info"

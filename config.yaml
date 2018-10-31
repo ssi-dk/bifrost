@@ -1,5 +1,7 @@
 # Input parameters with default values
+raw_data_folder: "raw_data"
 sample_folder: "samples"
+rename_samples: True
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
 #torque_node: # for use on specifying a torque node
