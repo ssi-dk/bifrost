@@ -153,7 +153,7 @@ rule create_sample_folder:
                     i = i + 1
                     new_sample_name = "SSI{}".format(i)
                     print(new_sample_name)
-                    shell("ln -s {} {};".format( os.path.realpath(os.path.join(raw_data_folder, file), os.path.join(sample_folder, new_sample_name)))
+                    shell("ln -s {} {};".format( os.path.realpath(os.path.join(raw_data_folder, file)), os.path.join(sample_folder, new_sample_name)))
 
 
 rule_name = "copy_run_info"
