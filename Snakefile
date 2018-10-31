@@ -138,12 +138,15 @@ rule create_sample_folder:
         rename_samples = rename_samples
     run:
         rename_samples = bool(params.rename_samples)
+        raw_data_folder = str(input.raw_data_folder)
+        sample_folder = str(output.sample_folder)
         print(rename_samples, type(rename_samples))
         if rename_samples is False:
             shell("ln -s {raw_data_folder} {sample_folder}")
         else:
             shell("mkdir {sample_folder}")
-            for file in sorted(os.listdir(sample_folder)):
+            for file in sorted(os.listdir(raw_data_folder)):
+                print(file)
                 result = re.search(config["read_pattern"], file)
                 i = 0
                 if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
