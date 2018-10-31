@@ -131,12 +131,12 @@ rule create_sample_folder:
     # Dynamic
     input:
         component,
-        run_folder = run_folder
+        raw_data_folder = raw_data_folder
     output:
         sample_folder = sample_folder
     run:
         if rename_samples is False:
-            shell("ln -s {run_folder} {sample_folder}")
+            shell("ln -s {raw_data_folder} {sample_folder}")
         else:
             shell("mkdir {sample_folder}")
             for file in sorted(os.listdir(sample_folder)):
