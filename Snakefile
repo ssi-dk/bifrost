@@ -133,7 +133,7 @@ rule create_sample_folder:
         component,
         raw_data_folder = raw_data_folder
     output:
-        sample_folder = sample_folder
+        sample_folder = directory(sample_folder)
     run:
         if rename_samples is False:
             shell("ln -s {raw_data_folder} {sample_folder}")
