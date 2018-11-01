@@ -749,27 +749,24 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
-    [Input("selected-samples-ids", "children"),
-     Input(component_id="plot-list", component_property="value"),
+    [Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'rows'),
      Input('datatable-testomatic', 'selected_row_indices')]
 )
-def update_coverage_figure(sample_ids, plot_value, rows, selected_rows):
-    samples = sample_ids.split(",")
-    if rows == [{}] or rows == [] or (len(samples) == 1 and samples[0] == ""):
+def update_coverage_figure(plot_value, rows, selected_rows):
+    if rows == [{}] or rows == []:
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
     plot_func = global_vars.PLOTS[plot_value].get("func")
 
     data = []
-    plot_df = import_data.filter_all(
-        sample_ids=sample_ids.split(","), func=plot_func)
-
     dtdf = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
-        df_ids = dtdf["DB ID"]
-        plot_df = plot_df[plot_df._id.isin(df_ids)]
+    df_ids = dtdf["DB ID"]
+        
+    plot_df = import_data.filter_all(
+        sample_ids=df_ids, func=plot_func)
 
     species_count = 0
     if 'species' in plot_df:
