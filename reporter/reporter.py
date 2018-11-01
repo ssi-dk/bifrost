@@ -2,6 +2,7 @@
 import os
 import sys
 import urllib
+from datetime import datetime
 
 import dash
 import dash_core_components as dcc
@@ -297,7 +298,7 @@ def display_selected_data(selected_data, rows, selected_rows):
     dtdf = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
-    points = list(dtdf["name"])
+    points = list(map(str, list(dtdf["name"])))
     sample_ids = list(dtdf["DB ID"])
 
     if selected_data is not None and len(selected_data["points"]):
@@ -308,7 +309,7 @@ def display_selected_data(selected_data, rows, selected_rows):
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
         # This way we keep the table order.
-        points = [point for point in points if point in union_points]
+        points = [str(point) for point in points if point in union_points]
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
     return [
         html.Label(
@@ -404,54 +405,54 @@ def update_species_list(run_name):
     )
 
 
-@app.callback(
-    Output("qc-div", "children"),
-    [Input("run-name", "children"),
-     Input(component_id="species-list", component_property="value"),
-     Input(component_id="group-list", component_property="value")]
-)
-def update_qc_list(run_name, species, group):
-    if run_name == "Loading..." or \
-        None in (species, group):
-        return dcc.Dropdown(
-            id="qc-list",
-            multi=True
-        )
-    num_samples = len(import_data.filter_name(species, group, run_name=run_name))
-    if len(run_name) == 0:
-        qc_list = import_data.get_qc_list()
-    else:
-        qc_list = import_data.get_qc_list(run_name)
-    qc_options = []
-    qc_list_options = []
-    sum_items = 0
-    for item in qc_list:
-        if item["_id"] == None:
-            sum_items += item["count"]
-            qc_options.append("Not determined")
-            qc_list_options.append({
-                "label": "Not determined ({})".format(item["count"]),
-                "value": "Not determined"
-            })
-        else:
-            sum_items += item["count"]
-            qc_options.append(item["_id"])
-            qc_list_options.append({
-                "label": "{} ({})".format(item["_id"], item["count"]),
-                "value": item["_id"]
-            })
-    if sum_items < num_samples:
-            qc_options.append("Not tested")
-            qc_list_options.append({
-                "label": "Not tested ({})".format(num_samples - sum_items),
-                "value": "Not tested"
-            })
-    return dcc.Dropdown(
-        id="qc-list",
-        options=qc_list_options,
-        multi=True,
-        value=qc_options
-    )
+# @app.callback(
+#     Output("qc-div", "children"),
+#     [Input("run-name", "children"),
+#      Input(component_id="species-list", component_property="value"),
+#      Input(component_id="group-list", component_property="value")]
+# )
+# def update_qc_list(run_name, species, group):
+#     if run_name == "Loading..." or \
+#         None in (species, group):
+#         return dcc.Dropdown(
+#             id="qc-list",
+#             multi=True
+#         )
+#     num_samples = len(import_data.filter_name(species, group, run_name=run_name))
+#     if len(run_name) == 0:
+#         qc_list = import_data.get_qc_list()
+#     else:
+#         qc_list = import_data.get_qc_list(run_name)
+#     qc_options = []
+#     qc_list_options = []
+#     sum_items = 0
+#     for item in qc_list:
+#         if item["_id"] == None:
+#             sum_items += item["count"]
+#             qc_options.append("Not determined")
+#             qc_list_options.append({
+#                 "label": "Not determined ({})".format(item["count"]),
+#                 "value": "Not determined"
+#             })
+#         else:
+#             sum_items += item["count"]
+#             qc_options.append(item["_id"])
+#             qc_list_options.append({
+#                 "label": "{} ({})".format(item["_id"], item["count"]),
+#                 "value": item["_id"]
+#             })
+#     if sum_items < num_samples:
+#             qc_options.append("Not tested")
+#             qc_list_options.append({
+#                 "label": "Not tested ({})".format(num_samples - sum_items),
+#                 "value": "Not tested"
+#             })
+#     return dcc.Dropdown(
+#         id="qc-list",
+#         options=qc_list_options,
+#         multi=True,
+#         value=qc_options
+#     )
 
 
 @app.callback(
@@ -653,17 +654,19 @@ def update_report(n_assemblatron_ts,
 
 @app.callback(
     Output(component_id="selected-samples", component_property="children"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="qc-list", component_property="value"),
-        Input(component_id="run-name", component_property="children")]
+    [Input(component_id="apply-filter-button", component_property="n_clicks")],
+    [State(component_id="species-list", component_property="value"),
+        State(component_id="group-list", component_property="value"),
+        State(component_id="qc-list", component_property="value"),
+        State(component_id="run-name", component_property="children")]
 )
-def update_selected_samples(species_list, group_list, qc_list, run_name):
+def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
-        return None
-    samples = import_data.filter_name(species=species_list,
-        group=group_list, qc_list=qc_list, run_name=run_name)
+        samples = []
+    else:
+        samples = import_data.filter_name(species=species_list,
+            group=group_list, qc_list=qc_list, run_name=run_name)
     sample_names = []
     sample_ids = []
     for sample in samples:
@@ -698,16 +701,11 @@ def update_selected_samples(species_list, group_list, qc_list, run_name):
 @app.callback(
     Output(component_id="testomatic-report",
            component_property="children"), 
-    [Input(component_id="selected-samples-list", component_property="value")],
-     [State(component_id="species-list", component_property="value"),
-        State(component_id="group-list", component_property="value"),
-        State(component_id="run-name", component_property="children"),
-        State(component_id="qc-list", component_property="value")]
+    [Input(component_id="selected-samples-ids", component_property="children")],
+     [State(component_id="run-name", component_property="children")]
 )
-def update_test_table(selected_samples, species_list, group_list, run_name, qc_list):
-    if run_name == "Loading..." or run_name == "" or \
-            None in (species_list, group_list, qc_list, run_name):
-        #return None
+def update_test_table(selected_samples_ids, run_name):
+    if run_name == "Loading...":
         return [html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])]
     columns = ["name", 'testomatic.assemblatron:action',  "sample_sheet.Comments",
             "sample_sheet.group", "properties.provided_species", "properties.detected_species",
@@ -744,9 +742,11 @@ def update_test_table(selected_samples, species_list, group_list, run_name, qc_l
                     'Unclassified reads',
                     'Main species read %', 'Detected species in DB',
                     'Submitted sp. is same as detected', 'DB ID']
+    print("-"*60)
+    print(datetime.now())
     tests_df = import_data.filter_all(
-        species_list, group_list, qc_list, run_name)
-    
+        sample_ids=selected_samples_ids.split(","))
+    print("end " + str(datetime.now()))
     tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
     mask = pd.isnull(tests_df["QC action"])
@@ -915,24 +915,10 @@ def all_species(n_clicks, run_name):
 
 @app.callback(
     Output("qc-list", "value"),
-    [Input("qc-all", "n_clicks")],
-    [State("run-name", "children")]
+    [Input("qc-all", "n_clicks")]
 )
-def all_QCs(n_clicks, run_name):
-    if run_name == "Loading...":
-        return None
-    if len(run_name) == 0:
-        qc_list = import_data.get_qc_list()
-    else:
-        qc_list = import_data.get_qc_list(run_name)
-    qc_options = []
-    for item in qc_list:
-        if item["_id"] == None:
-            qc_options.append("Not determined")
-        else:
-            qc_options.append(item["_id"])
-    qc_options.append("Not tested")
-    return qc_options
+def all_QCs(n_clicks):
+    return ["OK", "core facility", "supplying lab", "Not tested"]
 
 application = app.server # Required for uwsgi
 

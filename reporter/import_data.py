@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+from datetime import datetime
 import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
@@ -42,7 +43,7 @@ def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
 def filter_name(species=None, group=None, qc_list=None, run_name=None):
-    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1},
+    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1, "flag": 1},
                                     run_name, species, group, qc_list)
     return list(result)
 
@@ -58,6 +59,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             },
             run_name, species, group, qc_list=qc_list, page=page)
     else:
+        print("startq" + str(datetime.now()))
         query_result = mongo_interface.filter(
             {
                 "name": 1,
@@ -65,6 +67,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "sample_sheet" : 1
             },
             samples=sample_ids, page=page)
+        print("endq" + str(datetime.now()))
 
     clean_result = {}
     sample_ids = []
@@ -95,8 +98,10 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         if "sample_sheet" in item:
             for key, value in item["sample_sheet"].items():
                 clean_result[str(item["_id"])]["sample_sheet." + key] = value
-
+    print("startq2" + str(datetime.now()))
+        
     component_result = mongo_interface.get_results(sample_ids)
+    print("endq2" + str(datetime.now()))
     for item in component_result:
         item_id = str(item["sample"]["_id"])
         component = item["component"]["name"]

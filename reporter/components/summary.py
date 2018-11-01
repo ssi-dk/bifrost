@@ -13,6 +13,8 @@ def format_selected_samples(filtered_df):
 def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
                            for plot, value in PLOTS.items()]
+    qc_options = ["OK", "core facility", "supplying lab", "Not tested"]
+    qc_list_options = [{"label": o, "value": o} for o in qc_options]
     return html.Div(
         [
             html.H5("Summary", className="box-title"),
@@ -120,7 +122,9 @@ def html_div_summary():
                                             html.Div(
                                                 dcc.Dropdown(
                                                     id="qc-list",
-                                                    multi=True
+                                                    multi=True,
+                                                    options=qc_list_options,
+                                                    value=qc_options
                                                 ),
                                                 id="qc-div"
                                             )
@@ -129,6 +133,19 @@ def html_div_summary():
                                     )
                                 ],
                                 className="row"
+                            )
+                        ],
+                        className="twelve columns"
+                    )
+                ], className="row"),
+                html.Div([
+                    html.Div(
+                        [
+                            html.Button(
+                                "Apply Filter",
+                                id="apply-filter-button",
+                                n_clicks=0,
+                                className="button-primary u-full-width"
                             )
                         ],
                         className="twelve columns"
@@ -158,7 +175,7 @@ def html_div_summary():
                     ),
                     
                 ],
-                className="row"
+                className="row mt-1"
             ),
             html.Div([html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])],
                      id="testomatic-report", className="bigtable"),
