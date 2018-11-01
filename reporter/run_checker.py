@@ -3,6 +3,7 @@ import os
 import sys
 
 import dash
+import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
