@@ -21,8 +21,8 @@ rerun_folder = component + "/delete_to_update"
 datahandling.save_yaml(config, "run_config.yaml")
 components = config["components"].split(",")
 # raw_data_folder = config["raw_data_folder"]
+# rename_samples = config["rename_samples"]
 sample_folder = config["sample_folder"]
-rename_samples = config["rename_samples"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
