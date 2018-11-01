@@ -20,7 +20,7 @@ rerun_folder = component + "/delete_to_update"
 
 datahandling.save_yaml(config, "run_config.yaml")
 components = config["components"].split(",")
-raw_data_folder = config["raw_data_folder"]
+# raw_data_folder = config["raw_data_folder"]
 sample_folder = config["sample_folder"]
 rename_samples = config["rename_samples"]
 sample_sheet = config["sample_sheet"]
@@ -111,50 +111,49 @@ rule generate_git_hash:
     shell:
         "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output.git_hash} 2> {log.err_file}"
 
-
-rule_name = "create_sample_folder"
-rule create_sample_folder:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
-    benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
-    message:
-        "Running step: {rule}"
-    # Dynamic
-    input:
-        component,
-        raw_data_folder = raw_data_folder
-    output:
-        sample_folder = directory(sample_folder)
-    params:
-        rename_samples = rename_samples
-    run:
-        rename_samples = bool(params.rename_samples)
-        raw_data_folder = str(input.raw_data_folder)
-        sample_folder = str(output.sample_folder)
-        print(rename_samples, type(rename_samples))
-        if rename_samples is False:
-            shell("ln -s {raw_data_folder} {sample_folder}")
-        else:
-            shell("mkdir {sample_folder}")
-            i = 0
-            for file in sorted(os.listdir(raw_data_folder)):
-                print(file)
-                result = re.search(config["read_pattern"], file)
-                
-                if result and os.path.isfile(os.path.realpath(os.path.join(raw_data_folder, file))):
-                    i = i + 1
-                    new_sample_name = "SSI{}".format(i)
-                    print(new_sample_name)
-                    shell("ln -s {} {};".format( os.path.realpath(os.path.join(raw_data_folder, file)), os.path.join(sample_folder, new_sample_name)))
+# TODO: temporarily shelved idea for anonymizing samples 
+# rule_name = "create_sample_folder"
+# rule create_sample_folder:
+#     # Static
+#     message:
+#         "Running step:" + rule_name
+#     threads:
+#         global_threads
+#     resources:
+#         memory_in_GB = global_memory_in_GB
+#     log:
+#         out_file = component + "/log/" + rule_name + ".out.log",
+#         err_file = component + "/log/" + rule_name + ".err.log",
+#     benchmark:
+#         component + "/benchmarks/" + rule_name + ".benchmark"
+#     message:
+#         "Running step: {rule}"
+#     # Dynamic
+#     input:
+#         component,
+#         raw_data_folder = raw_data_folder
+#     output:
+#         sample_folder = directory(sample_folder)
+#     params:
+#         rename_samples = rename_samples
+#     run:
+#         rename_samples = bool(params.rename_samples)
+#         raw_data_folder = str(input.raw_data_folder)
+#         sample_folder = str(output.sample_folder)
+#         print(rename_samples, type(rename_samples))
+#         if rename_samples is False:
+#             shell("ln -s {raw_data_folder} {sample_folder}")
+#         else:
+#             shell("mkdir {sample_folder}")
+#             i = 0
+#             for file in sorted(os.listdir(raw_data_folder)):
+#                 print(file)
+#                 result = re.search(config["read_pattern"], file)
+#                 if result and os.path.isfile(os.path.realpath(os.path.join(raw_data_folder, file))):
+#                     i = i + 1
+#                     new_sample_name = "SSI{}_R1.fastq.gz".format(i)
+#                     print(new_sample_name)
+#                     shell("ln -s {} {};".format( os.path.realpath(os.path.join(raw_data_folder, file)), os.path.join(sample_folder, new_sample_name)))
 
 
 rule_name = "copy_run_info"
