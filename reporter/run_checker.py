@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
+import keys
 
 import dash_scroll_up
 
@@ -21,6 +22,12 @@ PAGESIZE = 100
 COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'testomatic']
 
 app = dash.Dash()
+if hasattr(keys, 'USERNAME_PASSWORD'):
+    auth = dash_auth.BasicAuth(
+        app,
+        keys.USERNAME_PASSWORD
+    )
+
 app.config["suppress_callback_exceptions"] = True
 app.title = "Serum QC Run Checker"
 
@@ -32,6 +39,15 @@ app.css.append_css(
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
+run_list = import_data.get_run_list()
+run_list_options = [
+    {
+        "label": "{} ({})".format(run["name"],
+                                    len(run["samples"])),
+        "value": run["name"]
+    } for run in run_list]
+
+
 app.layout = html.Div([
     html.Div(className="container", children=[
         dash_scroll_up.DashScrollUp(
@@ -40,10 +56,34 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.H1("SerumQC Run Checker"),
+        html.Div([
+            html.Div(
+                [
+                    html.Div(
+                        dcc.Dropdown(
+                            id="run-list",
+                            options=run_list_options,
+                            placeholder="Sequencing run"
+                        )
+                    )
+                ],
+                className="nine columns"
+            ),
+            html.Div(
+                [
+                    dcc.Link(
+                        "Load run",
+                        id="run-link",
+                        href="/",
+                        className="button button-primary")
+                ],
+                className="three columns"
+            )
+        ], id="run-selector", className="row"),
         html.H2("", id="run-name"),
+        html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
-        html.Div(id="run-selector", className="row"),
-        html.Div(id="run-report")
+        html.Div(id="run-report", className="run_checker_report")
 
     ]),
     html.Footer([
@@ -76,45 +116,14 @@ def update_run_name(pathname):
 
 
 @app.callback(
-    Output("run-selector", "children"),
+    Output("report-link", "children"),
     [Input("run-name", "children")]
 )
-def update_run_list(run_name):
-    if len(run_name) == 0:
-        run_list = import_data.get_run_list()
-        run_list_options = [
-            {
-                "label": "{} ({})".format(run["name"],
-                                          len(run["samples"])),
-                "value": run["name"]
-            } for run in run_list]
-        return [
-            html.Div(
-                [
-                    html.Div(
-                        dcc.Dropdown(
-                            id="run-list",
-                            options=run_list_options,
-                            placeholder="Sequencing run"
-                        )
-                    )
-                ],
-                className="nine columns"
-            ),
-            html.Div(
-                [
-                    dcc.Link(
-                        "Go to run",
-                        id="run-link",
-                        href="/",
-                        className="button button-primary")
-                ],
-                className="three columns"
-            )
-        ]
+def update_run_name(run_name):
+    if run_name == "" or run_name == "Not found":
+        return None
     else:
-        return
-
+        return html.H3(html.A("Link to QC Report", href="{}/{}".format(keys.qc_report_url, run_name)))
 
 @app.callback(
     Output("run-link", "href"),
@@ -134,57 +143,26 @@ def update_run_report(run):
     data = []
     figure = {}
     if run != "":
-        y = []
-        x = COMPONENTS
-        z = []
-        z_text = []
+
         samples = import_data.get_sample_component_status(run)
+        header = html.Tr([html.Th(html.Strong("Sample"))] + list(map(lambda x:html.Th(html.Strong(x)), COMPONENTS)))
+        rows = [header]
+
         for name, s_components in samples.items():
-            sample_z = []
-            sample_z_text = []
-            y.append(name)
+            row = []
+            row.append(html.Td(name))
             for component in COMPONENTS:
                 if component in s_components.keys():
-                    sample_z.append(s_components[component][0])
-                    sample_z_text.append(s_components[component][1])
+                    s_c = s_components[component]
+                    row.append(html.Td(s_c[1], className="status-{}".format(s_c[0])))
                 else:
-                    sample_z.append(0)
-                    sample_z_text.append("None")
-            z.append(sample_z)
-            z_text.append(sample_z_text)
-        # transpose z
-        #z = [list(x) for x in zip(*z)]
-        #z_text = [list(x) for x in zip(*z_text)]
-        # print(x)
-        # print(y)
-        # print(z)
-        figure = ff.create_annotated_heatmap(z=z,
-                                             x=x,
-                                             y=y,
-                                             zmin=-1,
-                                             zmax=2,
-                                             annotation_text=z_text,
-                                             colorscale=[[0, 'red'], [0.33, 'white'], [1, 'green']])
-    
-    figure.layout.margin.update({"l":200})
-    # figure["layout"] = go.Layout(
-    #     hovermode="closest",
-    #     title="Run plot",
-    #     margin=go.layout.Margin(
-    #         l=175,
-    #         r=50,
-    #         b=125,
-    #         t=50
-    #     ),
-    #     yaxis={"tickfont": {"size": 10}},
-    #     xaxis={"showgrid": True}
-    # )
+                    row.append(html.Td("None", className="status-0"))
+            rows.append(html.Tr(row))
+        table = html.Table(rows)
+        return [table]
 
-    return [dcc.Graph(
-        id="run-graph",
-        figure=figure,
-        style={"height": "1600px"}
-    )]
+
+    return []
     
 
 

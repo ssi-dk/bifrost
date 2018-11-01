@@ -4,7 +4,7 @@ td, td:first-child, th, th:first-child {
   border: none;
 }
 .data-colored {
-  height: 34px;
+  height: 22px;
 }
 
 .table-header {
@@ -77,7 +77,7 @@ h2 {
 .val {
     display: block;
     position: absolute;
-    padding: 5px;
+    padding: 2px 5px;
     left: 0;
     z-index: 3;
 }
@@ -278,7 +278,35 @@ table {
   overflow-y: auto;
   height: 120px;
 }
-.fixed_headers thead tr {
 
+.error-pre {
+  border: 1px solid red;
+  padding: 1em;
+  margin-bottom: 20px;
+  overflow-x: auto;
 }
 
+.folder-pre {
+  border: 1px solid black;
+  padding: 1em;
+  overflow-x: auto;
+}
+
+.status-1 {
+  background-color: #f1c40f;
+}
+
+.status--1 {
+  background-color: #ea6153;
+}
+
+.status-2 {
+  background-color: #27ae60;
+}
+
+.run_checker_report {
+  margin-top: 15px;
+}
+.mt-1 {
+  margin-top: 1em;
+}

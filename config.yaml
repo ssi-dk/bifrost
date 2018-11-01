@@ -1,4 +1,6 @@
 # Input parameters with default values
+# raw_data_folder: "raw_data" # Temporarily shelved idea to rename samples
+# rename_samples: True # Temporarily shelved idea to rename samples
 sample_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
@@ -13,6 +15,7 @@ read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9
 samples_to_ignore: ["Undetermined"]
 memory: &memory 10 #in Gb
 threads: &threads 4
+restart_times: 2
 
 # --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder

@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+from datetime import datetime
 import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
@@ -41,9 +42,9 @@ def get_qc_list(run_name=None):
 def get_species_list(run_name=None):
     return mongo_interface.get_species_list(run_name)
 
-def filter_name(species=None, group=None, run_name=None):
-    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1},
-                                    run_name, species, group)
+def filter_name(species=None, group=None, qc_list=None, run_name=None):
+    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1, "flag": 1},
+                                    run_name, species, group, qc_list)
     return list(result)
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
@@ -53,7 +54,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         query_result =  mongo_interface.filter(
             {
                 "name" : 1,
-                "properties.species": 1,
+                "properties": 1,
                 "sample_sheet": 1
             },
             run_name, species, group, qc_list=qc_list, page=page)
@@ -61,7 +62,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         query_result = mongo_interface.filter(
             {
                 "name": 1,
-                "properties.species": 1,
+                "properties": 1,
                 "sample_sheet" : 1
             },
             samples=sample_ids, page=page)
@@ -85,13 +86,17 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "name": item.get("name", sample_sheet_name),
                 "species": item.get("properties", {}).get("species", "Not classified")
             }
+            if "properties" in item:
+                for summary_key, summary_value in item["properties"].items():
+                    clean_result[str(item["_id"])]["properties." +
+                                        summary_key] = summary_value
         except KeyError as e:
             # we'll just ignore this for now
             sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
         if "sample_sheet" in item:
             for key, value in item["sample_sheet"].items():
                 clean_result[str(item["_id"])]["sample_sheet." + key] = value
-
+        
     component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:
         item_id = str(item["sample"]["_id"])

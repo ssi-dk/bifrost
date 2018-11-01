@@ -33,25 +33,56 @@ def get_species_colors():
             colors[species["organism"]] = species["color"]
     return colors
 
-def get_species_plot_data(species_list, id_list):
+def get_species_plot_data(species_list, id_list, component="assemblatron"):
     """Get plot data for many samples using a list of Ids"""
     with get_connection() as connection:
         db = connection.get_database()
         samples = db.samples
         plot_data = {}
         id_list = list(map(lambda x: ObjectId(x), id_list))
-        res = db.sample_components.aggregate([
-            {"$match": {
-                "summary.name_classified_species_1": {"$in": species_list},
-                "sample._id": {"$not": {"$in": id_list}}
+        runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
+        routine_ids = set()
+        for run in runs:
+            for sample in run["samples"]:
+                routine_ids.add(sample["_id"])
+        routine_list = list(routine_ids)
+        res = list(db.samples.aggregate([
+            {
+                "$match": {
+                    "_id": {"$in": routine_list, "$nin": id_list},
+                    "properties.species": {"$in": species_list}
                 }
             },
-            {"$group": {
-                "_id": "$summary.name_classified_species_1",
-                "bin_coverage_at_1x": {"$push": "$summary.bin_length_at_1x"}
+            {
+                "$lookup": {
+                    "from": "sample_components",
+                    "let": {"sample_id": "$_id"},
+                    "pipeline": [
+                        {"$match": {
+                            "component.name": component,
+                            "summary.bin_length_at_1x": {"$exists": True}
+                        }},
+                        {"$match": {
+                            "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
+                        }
+                        },
+                        {"$project": {"summary.bin_length_at_1x": 1}},
+                        {"$sort": {"_id": -1}},
+                        {"$limit": 1}
+                    ],
+                    "as": "sample_components"
+                }
+            },
+            {
+                "$unwind": "$sample_components"
+            },
+            {
+                "$group": {
+                    "_id": "$properties.species",
+                    "bin_coverage_at_1x": {"$push": "$sample_components.summary.bin_length_at_1x"}
                 }
             }
-        ])
+        ]))
     return res
 
 def check_run_name(name):
@@ -180,12 +211,21 @@ def get_qc_list(run_name=None):
             qcs = list(db.sample_components.aggregate([
                 {
                     "$match": {
-                        "sample._id": {"$in": sample_ids}
+                        "sample._id": {"$in": sample_ids},
+                        #"status": "Success",
+                        "component.name": "testomatic"
+                    }
+                },
+                {"$sort": {"sample._id": 1, "_id": 1}},
+                {
+                    "$group": {
+                        "_id": "$sample._id",
+                        "action": {"$last": "$summary.assemblatron:action"}
                     }
                 },
                 {
                     "$group": {
-                        "_id": "$summary.assemblatron:action",
+                        "_id": "$action",
                         "count": {"$sum": 1}
                     }
                 },
@@ -194,10 +234,44 @@ def get_qc_list(run_name=None):
                 }
             ]))
         else:
+            runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
+            sample_ids = set()
+            for run in runs:
+                for sample in run["samples"]:
+                    sample_ids.add(sample["_id"])
+            sample_list = list(sample_ids)
             qcs = list(db.samples.aggregate([
                 {
+                    "$match": {
+                        "_id": {"$in": sample_list}
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "sample_components",
+                        "let": {"sample_id": "$_id"},
+                        "pipeline": [
+                            {"$match": {
+                                "component.name": "testomatic",
+                                "summary.assemblatron:action" : {"$exists" : True}
+                                }},
+                            { "$match": {
+                                    "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
+                                }
+                            },
+                            {"$project": {"summary.assemblatron:action" : 1}},
+                            {"$sort": {"_id": -1}},
+                            {"$limit": 1}
+                        ],
+                        "as": "sample_components"
+                    }
+                },
+                {
+                    "$unwind": "$sample_components"
+                },
+                {
                     "$group": {
-                        "_id": "$summary.assemblatron:action",
+                        "_id": "$sample_components.summary.assemblatron:action",
                         "count": {"$sum": 1}
                     }
                 },
@@ -208,19 +282,57 @@ def get_qc_list(run_name=None):
 
     return qcs
 
-def filter_qc(db, qc_list, results):
-    sample_ids = list(map(lambda x: x["_id"], results))
-    qc_query = list(db.sample_components.find(
+def filter_qc(db, qc_list, query):
+    qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
+    if "Not determined" in qc_list:
+        qc_query += [
+                    {"sample_components.summary.assemblatron:action": None},
+                    {"$and": [
+                        {"sample_components.summary.assemblatron:action": {
+                            "$exists": False}},
+                        {"sample_components.1" : {"$exists" :True}}
+                    ]}
+                ]
+    if "Not tested" in qc_list:
+        qc_query += [
+            {"sample_components" : {"$size": 0 }}
+        ]
+
+    result = db.samples.aggregate([
         {
-            "_id": {"$in": sample_ids},
-            "summary.assemblatron:": {"$in": qc_list}
+            "$match": {"$and" :query},
+        },
+        {
+            "$lookup": {
+                "from": "sample_components",
+                "let": {"sample_id": "$_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    { "$eq" : ["$component.name", "testomatic"]},
+                                    {"$eq": ["$sample._id", "$$sample_id"]}
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "as": "sample_components"
+            }
+        },
+        {
+            "$match": {"$or": qc_query}
+            
         }
-    ))
-    qc_ids = list(map(lambda x: x["sample._id"], qc_query))
-    return [result for result in results if result["_id"] in qc_ids]
+    ])
+    return list(result)
+
 
 def filter(projection=None, run_name=None,
            species=None, group=None, qc_list=None, samples=None, page=None):
+    if qc_list == ["OK", "core facility", "supplying lab", "Not tested"]:
+        qc_list = None
     with get_connection() as connection:
         db = connection.get_database()
         query = []
@@ -269,17 +381,17 @@ def filter(projection=None, run_name=None,
             else:
                 query.append({"sample_sheet.group": {"$in": group}})
 
-        query_result = db.samples.find({"$and": query}, projection)\
-            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)])
-
-        if qc_list is not None and len(qc_list) != 0:
-            query_result = filter_qc(db, qc_list, query_result)
-
+        if qc_list is not None and run_name is not None and len(qc_list) != 0:
+            #pass
+            query_result = filter_qc(db, qc_list, query)
+        else:
+            query_result = list(db.samples.find({"$and": query}, projection)
+                            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
         if page is None:
             return query_result
         else:
             skips = PAGESIZE * (page)
-            return query_result[skips, skips+PAGESIZE]
+            return query_result[skips:skips+PAGESIZE]
 
 
 
@@ -287,7 +399,9 @@ def get_results(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
         return list(db.sample_components.find({
-            "sample._id": {"$in": sample_ids}
+            "sample._id": {"$in": sample_ids},
+            "summary": {"$exists": True},
+            "status": "Success"
         }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 
 def get_sample_runs(sample_ids):

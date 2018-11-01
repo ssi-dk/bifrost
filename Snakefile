@@ -19,8 +19,9 @@ component = "bifrost"
 rerun_folder = component + "/delete_to_update"
 
 datahandling.save_yaml(config, "run_config.yaml")
-
 components = config["components"].split(",")
+# raw_data_folder = config["raw_data_folder"]
+# rename_samples = config["rename_samples"]
 sample_folder = config["sample_folder"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
@@ -110,6 +111,50 @@ rule generate_git_hash:
     shell:
         "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output.git_hash} 2> {log.err_file}"
 
+# TODO: temporarily shelved idea for anonymizing samples 
+# rule_name = "create_sample_folder"
+# rule create_sample_folder:
+#     # Static
+#     message:
+#         "Running step:" + rule_name
+#     threads:
+#         global_threads
+#     resources:
+#         memory_in_GB = global_memory_in_GB
+#     log:
+#         out_file = component + "/log/" + rule_name + ".out.log",
+#         err_file = component + "/log/" + rule_name + ".err.log",
+#     benchmark:
+#         component + "/benchmarks/" + rule_name + ".benchmark"
+#     message:
+#         "Running step: {rule}"
+#     # Dynamic
+#     input:
+#         component,
+#         raw_data_folder = raw_data_folder
+#     output:
+#         sample_folder = directory(sample_folder)
+#     params:
+#         rename_samples = rename_samples
+#     run:
+#         rename_samples = bool(params.rename_samples)
+#         raw_data_folder = str(input.raw_data_folder)
+#         sample_folder = str(output.sample_folder)
+#         print(rename_samples, type(rename_samples))
+#         if rename_samples is False:
+#             shell("ln -s {raw_data_folder} {sample_folder}")
+#         else:
+#             shell("mkdir {sample_folder}")
+#             i = 0
+#             for file in sorted(os.listdir(raw_data_folder)):
+#                 print(file)
+#                 result = re.search(config["read_pattern"], file)
+#                 if result and os.path.isfile(os.path.realpath(os.path.join(raw_data_folder, file))):
+#                     i = i + 1
+#                     new_sample_name = "SSI{}_R1.fastq.gz".format(i)
+#                     print(new_sample_name)
+#                     shell("ln -s {} {};".format( os.path.realpath(os.path.join(raw_data_folder, file)), os.path.join(sample_folder, new_sample_name)))
+
 
 rule_name = "copy_run_info"
 rule copy_run_info:
@@ -137,7 +182,7 @@ rule copy_run_info:
         sample_folder
     shell:
         """
-        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp ; chmod g+w {input}/InterOp; fi;
+        if [ -d \"{params}/InterOp\" ]; then cp -TR {params}/InterOp {input}/InterOp; fi;
         if [ -f \"{params}/RunInfo.xml\" ]; then cp {params}/RunInfo.xml {input}/RunInfo.xml; fi;
         if [ -f \"{params}/RunParams.xml\" ]; then cp {params}/RunParams.xml {input}/RunParams.xml; fi;
         """
@@ -695,7 +740,7 @@ rule setup_sample_components_to_run:
                     with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
-                            if config["torque_node"]:
+                            if "torque_node" in config and config["torque_node"]:
                                 torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
                                 torque_node = ",nodes=1:ppn={}".format(config["threads"])
@@ -710,7 +755,7 @@ rule setup_sample_components_to_run:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
                                 if os.path.isfile(component_file):
                                     command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-                                    command.write("snakemake --cores {} -s {} --config Sample={};\n".format(config["threads"], component_file, "sample.yaml"))
+                                    command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"))
 
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "queued to run"
@@ -729,7 +774,7 @@ rule setup_sample_components_to_run:
                     os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
                     run_cmd_handle.write("cd {};\n".format(sample_name))
                     if config["grid"] == "torque":
-                        run_cmd_handle.write("qsub cmd_{}.sh;\n".format(comonent))  # dependent on grid engine
+                        run_cmd_handle.write("qsub cmd_{}.sh;\n".format(component))  # dependent on grid engine
                     elif config["grid"] == "slurm":
                         run_cmd_handle.write("sbatch cmd_{}.sh;\n".format(component))  # dependent on grid engine
                     else:
