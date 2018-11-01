@@ -1,6 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table_experiments as dt
+import import_data
 
 
 from components.global_vars import PLOTS, DEFAULT_PLOT
@@ -14,7 +15,17 @@ def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
                            for plot, value in PLOTS.items()]
     qc_options = ["OK", "core facility", "supplying lab", "Not tested"]
-    qc_list_options = [{"label": o, "value": o} for o in qc_options]
+    qc_list_options = [{"label":o, "value":o} for o in qc_options]
+    
+
+    run_list = import_data.get_run_list()
+    run_list_options = [
+        {
+            "label": "{} ({})".format(run["name"],
+                                        len(run["samples"])),
+            "value": run["name"]
+        } for run in run_list]
+
     return html.Div(
         [
             html.H5("Summary", className="box-title"),
@@ -23,6 +34,30 @@ def html_div_summary():
                     html.Div(
                         [
                             html.Div(
+                                [
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                dcc.Dropdown(
+                                                    id="run-list",
+                                                    options=run_list_options,
+                                                    placeholder="Sequencing run"
+                                                )
+                                            )
+                                        ],
+                                        className="nine columns"
+                                    ),
+                                    html.Div(
+                                        [
+                                            dcc.Link(
+                                                "Go to run",
+                                                id="run-link",
+                                                href="/",
+                                                className="button button-primary")
+                                        ],
+                                        className="three columns"
+                                    )
+                                ],
                                 id="run-selector",
                                 className="row"
                             ),

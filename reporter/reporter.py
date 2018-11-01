@@ -199,45 +199,6 @@ def hide_group_if_in_url(pathname):
     else:
         return ""
 
-@app.callback(
-    Output("run-selector", "children"),
-    [Input("run-name", "children")]
-)
-def update_run_list(run_name):
-    if len(run_name) == 0 or run_name == "Loading...":
-        run_list = import_data.get_run_list()
-        run_list_options = [
-            {
-                "label": "{} ({})".format(run["name"],
-                                            len(run["samples"])),
-                "value": run["name"]
-            } for run in run_list]
-        return [
-            html.Div(
-                [
-                    html.Div(
-                        dcc.Dropdown(
-                            id="run-list",
-                            options=run_list_options,
-                            placeholder="Sequencing run"
-                        )
-                    )
-                ],
-                className="nine columns"
-            ),
-            html.Div(
-                [
-                    dcc.Link(
-                        "Go to run",
-                        id="run-link",
-                        href="/",
-                        className="button button-primary")
-                ],
-                className="three columns"
-            )
-        ]
-    else:
-        return
 
 @app.callback(
     Output("run-link", "href"),
@@ -742,11 +703,8 @@ def update_test_table(selected_samples_ids, run_name):
                     'Unclassified reads',
                     'Main species read %', 'Detected species in DB',
                     'Submitted sp. is same as detected', 'DB ID']
-    print("-"*60)
-    print(datetime.now())
     tests_df = import_data.filter_all(
         sample_ids=selected_samples_ids.split(","))
-    print("end " + str(datetime.now()))
     tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
     mask = pd.isnull(tests_df["QC action"])
