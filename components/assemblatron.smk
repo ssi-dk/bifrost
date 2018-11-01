@@ -63,7 +63,7 @@ rule setup__filter_reads_with_bbduk:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "bbduk.sh in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
+        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "assembly__spades"
@@ -220,7 +220,7 @@ rule post_assembly__stats:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "stats.sh {input.contigs} 1> {log.out_file} 2> {log.err_file}"
+        "stats.sh threads={threads} -Xmx{resources.memory_in_GB}G {input.contigs} 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "post_assembly__mapping"
@@ -349,7 +349,7 @@ rule post_assembly__call_variants:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "callvariants.sh in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
+        "callvariants.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "summarize__variants"
