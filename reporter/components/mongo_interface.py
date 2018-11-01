@@ -399,7 +399,9 @@ def get_results(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
         return list(db.sample_components.find({
-            "sample._id": {"$in": sample_ids}
+            "sample._id": {"$in": sample_ids},
+            "summary": {"$exists": True},
+            "status": "Success"
         }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 
 def get_sample_runs(sample_ids):
