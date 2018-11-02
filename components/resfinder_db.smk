@@ -16,7 +16,7 @@ R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
 component = "resfinder_db"
-
+version = "1.0"
 
 onsuccess:
     print("Workflow complete")
@@ -69,7 +69,7 @@ rule ariba_resfinder:
 
 
 rule_name = "datadump_resfinder_db"
-rule datadump_analysis:
+rule datadump_analysis:lo
     # Static
     message:
         "Running step:" + rule_name
@@ -90,6 +90,7 @@ rule datadump_analysis:
     params:
         folder = rules.setup.params.folder,
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        version = version
     conda:
         "../envs/python_packages.yaml"
     script:
