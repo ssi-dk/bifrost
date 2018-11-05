@@ -330,7 +330,7 @@ def filter_qc(db, qc_list, query):
 
 
 def filter(projection=None, run_name=None,
-           species=None, group=None, qc_list=None, samples=None, page=None):
+           species=None, group=None, qc_list=None, samples=None):
     if qc_list == ["OK", "core facility", "supplying lab", "Not tested"]:
         qc_list = None
     with get_connection() as connection:
@@ -387,11 +387,7 @@ def filter(projection=None, run_name=None,
         else:
             query_result = list(db.samples.find({"$and": query}, projection)
                             .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
-        if page is None:
-            return query_result
-        else:
-            skips = PAGESIZE * (page)
-            return query_result[skips:skips+PAGESIZE]
+        return query_result
 
 
 
@@ -401,7 +397,8 @@ def get_results(sample_ids):
         return list(db.sample_components.find({
             "sample._id": {"$in": sample_ids},
             "summary": {"$exists": True},
-            "status": "Success"
+            "status": "Success",
+            "component.name": {"$ne": "qcquickie"} #Saving transfers
         }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
 
 def get_sample_runs(sample_ids):

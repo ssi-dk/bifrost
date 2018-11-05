@@ -3,6 +3,7 @@ import os
 import sys
 import urllib
 from datetime import datetime
+from io import StringIO
 
 import dash
 import dash_core_components as dcc
@@ -39,7 +40,7 @@ def hex_to_rgb(value):
 
 
 def short_species(species):
-    if species is None:
+    if species is None or pd.isna(species):
         return None
     words = species.split(" ")
     if len(words) == 1:
@@ -78,6 +79,7 @@ app.layout = html.Div([
         html.H1("SerumQC REPORT"),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
+        dcc.Store(id="data-store", storage_type="memory"),
         html.H4(html.A("Wiki is here", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e")),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
@@ -463,20 +465,23 @@ def next_page(prev_ts, next_ts, page_n, max_page):
     [Input(component_id="page-n", component_property="children"),
         Input(component_id="sample-report", component_property="data-content")],
     [State("lasso-sample-ids", "children"),
-        State("selected-samples-ids", "children")]
+        State("data-store", "data")]
         )
-def sample_report(page_n, data_content, lasso_selected, prefilter_samples):
-    if data_content not in ["qcquickie", "assemblatron", "analyzer"]:
+def sample_report(page_n, data_content, lasso_selected, data_store):
+    if data_content not in ["qcquickie", "assemblatron", "analyzer"] or data_store == "{}":
         return []
     page_n = int(page_n)
+    csv_data = StringIO(data_store)
+    data = pd.read_csv(csv_data, low_memory=True)
     if lasso_selected != "" and lasso_selected is not None:
-        samples = lasso_selected.split(",")  # lasso first
-    else:
-        samples = prefilter_samples.split(",")
-    if samples == [""]: return []
+        lasso = lasso_selected.split(",")  # lasso first
+        data = data[data._id.isin(lasso)]
+    if len(data) == 0: return []
+    samples = data["_id"]
     #NOTE Could optimize this by not getting all sample's info from mongo before paginating
-    page = import_data.filter_all(sample_ids=samples, page=page_n)
-    page = page.sort_values(["species","name"])
+    data = data.sort_values(["species","name"])
+    skips = PAGESIZE * (page_n)
+    page = data[skips:skips+PAGESIZE]
     page = import_data.add_sample_runs(page)
     max_page = len(samples) // PAGESIZE
     page_species = page["species"].unique().tolist()
@@ -518,18 +523,19 @@ def update_nextpage(page_n, max_page):
         # Input("update-table", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
     [State("lasso-sample-ids", "children"),
-        State("selected-samples-ids", "children")]
+        State("data-store", "data")]
 )
 # def update_report(n_qcquickie_ts, n_assemblatron_ts,
 def update_report(n_assemblatron_ts,
                 n_analyzer_ts, n_generate_ts,
-                lasso_selected, prefilter_samples):
+                lasso_selected, data_store):
     n_qcquickie_ts = -1
     n_table_ts = -1
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
-    elif prefilter_samples != "":
-        samples = prefilter_samples.split(",")
+    elif data_store != None:
+        csv_data = StringIO(data_store)
+        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
     else:
         samples = []
     
@@ -587,7 +593,8 @@ def update_report(n_assemblatron_ts,
             html.Div(id="sample-report", **{"data-content": content}),
         ]
     elif n_table_ts == last_module_ts:  # table was clicked
-        dataframe = import_data.filter_all(sample_ids=samples)
+        csv_data = StringIO(data_store)
+        dataframe = pd.read_csv(csv_data, low_memory=True)
         if "analyzer.ariba_resfinder" in dataframe:
             dataframe = dataframe.drop(
             columns="analyzer.ariba_resfinder")
@@ -614,7 +621,7 @@ def update_report(n_assemblatron_ts,
     return []
 
 @app.callback(
-    Output(component_id="selected-samples", component_property="children"),
+    Output(component_id="data-store", component_property="data"),
     [Input(component_id="apply-filter-button", component_property="n_clicks")],
     [State(component_id="species-list", component_property="value"),
         State(component_id="group-list", component_property="value"),
@@ -624,49 +631,20 @@ def update_report(n_assemblatron_ts,
 def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
-        samples = []
+        return "{}"
     else:
-        samples = import_data.filter_name(species=species_list,
+        samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
-    sample_names = []
-    sample_ids = []
-    for sample in samples:
-        try:
-            sample_names.append("{}".format(sample["name"]))
-        except KeyError:
-            sample_names.append(sample["sample_sheet"]["sample_name"])
-        sample_ids.append(str(sample["_id"]))
-    return [
-        html.Label(
-            [
-                "Selected Samples (",
-                len(samples),
-                "):"
-            ],
-            htmlFor="plot-list"),
-        dcc.Textarea(
-            className="u-full-width",
-            style={"resize": "none",
-                    "height": "300px",
-                    "white-space": "pre"},
-            readOnly=True,
-            value=["\n".join(sample_names)],
-            id="selected-samples-list"
-        ),
-        html.Div(",".join(sample_ids),
-                    style={"display": "none"},
-                    id="selected-samples-ids")
-    ]
+    return samples.to_csv()
 
 
 @app.callback(
     Output(component_id="testomatic-report",
            component_property="children"), 
-    [Input(component_id="selected-samples-ids", component_property="children")],
-     [State(component_id="run-name", component_property="children")]
+    [Input(component_id="data-store", component_property="data")]
 )
-def update_test_table(selected_samples_ids, run_name):
-    if run_name == "Loading...":
+def update_test_table(data_store):
+    if data_store == "{}":
         return [html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])]
     columns = ["name", 'testomatic.assemblatron:action',  "sample_sheet.Comments",
             "sample_sheet.group", "properties.provided_species", "properties.detected_species",
@@ -677,13 +655,6 @@ def update_test_table(selected_samples_ids, run_name):
             'assemblatron.snp_filter_10x_10%',
             'testomatic.assemblatron:numreads',
             "analyzer.mlst_report",
-            # 'testomatic.qcquickie:action',
-            # 'testomatic.qcquickie:1xgenomesize',
-            # 'testomatic.qcquickie:10xgenomesize',
-            # 'testomatic.qcquickie:1x10xsizediff',
-            # 'testomatic.qcquickie:avgcoverage',
-            # 'qcquickie.bin_contigs_at_1x',
-            # 'testomatic.qcquickie:numreads',
             'testomatic.whats_my_species:maxunclassified',
             'testomatic.whats_my_species:minspecies',
             'testomatic.whats_my_species:nosubmitted',
@@ -695,16 +666,11 @@ def update_test_table(selected_samples_ids, run_name):
                     'Ambiguous sites',
                     '# reads',
                     'mlst',
-                    # 'qcquickie QC',
-                    # 'qcquickie 1xgenomesize', 'qcquickie 10xgenomesize',
-                    # 'qcquickie 1x10xsizediff', 'qcquickie avgcoverage',
-                    # 'qcquickie # contigs',
-                    # 'qcquickie numreads',
                     'Unclassified reads',
                     'Main species read %', 'Detected species in DB',
                     'Submitted sp. is same as detected', 'DB ID']
-    tests_df = import_data.filter_all(
-        sample_ids=selected_samples_ids.split(","))
+    csv_data = StringIO(data_store)
+    tests_df = pd.read_csv(csv_data, low_memory=True)
     tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
     mask = pd.isnull(tests_df["QC action"])
@@ -738,7 +704,7 @@ def update_test_table(selected_samples_ids, run_name):
 
 @app.callback(
     Output(component_id="summary-plot", component_property="selectedData"),
-    [Input("selected-samples-ids", "children"),
+    [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'rows'),
      Input('datatable-testomatic', 'selected_row_indices')]
@@ -751,22 +717,21 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'rows'),
-     Input('datatable-testomatic', 'selected_row_indices')]
+     Input('datatable-testomatic', 'selected_row_indices')],
+    [State('data-store', 'data')]
 )
-def update_coverage_figure(plot_value, rows, selected_rows):
+def update_coverage_figure(plot_value, rows, selected_rows, data_store):
     if rows == [{}] or rows == []:
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
-    plot_func = global_vars.PLOTS[plot_value].get("func")
 
     data = []
     dtdf = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
     df_ids = dtdf["DB ID"]
-        
-    plot_df = import_data.filter_all(
-        sample_ids=df_ids, func=plot_func)
+    csv_data = StringIO(data_store)
+    plot_df = pd.read_csv(csv_data, low_memory=True)
 
     species_count = 0
     if 'species' in plot_df:

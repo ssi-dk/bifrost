@@ -4,6 +4,7 @@ from datetime import datetime
 import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
+import components.global_vars as global_vars
 
 pd.options.mode.chained_assignment = None
 
@@ -48,7 +49,7 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
     return list(result)
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
-def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None, page=None):
+def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
 
     if sample_ids is None:
         query_result =  mongo_interface.filter(
@@ -57,7 +58,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "properties": 1,
                 "sample_sheet": 1
             },
-            run_name, species, group, qc_list=qc_list, page=page)
+            run_name, species, group, qc_list=qc_list)
     else:
         query_result = mongo_interface.filter(
             {
@@ -65,7 +66,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "properties": 1,
                 "sample_sheet" : 1
             },
-            samples=sample_ids, page=page)
+            samples=sample_ids)
 
     clean_result = {}
     sample_ids = []
@@ -108,7 +109,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
         else:
             pass
             # print("Missing summary", item)
-        if func is not None:
+        for func in global_vars.FUNCS:
             clean_result[item_id] = func(clean_result[item_id])
     
     return pd.DataFrame.from_dict(clean_result, orient="index")
