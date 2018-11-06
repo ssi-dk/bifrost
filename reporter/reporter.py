@@ -8,7 +8,7 @@ from io import StringIO
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table_experiments as dt
+import dash_table
 import dash_auth
 import pandas as pd
 import plotly.graph_objs as go
@@ -75,7 +75,7 @@ app.layout = html.Div([
             label="UP",
             className="button button-primary no-print"
         ),
-        html.Div(dt.DataTable(rows=[{}], editable=False), style={"display": "none"}),
+        html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
         html.H1("SerumQC REPORT"),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
@@ -235,13 +235,13 @@ def display_selected_data(ids):
 @app.callback(
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
-     Input('datatable-testomatic', 'rows'),
-     Input('datatable-testomatic', 'selected_row_indices')]
+     Input('datatable-testomatic', 'derived_virtual_data'),
+     Input('datatable-testomatic', 'selected_rows')]
 )
 def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
     # when the sample list is updated.
-    if rows == [{}] or rows == []:
+    if rows == [{}] or rows == [] or rows == None:
         return [
             html.Label(
                 [
@@ -262,7 +262,7 @@ def display_selected_data(selected_data, rows, selected_rows):
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
-    sample_ids = list(dtdf["DB ID"])
+    sample_ids = list(dtdf["DB_ID"])
 
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
@@ -592,30 +592,6 @@ def update_report(n_assemblatron_ts,
             
             html.Div(id="sample-report", **{"data-content": content}),
         ]
-    elif n_table_ts == last_module_ts:  # table was clicked
-        csv_data = StringIO(data_store)
-        dataframe = pd.read_csv(csv_data, low_memory=True)
-        if "analyzer.ariba_resfinder" in dataframe:
-            dataframe = dataframe.drop(
-            columns="analyzer.ariba_resfinder")
-        csv_string = dataframe.to_csv(index=False, encoding="utf-8", sep="\t")
-        csv_string = 'data:text/tab-separated-values;charset=utf-8,' + urllib.parse.quote(csv_string)
-        return [
-            html.H3("Table Report"),
-            # We have to drop those columns with nested values for the table
-            html.A("Download run (tsv)", href=csv_string, download='report.tsv'),
-            dt.DataTable(
-                rows=dataframe.to_dict("records"),
-
-                # columns=global_vars.columns, # sets the order
-                # column_widths=[150]*len(global_vars.columns),
-                editable=False,
-                filterable=True,
-                sortable=True,
-                selected_row_indices=[],
-                id="datatable-samples"
-            )
-        ]
     elif n_generate_ts == last_module_ts:
         return generate_sample_folder(samples)
     return []
@@ -644,9 +620,7 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
     [Input(component_id="data-store", component_property="data")]
 )
 def update_test_table(data_store):
-    if data_store == "{}":
-        return [html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])]
-    columns = ["name", 'testomatic.assemblatron:action',  "sample_sheet.Comments",
+    columns = ['testomatic.assemblatron:action', "name",  "sample_sheet.Comments",
             "sample_sheet.group", "properties.provided_species", "properties.detected_species",
             'testomatic.assemblatron:1xgenomesize',
             'testomatic.assemblatron:10xgenomesize',
@@ -659,35 +633,64 @@ def update_test_table(data_store):
             'testomatic.whats_my_species:minspecies',
             'testomatic.whats_my_species:nosubmitted',
             'testomatic.whats_my_species:submitted==detected', "_id"]
-    column_names = ['name', 'QC action', "Comments", 'Supplying lab', 'Provided Species',
-                    'Detected Species', 'Genome size (1x)', 'Genome size (10x)',
-                    'G. size difference (1x - 10x)',
-                    'Avg. coverage', '# contigs',
-                    'Ambiguous sites',
-                    '# reads',
+    column_names = ['QC_action', 'name', "Comments", 'Supplying_lab', 'Provided_Species',
+                    'Detected_Species', 'Genome_size_1x', 'Genome_size_10x',
+                    'G_size_difference_1x_10',
+                    'Avg._coverage', 'num_contigs',
+                    'Ambiguous_sites',
+                    'num_reads',
                     'mlst',
-                    'Unclassified reads',
-                    'Main species read %', 'Detected species in DB',
-                    'Submitted sp. is same as detected', 'DB ID']
+                    'Unclassified_reads',
+                    'Main_species_read_percent', 'Detected_species_in_DB',
+                    'Submitted_sp_is_same_as_detected', 'DB_ID']
+    if data_store == "{}":
+        return [
+            html.H6("Filtered samples (0):"),
+            dash_table.DataTable(
+                data=[],
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+                columns=[{"name": i, "id": i} for i in columns],
+                # n_fixed_columns=1,
+                style_cell={'width': '150px'},
+
+                # n_fixed_rows=1, # NOT WORKING NOTE
+                row_selectable="multi",
+                filtering=True,  # Front end filtering
+                sorting=True,
+                selected_rows=[],
+                id="datatable-testomatic"
+            )
+        ]
     csv_data = StringIO(data_store)
     tests_df = pd.read_csv(csv_data, low_memory=True)
     tests_df = tests_df.reindex(columns=columns)
     tests_df.columns = column_names
-    mask = pd.isnull(tests_df["QC action"])
-    tests_df.loc[mask, "QC action"] = "core facility"
-    slmask = tests_df["QC action"] == "supplying lab"
-    tests_df.loc[slmask, "QC action"] = "warning: supplying lab"
+    mask = pd.isnull(tests_df["QC_action"])
+    tests_df.loc[mask, "QC_action"] = "core facility"
+    slmask = tests_df["QC_action"] == "supplying lab"
+    tests_df.loc[slmask, "QC_action"] = "warning: supplying lab"
+    print(tests_df.to_dict("rows"))
+    table = dash_table.DataTable(
 
-    table = dt.DataTable(
-        rows=tests_df.to_dict("records"),
-
-        # columns=global_vars.columns, # sets the order
-        column_widths=[175] * len(columns),
-        row_selectable=True,
-        editable=False,
-        filterable=True,
-        sortable=True,
-        selected_row_indices=[],
+        data=tests_df.to_dict("rows"),
+        style_table={
+            'overflowX': 'scroll',
+            'overflowY': 'scroll',
+            'maxHeight': '480'
+        },
+        columns=[{"name": i, "id": i} for i in tests_df.columns],
+        # n_fixed_columns=1,
+        style_cell={'width': '150px'},
+        
+        # n_fixed_rows=1, # NOT WORKING NOTE
+        row_selectable="multi",
+        filtering=True, #Front end filtering
+        sorting=True,
+        selected_rows=[],
         id="datatable-testomatic"
     )
 
@@ -695,7 +698,7 @@ def update_test_table(data_store):
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
-        html.H6("Filtered samples ({}):".format(len(tests_df["DB ID"]))),
+        html.H6("Filtered samples ({}):".format(len(tests_df["DB_ID"]))),
         html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
         table
         # html.Table([th, tb], className="fixed-header")
@@ -706,8 +709,8 @@ def update_test_table(data_store):
     Output(component_id="summary-plot", component_property="selectedData"),
     [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
-     Input('datatable-testomatic', 'rows'),
-     Input('datatable-testomatic', 'selected_row_indices')]
+     Input('datatable-testomatic', 'derived_virtual_data'),
+     Input('datatable-testomatic', 'selected_rows')]
 )
 def reset_selection(sample_ids, plot_value, rows, selected_rows):
     return {"points":[]}
@@ -716,22 +719,21 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-list", component_property="value"),
-     Input('datatable-testomatic', 'rows'),
-     Input('datatable-testomatic', 'selected_row_indices')],
+     Input('datatable-testomatic', 'derived_virtual_data'),
+     Input('datatable-testomatic', 'selected_rows')],
     [State('data-store', 'data')]
 )
 def update_coverage_figure(plot_value, rows, selected_rows, data_store):
-    if rows == [{}] or rows == []:
+    if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
 
     data = []
-    dtdf = pd.DataFrame(rows)
-    if selected_rows is not None and len(selected_rows) > 0:
-        dtdf = dtdf.iloc[selected_rows]
-    df_ids = dtdf["DB ID"]
     csv_data = StringIO(data_store)
     plot_df = pd.read_csv(csv_data, low_memory=True)
+    if selected_rows is not None and len(selected_rows) > 0:
+        plot_df = plot_df.iloc[selected_rows]
+    df_ids = plot_df["_id"]
 
     species_count = 0
     if 'species' in plot_df:
@@ -771,7 +773,7 @@ def update_coverage_figure(plot_value, rows, selected_rows, data_store):
         "layout": go.Layout(
             hovermode="closest",
             title="{} - selected samples ({})".format(plot_value.replace("_",
-                                                               " "), len(dtdf["DB ID"])),
+                                                               " "), len(plot_df["_id"])),
             height=height,
             margin=go.layout.Margin(
                 l=175,
