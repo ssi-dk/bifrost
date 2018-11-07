@@ -620,7 +620,7 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
     [Input(component_id="data-store", component_property="data")]
 )
 def update_test_table(data_store):
-    columns = ['testomatic.assemblatron:action', "name",  "sample_sheet.Comments",
+    columns = ["name", 'testomatic.assemblatron:action', "sample_sheet.Comments",
             "sample_sheet.group", "properties.provided_species", "properties.detected_species",
             'testomatic.assemblatron:1xgenomesize',
             'testomatic.assemblatron:10xgenomesize',
@@ -633,10 +633,10 @@ def update_test_table(data_store):
             'testomatic.whats_my_species:minspecies',
             'testomatic.whats_my_species:nosubmitted',
             'testomatic.whats_my_species:submitted==detected', "_id"]
-    column_names = ['QC_action', 'name', "Comments", 'Supplying_lab', 'Provided_Species',
+    column_names = ['name', 'QC_action', "Comments", 'Supplying_lab', 'Provided_Species',
                     'Detected_Species', 'Genome_size_1x', 'Genome_size_10x',
                     'G_size_difference_1x_10',
-                    'Avg._coverage', 'num_contigs',
+                    'Avg_coverage', 'num_contigs',
                     'Ambiguous_sites',
                     'num_reads',
                     'mlst',
@@ -651,11 +651,14 @@ def update_test_table(data_store):
                 style_table={
                     'overflowX': 'scroll',
                     'overflowY': 'scroll',
-                    'maxHeight': '480'
+                    'maxHeight': '480',
                 },
                 columns=[{"name": i, "id": i} for i in columns],
                 # n_fixed_columns=1,
-                style_cell={'width': '150px'},
+                style_cell={
+                    'width': '150px',
+                    'padding': '0 15px'
+                },
 
                 # n_fixed_rows=1, # NOT WORKING NOTE
                 row_selectable="multi",
@@ -673,7 +676,33 @@ def update_test_table(data_store):
     tests_df.loc[mask, "QC_action"] = "core facility"
     slmask = tests_df["QC_action"] == "supplying lab"
     tests_df.loc[slmask, "QC_action"] = "warning: supplying lab"
-    print(tests_df.to_dict("rows"))
+    
+    # Split test columns
+    conditional_filter_columns = []
+    i = 0
+    for column_original in columns:
+        if column_original.startswith("testomatic") and not column_original.endswith("action"):
+            column = column_names[i] # Find the new column name
+            new = tests_df[column].str.split(":", expand=True)
+            loc = tests_df.columns.get_loc(column)
+            tests_df.drop(columns = [column], inplace=True)
+            tests_df.insert(loc, "QC_" + column, new[0])
+            tests_df.insert(loc + 1, column, new[2])
+            conditional_filter_columns.append("QC_" + column)
+        i += 1
+
+    # Generate conditional formatting:
+    style_data_conditional = []
+    
+    for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
+        style_data_conditional += list(map(lambda x: {"if": {
+                                  "column_id": x, "filter":'{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_filter_columns))
+    
+    for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
+        style_data_conditional += [{"if": {
+            "column_id": "QC_action", "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+
+
     table = dash_table.DataTable(
 
         data=tests_df.to_dict("rows"),
@@ -684,13 +713,17 @@ def update_test_table(data_store):
         },
         columns=[{"name": i, "id": i} for i in tests_df.columns],
         # n_fixed_columns=1,
-        style_cell={'width': '150px'},
+        style_cell={
+            'width': '250px',
+            'padding': '0 15px'
+        },
         
-        # n_fixed_rows=1, # NOT WORKING NOTE
+        n_fixed_rows=1,
         row_selectable="multi",
         filtering=True, #Front end filtering
         sorting=True,
         selected_rows=[],
+        style_data_conditional=style_data_conditional,
         id="datatable-testomatic"
     )
 
@@ -700,6 +733,8 @@ def update_test_table(data_store):
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["DB_ID"]))),
         html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
+        html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+        html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
         table
         # html.Table([th, tb], className="fixed-header")
         ]
