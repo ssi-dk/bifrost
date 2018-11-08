@@ -9,7 +9,6 @@ import datetime
 import pandas
 import pkg_resources
 import hashlib
-import glob
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 import datahandling
 
@@ -284,17 +283,16 @@ rule initialize_samples_from_sample_folder:
                 sample_db = datahandling.load_sample(sample_config)
                 sample_db["name"] = sample_name
                 sample_db["reads"] = sample_db.get("reads", {})
-                files = glob.glob(os.path.realpath(os.path.join(sample_folder, sample_name)) + "*")
-                for file in files:
+                for file in sorted(os.listdir(sample_folder)):
                     result = re.search(config["read_pattern"], file)
                     if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                        sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
-                    # may be better to move this out
-                        with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
-                            md5sum = hashlib.md5()
-                            for data in iter(lambda: fh.read(4096), b""):
-                                md5sum.update(data)
-                            sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                        if sample_name == result.group("sample_name"):
+                            sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                            with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
+                                md5sum = hashlib.md5()
+                                for data in iter(lambda: fh.read(4096), b""):
+                                    md5sum.update(data)
+                                sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                     sample_db["properties"] = {}  # init for others
                 datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
