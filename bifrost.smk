@@ -794,7 +794,7 @@ rule create_end_file:
         bashcmd = params.bashcmd
         output = output
         if not config["init_only"]:
-            shell("bash {bashcmd} && touch {output}".format(bashcmd, output))
+            shell("bash {} && touch {}".format(bashcmd, output))
         else:
-            shell("touch {output}".format(output))
+            shell("touch {}".format(output))
         
