@@ -41,8 +41,7 @@ onerror:
 
 rule all:
     input:
-        rerun_folder + "/" + component + "_complete",
-        rerun_folder + "/initialize_samples_from_sample_folder"
+        rerun_folder + "/" + component + "_complete"
 
 
 rule setup:
@@ -786,7 +785,8 @@ rule setup_sample_components_to_run:
 
 rule create_end_file:
     input:
-        rules.setup_sample_components_to_run.output
+        rules.setup_sample_components_to_run.output,
+        rerun_folder + "/initialize_samples_from_sample_folder"
     output:
         rules.all.input
     params:
