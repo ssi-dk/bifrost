@@ -744,7 +744,7 @@ rule setup_sample_components_to_run:
                                 torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
                             else:
                                 torque_node = ",nodes=1:ppn={}".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '{}_{}' - W group_list={} - A {} \n".format(config["memory"], torque_node, config["walltime"], component, sample_name, group, group))
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], component, sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
 
