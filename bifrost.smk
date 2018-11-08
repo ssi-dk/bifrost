@@ -738,11 +738,13 @@ rule setup_sample_components_to_run:
                     with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
-                            if "torque_node" in config and config["torque_node"]:
-                                torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
+                            if "advres" in config and config["advres"]:
+                                advres = ",advres={}".format(config["advres"])
                             else:
-                                torque_node = ",nodes=1:ppn={}".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], component, sample_name, group, group))
+                                advres = ''
+                            torque_node = ",nodes=1:ppn={}".format(config["threads"])
+
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={}{} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], advres, component, sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
 
