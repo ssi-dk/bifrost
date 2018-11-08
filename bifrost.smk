@@ -41,7 +41,8 @@ onerror:
 
 rule all:
     input:
-        rerun_folder + "/" + component + "_complete"
+        rerun_folder + "/" + component + "_complete",
+        rerun_folder + "/initialize_samples_from_sample_folder"
 
 
 rule setup:
