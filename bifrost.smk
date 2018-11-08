@@ -790,8 +790,11 @@ rule create_end_file:
         rules.all.input
     params:
         bashcmd = "run_cmd_{}.sh".format(component)
-    shell:
-        """
-        bash {params.bashcmd}
-        touch {output}
-        """
+    run:
+        bashcmd = params.bashcmd
+        output = output
+        if not config["init_only"]:
+            shell("bash {bashcmd} && touch {output}".format(bashcmd, output))
+        else:
+            shell("touch {output}".format(output))
+        
