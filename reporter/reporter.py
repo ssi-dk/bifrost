@@ -645,28 +645,7 @@ def update_test_table(data_store):
                     'Submitted_sp_is_same_as_detected', 'DB_ID']
     if data_store == "{}":
         return [
-            html.H6("Filtered samples (0):"),
-            dash_table.DataTable(
-                data=[],
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480',
-                },
-                columns=[{"name": i, "id": i} for i in columns],
-                # n_fixed_columns=1,
-                style_cell={
-                    'width': '150px',
-                    'padding': '0 15px'
-                },
-
-                # n_fixed_rows=1, # NOT WORKING NOTE
-                row_selectable="multi",
-                filtering=True,  # Front end filtering
-                sorting=True,
-                selected_rows=[],
-                id="datatable-testomatic"
-            )
+            html.H6('Click "Apply Filter" to load samples.')
         ]
     csv_data = StringIO(data_store)
     tests_df = pd.read_csv(csv_data, low_memory=True)
