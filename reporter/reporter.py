@@ -236,7 +236,7 @@ def display_selected_data(ids):
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')]
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
 )
 def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
@@ -366,57 +366,6 @@ def update_species_list(run_name):
         multi=True,
         value=species_options
     )
-
-
-# @app.callback(
-#     Output("qc-div", "children"),
-#     [Input("run-name", "children"),
-#      Input(component_id="species-list", component_property="value"),
-#      Input(component_id="group-list", component_property="value")]
-# )
-# def update_qc_list(run_name, species, group):
-#     if run_name == "Loading..." or \
-#         None in (species, group):
-#         return dcc.Dropdown(
-#             id="qc-list",
-#             multi=True
-#         )
-#     num_samples = len(import_data.filter_name(species, group, run_name=run_name))
-#     if len(run_name) == 0:
-#         qc_list = import_data.get_qc_list()
-#     else:
-#         qc_list = import_data.get_qc_list(run_name)
-#     qc_options = []
-#     qc_list_options = []
-#     sum_items = 0
-#     for item in qc_list:
-#         if item["_id"] == None:
-#             sum_items += item["count"]
-#             qc_options.append("Not determined")
-#             qc_list_options.append({
-#                 "label": "Not determined ({})".format(item["count"]),
-#                 "value": "Not determined"
-#             })
-#         else:
-#             sum_items += item["count"]
-#             qc_options.append(item["_id"])
-#             qc_list_options.append({
-#                 "label": "{} ({})".format(item["_id"], item["count"]),
-#                 "value": item["_id"]
-#             })
-#     if sum_items < num_samples:
-#             qc_options.append("Not tested")
-#             qc_list_options.append({
-#                 "label": "Not tested ({})".format(num_samples - sum_items),
-#                 "value": "Not tested"
-#             })
-#     return dcc.Dropdown(
-#         id="qc-list",
-#         options=qc_list_options,
-#         multi=True,
-#         value=qc_options
-#     )
-
 
 @app.callback(
     Output("run-table", "children"),
@@ -734,7 +683,7 @@ def update_test_table(data_store):
     [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')]
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
 )
 def reset_selection(sample_ids, plot_value, rows, selected_rows):
     return {"points":[]}
@@ -744,14 +693,14 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')],
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')],
     [State('data-store', 'data')]
 )
 def update_coverage_figure(plot_value, rows, selected_rows, data_store):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
-
+    print(selected_rows)
     data = []
     csv_data = StringIO(data_store)
     plot_df = pd.read_csv(csv_data, low_memory=True)
