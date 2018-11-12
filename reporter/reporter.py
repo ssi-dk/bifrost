@@ -645,7 +645,14 @@ def update_test_table(data_store):
                     'Submitted_sp_is_same_as_detected', 'DB_ID']
     if data_store == "{}":
         return [
-            html.H6('Click "Apply Filter" to load samples.')
+            html.H6('Click "Apply Filter" to load samples.'),
+            html.Div([
+                html.P(
+                    'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+                html.P(
+                    'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
+            ]),
+            html.Div(dash_table.DataTable(id="datatable-testomatic", data=[{}]), style={"display": "none"})
         ]
     csv_data = StringIO(data_store)
     tests_df = pd.read_csv(csv_data, low_memory=True)
@@ -713,11 +720,12 @@ def update_test_table(data_store):
         urllib.parse.quote(csv_string)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["DB_ID"]))),
-        html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
-        html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-        html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-        table
-        # html.Table([th, tb], className="fixed-header")
+        html.Div([
+            html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+            html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
+            html.A("Download Table (tsv)", href=csv_string, download='report.tsv')
+        ]),
+        html.Div(table)
         ]
 
 
