@@ -681,8 +681,10 @@ def update_test_table(data_store):
     conditional_filter_columns = []
     i = 0
     for column_original in columns:
-        if column_original.startswith("testomatic") and not column_original.endswith("action"):
-            column = column_names[i] # Find the new column name
+        column = column_names[i] # Find the new column name
+        if column_original.startswith("testomatic") \
+        and not column_original.endswith("action") \
+        and column in tests_df.columns:
             new = tests_df[column].str.split(":", expand=True)
             loc = tests_df.columns.get_loc(column)
             tests_df.drop(columns = [column], inplace=True)
