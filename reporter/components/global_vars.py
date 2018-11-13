@@ -59,7 +59,7 @@ PLOTS["assemblatron.bin_contigs_at_25x"] = {
     "projection": "assemblatron.bin_contigs_at_25x"
 }
 PLOTS["assemblatron.N50"] = {
-    "projection": "assembly.N50"
+    "projection": "assemblatron.N50"
 }
 
 DEFAULT_PLOT = "assemblatron.bin_length_at_1x"

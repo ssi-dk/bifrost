@@ -310,3 +310,7 @@ body, .appcontainer {
 .mt-1 {
   margin-top: 1em;
 }
+
+.dash-spreadsheet-container .dash-spreadsheet-inner .dash-filter input:not([type="radio"]):not([type="checkbox"]) {
+  padding: 0 10px 0 0;
+}
