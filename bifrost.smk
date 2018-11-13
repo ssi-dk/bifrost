@@ -766,7 +766,7 @@ rule setup_sample_components_to_run:
                                 else:
                                     datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    sample_component_db["status"] = "component_missing"
+                                    sample_component_db["status"] = "component missing"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
