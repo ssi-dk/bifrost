@@ -750,7 +750,9 @@ rule setup_sample_components_to_run:
 
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
-                        if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
+                        if sample_name in config["samples_to_ignore"]:
+                            sample_componenent_db["status"] = "skipped"
+                        elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                             for component_name in components:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
                                 if os.path.isfile(component_file):
