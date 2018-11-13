@@ -11,6 +11,7 @@ import dash_html_components as html
 import dash_table
 import dash_auth
 import pandas as pd
+import numpy as np
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
 
@@ -556,7 +557,7 @@ def update_report(n_assemblatron_ts,
 def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
-        return "{}"
+        return '""'
     else:
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
@@ -569,20 +570,35 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
     [Input(component_id="data-store", component_property="data")]
 )
 def update_test_table(data_store):
-    if data_store == "{}":
-        return [
-            html.H6('Click "Apply Filter" to load samples.'),
-            html.Div([
-                html.P(
-                    'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-                html.P(
-                    'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
-            ]),
-            html.Div(dash_table.DataTable(id="datatable-testomatic", data=[{}]), style={"display": "none"})
-        ]
+    empty_table = [
+        html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
+        html.Div([
+            html.P(
+                'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+            html.P(
+                'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
+        ]),
+        html.Div(dash_table.DataTable(id="datatable-testomatic",
+                                      data=[{}]), style={"display": "none"})
+    ]
+    if data_store == '""':
+        return empty_table
     csv_data = StringIO(data_store)
     tests_df = pd.read_csv(csv_data, low_memory=True)
+    if len(tests_df) == 0:
+        return empty_table
     qc_action = "testomatic.assemblatron:action"
+    if qc_action not in tests_df:
+        tests_df[qc_action] = np.nan
+
+    if "R1" not in tests_df:
+        tests_df["R1"] = np.nan
+
+    #Temporary fix for Undetermined:
+    skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
+    tests_df.loc[skipped_mask, qc_action] = "skipped"
+    no_reads_mask = pd.isnull(tests_df["R1"])
+    tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "core facility"
     slmask = tests_df[qc_action] == "supplying lab"
@@ -814,7 +830,7 @@ def all_species(n_clicks, run_name):
     [Input("qc-all", "n_clicks")]
 )
 def all_QCs(n_clicks):
-    return ["OK", "core facility", "supplying lab", "Not tested"]
+    return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
 application = app.server # Required for uwsgi
 

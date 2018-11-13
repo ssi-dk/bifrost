@@ -85,7 +85,8 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             clean_result[str(item["_id"])] = {
                 "_id": str(item["_id"]),
                 "name": item.get("name", sample_sheet_name),
-                "species": item.get("properties", {}).get("species", "Not classified")
+                "species": item.get("properties", {}).get("species", "Not classified"),
+                "R1": item.get("reads", {}).get("R1", None)
             }
             if "properties" in item:
                 for summary_key, summary_value in item["properties"].items():
