@@ -707,8 +707,7 @@ def update_coverage_figure(plot_value, rows, selected_rows):
     species_col = "properties_detected_species"
     plot_query = plot_query.replace(".", "_")
     # end HACK
-    
-    print(plot_df.columns)
+
     if species_col in plot_df:
 
         # reverse the list so it looks right on plot
