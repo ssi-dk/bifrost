@@ -613,7 +613,7 @@ def update_test_table(data_store):
     # Delete as soon as filter works with column ids
 
     def simplify_name(name):
-        return name.replace(":", "_").replace(".", "_")
+        return name.replace(":", "_").replace(".", "_").replace("=", "_")
         
     tests_df.columns = list(map(simplify_name, tests_df.columns))
     COLUMNS = []
@@ -702,13 +702,20 @@ def update_coverage_figure(plot_value, rows, selected_rows):
     df_ids = plot_df["_id"]
 
     species_count = 0
-    if 'species' in plot_df:
+    
+    # part of the HACK, replace with "properties.detected_species" when issue is solved
+    species_col = "properties_detected_species"
+    plot_query = plot_query.replace(".", "_")
+    # end HACK
+    
+    print(plot_df.columns)
+    if species_col in plot_df:
 
         # reverse the list so it looks right on plot
-        species_list = plot_df.species.unique()
+        species_list = plot_df[species_col].unique()
 
         for species in reversed(species_list):
-            species_df = plot_df[plot_df.species == species]
+            species_df = plot_df[plot_df[species_col] == species]
             if species == "Not classified":
                 species_name = species
             else:
