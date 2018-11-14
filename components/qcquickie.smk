@@ -265,7 +265,7 @@ rule post_assembly__stats:
     conda:
         "../envs/bbmap.yaml"
     shell:
-        "stats.sh threads={threads} -Xmx{resources.memory_in_GB}G {input.contigs} 1> {log.out_file} 2> {log.err_file}"
+        "stats.sh -Xmx{resources.memory_in_GB}G {input.contigs} 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "assembly_check__map_reads_to_assembly_with_bbmap"
