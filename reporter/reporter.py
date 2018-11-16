@@ -58,7 +58,7 @@ if hasattr(keys, 'USERNAME_PASSWORD'):
         app,
         keys.USERNAME_PASSWORD
     )
-app.title = "Serum QC"
+app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
 # Temp css to make it look nice
@@ -77,7 +77,7 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
-        html.H1("SerumQC REPORT"),
+        html.H1("bifrost REPORT"),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
         dcc.Store(id="data-store", storage_type="memory"),
