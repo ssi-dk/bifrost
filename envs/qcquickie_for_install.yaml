@@ -31,6 +31,8 @@ dependencies:
   - dash-renderer
   - plotly
   - pip
+  - uwsgi # Required for the web server
+  - mongodb # Required for the DB mode
   - pip:
     - dash-table-experiments
     - dash_scroll_up

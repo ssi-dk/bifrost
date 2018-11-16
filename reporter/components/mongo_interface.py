@@ -284,18 +284,37 @@ def get_qc_list(run_name=None):
 
 def filter_qc(db, qc_list, query):
     qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
-    if "Not determined" in qc_list:
+    # if "Not determined" in qc_list:
+    #     qc_query += [
+    #                 {"sample_components.summary.assemblatron:action": None},
+    #                 {"$and": [
+    #                     {"sample_components.summary.assemblatron:action": {
+    #                         "$exists": False}},
+    #                     {"sample_components.1" : {"$exists" :True}}
+    #                 ]}
+    #             ]
+    if "Not checked" in qc_list:
         qc_query += [
-                    {"sample_components.summary.assemblatron:action": None},
-                    {"$and": [
-                        {"sample_components.summary.assemblatron:action": {
-                            "$exists": False}},
-                        {"sample_components.1" : {"$exists" :True}}
-                    ]}
-                ]
-    if "Not tested" in qc_list:
+            {"$and": [
+                {"reads.R1": {"$exists": True}},
+                {"$or": [
+                    {"sample_components": {"$size": 0}}
+                    # Should probably uncomment after Undetermined check is finished
+                    # {"sample_components.status": {"$ne": "Success"}}
+                ]}
+            ]}
+        ]
+    if "skipped" in qc_list:
         qc_query += [
-            {"sample_components" : {"$size": 0 }}
+            {"sample_components.status": "initialized"}
+        ]
+        # Uncomment when we implement skipped for Undetermined
+        # qc_query += [
+        #     {"sample_components.status": "skipped"}
+        # ]
+    if "core facility" in qc_list:
+        qc_query += [
+            {"reads.R1": {"$exists": False}}
         ]
 
     result = db.samples.aggregate([

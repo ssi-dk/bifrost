@@ -11,6 +11,7 @@ import dash_html_components as html
 import dash_table
 import dash_auth
 import pandas as pd
+import numpy as np
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
 
@@ -236,7 +237,7 @@ def display_selected_data(ids):
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')]
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
 )
 def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
@@ -262,7 +263,7 @@ def display_selected_data(selected_data, rows, selected_rows):
     if selected_rows is not None and len(selected_rows) > 0:
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
-    sample_ids = list(dtdf["DB_ID"])
+    sample_ids = list(dtdf["_id"])
 
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
@@ -366,57 +367,6 @@ def update_species_list(run_name):
         multi=True,
         value=species_options
     )
-
-
-# @app.callback(
-#     Output("qc-div", "children"),
-#     [Input("run-name", "children"),
-#      Input(component_id="species-list", component_property="value"),
-#      Input(component_id="group-list", component_property="value")]
-# )
-# def update_qc_list(run_name, species, group):
-#     if run_name == "Loading..." or \
-#         None in (species, group):
-#         return dcc.Dropdown(
-#             id="qc-list",
-#             multi=True
-#         )
-#     num_samples = len(import_data.filter_name(species, group, run_name=run_name))
-#     if len(run_name) == 0:
-#         qc_list = import_data.get_qc_list()
-#     else:
-#         qc_list = import_data.get_qc_list(run_name)
-#     qc_options = []
-#     qc_list_options = []
-#     sum_items = 0
-#     for item in qc_list:
-#         if item["_id"] == None:
-#             sum_items += item["count"]
-#             qc_options.append("Not determined")
-#             qc_list_options.append({
-#                 "label": "Not determined ({})".format(item["count"]),
-#                 "value": "Not determined"
-#             })
-#         else:
-#             sum_items += item["count"]
-#             qc_options.append(item["_id"])
-#             qc_list_options.append({
-#                 "label": "{} ({})".format(item["_id"], item["count"]),
-#                 "value": item["_id"]
-#             })
-#     if sum_items < num_samples:
-#             qc_options.append("Not tested")
-#             qc_list_options.append({
-#                 "label": "Not tested ({})".format(num_samples - sum_items),
-#                 "value": "Not tested"
-#             })
-#     return dcc.Dropdown(
-#         id="qc-list",
-#         options=qc_list_options,
-#         multi=True,
-#         value=qc_options
-#     )
-
 
 @app.callback(
     Output("run-table", "children"),
@@ -607,7 +557,7 @@ def update_report(n_assemblatron_ts,
 def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
-        return "{}"
+        return '""'
     else:
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
@@ -620,87 +570,86 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
     [Input(component_id="data-store", component_property="data")]
 )
 def update_test_table(data_store):
-    columns = ["name", 'testomatic.assemblatron:action', "sample_sheet.Comments",
-            "sample_sheet.group", "properties.provided_species", "properties.detected_species",
-            'testomatic.assemblatron:1xgenomesize',
-            'testomatic.assemblatron:10xgenomesize',
-            'testomatic.assemblatron:1x10xsizediff', 'testomatic.assemblatron:avgcoverage',
-            'assemblatron.bin_contigs_at_1x',
-            'assemblatron.snp_filter_10x_10%',
-            'testomatic.assemblatron:numreads',
-            "analyzer.mlst_report",
-            'testomatic.whats_my_species:maxunclassified',
-            'testomatic.whats_my_species:minspecies',
-            'testomatic.whats_my_species:nosubmitted',
-            'testomatic.whats_my_species:submitted==detected', "_id"]
-    column_names = ['name', 'QC_action', "Comments", 'Supplying_lab', 'Provided_Species',
-                    'Detected_Species', 'Genome_size_1x', 'Genome_size_10x',
-                    'G_size_difference_1x_10',
-                    'Avg_coverage', 'num_contigs',
-                    'Ambiguous_sites',
-                    'num_reads',
-                    'mlst',
-                    'Unclassified_reads',
-                    'Main_species_read_percent', 'Detected_species_in_DB',
-                    'Submitted_sp_is_same_as_detected', 'DB_ID']
-    if data_store == "{}":
-        return [
-            html.H6("Filtered samples (0):"),
-            dash_table.DataTable(
-                data=[],
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480',
-                },
-                columns=[{"name": i, "id": i} for i in columns],
-                # n_fixed_columns=1,
-                style_cell={
-                    'width': '150px',
-                    'padding': '0 15px'
-                },
-
-                # n_fixed_rows=1, # NOT WORKING NOTE
-                row_selectable="multi",
-                filtering=True,  # Front end filtering
-                sorting=True,
-                selected_rows=[],
-                id="datatable-testomatic"
-            )
-        ]
+    empty_table = [
+        html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
+        html.Div([
+            html.P(
+                'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+            html.P(
+                'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
+        ]),
+        html.Div(dash_table.DataTable(id="datatable-testomatic",
+                                      data=[{}]), style={"display": "none"})
+    ]
+    if data_store == '""':
+        return empty_table
     csv_data = StringIO(data_store)
     tests_df = pd.read_csv(csv_data, low_memory=True)
-    tests_df = tests_df.reindex(columns=columns)
-    tests_df.columns = column_names
-    mask = pd.isnull(tests_df["QC_action"])
-    tests_df.loc[mask, "QC_action"] = "core facility"
-    slmask = tests_df["QC_action"] == "supplying lab"
-    tests_df.loc[slmask, "QC_action"] = "warning: supplying lab"
+    if len(tests_df) == 0:
+        return empty_table
+    qc_action = "testomatic.assemblatron:action"
+    if qc_action not in tests_df:
+        tests_df[qc_action] = np.nan
+
+    if "R1" not in tests_df:
+        tests_df["R1"] = np.nan
+
+    #Temporary fix for Undetermined:
+    skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
+    tests_df.loc[skipped_mask, qc_action] = "skipped"
+    no_reads_mask = pd.isnull(tests_df["R1"])
+    tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
+    mask = pd.isnull(tests_df[qc_action])
+    tests_df.loc[mask, qc_action] = "core facility"
+    slmask = tests_df[qc_action] == "supplying lab"
+    tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
+
     # Split test columns
-    conditional_filter_columns = []
+    columns = tests_df.columns
+    split_columns = [
+        "testomatic.assemblatron:1x10xsizediff",
+        "testomatic.whats_my_species:minspecies",
+        "testomatic.whats_my_species:nosubmitted",
+        "testomatic.whats_my_species:submitted==detected"
+    ]
     i = 0
-    for column_original in columns:
-        if column_original.startswith("testomatic") and not column_original.endswith("action"):
-            column = column_names[i] # Find the new column name
+    for column in columns:
+        if column in split_columns:
             new = tests_df[column].str.split(":", expand=True)
             loc = tests_df.columns.get_loc(column)
             tests_df.drop(columns = [column], inplace=True)
             tests_df.insert(loc, "QC_" + column, new[0])
             tests_df.insert(loc + 1, column, new[2])
-            conditional_filter_columns.append("QC_" + column)
         i += 1
+
+    COLUMNS = global_vars.COLUMNS
+
+    # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
+    # Delete as soon as filter works with column ids
+
+    def simplify_name(name):
+        return name.replace(":", "_").replace(".", "_").replace("=", "_")
+        
+    tests_df.columns = list(map(simplify_name, tests_df.columns))
+    COLUMNS = []
+    for column in global_vars.COLUMNS:
+        column["id"] = simplify_name(column["id"])
+        COLUMNS.append(column)
+
+    # END OF HORRIBLE HACK
 
     # Generate conditional formatting:
     style_data_conditional = []
+    conditional_columns = [ col for col in tests_df.columns if col.startswith("QC_") ]
     
     for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
         style_data_conditional += list(map(lambda x: {"if": {
-                                  "column_id": x, "filter":'{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_filter_columns))
+            "column_id": x, "filter": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
     
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
-            "column_id": "QC_action", "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+            "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
 
     table = dash_table.DataTable(
@@ -711,7 +660,7 @@ def update_test_table(data_store):
             'overflowY': 'scroll',
             'maxHeight': '480'
         },
-        columns=[{"name": i, "id": i} for i in tests_df.columns],
+        columns=COLUMNS,
         # n_fixed_columns=1,
         style_cell={
             'width': '250px',
@@ -731,12 +680,13 @@ def update_test_table(data_store):
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
-        html.H6("Filtered samples ({}):".format(len(tests_df["DB_ID"]))),
-        html.A("Download Table (tsv)", href=csv_string, download='report.tsv'),
-        html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-        html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-        table
-        # html.Table([th, tb], className="fixed-header")
+        html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
+        html.Div([
+            html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+            html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
+            html.A("Download Table (tsv)", href=csv_string, download='report.tsv')
+        ]),
+        html.Div(table)
         ]
 
 
@@ -745,7 +695,7 @@ def update_test_table(data_store):
     [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')]
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
 )
 def reset_selection(sample_ids, plot_value, rows, selected_rows):
     return {"points":[]}
@@ -755,29 +705,32 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-list", component_property="value"),
      Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'selected_rows')],
-    [State('data-store', 'data')]
+     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
 )
-def update_coverage_figure(plot_value, rows, selected_rows, data_store):
+def update_coverage_figure(plot_value, rows, selected_rows):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_query = global_vars.PLOTS[plot_value]["projection"]
-
     data = []
-    csv_data = StringIO(data_store)
-    plot_df = pd.read_csv(csv_data, low_memory=True)
+    plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
     df_ids = plot_df["_id"]
 
     species_count = 0
-    if 'species' in plot_df:
+    
+    # part of the HACK, replace with "properties.detected_species" when issue is solved
+    species_col = "properties_detected_species"
+    plot_query = plot_query.replace(".", "_")
+    # end HACK
+
+    if species_col in plot_df:
 
         # reverse the list so it looks right on plot
-        species_list = plot_df.species.unique()
+        species_list = plot_df[species_col].unique()
 
         for species in reversed(species_list):
-            species_df = plot_df[plot_df.species == species]
+            species_df = plot_df[plot_df[species_col] == species]
             if species == "Not classified":
                 species_name = species
             else:
@@ -796,8 +749,10 @@ def update_coverage_figure(plot_value, rows, selected_rows, data_store):
                         boxpoints="all",
                         jitter=0.3,
                         pointpos=-1.8,
-                        selectedpoints=list(range(species_df["_id"].count())),
-                        name="{} ({})".format(species_name,species_df["_id"].count()),
+                        selectedpoints=list(
+                            range(species_df["_id"].count())),
+                        name="{} ({})".format(species_name,
+                                              species_df["_id"].count()),
                         showlegend=False,
                         customdata=species_df["_id"]
                     )
@@ -875,7 +830,7 @@ def all_species(n_clicks, run_name):
     [Input("qc-all", "n_clicks")]
 )
 def all_QCs(n_clicks):
-    return ["OK", "core facility", "supplying lab", "Not tested"]
+    return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
 application = app.server # Required for uwsgi
 

@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
 configfile: "../run_config.yaml"
-sample = config["Sample"]
+sample = config["Sample"] # sample.yaml
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
@@ -59,6 +59,7 @@ rule run_testomatic:
     # Dynamic
     params:
         sample = config_sample,
+        sample_yaml = sample,
         sample_component = config_sample.get("name", "ERROR") + \
             "__" + component + ".yaml",
         assemblatron_yaml = config_sample["name"] + "__assemblatron.yaml", # optional

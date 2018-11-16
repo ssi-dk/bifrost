@@ -26,7 +26,7 @@ table {
 
 .border-box {
     border: 2px solid #AAA;
-    margin-top: 20px;
+    margin-top: 40px;
     margin-bottom: 25px;
     position: relative;
     padding: 25px 15px 15px 15px;
@@ -309,6 +309,10 @@ body, .appcontainer {
 }
 .mt-1 {
   margin-top: 1em;
+}
+
+.dash-spreadsheet-container .dash-spreadsheet-inner .dash-filter input:not([type="radio"]):not([type="checkbox"]) {
+  padding: 0 10px 0 0;
 }
 
 #run-table {

@@ -1,6 +1,6 @@
 import dash_html_components as html
 import dash_core_components as dcc
-import dash_table_experiments as dt
+import dash_table
 import import_data
 
 
@@ -14,7 +14,7 @@ def format_selected_samples(filtered_df):
 def html_div_summary():
     plot_values_options = [{"label": plot, "value": plot}
                            for plot, value in PLOTS.items()]
-    qc_options = ["OK", "core facility", "supplying lab", "Not tested"]
+    qc_options = ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
 
@@ -212,7 +212,16 @@ def html_div_summary():
                 ],
                 className="row mt-1"
             ),
-            html.Div([html.H6("Filtered samples (0):"), dt.DataTable(id="datatable-testomatic", rows=[{}])],
+            html.Div([
+                    html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
+                    html.Div([
+                        html.P(
+                            'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+                        html.P(
+                            'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
+                    ]),
+                    html.Div(dash_table.DataTable(id="datatable-testomatic", data=[{}]), style={"display": "none"})
+                ],
                      id="testomatic-report", className="bigtable"),
             html.Div(
                 [
