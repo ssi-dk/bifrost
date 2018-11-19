@@ -58,7 +58,7 @@ if hasattr(keys, 'USERNAME_PASSWORD'):
         app,
         keys.USERNAME_PASSWORD
     )
-app.title = "Serum QC"
+app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
 # Temp css to make it look nice
@@ -77,7 +77,7 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
-        html.H1("SerumQC REPORT"),
+        html.H1("bifrost REPORT"),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
         dcc.Store(id="data-store", storage_type="memory"),
@@ -623,6 +623,17 @@ def update_test_table(data_store):
             tests_df.insert(loc + 1, column, new[2])
         i += 1
 
+    # def concatenate_failed(row):
+    #     res = []
+    #     for col in test_cols:
+    #         test_name = col.split(":")[-1]
+    #         fields = col.split(":")
+    #         res.append(test_string)
+
+    # for column in columns:
+    #     if column.startswith('testomatic'):
+
+
     COLUMNS = global_vars.COLUMNS
 
     # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
@@ -676,7 +687,20 @@ def update_test_table(data_store):
         id="datatable-testomatic"
     )
 
-    csv_string = tests_df.to_csv(index=False, encoding="utf-8", sep="\t")
+    rename_dict = {item["id"]:item["name"] for item in COLUMNS}
+
+    renamed = tests_df.rename(rename_dict, axis='columns')#[
+
+    missing_columns = [a for a in list(rename_dict.values()) if not a in list(renamed.columns)]
+
+    # add missing columns
+    for column in missing_columns:
+        renamed[column] = np.nan
+    
+    # reorder columns
+    renamed = renamed[list(rename_dict.values())]
+
+    csv_string = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
     csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
