@@ -94,32 +94,16 @@ COLUMNS = [
         "id": "properties.detected_species"
     },
     {
-        "name": "QC_Genome_size_1x",
-        "id": "testomatic.assemblatron:1xgenomesize"
-    },
-    {
         "name": "Genome_size_1x",
         "id": "assemblatron.bin_length_at_1x"
     },
     {
         "name": "Genome_size_10x",
-        "id": "testomatic.assemblatron:10xgenomesize"
-    },
-    {
-        "name": "QC_Genome_size_10x",
         "id": "assemblatron.bin_length_at_1x"
     },
     {
         "name": "QC_G_size_difference_1x_10",
         "id": "QC_testomatic.assemblatron:1x10xsizediff"
-    },
-    {
-        "name": "G_size_difference_1x_10",
-        "id": "testomatic.assemblatron:1x10xsizediff"
-    },
-    {
-        "name": "QC_Avg_coverage",
-        "id": "testomatic.assemblatron:avgcoverage"
     },
     {
         "name": "Avg_coverage",
@@ -132,10 +116,6 @@ COLUMNS = [
     {
         "name": "Ambiguous_sites",
         "id": "assemblatron.snp_filter_10x_10%"
-    },
-    {
-        "name": "QC_Num_reads",
-        "id": "testomatic.assemblatron:numreads"
     },
     {
         "name": "Num_reads",
@@ -180,6 +160,10 @@ COLUMNS = [
     {
         "name": "DB_ID",
         "id": "_id"
-    },
+    # },
+    # {
+    #     "name": "Failed_tests",
+    #     "id": "testomatic_failed_tests"
+    }
 
 ]
