@@ -284,15 +284,6 @@ def get_qc_list(run_name=None):
 
 def filter_qc(db, qc_list, query):
     qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
-    # if "Not determined" in qc_list:
-    #     qc_query += [
-    #                 {"sample_components.summary.assemblatron:action": None},
-    #                 {"$and": [
-    #                     {"sample_components.summary.assemblatron:action": {
-    #                         "$exists": False}},
-    #                     {"sample_components.1" : {"$exists" :True}}
-    #                 ]}
-    #             ]
     if "Not checked" in qc_list:
         qc_query += [
             {"$and": [
@@ -350,7 +341,7 @@ def filter_qc(db, qc_list, query):
 
 def filter(projection=None, run_name=None,
            species=None, group=None, qc_list=None, samples=None):
-    if qc_list == ["OK", "core facility", "supplying lab", "Not tested"]:
+    if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not tested"]:
         qc_list = None
     with get_connection() as connection:
         db = connection.get_database()
