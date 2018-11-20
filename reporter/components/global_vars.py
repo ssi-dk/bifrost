@@ -160,10 +160,10 @@ COLUMNS = [
     {
         "name": "DB_ID",
         "id": "_id"
-    # },
-    # {
-    #     "name": "Failed_tests",
-    #     "id": "testomatic_failed_tests"
+    },
+    {
+        "name": "Failed_tests",
+        "id": "testomatic_failed_tests"
     }
 
 ]

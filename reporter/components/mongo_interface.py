@@ -341,7 +341,7 @@ def filter_qc(db, qc_list, query):
 
 def filter(projection=None, run_name=None,
            species=None, group=None, qc_list=None, samples=None):
-    if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not tested"]:
+    if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
         qc_list = None
     with get_connection() as connection:
         db = connection.get_database()
@@ -395,6 +395,7 @@ def filter(projection=None, run_name=None,
             #pass
             query_result = filter_qc(db, qc_list, query)
         else:
+            print(query)
             query_result = list(db.samples.find({"$and": query}, projection)
                             .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
         return query_result

@@ -559,6 +559,7 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
+        print("this")
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_csv()
@@ -623,15 +624,19 @@ def update_test_table(data_store):
             tests_df.insert(loc + 1, column, new[2])
         i += 1
 
-    # def concatenate_failed(row):
-    #     res = []
-    #     for col in test_cols:
-    #         test_name = col.split(":")[-1]
-    #         fields = col.split(":")
-    #         res.append(test_string)
-
-    # for column in columns:
-    #     if column.startswith('testomatic'):
+    test_cols = [col for col in columns if col.startswith("testomatic")]
+    def concatenate_failed(row):
+        res = []
+        for col in test_cols:
+            test_name = col.split(":")[-1]
+            if type(row[col]) == str:
+                fields = row[col].split(":")
+                if fields[0] in ["fail", "undefined"]:
+                    res.append("Test " + test_name + ": " + row[col])
+        row["testomatic_failed_tests"] = ". ".join(res)
+        return row
+    
+    tests_df = tests_df.apply(concatenate_failed, axis="columns")
 
 
     COLUMNS = global_vars.COLUMNS
@@ -677,7 +682,12 @@ def update_test_table(data_store):
             'width': '250px',
             'padding': '0 15px'
         },
-        
+        style_cell_conditional=[
+            {
+                "if": {"column_id": "testomatic_failed_tests"},
+                "textAlign": "left"
+            }
+        ],
         n_fixed_rows=1,
         row_selectable="multi",
         filtering=True, #Front end filtering
