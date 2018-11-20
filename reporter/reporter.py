@@ -632,7 +632,7 @@ def update_test_table(data_store):
             if type(row[col]) == str:
                 fields = row[col].split(":")
                 if fields[0] in ["fail", "undefined"]:
-                    res.append("Test " + test_name + ": " + row[col])
+                    res.append("Test {}: {}, {}".format(test_name, fields[0], fields[1]))
         row["testomatic_failed_tests"] = ". ".join(res)
         return row
     
