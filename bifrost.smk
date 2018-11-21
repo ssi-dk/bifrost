@@ -27,7 +27,7 @@ group = config["group"]
 partition = config["partition"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
-
+version = 1.0
 
 onsuccess:
     print("Workflow complete")
