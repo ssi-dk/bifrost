@@ -607,7 +607,6 @@ def update_test_table(data_store):
 
     # Split test columns
     columns = tests_df.columns
-    print(columns)
     split_columns = [
         "stamper:ssi_stamp.assemblatron:1x10xsizediff",
         "stamper:ssi_stamp.whats_my_species:minspecies",
