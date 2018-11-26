@@ -103,7 +103,7 @@ COLUMNS = [
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "stamper:ssi_stamp.assemblatron:1x10xsizediff"
+        "id": "stamper:ssi_stamp.assemblatron:1x10xsizediff_text"
     },
     {
         "name": "Avg_coverage",
@@ -127,7 +127,7 @@ COLUMNS = [
     },
     {
         "name": "Main_species_read_percent",
-        "id": "stamper:ssi_stamp.whats_my_species:minspecies"
+        "id": "stamper:ssi_stamp.whats_my_species:minspecies_text"
     },
     {
         "name": "Unclassified_reads",
@@ -135,11 +135,11 @@ COLUMNS = [
     },
     {
         "name": "Detected_species_in_DB",
-        "id": "stamper:ssi_stamp.whats_my_species:nosubmitted"
+        "id": "stamper:ssi_stamp.whats_my_species:nosubmitted_text"
     },
     {
         "name": "Submitted_sp_is_same_as_detected",
-        "id": "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch"
+        "id": "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch_text"
     },
     {
         "name": "DB_ID",

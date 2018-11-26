@@ -409,7 +409,7 @@ def get_results(sample_ids):
             "summary": {"$exists": True},
             "status": "Success",
             "component.name": {"$ne": "qcquickie"} #Saving transfers
-        }, {"summary": 1, "sample._id": 1, "component.name" : 1}))
+        }, {"summary": 1, "sample._id": 1, "component.name" : 1, "setup_date": 1}).sort([("setup_date", 1)]))
 
 def get_sample_runs(sample_ids):
     with get_connection() as connection:

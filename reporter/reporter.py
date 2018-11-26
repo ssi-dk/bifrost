@@ -619,9 +619,9 @@ def update_test_table(data_store):
         if column in split_columns:
             new = tests_df[column].str.split(":", expand=True)
             loc = tests_df.columns.get_loc(column)
-            tests_df.drop(columns = [column], inplace=True)
-            tests_df.insert(loc, "QC_" + column, new[0])
-            tests_df.insert(loc + 1, column, new[2])
+            #tests_df.drop(columns = [column], inplace=True)
+            tests_df.insert(loc, column + "_QC", new[0])
+            tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
     test_cols = [col for col in columns if col.startswith("stamper:ssi_stamp")]
