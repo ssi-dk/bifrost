@@ -395,7 +395,6 @@ def filter(projection=None, run_name=None,
             #pass
             query_result = filter_qc(db, qc_list, query)
         else:
-            print(query)
             query_result = list(db.samples.find({"$and": query}, projection)
                             .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
         return query_result

@@ -559,7 +559,6 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
-        print("this")
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_csv()
