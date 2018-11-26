@@ -138,7 +138,7 @@ def html_div_summary():
                                         [
                                             html.Label(
                                                 [
-                                                    "Passed testomatic ",
+                                                    "Passed ssi_stamper ",
                                                     html.Small(
                                                         [
                                                             "(",
@@ -220,9 +220,9 @@ def html_div_summary():
                         html.P(
                             'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
                     ]),
-                    html.Div(dash_table.DataTable(id="datatable-testomatic", data=[{}]), style={"display": "none"})
+                    html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
                 ],
-                     id="testomatic-report", className="bigtable"),
+                     id="ssi_stamper-report", className="bigtable"),
             html.Div(
                 [
                     html.Div(
