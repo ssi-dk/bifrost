@@ -16,6 +16,7 @@ samples_to_ignore: ["Undetermined"]
 memory: &memory 10 #in Gb
 threads: &threads 4
 restart_times: 2
+init_only: False
 
 # --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder

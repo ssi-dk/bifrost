@@ -56,7 +56,8 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             {
                 "name" : 1,
                 "properties": 1,
-                "sample_sheet": 1
+                "sample_sheet": 1,
+                "reads": 1
             },
             run_name, species, group, qc_list=qc_list)
     else:
@@ -64,7 +65,8 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             {
                 "name": 1,
                 "properties": 1,
-                "sample_sheet" : 1
+                "sample_sheet": 1,
+                "reads": 1
             },
             samples=sample_ids)
 
@@ -103,6 +105,9 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
     for item in component_result:
         item_id = str(item["sample"]["_id"])
         component = item["component"]["name"]
+        #HACK to convert testomatic to stamper:ssi_stamp
+        # if component == "testomatic":
+        #     component = "stamper:ssi_stamp"
         if "summary" in item:
             for summary_key, summary_value in item["summary"].items():
                 clean_result[item_id][component + "." +

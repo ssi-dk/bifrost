@@ -9,7 +9,6 @@ import datetime
 import pandas
 import pkg_resources
 import hashlib
-import glob
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 import datahandling
 
@@ -284,17 +283,16 @@ rule initialize_samples_from_sample_folder:
                 sample_db = datahandling.load_sample(sample_config)
                 sample_db["name"] = sample_name
                 sample_db["reads"] = sample_db.get("reads", {})
-                files = glob.glob(os.path.realpath(os.path.join(sample_folder, sample_name)) + "*")
-                for file in files:
+                for file in sorted(os.listdir(sample_folder)):
                     result = re.search(config["read_pattern"], file)
                     if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                        sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
-                    # may be better to move this out
-                        with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
-                            md5sum = hashlib.md5()
-                            for data in iter(lambda: fh.read(4096), b""):
-                                md5sum.update(data)
-                            sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                        if sample_name == result.group("sample_name"):
+                            sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                            with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
+                                md5sum = hashlib.md5()
+                                for data in iter(lambda: fh.read(4096), b""):
+                                    md5sum.update(data)
+                                sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                     sample_db["properties"] = {}  # init for others
                 datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
@@ -740,17 +738,21 @@ rule setup_sample_components_to_run:
                     with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                         command.write("#!/bin/sh\n")
                         if config["grid"] == "torque":
-                            if "torque_node" in config and config["torque_node"]:
-                                torque_node = ",nodes={}:ppn={}".format(config["torque_node"], config["threads"])
+                            if "advres" in config and config["advres"]:
+                                advres = ",advres={}".format(config["advres"])
                             else:
-                                torque_node = ",nodes=1:ppn={}".format(config["threads"])
-                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={} -N '{}_{}' - W group_list={} - A {} \n".format(config["memory"], torque_node, config["walltime"], component, sample_name, group, group))
+                                advres = ''
+                            torque_node = ",nodes=1:ppn={}".format(config["threads"])
+
+                            command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={}{} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], advres, component, sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
 
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
-                        if sample_name not in config["samples_to_ignore"] and "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
+                        if sample_name in config["samples_to_ignore"]:
+                            sample_componenent_db["status"] = "skipped"
+                        elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                             for component_name in components:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
                                 if os.path.isfile(component_file):
@@ -764,7 +766,7 @@ rule setup_sample_components_to_run:
                                 else:
                                     datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    sample_component_db["status"] = "component_missing"
+                                    sample_component_db["status"] = "component missing"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
@@ -787,13 +789,17 @@ rule setup_sample_components_to_run:
 
 rule create_end_file:
     input:
-        rules.setup_sample_components_to_run.output
+        rules.setup_sample_components_to_run.output,
+        rerun_folder + "/initialize_samples_from_sample_folder"
     output:
         rules.all.input
     params:
         bashcmd = "run_cmd_{}.sh".format(component)
-    shell:
-        """
-        bash {params.bashcmd}
-        touch {output}
-        """
+    run:
+        bashcmd = params.bashcmd
+        output = output
+        if not config["init_only"]:
+            shell("bash {} && touch {}".format(bashcmd, output))
+        else:
+            shell("touch {}".format(output))
+        

@@ -75,7 +75,7 @@ COLUMNS = [
     },
     {
         "name": "QC_action",
-        "id": "testomatic.assemblatron:action"
+        "id": "stamper:ssi_stamp.assemblatron:action"
     },
     {
         "name": "Comments",
@@ -102,8 +102,8 @@ COLUMNS = [
         "id": "assemblatron.bin_length_at_1x"
     },
     {
-        "name": "QC_G_size_difference_1x_10",
-        "id": "QC_testomatic.assemblatron:1x10xsizediff"
+        "name": "G_size_difference_1x_10",
+        "id": "stamper:ssi_stamp.assemblatron:1x10xsizediff_text"
     },
     {
         "name": "Avg_coverage",
@@ -126,44 +126,28 @@ COLUMNS = [
         "id": "analyzer.mlst_report"
     },
     {
-        "name": "QC_Main_species_read_percent",
-        "id": "QC_testomatic.whats_my_species:minspecies"
-    },
-    {
         "name": "Main_species_read_percent",
-        "id": "testomatic.whats_my_species:minspecies"
-    },
-    {
-        "name": "QC_Unclassified_reads",
-        "id": "testomatic.whats_my_species:maxunclassified"
+        "id": "stamper:ssi_stamp.whats_my_species:minspecies_text"
     },
     {
         "name": "Unclassified_reads",
         "id": "whats_my_species.percent_unclassified"
     },
     {
-        "name": "QC_Detected_species_in_DB",
-        "id": "QC_testomatic.whats_my_species:nosubmitted"
-    },
-    {
         "name": "Detected_species_in_DB",
-        "id": "testomatic.whats_my_species:nosubmitted"
-    },
-    {
-        "name": "QC_Submitted_sp_is_same_as_detected",
-        "id": "QC_testomatic.whats_my_species:submitted==detected"
+        "id": "stamper:ssi_stamp.whats_my_species:nosubmitted_text"
     },
     {
         "name": "Submitted_sp_is_same_as_detected",
-        "id": "testomatic.whats_my_species:submitted==detected"
+        "id": "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch_text"
     },
     {
         "name": "DB_ID",
         "id": "_id"
-    # },
-    # {
-    #     "name": "Failed_tests",
-    #     "id": "testomatic_failed_tests"
+    },
+    {
+        "name": "Failed_tests",
+        "id": "testomatic_failed_tests"
     }
 
 ]

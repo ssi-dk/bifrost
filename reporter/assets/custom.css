@@ -314,3 +314,7 @@ body, .appcontainer {
 .dash-spreadsheet-container .dash-spreadsheet-inner .dash-filter input:not([type="radio"]):not([type="checkbox"]) {
   padding: 0 10px 0 0;
 }
+
+#run-table {
+  margin-bottom: 40px;
+}

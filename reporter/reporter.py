@@ -587,10 +587,10 @@ def update_test_table(data_store):
     tests_df = pd.read_csv(csv_data, low_memory=True)
     if len(tests_df) == 0:
         return empty_table
-    qc_action = "testomatic.assemblatron:action"
+    qc_action = "stamper:ssi_stamp.assemblatron:action"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
-
+ 
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
 
@@ -608,30 +608,34 @@ def update_test_table(data_store):
     # Split test columns
     columns = tests_df.columns
     split_columns = [
-        "testomatic.assemblatron:1x10xsizediff",
-        "testomatic.whats_my_species:minspecies",
-        "testomatic.whats_my_species:nosubmitted",
-        "testomatic.whats_my_species:submitted==detected"
+        "stamper:ssi_stamp.assemblatron:1x10xsizediff",
+        "stamper:ssi_stamp.whats_my_species:minspecies",
+        "stamper:ssi_stamp.whats_my_species:nosubmitted",
+        "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch"
     ]
     i = 0
     for column in columns:
         if column in split_columns:
             new = tests_df[column].str.split(":", expand=True)
             loc = tests_df.columns.get_loc(column)
-            tests_df.drop(columns = [column], inplace=True)
-            tests_df.insert(loc, "QC_" + column, new[0])
-            tests_df.insert(loc + 1, column, new[2])
+            #tests_df.drop(columns = [column], inplace=True)
+            tests_df.insert(loc, column + "_QC", new[0])
+            tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
-    # def concatenate_failed(row):
-    #     res = []
-    #     for col in test_cols:
-    #         test_name = col.split(":")[-1]
-    #         fields = col.split(":")
-    #         res.append(test_string)
-
-    # for column in columns:
-    #     if column.startswith('testomatic'):
+    test_cols = [col for col in columns if col.startswith("stamper:ssi_stamp")]
+    def concatenate_failed(row):
+        res = []
+        for col in test_cols:
+            test_name = col.split(":")[-1]
+            if type(row[col]) == str:
+                fields = row[col].split(":")
+                if fields[0] in ["fail", "undefined"]:
+                    res.append("Test {}: {}, {}".format(test_name, fields[0], fields[1]))
+        row["testomatic_failed_tests"] = ". ".join(res)
+        return row
+    
+    tests_df = tests_df.apply(concatenate_failed, axis="columns")
 
 
     COLUMNS = global_vars.COLUMNS
@@ -677,7 +681,12 @@ def update_test_table(data_store):
             'width': '250px',
             'padding': '0 15px'
         },
-        
+        style_cell_conditional=[
+            {
+                "if": {"column_id": "testomatic_failed_tests"},
+                "textAlign": "left"
+            }
+        ],
         n_fixed_rows=1,
         row_selectable="multi",
         filtering=True, #Front end filtering
