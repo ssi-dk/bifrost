@@ -56,7 +56,8 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             {
                 "name" : 1,
                 "properties": 1,
-                "sample_sheet": 1
+                "sample_sheet": 1,
+                "reads": 1
             },
             run_name, species, group, qc_list=qc_list)
     else:
@@ -64,7 +65,8 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             {
                 "name": 1,
                 "properties": 1,
-                "sample_sheet" : 1
+                "sample_sheet": 1,
+                "reads": 1
             },
             samples=sample_ids)
 

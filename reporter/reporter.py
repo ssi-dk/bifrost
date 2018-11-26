@@ -590,7 +590,7 @@ def update_test_table(data_store):
     qc_action = "stamper:ssi_stamp.assemblatron:action"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
-
+ 
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
 
@@ -607,11 +607,12 @@ def update_test_table(data_store):
 
     # Split test columns
     columns = tests_df.columns
+    print(columns)
     split_columns = [
         "stamper:ssi_stamp.assemblatron:1x10xsizediff",
         "stamper:ssi_stamp.whats_my_species:minspecies",
         "stamper:ssi_stamp.whats_my_species:nosubmitted",
-        "stamper:ssi_stamp.whats_my_species:submitted==detected"
+        "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch"
     ]
     i = 0
     for column in columns:
