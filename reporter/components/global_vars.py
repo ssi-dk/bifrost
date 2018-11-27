@@ -138,10 +138,6 @@ COLUMNS = [
         "id": "ssi_stamper.whats_my_species:nosubmitted_text"
     },
     {
-        "name": "Submitted_sp_is_same_as_detected",
-        "id": "ssi_stamper.whats_my_species:detectedspeciesmismatch_text"
-    },
-    {
         "name": "DB_ID",
         "id": "_id"
     },
