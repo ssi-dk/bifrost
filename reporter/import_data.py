@@ -105,9 +105,9 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
     for item in component_result:
         item_id = str(item["sample"]["_id"])
         component = item["component"]["name"]
-        #HACK to convert testomatic to stamper:ssi_stamp
-        # if component == "testomatic":
-        #     component = "stamper:ssi_stamp"
+        #HACK to convert ssi_stamper to ssi_stamper
+        # if component == "ssi_stamper":
+        #     component = "ssi_stamper"
         if "summary" in item:
             for summary_key, summary_value in item["summary"].items():
                 clean_result[item_id][component + "." +

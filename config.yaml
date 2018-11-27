@@ -7,7 +7,7 @@ partition: "standard"
 #torque_node: # for use on specifying a torque node
 grid: "slurm" # slurm|torque|none
 assembly_with: "skesa" # skesa|spades
-components: "whats_my_species,qcquickie,analyzer,assemblatron,testomatic" # available options are in components directory
+components: "whats_my_species,qcquickie,analyzer,assemblatron,ssi_stamper" # available options are in components directory
 group: "" # group for sbatch on torque system
 use_mongodb: True 
 type: "project" # run type (routine, project)

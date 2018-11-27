@@ -9,7 +9,7 @@ import pandas as pd
 import math
 
 def check_test(test_name, sample):
-    test_path = "testomatic." + test_name
+    test_path = "ssi_stamper." + test_name
     if test_path not in sample or pd.isnull(sample[test_path]):
         return "" # show nothing
         #return "test-missing"
@@ -101,8 +101,8 @@ def html_organisms_table(sample_data, **kwargs):
 def html_test_table(sample_data, data_content,**kwargs):
     rows = []
     for key, value in sample_data.items():
-        if key.startswith("testomatic.whats_my_species") \
-        or key.startswith("testomatic." + data_content):
+        if key.startswith("ssi_stamper.whats_my_species") \
+        or key.startswith("ssi_stamper." + data_content):
             if pd.isnull(value):
                 value = "nan"
             name_v = key.split(":")

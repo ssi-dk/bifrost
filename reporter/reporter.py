@@ -236,8 +236,8 @@ def display_selected_data(ids):
 @app.callback(
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
-     Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
+     Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
 def display_selected_data(selected_data, rows, selected_rows):
     # ignore_this is there so the function is called 
@@ -565,7 +565,7 @@ def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list,
 
 
 @app.callback(
-    Output(component_id="testomatic-report",
+    Output(component_id="ssi_stamper-report",
            component_property="children"), 
     [Input(component_id="data-store", component_property="data")]
 )
@@ -578,7 +578,7 @@ def update_test_table(data_store):
             html.P(
                 'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
         ]),
-        html.Div(dash_table.DataTable(id="datatable-testomatic",
+        html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
     ]
     if data_store == '""':
@@ -587,7 +587,7 @@ def update_test_table(data_store):
     tests_df = pd.read_csv(csv_data, low_memory=True)
     if len(tests_df) == 0:
         return empty_table
-    qc_action = "stamper:ssi_stamp.assemblatron:action"
+    qc_action = "ssi_stamper.assemblatron:action"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
  
@@ -608,10 +608,10 @@ def update_test_table(data_store):
     # Split test columns
     columns = tests_df.columns
     split_columns = [
-        "stamper:ssi_stamp.assemblatron:1x10xsizediff",
-        "stamper:ssi_stamp.whats_my_species:minspecies",
-        "stamper:ssi_stamp.whats_my_species:nosubmitted",
-        "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch"
+        "ssi_stamper.assemblatron:1x10xsizediff",
+        "ssi_stamper.whats_my_species:minspecies",
+        "ssi_stamper.whats_my_species:nosubmitted",
+        "ssi_stamper.whats_my_species:detectedspeciesmismatch"
     ]
     i = 0
     for column in columns:
@@ -623,7 +623,7 @@ def update_test_table(data_store):
             tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
-    test_cols = [col for col in columns if col.startswith("stamper:ssi_stamp")]
+    test_cols = [col for col in columns if col.startswith("ssi_stamper")]
     def concatenate_failed(row):
         res = []
         for col in test_cols:
@@ -632,7 +632,7 @@ def update_test_table(data_store):
                 fields = row[col].split(":")
                 if fields[0] in ["fail", "undefined"]:
                     res.append("Test {}: {}, {}".format(test_name, fields[0], fields[1]))
-        row["testomatic_failed_tests"] = ". ".join(res)
+        row["ssi_stamper_failed_tests"] = ". ".join(res)
         return row
     
     tests_df = tests_df.apply(concatenate_failed, axis="columns")
@@ -683,7 +683,7 @@ def update_test_table(data_store):
         },
         style_cell_conditional=[
             {
-                "if": {"column_id": "testomatic_failed_tests"},
+                "if": {"column_id": "ssi_stamper_failed_tests"},
                 "textAlign": "left"
             }
         ],
@@ -693,7 +693,7 @@ def update_test_table(data_store):
         sorting=True,
         selected_rows=[],
         style_data_conditional=style_data_conditional,
-        id="datatable-testomatic"
+        id="datatable-ssi_stamper"
     )
 
     rename_dict = {item["id"]:item["name"] for item in COLUMNS}
@@ -727,8 +727,8 @@ def update_test_table(data_store):
     Output(component_id="summary-plot", component_property="selectedData"),
     [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
-     Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
+     Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
 def reset_selection(sample_ids, plot_value, rows, selected_rows):
     return {"points":[]}
@@ -737,8 +737,8 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-list", component_property="value"),
-     Input('datatable-testomatic', 'derived_virtual_data'),
-     Input('datatable-testomatic', 'derived_virtual_selected_rows')]
+     Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
 def update_coverage_figure(plot_value, rows, selected_rows):
     if rows == [{}] or rows == [] or rows == None:

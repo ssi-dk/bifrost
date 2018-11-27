@@ -50,7 +50,9 @@ def get_species_plot_data(species_list, id_list, component="assemblatron"):
             {
                 "$match": {
                     "_id": {"$in": routine_list, "$nin": id_list},
-                    "properties.species": {"$in": species_list}
+                    "properties.species": {"$in": species_list},
+                    # NOTE change stamp structure from list to dict to keep only latest.
+                    "stamps" : {"$elemMatch": {"name": "ssi_stamper", "value": "pass:OK"}}
                 }
             },
             {
@@ -213,7 +215,7 @@ def get_qc_list(run_name=None):
                     "$match": {
                         "sample._id": {"$in": sample_ids},
                         #"status": "Success",
-                        "component.name": "testomatic"
+                        "component.name": "ssi_stamper"
                     }
                 },
                 {"$sort": {"sample._id": 1, "_id": 1}},
@@ -252,7 +254,7 @@ def get_qc_list(run_name=None):
                         "let": {"sample_id": "$_id"},
                         "pipeline": [
                             {"$match": {
-                                "component.name": "testomatic",
+                                "component.name": "ssi_stamper",
                                 "summary.assemblatron:action" : {"$exists" : True}
                                 }},
                             { "$match": {
@@ -321,7 +323,7 @@ def filter_qc(db, qc_list, query):
                         "$match": {
                             "$expr": {
                                 "$and": [
-                                    { "$eq" : ["$component.name", "testomatic"]},
+                                    { "$eq" : ["$component.name", "ssi_stamper"]},
                                     {"$eq": ["$sample._id", "$$sample_id"]}
                                 ]
                             }

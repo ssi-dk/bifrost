@@ -10,7 +10,7 @@ global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
 
-component = "testomatic"
+component = "ssi_stamper"
 
 
 onsuccess:
@@ -24,7 +24,7 @@ onerror:
     datahandling.update_sample_component_failure(
         config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
-# ruleorder: setup > test_testomatic > datadump_testomatic > all
+# ruleorder: setup > test_ssi_stamper > datadump_ssi_stamper > all
 
 rule all:
     input:
@@ -42,8 +42,8 @@ rule setup:
     #     """
 
 
-rule_name = "run_testomatic"
-rule run_testomatic:
+rule_name = "run_ssi_stamper"
+rule run_ssi_stamper:
     # Static
     message:
         "Running step:" + rule_name
@@ -72,4 +72,4 @@ rule run_testomatic:
         complete = touch(rules.all.input)
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
-                     "../scripts/testomatic.py")
+                     "../scripts/ssi_stamper.py")

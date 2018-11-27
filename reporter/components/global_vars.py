@@ -75,7 +75,7 @@ COLUMNS = [
     },
     {
         "name": "QC_action",
-        "id": "stamper:ssi_stamp.assemblatron:action"
+        "id": "ssi_stamper.assemblatron:action"
     },
     {
         "name": "Comments",
@@ -103,7 +103,7 @@ COLUMNS = [
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "stamper:ssi_stamp.assemblatron:1x10xsizediff_text"
+        "id": "ssi_stamper.assemblatron:1x10xsizediff_text"
     },
     {
         "name": "Avg_coverage",
@@ -127,7 +127,7 @@ COLUMNS = [
     },
     {
         "name": "Main_species_read_percent",
-        "id": "stamper:ssi_stamp.whats_my_species:minspecies_text"
+        "id": "ssi_stamper.whats_my_species:minspecies_text"
     },
     {
         "name": "Unclassified_reads",
@@ -135,11 +135,7 @@ COLUMNS = [
     },
     {
         "name": "Detected_species_in_DB",
-        "id": "stamper:ssi_stamp.whats_my_species:nosubmitted_text"
-    },
-    {
-        "name": "Submitted_sp_is_same_as_detected",
-        "id": "stamper:ssi_stamp.whats_my_species:detectedspeciesmismatch_text"
+        "id": "ssi_stamper.whats_my_species:nosubmitted_text"
     },
     {
         "name": "DB_ID",
@@ -147,7 +143,7 @@ COLUMNS = [
     },
     {
         "name": "Failed_tests",
-        "id": "testomatic_failed_tests"
+        "id": "ssi_stamper_failed_tests"
     }
 
 ]

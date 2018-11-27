@@ -20,7 +20,7 @@ import import_data
 
 #Globals
 PAGESIZE = 100
-COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'testomatic']
+COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'ssi_stamper']
 
 app = dash.Dash()
 if hasattr(keys, 'USERNAME_PASSWORD'):
