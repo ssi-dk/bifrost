@@ -99,7 +99,7 @@ COLUMNS = [
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_1x"
+        "id": "assemblatron.bin_length_at_10x"
     },
     {
         "name": "G_size_difference_1x_10",
