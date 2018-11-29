@@ -293,7 +293,7 @@ rule initialize_samples_from_sample_folder:
                                 for data in iter(lambda: fh.read(4096), b""):
                                     md5sum.update(data)
                                 sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
-                    sample_db["properties"] = {}  # init for others
+                    sample_db["properties"] = sample_db.get("properties", {})
                 datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
