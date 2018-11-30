@@ -1,6 +1,6 @@
 import dash_html_components as html
-import dash_table_experiments as dt
 import dash_core_components as dcc
+import dash_table as dt
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 from import_data import get_read_paths
@@ -248,10 +248,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
             rows = [list(row.values()) for row in resfinder]
             datatable = html.Div([
                 dt.DataTable(
-                    rows=resfinder,
-                    editable=False,
-                    sortable=False,
-                    column_widths=[100]*len(header)
+                    data=resfinder
                 ),
                 #html_table([header] + rows)
             ])
