@@ -18,7 +18,8 @@ def html_div_summary():
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
 
-    run_list = import_data.get_run_list()
+    run_list = list(import_data.get_run_list()))
+    print(run_list)
     run_list_options = [
         {
             "label": "{} ({})".format(run["name"],
