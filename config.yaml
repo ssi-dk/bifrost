@@ -13,7 +13,7 @@ use_mongodb: True
 type: "project" # run type (routine, project)
 read_pattern: (?P<sample_name>.+?)(?P<sample_number>(_S[0-9]+)?)(?P<lane>(_L[0-9]+)?)_(?P<paired_read_number>R[1|2])(?P<set_number>(_[0-9]+)?)(?P<file_extension>\.fastq\.gz)
 samples_to_ignore: ["Undetermined"]
-samples_to_include: None
+# samples_to_include:
 memory: &memory 10 #in Gb
 threads: &threads 4
 restart_times: 2
