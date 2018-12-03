@@ -19,13 +19,13 @@ def html_div_summary():
     
 
     run_list = list(import_data.get_run_list())
-    print(run_list)
     run_list_options = [
         {
             "label": "{} ({})".format(run["name"],
                                         len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
+    print(run_list_options)
 
     return html.Div(
         [
