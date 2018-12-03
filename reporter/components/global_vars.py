@@ -99,7 +99,7 @@ COLUMNS = [
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_1x"
+        "id": "assemblatron.bin_length_at_10x"
     },
     {
         "name": "G_size_difference_1x_10",
@@ -122,8 +122,12 @@ COLUMNS = [
         "id": "assemblatron.filtered_reads_num"
     },
     {
-        "name": "mlst",
-        "id": "analyzer.mlst_report"
+        "name": "mlst_type",
+        "id": "analyzer_mlst_type"
+    },
+    {
+        "name": "mlst_alleles",
+        "id": "analyzer_mlst_alleles"
     },
     {
         "name": "Main_species_read_percent",

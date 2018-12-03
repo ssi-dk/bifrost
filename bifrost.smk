@@ -288,12 +288,16 @@ rule initialize_samples_from_sample_folder:
                     if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                         if sample_name == result.group("sample_name"):
                             sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
-                            with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
-                                md5sum = hashlib.md5()
-                                for data in iter(lambda: fh.read(4096), b""):
-                                    md5sum.update(data)
-                                sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
-                    sample_db["properties"] = {}  # init for others
+                            md5sum_key = result.group("paired_read_number") + "_md5sum"
+                            if "md5skip" in config and config["md5skip"] and md5sumkey in sample_db["reads"]:
+                                pass
+                            else:
+                                with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
+                                    md5sum = hashlib.md5()
+                                    for data in iter(lambda: fh.read(4096), b""):
+                                        md5sum.update(data)
+                                    sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                    sample_db["properties"] = sample_db.get("properties", {})
                 datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -751,7 +755,7 @@ rule setup_sample_components_to_run:
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
                         if sample_name in config["samples_to_ignore"]:
-                            sample_componenent_db["status"] = "skipped"
+                            sample_component_db["status"] = "skipped"
                         elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                             for component_name in components:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
