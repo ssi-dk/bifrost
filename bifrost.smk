@@ -279,7 +279,7 @@ rule initialize_samples_from_sample_folder:
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config["samples_to_include"] is not None and sample_name in config["samples_to_include"].split(","):
+                if config["samples_to_include"] is None or sample_name in config["samples_to_include"].split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["name"] = sample_name
@@ -413,7 +413,7 @@ rule set_samples_from_sample_info:
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
-                    if config["samples_to_include"] is not None and row["SampleID"] in config["samples_to_include"].split(","):
+                    if config["samples_to_include"] is None or row["SampleID"] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
                         sample_db["sample_sheet"] = {}
                         for column in df:
@@ -477,7 +477,7 @@ rule set_sample_species:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
-                    if config["samples_to_include"] is not None and row["SampleID"] in config["samples_to_include"].split(","):
+                    if config["samples_to_include"] is None or row["SampleID"] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
 
                         sample_db["properties"] = sample_db.get("properties", {})
@@ -536,7 +536,7 @@ rule add_components_to_samples:
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config["samples_to_include"] is not None and sample_name in config["samples_to_include"].split(","):
+                if config["samples_to_include"] is None or sample_name in config["samples_to_include"].split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
@@ -598,7 +598,7 @@ rule initialize_sample_components_for_each_sample:
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config["samples_to_include"] is not None and sample_name in config["samples_to_include"].split(","):
+                if config["samples_to_include"] is None or sample_name in config["samples_to_include"].split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
 
@@ -669,7 +669,7 @@ rule initialize_run:
             run_db["samples"] = run_db.get("samples", [])
             # Todo: handle change in samples properly
             for sample_name in unique_sample_names:
-                if config["samples_to_include"] is not None and sample_name in config["samples_to_include"].split(","):
+                if config["samples_to_include"] is None or sample_name in config["samples_to_include"].split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_id = sample_db.get("_id",)
@@ -744,7 +744,7 @@ rule setup_sample_components_to_run:
 
             with open(run_cmd, "w") as run_cmd_handle:
                 for sample_name in unique_sample_names:
-                    if config["samples_to_include"] is not None and sample_name in config["samples_to_include"].split(","):
+                    if config["samples_to_include"] is None or sample_name in config["samples_to_include"].split(","):
                         current_time = datetime.datetime.now()
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                             command.write("#!/bin/sh\n")
