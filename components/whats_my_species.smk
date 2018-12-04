@@ -7,15 +7,18 @@ import datahandling
 
 configfile: "../run_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
-sample = config["Sample"]
+
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
+sample = config["Sample"]
+component = "whats_my_species"
 config_sample = datahandling.load_sample(sample)
+sample_component = config_sample["name"] + "__" + component + ".yaml"
+
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
-component = "whats_my_species"
 
 onsuccess:
     print("Workflow complete")
@@ -39,6 +42,33 @@ rule setup:
         folder = component
 
 
+rule_name = "check_requirements"
+rule check_requirements:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = rules.setup.output.init_file,
+        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), component + ".yaml")
+    output:
+        check_file = rules.setup.params.folder + "/requirements_met",
+    params:
+        sample = sample,
+        sample_component = sample_component
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
+
+
 rule_name = "setup__filter_reads_with_bbduk"
 rule setup__filter_reads_with_bbduk:
     # Static
@@ -55,7 +85,7 @@ rule setup__filter_reads_with_bbduk:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.setup.output.init_file,
+        rules.check_requirements.output.check_file,
         reads = (R1, R2),
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
