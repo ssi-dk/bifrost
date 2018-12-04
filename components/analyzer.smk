@@ -146,7 +146,7 @@ rule ariba_plasmidfinder:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_required_components.output.check_file,
+        rules.check_requirements.output.check_file,
         folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
@@ -207,7 +207,7 @@ rule ariba_mlst:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_required_components.output.check_file,
+        rules.check_requirements.output.check_file,
         folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
