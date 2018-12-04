@@ -5,17 +5,19 @@ import datahandling
 
 
 configfile: "../run_config.yaml"
-# requires --config R1_reads={read_location},R2_reads={read_location}
-sample = config["Sample"]
+
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
+
+# requires --config R1_reads={read_location},R2_reads={read_location}
+sample = config["Sample"]
+component = "sp_cdiff_fbi"
+sample_component = sample + "__" + component + ".yaml"
 
 config_sample = datahandling.load_sample(sample)
 
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
-
-component = "sp_cdiff_fbi"
 
 
 onsuccess:
@@ -62,6 +64,7 @@ rule check_requirements:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
         sample = sample
+        sample_component = sample_component
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
 
