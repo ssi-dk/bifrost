@@ -8,14 +8,16 @@ import datahandling
 configfile: "../run_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
 sample = config["Sample"]
+component = "qcquickie"
+sample_component = sample + "__" + component + ".yaml"
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
 config_sample = datahandling.load_sample(sample)
+
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
 
-component = "qcquickie"
 
 onsuccess:
     print("Workflow complete")
@@ -39,6 +41,33 @@ rule setup:
         folder = component
 
 
+rule_name = "check_requirements"
+rule check_requirements:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        folder = rules.setup.output.init_file,
+        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), component + ".yaml")
+    output:
+        check_file = rules.setup.params.folder + "/requirements_met",
+    params:
+        sample = sample,
+        sample_component = sample_component
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
+
+
 rule_name = "fastqc_on_reads"
 rule fastqc_on_reads:
     # Static
@@ -55,7 +84,7 @@ rule fastqc_on_reads:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        directory = rules.setup.output.init_file,
+        rules.check_requirements.output.check_file
         reads = (R1, R2)
     output:
         folder = directory(rules.setup.params.folder + "/fastqc"),
