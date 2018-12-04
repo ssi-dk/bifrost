@@ -1,21 +1,22 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
 import datahandling
 
 
 configfile: "../run_config.yaml"
-# requires --config R1_reads={read_location},R2_reads={read_location}
-sample = config["Sample"]
+
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
+# requires --config R1_reads={read_location},R2_reads={read_location}
+sample = config["Sample"]
+component = "sp_cdiff_fbi"
 config_sample = datahandling.load_sample(sample)
+sample_component = config_sample["name"] + "__" + component + ".yaml"
 
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
-
-component = "sp_cdiff_fbi"
 
 
 onsuccess:
@@ -57,10 +58,12 @@ rule check_requirements:
     # Dynamic
     input:
         folder = rules.setup.output.init_file,
-    params:
-        requirements = [{"test":"value"}]
+        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), component + ".yaml")
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
+    params:
+        sample = sample,
+        sample_component = sample_component
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
 
@@ -82,17 +85,17 @@ rule cdiff_analysis:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_required_components.output.check_file,
-
+        rules.check_requirements.output.check_file,
     output:
-        folder = directory(rules.setup.params.folder + "/ done_qcfindgene")
+        folder = directory(rules.setup.params.folder + "/cdiff_analysis")
     params:
         sample = sample
     shell:
-        "/srv/data/tools/git.repositories/SSI-scripts/qcscripts/qcfindgene.sh"
+        "mkdir {output.folder}"
+        #"/srv/data/tools/git.repositories/SSI-scripts/qcscripts/qcfindgene.sh"
         #sample_analyzer_db = datahandling.load_sample_component(sample + "__analyzer.yaml")
         # load sample datahandline.load_sample("../sample.yaml")
-    run:
+
         # try:
         #     config_sample = config_sample
         #     log_out = str(log.out_file)
@@ -127,9 +130,7 @@ rule datadump_analysis:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.abricate_on_ariba_resfinder.output.report,
-        rules.abricate_on_ariba_plasmidfinder.output.report,
-        folder = rules.ariba_mlst.output.folder,
+        rules.cdiff_analysis.output.folder,
     output:
         summary = touch(rules.all.input)
     params:
@@ -137,5 +138,6 @@ rule datadump_analysis:
         sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
     conda:
         "../envs/python_packages.yaml"
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analyzer.py")
+    shell:
+        "touch {output.summary}"
+        #os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analyzer.py")
