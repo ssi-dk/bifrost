@@ -49,7 +49,7 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = global_memory_in_GB
     shadow:
-        "full"
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -79,7 +79,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     resources:
         memory_in_GB = global_memory_in_GB
     shadow:
-        "full"
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -108,7 +108,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     resources:
         memory_in_GB = global_memory_in_GB
     shadow:
-        "full"
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -140,7 +140,7 @@ rule species_check__set_species:
     resources:
         memory_in_GB = global_memory_in_GB
     shadow:
-        "full"
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -185,8 +185,6 @@ rule datadump_whats_my_species:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    shadow:
-        "full"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",

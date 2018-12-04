@@ -751,6 +751,11 @@ rule setup_sample_components_to_run:
                             command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={}{} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], advres, component, sample_name, group, group))
                         elif config["grid"] == "slurm":
                             command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
+                        
+                        if "tmp_dir" in config:
+                             tmp_dir = " --shadow-prefix {}".format(config["tmp_dir"])
+                        else:
+                            tmp_dir = ""
 
                         sample_config = sample_name + "/sample.yaml"
                         sample_db = datahandling.load_sample(sample_config)
@@ -761,7 +766,7 @@ rule setup_sample_components_to_run:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
                                 if os.path.isfile(component_file):
                                     command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-                                    command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"))
+                                    command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={}{};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"), tmp_dir)
 
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "queued to run"

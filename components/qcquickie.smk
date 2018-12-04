@@ -48,6 +48,8 @@ rule fastqc_on_reads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -79,6 +81,8 @@ rule setup__filter_reads_with_bbduk:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -107,6 +111,8 @@ rule assembly_check__combine_reads_with_bbmerge:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -133,6 +139,8 @@ rule assembly_check__quick_assembly_with_tadpole:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -159,6 +167,8 @@ rule assembly_check__rename_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -198,6 +208,8 @@ rule assembly_check__quast_on_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -225,6 +237,8 @@ rule assembly_check__sketch_on_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -250,6 +264,8 @@ rule post_assembly__stats:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -277,6 +293,8 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -303,6 +321,8 @@ rule post_assembly__samtools_stats:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -328,6 +348,8 @@ rule assembly_check__pileup_on_mapped_reads:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -380,6 +402,8 @@ rule assembly_check__call_variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
