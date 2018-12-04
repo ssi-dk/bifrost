@@ -116,7 +116,7 @@ rule setup__filter_reads_with_bbduk:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        directory = rules.setup.output.init_file,
+        rules.fastqc_on_reads.output.fastqc_summary,
         reads = (R1, R2)
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
