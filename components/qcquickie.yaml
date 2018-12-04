@@ -1,3 +1,1 @@
 adapters_fasta: "../resources/adapters.fasta" #required for qcquickie, assemblatron,
-requirements:
-  None
