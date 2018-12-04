@@ -7,13 +7,14 @@ import datahandling
 
 configfile: "../run_config.yaml"
 # requires --config R1_reads={read_location},R2_reads={read_location}
-sample = config["Sample"]
-component = "qcquickie"
-sample_component = sample + "__" + component + ".yaml"
+
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
+sample = config["Sample"]
+component = "qcquickie"
 config_sample = datahandling.load_sample(sample)
+sample_component = config_sample["name"] + "__" + component + ".yaml"
 
 R1 = config_sample["reads"]["R1"]
 R2 = config_sample["reads"]["R2"]
