@@ -85,7 +85,7 @@ rule fastqc_on_reads:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_requirements.output.check_file
+        rules.check_requirements.output.check_file,
         reads = (R1, R2)
     output:
         folder = directory(rules.setup.params.folder + "/fastqc"),
