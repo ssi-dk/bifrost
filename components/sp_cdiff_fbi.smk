@@ -63,7 +63,7 @@ rule check_requirements:
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
-        sample = sample
+        sample = sample,
         sample_component = sample_component
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
