@@ -765,7 +765,7 @@ rule setup_sample_components_to_run:
                                 sample_component_db["status"] = "skipped"
                             elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
                                 for component_name in components:
-                                    component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
+                                    component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                     if os.path.isfile(component_file):
                                         command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                         command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"))

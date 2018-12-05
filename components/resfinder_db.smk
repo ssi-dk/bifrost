@@ -10,22 +10,22 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-config_sample = datahandling.load_sample(sample)
+db_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["reads"]["R1"]
-R2 = config_sample["reads"]["R2"]
+R1 = db_sample["reads"]["R1"]
+R2 = db_sample["reads"]["R2"]
 
 component = "resfinder_db"
 version = "1.0"
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 rule all:
@@ -89,7 +89,7 @@ rule datadump_analysis:lo
         summary = touch(rules.all.input)
     params:
         folder = rules.setup.params.folder,
-        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         version = version
     conda:
         "../envs/python_packages.yaml"

@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 import datahandling
 
 configfile: "../run_config.yaml"
@@ -11,21 +11,21 @@ global_memory_in_GB = config["memory"]
 
 sample = config["Sample"]
 component = "ssi_stamper"
-config_sample = datahandling.load_sample(sample)
-sample_component = config_sample["name"] + "__" + component + ".yaml"
+db_sample = datahandling.load_sample(sample)
+sample_component = db_sample["name"] + "__" + component + ".yaml"
 
-R1 = config_sample["reads"]["R1"]
-R2 = config_sample["reads"]["R2"]
+R1 = db_sample["reads"]["R1"]
+R2 = db_sample["reads"]["R2"]
 
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 rule all:
@@ -83,9 +83,9 @@ rule run_ssi_stamper:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     params:
-        sample = config_sample,
+        sample = db_sample,
         sample_yaml = sample,
-        sample_component = config_sample.get("name", "ERROR") + \
+        sample_component = db_sample.get("name", "ERROR") + \
             "__" + component + ".yaml"
     input:
         check_file = rules.check_requirements.output.check_file,
@@ -93,4 +93,4 @@ rule run_ssi_stamper:
         complete = touch(rules.all.input)
     script:
         os.path.join(os.path.dirname(workflow.snakefile),
-                     "../scripts/ssi_stamper.py")
+                     "../../scripts/ssi_stamper.py")

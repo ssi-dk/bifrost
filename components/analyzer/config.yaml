@@ -1,0 +1,10 @@
+
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
+abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
+ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+
+requirements:
+  sample:
+    properties:
+      species:

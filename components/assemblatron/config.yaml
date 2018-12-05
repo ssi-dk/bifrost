@@ -1,0 +1,4 @@
+adapters_fasta: "../../resources/adapters.fasta" #required for qcquickie, assemblatron,
+assembly_with: "skesa" # skesa|spades
+requirements:
+  # No special

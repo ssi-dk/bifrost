@@ -10,22 +10,22 @@ sample = config["Sample"]
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 
-config_sample = datahandling.load_sample(sample)
+db_sample = datahandling.load_sample(sample)
 
-R1 = config_sample["reads"]["R1"]
-R2 = config_sample["reads"]["R2"]
+R1 = db_sample["reads"]["R1"]
+R2 = db_sample["reads"]["R2"]
 
 component = ""
 
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 rule all:
@@ -69,7 +69,7 @@ rule check_required_components:
             required_components = ["whats_my_species"]
             required_components_success = True
             for component in required_components:
-                if not datahandling.sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component):
+                if not datahandling.sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component):
                     required_components_successful = False
                     datahandling.log(log_out, "Missing component: {}\n".format(component))
             if required_components_success:
@@ -146,7 +146,7 @@ rule datadump_analysis:
         summary = touch(rules.all.input)
     params:
         folder = rules.setup.params.folder,
-        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
     conda:
         "../envs/python_packages.yaml"
     script:
