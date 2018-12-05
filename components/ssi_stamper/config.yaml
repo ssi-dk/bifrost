@@ -1,3 +1,11 @@
+# Options
+# -None
+
+# --Required resource files--   
+# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+# -None
+
+# Requirements for running component
 requirements:
   components:
     assemblatron:

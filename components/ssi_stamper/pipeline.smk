@@ -3,20 +3,23 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 import datahandling
 
-configfile: "../run_config.yaml"
-# requires --config R1_reads={read_location},R2_reads={read_location}
+component = "ssi_stamper"  # Depends on component name, should be same as folder
 
+configfile: "../run_config.yaml"  # Relative to run directory
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
-
 sample = config["Sample"]
-component = "ssi_stamper"
-db_sample = datahandling.load_sample(sample)
-sample_component = db_sample["name"] + "__" + component + ".yaml"
 
-R1 = db_sample["reads"]["R1"]
-R2 = db_sample["reads"]["R2"]
+sample_file_name = sample
+db_sample = datahandling.load_sample(sample_file_name)
 
+component_file_name = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+db_component = datahandling.load_component(component_file_name)
+
+sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
+db_sample_component = datahandling.load_sample_component(sample_component_file_name)
+
+reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
 
 onsuccess:
     print("Workflow complete")
@@ -57,14 +60,14 @@ rule check_requirements:
     # Dynamic
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), component + ".yaml")
+        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
         sample = sample,
-        sample_component = sample_component
+        sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
 
 
 rule_name = "run_ssi_stamper"
