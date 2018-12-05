@@ -147,6 +147,7 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 emails = sample_data["sample_sheet.emails"]
         else:
             emails = ""
+        print(sample_data)
         sample_sheet_div = [
             html.H5("Sample Sheet", className="table-header"),
             html.Div([
@@ -158,7 +159,12 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                         {
                             "list": ["Provided species", html.I(
                                 sample_data["sample_sheet.provided_species"])],
-                            "className": check_test("whats_my_species:submitted==detected", sample_data)
+                            "className": check_test("whats_my_species:detectedspeciesmismatch", sample_data)
+                        },
+                        {
+                            "list": ["Read file", html.I(
+                                sample_data["R1"].split("/")[-1])],
+                            "className": check_test("base:readspresent", sample_data)
                         }
                     ])
                 ], className="six columns"),
@@ -175,42 +181,56 @@ def html_sample_tables(sample_data, data_content, **kwargs):
         title = "Assemblatron Results"
         table = html.Div([
             html_table([
+                {
+                    "list": [
+                        "# filtered reads",
+                        "{:,.0f}".format(
+                            sample_data.get("assemblatron.filtered_reads_num", math.nan))
+                    ],
+                    "className": check_test("assemblatron:numreads", sample_data)
+                },
                 [
                     "Number of contigs (1x cov.)",
-                    "{:,}".format(
+                    "{:,.0f}".format(
                         sample_data.get("assemblatron.bin_contigs_at_1x", math.nan))
                 ],
                 [
                     "Number of contigs (10x cov.)",
-                    "{:,}".format(
+                    "{:,.0f}".format(
                         sample_data.get("assemblatron.bin_contigs_at_10x", math.nan))
                 ],
                 [
                     "N50",
                     "{:,}".format(sample_data.get("assemblatron.N50", math.nan))
                 ],
-                [
-                    "Average coverage (1x)",
-                    "{:,.2f}".format(
-                        sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
-                ],
+                {
+                    "list": [
+                        "Average coverage (1x)",
+                        "{:,.2f}".format(
+                            sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
+                    ],
+                    "className": check_test("assemblatron:avgcoverage", sample_data)
+                },
                 {
                     "list": [
                         "Genome size at 1x depth",
-                        "{:,}".format(
+                        "{:,.0f}".format(
                             sample_data.get("assemblatron.bin_length_at_1x", math.nan))
                     ],
                     "className": check_test("assemblatron:1xgenomesize", sample_data)
                 },
-                [
-                    "Genome size at 10x depth",
-                    "{:,}".format(
-                        sample_data.get("assemblatron.bin_length_at_10x", math.nan))
-                ],
+                {
+                    "list": [
+                        "Genome size at 10x depth",
+                        "{:,.0f}".format(
+                            sample_data.get("assemblatron.bin_length_at_10x", math.nan))
+                    ],
+                    "className": check_test("assemblatron:10xgenomesize", sample_data)
+                },
                 {
                     "list": [
                         "Genome size 1x - 10x diff",
-                        "{:,}".format(
+                        "{:,.0f}".format(
                             sample_data.get(
                                 "assemblatron.bin_length_at_1x", math.nan)
                             - sample_data.get("assemblatron.bin_length_at_10x", math.nan)
@@ -220,12 +240,12 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 },
                 [
                     "Genome size at 25x depth",
-                    "{:,}".format(
+                    "{:,.0f}".format(
                         sample_data.get("assemblatron.bin_length_at_25x", math.nan))
                 ],
                 [
                     "Ambiguous sites",
-                    "{:,}".format(
+                    "{:,.0f}".format(
                         sample_data.get("assemblatron.snp_filter_10x_10%", math.nan))
                 ] 
             ])
