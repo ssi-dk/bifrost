@@ -318,3 +318,7 @@ body, .appcontainer {
 #run-table {
   margin-bottom: 40px;
 }
+
+.main-logo {
+  height: 100px;
+}

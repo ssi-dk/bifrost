@@ -77,7 +77,11 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
-        html.H1("bifrost REPORT"),
+        html.H1("bifrost report", style={"display": "none"}),
+        html.Img(
+            src="/assets/img/report.png",
+            className="main-logo"
+        ),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
         dcc.Store(id="data-store", storage_type="memory"),
