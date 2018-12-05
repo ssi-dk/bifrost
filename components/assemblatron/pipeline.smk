@@ -1,31 +1,34 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 import datahandling
 
-configfile: "../run_config.yaml"
-# requires --config R1_reads={read_location},R2_reads={read_location}
+component = "assemblatron"  # Depends on component name, should be same as folder
 
+configfile: "../run_config.yaml"  # Relative to run directory
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
-
 sample = config["Sample"]
-component = "assemblatron"
-config_sample = datahandling.load_sample(sample)
-sample_component = config_sample["name"] + "__" + component + ".yaml"
 
-R1 = config_sample["reads"]["R1"]
-R2 = config_sample["reads"]["R2"]
+sample_file_name = sample
+db_sample = datahandling.load_sample(sample_file_name)
 
+component_file_name = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+db_component = datahandling.load_component(component_file_name)
+
+sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
+db_sample_component = datahandling.load_sample_component(sample_component_file_name)
+
+reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(config_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
 
 
 rule all:
@@ -57,14 +60,14 @@ rule check_requirements:
     # Dynamic
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), component + ".yaml")
+        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
         sample = sample,
-        sample_component = sample_component
+        sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -88,7 +91,7 @@ rule setup__filter_reads_with_bbduk:
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
-        adapters = os.path.join(os.path.dirname(workflow.snakefile), config["adapters_fasta"])
+        adapters = os.path.join(os.path.dirname(workflow.snakefile), db_component["adapters_fasta"])
     conda:
         "../envs/bbmap.yaml"
     shell:
@@ -167,7 +170,7 @@ rule assembly__selection:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        assembly_with = rules.setup.params.folder + "/assembly_with_" + config["assembly_with"]
+        assembly_with = rules.setup.params.folder + "/assembly_with_" + db_component["assembly_with"]
     params:
         rules.setup.params.folder + "/temp.fasta"
     output:
@@ -352,7 +355,7 @@ rule summarize__depth:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_depth.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_depth.py")
 
 
 rule_name = "post_assembly__call_variants"
@@ -403,7 +406,7 @@ rule summarize__variants:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/summarize_variants.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_variants.py")
 
 
 rule_name = "post_assembly__annotate"
@@ -463,7 +466,7 @@ rule datadump_assemblatron:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = config_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder,
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_assemblatron.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_assemblatron.py")

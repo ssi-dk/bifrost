@@ -1,0 +1,15 @@
+# Options
+# -None
+
+# --Required resource files--   
+# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
+abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
+ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+
+# Requirements for running component
+requirements:
+  sample:
+    properties:
+      species:
