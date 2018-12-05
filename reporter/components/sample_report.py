@@ -147,7 +147,6 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 emails = sample_data["sample_sheet.emails"]
         else:
             emails = ""
-        print(sample_data)
         sample_sheet_div = [
             html.H5("Sample Sheet", className="table-header"),
             html.Div([
