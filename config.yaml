@@ -22,9 +22,6 @@ md5skip: False # set to True to skip md5sum update when recreating samples. Reco
 # --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder
 
-# --Required resource files--   # if not set will look in resources folder for all files
-# relative to components/scripts folder (so ../ to return to base snakemake folder) if not an absolute path
-
 mongo_db_key_location: "../resources/keys.txt"  # location of keys.py used for accessing mongodb (required for all components when using mongodb)
 
 
