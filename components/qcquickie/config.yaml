@@ -1,0 +1,10 @@
+# Options
+# -None
+
+# --Required resource files--   
+# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+adapters_fasta: "../../resources/adapters.fasta"
+
+# Requirements for running component
+requirements:
+  # No special

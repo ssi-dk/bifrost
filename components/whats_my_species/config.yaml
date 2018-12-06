@@ -1,0 +1,12 @@
+# Options
+# -None
+
+# --Required resource files--   
+# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+adapters_fasta: "../../resources/adapters.fasta" #required for qcquickie, assemblatron,
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # required for whats_my_species
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # required for whats_my_species
+
+# Requirements for running component
+requirements:
+  # No special
