@@ -25,7 +25,6 @@ def html_div_summary():
                                         len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
-    print(run_list_options)
 
     return html.Div(
         [

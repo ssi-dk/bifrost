@@ -7,6 +7,7 @@ from import_data import get_read_paths
 import plotly.graph_objs as go
 import pandas as pd
 import math
+import json
 
 def check_test(test_name, sample):
     test_path = "ssi_stamper." + test_name
@@ -20,18 +21,32 @@ def check_test(test_name, sample):
     else:
         return "test-warning"
 
-def generate_sample_report(dataframe, sample, data_content, background):
-    if data_content in ["assemblatron"]:
-        plot = graph_sample_depth_plot(
-            sample,
-            dataframe[dataframe["species"]
-                    == sample["species"]],
-            background
+def get_species_img(sample_data):
+    genus = str(sample_data.get("whats_my_species.name_classified_species_1")).split()[
+        0].lower()
+    if "{}.svg".format(genus) in list_of_images:
+        img = html.Img(
+            src="/assets/img/" + genus + ".svg",
+            className="svg_bact"
         )
-        tests = html_test_table(sample, data_content, className="row")
     else:
-        plot = None
-        tests = None
+        img = None
+    return img
+
+def generate_sample_report(dataframe, sample, background):
+    plot = graph_sample_depth_plot(
+        sample,
+        dataframe[dataframe["species"]
+                == sample["species"]],
+        background
+    )
+    tests = html_test_table(sample, className="row")
+
+    img = get_species_img(sample)
+    if img is not None:
+        img_div = html.Div(img, className="box-title bact grey-border")
+    else:
+        img_div = None
     return (
         html.Div(
             [
@@ -40,10 +55,10 @@ def generate_sample_report(dataframe, sample, data_content, background):
                     sample["name"],
                     className="box-title"
                 ),
-                html_sample_tables(sample, data_content, className="row"),
-
-                plot,
-                html.H6("QC Tests", className="table-header"),
+                img_div,
+                html_sample_tables(sample, className="row"),
+                # plot,
+                html.H6("Failed QC Tests", className="table-header"),
                 tests
             ],
             className="border-box"
@@ -51,13 +66,12 @@ def generate_sample_report(dataframe, sample, data_content, background):
     )
 
 
-def html_species_report(dataframe, species, data_content, species_plot_data, **kwargs):
+def html_species_report(dataframe, species, species_plot_data, **kwargs):
     report = []
     for index, sample in \
       dataframe.loc[dataframe["species"] == species].iterrows():
         report.append(generate_sample_report(dataframe,
                                              sample,
-                                             data_content,
                                              species_plot_data))
     return html.Div(report, **kwargs)
 
@@ -98,19 +112,18 @@ def html_organisms_table(sample_data, **kwargs):
         ])
     ], **kwargs)
 
-def html_test_table(sample_data, data_content,**kwargs):
+def html_test_table(sample_data,**kwargs):
     rows = []
     for key, value in sample_data.items():
         if key.startswith("ssi_stamper.whats_my_species") \
-        or key.startswith("ssi_stamper." + data_content):
+        or key.startswith("ssi_stamper.assemblatron"):
             if pd.isnull(value):
                 value = "nan"
             name_v = key.split(":")
             values = value.split(':')
             if len(values) == 3:
                 if values[0] != "pass":
-                    rows.append([name_v[1].capitalize(), "{}. Reason: {}. Detected value: {}".format(
-                        values[0], values[1], values[2])])
+                    rows.append([name_v[1].capitalize(), values[1]])
             if (key.endswith(".action")):
                 rows.append(["QC Action", value])
     if len(rows):
@@ -118,23 +131,10 @@ def html_test_table(sample_data, data_content,**kwargs):
     else:
         return html.Div(html.P("No failed tests."), **kwargs)
 
-def html_sample_tables(sample_data, data_content, **kwargs):
+def html_sample_tables(sample_data, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
-    genus = str(sample_data.get("whats_my_species.name_classified_species_1")).split()[
-        0].lower()
-    if "{}.svg".format(genus) in list_of_images:
-        img = html.Img(
-            src="/assets/img/" + genus + ".svg",
-            className="svg_bact"
-        )
-    else:
-        img = []
 
-    if pd.isna(sample_data["runs"]):
-        runs = "Run: None"
-    else:
-        runs = "Run: " + ",".join(sample_data["runs"])
     if "sample_sheet.sample_name" in sample_data:
         if "sample_sheet.emails" in sample_data and type(sample_data["sample_sheet.emails"]) is str:
             n_emails = len(sample_data["sample_sheet.emails"].split(";"))
@@ -147,149 +147,140 @@ def html_sample_tables(sample_data, data_content, **kwargs):
                 emails = sample_data["sample_sheet.emails"]
         else:
             emails = ""
-        sample_sheet_div = [
-            html.H5("Sample Sheet", className="table-header"),
-            html.Div([
-                html.Div([
-                    html_table([
-                        ["Supplied name", sample_data["sample_sheet.sample_name"]],
-                        ["Supplying lab", sample_data["sample_sheet.group"]],
-                        ["Submitter emails", emails],
-                        {
-                            "list": ["Provided species", html.I(
-                                sample_data["sample_sheet.provided_species"])],
-                            "className": check_test("whats_my_species:detectedspeciesmismatch", sample_data)
-                        },
-                        {
-                            "list": ["Read file", html.I(
-                                sample_data["R1"].split("/")[-1])],
-                            "className": check_test("base:readspresent", sample_data)
-                        }
-                    ])
-                ], className="six columns"),
-                html.Div([
-                    html.H6("User Comments", className="table-header"),
-                    sample_data["sample_sheet.Comments"]
-                ], className="six columns"),
-            ], className="row"),
-        ]
+        sample_sheet_table = html_table([
+                    ["Supplied name", sample_data["sample_sheet.sample_name"]],
+                    ["User Comments", sample_data["sample_sheet.Comments"]],
+                    ["Supplying lab", sample_data["sample_sheet.group"]],
+                    ["Submitter emails", emails],
+                    {
+                        "list": ["Provided species", html.I(
+                            sample_data["sample_sheet.provided_species"])],
+                        "className": check_test("whats_my_species:detectedspeciesmismatch", sample_data)
+                    },
+                    {
+                        "list": ["Read file", 
+                            str(sample_data["R1"]).split("/")[-1]],
+                        "className": check_test("base:readspresent", sample_data)
+                    }
+                ])
     else:
-        sample_sheet_div = []
+        sample_sheet_table = []
 
-    if data_content == "assemblatron":
-        title = "Assemblatron Results"
-        table = html.Div([
-            html_table([
-                {
-                    "list": [
-                        "# filtered reads",
-                        "{:,.0f}".format(
-                            sample_data.get("assemblatron.filtered_reads_num", math.nan))
-                    ],
-                    "className": check_test("assemblatron:numreads", sample_data)
-                },
-                [
-                    "Number of contigs (1x cov.)",
+    title = "Assemblatron Results"
+    table = html.Div([
+        html_table([
+            {
+                "list": [
+                    "Number of filtered reads",
                     "{:,.0f}".format(
-                        sample_data.get("assemblatron.bin_contigs_at_1x", math.nan))
+                        sample_data.get("assemblatron.filtered_reads_num", math.nan))
                 ],
-                [
-                    "Number of contigs (10x cov.)",
+                "className": check_test("assemblatron:numreads", sample_data)
+            },
+            [
+                "Number of contigs (1x cov.)",
+                "{:,.0f}".format(
+                    sample_data.get("assemblatron.bin_contigs_at_1x", math.nan))
+            ],
+            [
+                "Number of contigs (10x cov.)",
+                "{:,.0f}".format(
+                    sample_data.get("assemblatron.bin_contigs_at_10x", math.nan))
+            ],
+            [
+                "N50",
+                "{:,}".format(sample_data.get("assemblatron.N50", math.nan))
+            ],
+            {
+                "list": [
+                    "Average coverage (1x)",
+                    "{:,.2f}".format(
+                        sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
+                ],
+                "className": check_test("assemblatron:avgcoverage", sample_data)
+            },
+            {
+                "list": [
+                    "Genome size at 1x depth",
                     "{:,.0f}".format(
-                        sample_data.get("assemblatron.bin_contigs_at_10x", math.nan))
+                        sample_data.get("assemblatron.bin_length_at_1x", math.nan))
                 ],
-                [
-                    "N50",
-                    "{:,}".format(sample_data.get("assemblatron.N50", math.nan))
-                ],
-                {
-                    "list": [
-                        "Average coverage (1x)",
-                        "{:,.2f}".format(
-                            sample_data.get("assemblatron.bin_coverage_at_1x", math.nan))
-                    ],
-                    "className": check_test("assemblatron:avgcoverage", sample_data)
-                },
-                {
-                    "list": [
-                        "Genome size at 1x depth",
-                        "{:,.0f}".format(
-                            sample_data.get("assemblatron.bin_length_at_1x", math.nan))
-                    ],
-                    "className": check_test("assemblatron:1xgenomesize", sample_data)
-                },
-                {
-                    "list": [
-                        "Genome size at 10x depth",
-                        "{:,.0f}".format(
-                            sample_data.get("assemblatron.bin_length_at_10x", math.nan))
-                    ],
-                    "className": check_test("assemblatron:10xgenomesize", sample_data)
-                },
-                {
-                    "list": [
-                        "Genome size 1x - 10x diff",
-                        "{:,.0f}".format(
-                            sample_data.get(
-                                "assemblatron.bin_length_at_1x", math.nan)
-                            - sample_data.get("assemblatron.bin_length_at_10x", math.nan)
-                        )
-                    ],
-                    "className": check_test("assemblatron:1x10xsizediff", sample_data)
-                },
-                [
-                    "Genome size at 25x depth",
+                "className": check_test("assemblatron:1xgenomesize", sample_data)
+            },
+            {
+                "list": [
+                    "Genome size at 10x depth",
                     "{:,.0f}".format(
-                        sample_data.get("assemblatron.bin_length_at_25x", math.nan))
+                        sample_data.get("assemblatron.bin_length_at_10x", math.nan))
                 ],
-                [
-                    "Ambiguous sites",
+                "className": check_test("assemblatron:10xgenomesize", sample_data)
+            },
+            {
+                "list": [
+                    "Genome size 1x - 10x diff",
                     "{:,.0f}".format(
-                        sample_data.get("assemblatron.snp_filter_10x_10%", math.nan))
-                ] 
-            ])
+                        sample_data.get(
+                            "assemblatron.bin_length_at_1x", math.nan)
+                        - sample_data.get("assemblatron.bin_length_at_10x", math.nan)
+                    )
+                ],
+                "className": check_test("assemblatron:1x10xsizediff", sample_data)
+            },
+            [
+                "Genome size at 25x depth",
+                "{:,.0f}".format(
+                    sample_data.get("assemblatron.bin_length_at_25x", math.nan))
+            ],
+            [
+                "Ambiguous sites",
+                "{:,.0f}".format(
+                    sample_data.get("assemblatron.snp_filter_10x_10%", math.nan))
+            ] 
         ])
-        report = html.Div([
+    ])
+
+    resfinder = sample_data.get('analyzer.ariba_resfinder', "[{}]")
+    resfinder = resfinder.replace("'", "\"")
+    resfinder = json.loads(resfinder)
+    columns = []
+    if len(resfinder):
+        columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
+        resfinder_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+
+                columns=columns,
+                data=resfinder,
+                pagination_mode=False
+            ), className="grey-border")
+    else:
+        resfinder_div = html.P("No antibiotic resistance genes found")
+    
+    return html.Div([
+        html.Div([
             html.Div([
-                html.H5(title, className="table-header"),
-                table
+                html.H6("Sample Sheet", className="table-header"),
+                sample_sheet_table,
+                html.H6("Detected Organisms", className="table-header"),
+                html_organisms_table(sample_data)
             ], className="six columns"),
             html.Div([
-                html.H5("Detected Organisms", className="table-header"),
-                html_organisms_table(sample_data)
+                html.H6(title, className="table-header"),
+                table,
+                html.H6("MLST", className="table-header"),
+                html_table([[sample_data.get("analyzer.mlst_report", "No results")]])
             ], className="six columns")
+        ], className="row"),
+        html.Div([
+            html.Div([
+                html.H6("Resfinder", className="table-header"),
+                resfinder_div
+            ], className="twelve columns")
         ], className="row")
-    elif data_content == "analyzer":
-        title = "Analyzer Results"
-        resfinder = sample_data.get('analyzer.ariba_resfinder', None)
-        if (isinstance(resfinder, list) and len(resfinder)):
-            header = list(resfinder[0].keys())
-            rows = [list(row.values()) for row in resfinder]
-            datatable = html.Div([
-                dt.DataTable(
-                    data=resfinder
-                ),
-                #html_table([header] + rows)
-            ])
-        else:
-            datatable = "No results found"
-    
-        report = html.Div([
-            html.H5(title),
-            html.H6("MLST"),
-            html.P(sample_data.get("analyzer.mlst_report", "No results")),
-            html.H6("Resfinder"),
-            datatable
-        ])
-    else:
-        title = "No report selected"
-        report = title
-
-    return html.Div([
-        html.Div(img, className="bact_div"),
-        html.H6(runs),
-        html.Div(sample_sheet_div),
-        report
     ], **kwargs)
 
 
@@ -368,13 +359,13 @@ def graph_sample_depth_plot(sample, run_species, background):
     )
 
 
-def children_sample_list_report(filtered_df, data_content, plot_data):
+def children_sample_list_report(filtered_df, plot_data):
     report = []
     for species in filtered_df["species"].unique():
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species, data_content, plot_data.get(species,[]))
+            html_species_report(filtered_df, species, plot_data.get(species,[]))
         ]))
     return report
 
