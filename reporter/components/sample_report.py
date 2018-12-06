@@ -240,24 +240,25 @@ def html_sample_tables(sample_data, **kwargs):
     ])
 
     resfinder = sample_data.get('analyzer.ariba_resfinder', "[{}]")
-    resfinder = resfinder.replace("'", "\"")
-    resfinder = json.loads(resfinder)
-    columns = []
-    if len(resfinder):
-        columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
-        resfinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
+    if type(resfinder) == str:
+        resfinder = resfinder.replace("'", "\"")
+        resfinder = json.loads(resfinder)
+        columns = []
+        if len(resfinder):
+            columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
+            resfinder_div = html.Div(
+                dt.DataTable(
+                    style_table={
+                        'overflowX': 'scroll',
+                        'overflowY': 'scroll',
+                        'maxHeight': '480'
+                    },
 
-                columns=columns,
-                data=resfinder,
-                pagination_mode=False
-            ), className="grey-border")
-    else:
+                    columns=columns,
+                    data=resfinder,
+                    pagination_mode=False
+                ), className="grey-border")
+    if type(resfinder) == float or not len(resfinder):
         resfinder_div = html.P("No antibiotic resistance genes found")
     
     return html.Div([
