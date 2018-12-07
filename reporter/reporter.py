@@ -709,7 +709,7 @@ def update_test_table(data_store):
     # reorder columns
     renamed = renamed[list(rename_dict.values())]
 
-    csv_string = renamed.to_csv(index=False, encoding="utf-8")
+    csv_string = renamed.to_csv(index=False, encoding="utf-8", sep=";")
     csv_string = 'data:text/csv;charset=utf-8,' + \
         urllib.parse.quote(csv_string)
     return [
