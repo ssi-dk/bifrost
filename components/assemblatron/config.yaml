@@ -1,10 +1,26 @@
-# Options
-assembly_with: "skesa" # skesa|spades
+#-Information---------------------------------------------------------------------------------------
+name: assemblatron
+version: 1.0
+target: sample
+type: pipeline
+recommendation: required
+description: >
+  This does de-novo assembly on a sample and then maps the reads back against the denovo assembly
+  for variant calling. In the process it gathers metrics on many aspects for the use of QC. This
+  generates the same metrics as qcquickie but should yield better contigs and it is recommended
+  to use these contigs for downstream analysis.
+#---------------------------------------------------------------------------------------------------
 
-# --Required resource files--   
-# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+#-Options-------------------------------------------------------------------------------------------
+assembly_with: "skesa"  # Choices: skesa|spades
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
 adapters_fasta: "../../resources/adapters.fasta"
+#---------------------------------------------------------------------------------------------------
 
-# Requirements for running component
+#-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # No special
+  # None
+#---------------------------------------------------------------------------------------------------

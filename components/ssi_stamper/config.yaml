@@ -1,14 +1,29 @@
-# Options
-# -None
+#-Information---------------------------------------------------------------------------------------
+name: ssi_stamper
+version: 1.0
+target: sample
+type: stamper
+recommendation: required
+description: >
+  This runs against the mondoDB database and certifies a sample that has run assemblatron and 
+  whats_my_species on it's QC preformance (Core Facility/Supplying Lab/Ok). This can also be run
+  as a script without output on the server (only bifrost DB)
+#---------------------------------------------------------------------------------------------------
 
-# --Required resource files--   
-# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
-# -None
+#-Options-------------------------------------------------------------------------------------------
+# None
+#---------------------------------------------------------------------------------------------------
 
-# Requirements for running component
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
 requirements:
   components:
     assemblatron:
       status: Success
     whats_my_species:
       status: Success
+#---------------------------------------------------------------------------------------------------

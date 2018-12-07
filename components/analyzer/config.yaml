@@ -1,15 +1,28 @@
-# Options
-# -None
+#-Information---------------------------------------------------------------------------------------
+name: analyzer
+version: 1.0
+target: sample
+type: pipeline
+recommendation: recommended
+requires_db: True
+description: >
+  This preforms read based mapping against the resfinder, plasmidfinder and mlst DB's. The mlst DB's 
+  are set via the species table in the mongoDB.
+#---------------------------------------------------------------------------------------------------
 
-# --Required resource files--   
-# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
+#-Options-------------------------------------------------------------------------------------------
+# -None
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
 abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
 abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
 ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
 ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+#---------------------------------------------------------------------------------------------------
 
-# Requirements for running component
+#-Requirements to run component---------------------------------------------------------------------
 requirements:
-  sample:
-    properties:
-      species:
+  # None
+#---------------------------------------------------------------------------------------------------

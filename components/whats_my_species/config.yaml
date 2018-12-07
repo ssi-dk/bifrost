@@ -1,12 +1,26 @@
-# Options
-# -None
+#-Information---------------------------------------------------------------------------------------
+name: whats_my_species
+version: 1.0
+target: sample
+type: pipeline
+recommendation: required
+description: >
+  This runs kraken/bracken on a sample in order to determine the species found in the sample. Reads
+  are first filtered using bbduk. The species is then set for the sample from this.
+#---------------------------------------------------------------------------------------------------
 
-# --Required resource files--   
-# relative to components folder (so ../../ to return to base snakemake folder) if not an absolute path
-adapters_fasta: "../../resources/adapters.fasta" #required for qcquickie, assemblatron,
-kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"   # required for whats_my_species
-kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"  # required for whats_my_species
+#-Options-------------------------------------------------------------------------------------------
+# None
+#---------------------------------------------------------------------------------------------------
 
-# Requirements for running component
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+adapters_fasta: "../../resources/adapters.fasta"
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # No special
+  # None
+#---------------------------------------------------------------------------------------------------
