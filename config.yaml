@@ -1,3 +1,4 @@
+# Initialization config file
 # Input parameters with default values
 # raw_data_folder: "raw_data" # Temporarily shelved idea to rename samples
 # rename_samples: True # Temporarily shelved idea to rename samples

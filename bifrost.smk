@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-
-
+"""
+Initialization program for paired end Illumina reads
+"""
 # TODO: should refactor a lot of this Snakefile into a more snakemake orientated solution utilizing wildcards
 import re
 import sys

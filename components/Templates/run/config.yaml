@@ -1,28 +1,28 @@
 #-Information---------------------------------------------------------------------------------------
-name: analyzer
+name: sp_cdiff_fbi
 version: 1.0
 target: sample
 type: pipeline
-recommendation: recommended
-requires_db: True
+recommendation: optional
 description: >
-  This preforms read based mapping against the resfinder, plasmidfinder and mlst DB's. The mlst DB's 
-  are set via the species table in the mongoDB.
+  TEMPORARY COMPONENT!\n\n
+  This component has been implemented as a temporary measure to allow old scripts work with the new
+  system. What it'll do is launch the program and not store any of the results into the DB other 
+  than if the job ran to completion or not.
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# -None
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
-abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
-ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
-ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  sample:
+    properties:
+      species: Clostridioides difficile
 #---------------------------------------------------------------------------------------------------
