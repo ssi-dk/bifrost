@@ -3,6 +3,7 @@ import os
 import sys
 import urllib
 from datetime import datetime
+import time
 from io import StringIO
 
 import dash
@@ -132,6 +133,9 @@ app.layout = html.Div([
         ),
         html.Div(id="current-report"),
     ]),
+    dcc.Store(
+        id="last-filter-change", storage_type="memory", data={"timestamp": 0}
+    ),
     html.Footer([
         "Created with 🔬 at SSI. Bacteria icons from ",
         html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -339,6 +343,18 @@ def update_species_list(run_name):
         value=species_options
     )
 
+
+@app.callback(
+    Output("applybutton-div", "className"),
+    [Input("run-name", "children")]
+)
+def update_species_list(run_name):
+    if run_name == "Loading..." or len(run_name) == 0:
+        return ""
+    else:
+        return "hidden"
+
+
 @app.callback(
     Output("run-table", "children"),
     [Input("run-name", "children"),
@@ -437,7 +453,8 @@ def update_nextpage(page_n, max_page):
     [
         Input("update-assemblatron", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
-    [State("lasso-sample-ids", "children"),
+    [
+        State("lasso-sample-ids", "children"),
         State("data-store", "data")]
 )
 
@@ -499,19 +516,38 @@ def update_report(n_assemblatron_ts, n_generate_ts,
         return generate_sample_folder(samples)
     return []
 
+
+@app.callback(
+    Output(component_id="last-filter-change", component_property="data"),
+    [Input(component_id="species-list", component_property="value"),
+        Input(component_id="group-list", component_property="value"),
+        Input(component_id="qc-list", component_property="value"),
+        Input(component_id="run-name", component_property="children")]
+)
+def update_filter_ts(species_list, group_list, qc_list, run_name):
+    d = datetime.now()
+    for_js = int(time.mktime(d.timetuple())) * 1000
+    return {"timestamp": for_js}
+
 @app.callback(
     Output(component_id="data-store", component_property="data"),
-    [Input(component_id="apply-filter-button", component_property="n_clicks")],
+    [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
+     Input(component_id="last-filter-change", component_property="data")],
     [State(component_id="species-list", component_property="value"),
         State(component_id="group-list", component_property="value"),
         State(component_id="qc-list", component_property="value"),
-        State(component_id="run-name", component_property="children")]
+        State(component_id="run-name", component_property="children"),
+        ]
 )
-def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
+def update_selected_samples(apply_button_ts, filter_change, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
+        filter_change_ts = filter_change["timestamp"]
+
+        if run_name == "" and filter_change_ts > apply_button_ts:
+            raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_csv()

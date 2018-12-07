@@ -176,12 +176,16 @@ def html_div_summary():
                 html.Div([
                     html.Div(
                         [
-                            html.Button(
-                                "Apply Filter",
-                                id="apply-filter-button",
-                                n_clicks=0,
-                                className="button-primary u-full-width"
+                            html.Div(
+                                html.Button(
+                                    "Apply Filter",
+                                    id="apply-filter-button",
+                                    n_clicks=0,
+                                    n_clicks_timestamp=0,
+                                    className="button-primary u-full-width"
+                                ), id="applybutton-div"
                             )
+                            
                         ],
                         className="twelve columns"
                     ),
