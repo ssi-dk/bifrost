@@ -138,10 +138,6 @@ COLUMNS = [
         "id": "whats_my_species.percent_unclassified"
     },
     {
-        "name": "Detected_species_in_DB",
-        "id": "ssi_stamper.whats_my_species:nosubmitted_text"
-    },
-    {
         "name": "DB_ID",
         "id": "_id"
     },
