@@ -1,14 +1,14 @@
 #-Information---------------------------------------------------------------------------------------
-name: ssi_stamper
+name: send_email
 version: 1.0
-target: sample
-type: stamper
-recommendation: required
-requires_db: True
+target: run
+type: filler
+recommendation: optional
 description: >
-  This runs against the mondoDB database and certifies a sample that has run assemblatron and 
-  whats_my_species on it's QC preformance (Core Facility/Supplying Lab/Ok). This can also be run
-  as a script without output on the server (only bifrost DB)
+  TEMPORARY COMPONENT!\n\n
+  This component has been implemented as a temporary measure to allow old scripts work with the new
+  system. What it'll do is launch the program and not store any of the results into the DB other 
+  than if the job ran to completion or not.
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -22,9 +22,7 @@ description: >
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  components:
-    assemblatron:
-      status: Success
-    whats_my_species:
-      status: Success
+  sample:
+    properties:
+      species: Clostridioides difficile
 #---------------------------------------------------------------------------------------------------
