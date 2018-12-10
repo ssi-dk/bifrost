@@ -79,6 +79,8 @@ rule setup__filter_reads_with_bbduk:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -107,6 +109,8 @@ rule assembly__spades:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -137,6 +141,8 @@ rule assembly__skesa:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -163,6 +169,8 @@ rule assembly__selection:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -187,6 +195,8 @@ rule assembly_check__quast_on_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -212,6 +222,8 @@ rule assembly_check__sketch_on_contigs:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -237,6 +249,8 @@ rule post_assembly__stats:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -264,6 +278,8 @@ rule post_assembly__mapping:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -290,6 +306,8 @@ rule post_assembly__samtools_stats:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -315,6 +333,8 @@ rule post_assembly__pileup:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -367,6 +387,8 @@ rule post_assembly__call_variants:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -418,6 +440,8 @@ rule post_assembly__annotate:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",

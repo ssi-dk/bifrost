@@ -790,10 +790,47 @@ rule setup_sample_components_to_run:
                         if config["grid"] == "torque":
                             run_cmd_handle.write("qsub cmd_{}.sh;\n".format(component))  # dependent on grid engine
                         elif config["grid"] == "slurm":
-                            run_cmd_handle.write("sbatch cmd_{}.sh;\n".format(component))  # dependent on grid engine
+                            command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
+                        
+                        if "tmp_dir" in config:
+                             tmp_dir = " --shadow-prefix {}".format(config["tmp_dir"])
                         else:
-                            run_cmd_handle.write("bash cmd_{}.sh;\n".format(component))
-                        run_cmd_handle.write("cd {};\n".format(os.getcwd()))
+                            tmp_dir = ""
+
+                        sample_config = sample_name + "/sample.yaml"
+                        sample_db = datahandling.load_sample(sample_config)
+                        if sample_name in config["samples_to_ignore"]:
+                            sample_component_db["status"] = "skipped"
+                        elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
+                            for component_name in components:
+                                component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + ".smk"
+                                if os.path.isfile(component_file):
+                                    command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
+                                    command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={}{};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"), tmp_dir)
+
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "queued to run"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                else:
+                                    datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "component missing"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+
+                    os.chmod(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time)), 0o777)
+                    if os.path.islink(os.path.join(sample_name, "cmd_{}.sh").format(component)):
+                        os.remove(os.path.join(sample_name, "cmd_{}.sh").format(component))
+                    os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
+                    run_cmd_handle.write("cd {};\n".format(sample_name))
+                    if config["grid"] == "torque":
+                        run_cmd_handle.write("qsub cmd_{}.sh;\n".format(component))  # dependent on grid engine
+                    elif config["grid"] == "slurm":
+                        run_cmd_handle.write("sbatch cmd_{}.sh;\n".format(component))  # dependent on grid engine
+                    else:
+                        run_cmd_handle.write("bash cmd_{}.sh;\n".format(component))
+                    run_cmd_handle.write("cd {};\n".format(os.getcwd()))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(e))

@@ -19,6 +19,7 @@ threads: &threads 4
 restart_times: 2
 init_only: False # initialize samples but don't run the components
 md5skip: False # set to True to skip md5sum update when recreating samples. Recommended: False
+tmp_dir: "/scratch" # Run compute intensive steps on a scratch dir to avoid overdoing IO
 
 # --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder
