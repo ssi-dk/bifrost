@@ -709,15 +709,22 @@ def update_test_table(data_store):
     # reorder columns
     renamed = renamed[list(rename_dict.values())]
 
-    csv_string = renamed.to_csv(index=False, encoding="utf-8", sep=";")
-    csv_string = 'data:text/csv;charset=utf-8,' + \
-        urllib.parse.quote(csv_string)
+    csv_string_eur = renamed.to_csv(index=False, encoding="utf-8", sep=";", decimal=",")
+    tsv_string_us = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
+    full_csv_string_eur = 'data:text/csv;charset=utf-8,' + \
+        urllib.parse.quote(csv_string_eur)
+    full_tsv_string_us = 'data:text/tab-separated-values;charset=utf-8,' + \
+        urllib.parse.quote(tsv_string_us)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
         html.Div([
             html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
             html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-            html.A("Download Table (csv)", href=csv_string, download='report.csv')
+            html.A("Download Table (tsv, US format)",
+                   href=full_tsv_string_us, download='report.tsv'),
+            " - ",
+            html.A("Download Table (csv, EUR Excel format)",
+                   href=full_csv_string_eur, download='report.csv')
         ]),
         html.Div(table)
         ]
