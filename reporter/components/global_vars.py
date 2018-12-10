@@ -130,7 +130,7 @@ COLUMNS = [
         "id": "analyzer_mlst_alleles"
     },
     {
-        "name": "Main_species_read_percent",
+        "name": "Main_species_plus_undetermined_read_percent",
         "id": "ssi_stamper.whats_my_species:minspecies_text"
     },
     {
@@ -146,4 +146,42 @@ COLUMNS = [
         "id": "ssi_stamper_failed_tests"
     }
 
+]
+
+plot_values = [
+    {
+        "name": "Genome_size_1x",
+        "id": "assemblatron.bin_length_at_1x",
+        "limits": [2000000, 8000000]
+    },
+    {
+        "name": "Genome_size_10x",
+        "id": "assemblatron.bin_length_at_10x",
+        "limits": [2000000, 8000000]
+    },
+    {
+        "name": "G_size_difference_1x_10",
+        "id": "ssi_stamper.assemblatron:1x10xsizediff_text",
+        "limits": [0, 10000]
+    },
+    {
+        "name": "Avg_coverage",
+        "id": "assemblatron.bin_coverage_at_1x",
+        "limits": [0, 200]
+    },
+    {
+        "name": "Num_reads",
+        "id": "assemblatron.filtered_reads_num",
+        "limits": [1000, 8000000]
+    },
+    {
+        "name": "Main_species_plus_undetermined_read_percent",
+        "id": "ssi_stamper.whats_my_species:minspecies_text",
+        "limits": [0.75, 1]
+    },
+    {
+        "name": "Unclassified_reads",
+        "id": "whats_my_species.percent_unclassified",
+        "limits": [0, 0.25]
+    }
 ]
