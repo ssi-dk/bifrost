@@ -18,7 +18,7 @@ def html_div_summary():
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
 
-    run_list = import_data.get_run_list()
+    run_list = list(import_data.get_run_list())
     run_list_options = [
         {
             "label": "{} ({})".format(run["name"],
@@ -176,12 +176,16 @@ def html_div_summary():
                 html.Div([
                     html.Div(
                         [
-                            html.Button(
-                                "Apply Filter",
-                                id="apply-filter-button",
-                                n_clicks=0,
-                                className="button-primary u-full-width"
+                            html.Div(
+                                html.Button(
+                                    "Apply Filter",
+                                    id="apply-filter-button",
+                                    n_clicks=0,
+                                    n_clicks_timestamp=0,
+                                    className="button-primary u-full-width"
+                                ), id="applybutton-div"
                             )
+                            
                         ],
                         className="twelve columns"
                     ),

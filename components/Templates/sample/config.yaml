@@ -1,0 +1,38 @@
+#-Information---------------------------------------------------------------------------------------
+name: sample_pipeline_name
+version: 1.0
+target: sample
+type: pipeline
+recommendation: optional
+description: >
+  This is a template for a sample pipeline\n\n
+  This component when added would run each sample in the run against this program. Idealling a 
+  datadumper file is included which would save the relevant summarized output into the DB as well
+  so that analysis can be done against the DB without the requirement of looking into directories.
+  If none are included then
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+# An example of how to set up requirements which can be done against components, sample, and run.
+# According to DB or yaml structure it checks if the entry is present, if a value is provided then
+# it checks the value matches. If one is not provided then it simple requires that the field is set
+# to something other than null|None. In this example you would need to have species set to
+# Clostridioides difficile and have a emails value of some sort
+# requirements:
+  # sample:
+  #   properties:
+  #     species: Clostridioides difficile
+  # sample_sheet:
+  #   emails:
+requirements:
+  # None
+#---------------------------------------------------------------------------------------------------

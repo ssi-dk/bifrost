@@ -88,7 +88,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "_id": str(item["_id"]),
                 "name": item.get("name", sample_sheet_name),
                 "species": item.get("properties", {}).get("species", "Not classified"),
-                "R1": item.get("reads", {}).get("R1", None)
+                "R1": str(item.get("reads", {}).get("R1", ""))
             }
             if "properties" in item:
                 for summary_key, summary_value in item["properties"].items():
@@ -105,9 +105,6 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
     for item in component_result:
         item_id = str(item["sample"]["_id"])
         component = item["component"]["name"]
-        #HACK to convert ssi_stamper to ssi_stamper
-        # if component == "ssi_stamper":
-        #     component = "ssi_stamper"
         if "summary" in item:
             for summary_key, summary_value in item["summary"].items():
                 clean_result[item_id][component + "." +
@@ -117,7 +114,6 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
             # print("Missing summary", item)
         for func in global_vars.FUNCS:
             clean_result[item_id] = func(clean_result[item_id])
-    
     return pd.DataFrame.from_dict(clean_result, orient="index")
 
 def add_sample_runs(sample_df):

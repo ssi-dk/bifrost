@@ -3,6 +3,7 @@ import os
 import sys
 import urllib
 from datetime import datetime
+import time
 from io import StringIO
 
 import dash
@@ -77,7 +78,11 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
-        html.H1("bifrost REPORT"),
+        html.H1("bifrost report", style={"display": "none"}),
+        html.Img(
+            src="/assets/img/report.png",
+            className="main-logo"
+        ),
         html.H2("Loading...", id="run-name"),
         html.Div(id="report-link"),
         dcc.Store(id="data-store", storage_type="memory"),
@@ -97,50 +102,17 @@ app.layout = html.Div([
                     ),
                 html.Div(
                     [
-                        # html.Div(
-                        #     [
-                        #         html.Button(
-                        #             "QCQuickie",
-                        #             id="update-qcquickie",
-                        #             n_clicks_timestamp=0,
-                        #             className="button-primary u-full-width"
-                        #         )
-                        #     ],
-                        #     className="three columns"
-                        # ),
                         html.Div(
                             [
                                 html.Button(
-                                    "Assemblatron",
+                                    "QC & Analysis",
                                     id="update-assemblatron",
                                     n_clicks_timestamp=0,
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="four columns"
+                            className="eight columns"
                         ),
-                        html.Div(
-                            [
-                                html.Button(
-                                    "Analyzer",
-                                    id="update-analyzer",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="four columns"
-                        ),
-                        # html.Div(
-                        #     [
-                        #         html.Button(
-                        #             "Table report",
-                        #             id="update-table",
-                        #             n_clicks_timestamp=0,
-                        #             className="button-primary u-full-width"
-                        #         )
-                        #     ],
-                        #     className="three columns"
-                        # )
                         html.Div(
                             [
                                 html.Button(
@@ -161,6 +133,9 @@ app.layout = html.Div([
         ),
         html.Div(id="current-report"),
     ]),
+    dcc.Store(
+        id="last-filter-change", storage_type="memory", data={"timestamp": 0}
+    ),
     html.Footer([
         "Created with 🔬 at SSI. Bacteria icons from ",
         html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -368,6 +343,18 @@ def update_species_list(run_name):
         value=species_options
     )
 
+
+@app.callback(
+    Output("applybutton-div", "className"),
+    [Input("run-name", "children")]
+)
+def update_species_list(run_name):
+    if run_name == "Loading..." or len(run_name) == 0:
+        return ""
+    else:
+        return "hidden"
+
+
 @app.callback(
     Output("run-table", "children"),
     [Input("run-name", "children"),
@@ -412,14 +399,11 @@ def next_page(prev_ts, next_ts, page_n, max_page):
 
 @app.callback(
     Output(component_id="sample-report", component_property="children"),
-    [Input(component_id="page-n", component_property="children"),
-        Input(component_id="sample-report", component_property="data-content")],
+    [Input(component_id="page-n", component_property="children")],
     [State("lasso-sample-ids", "children"),
         State("data-store", "data")]
         )
-def sample_report(page_n, data_content, lasso_selected, data_store):
-    if data_content not in ["qcquickie", "assemblatron", "analyzer"] or data_store == "{}":
-        return []
+def sample_report(page_n, lasso_selected, data_store):
     page_n = int(page_n)
     csv_data = StringIO(data_store)
     data = pd.read_csv(csv_data, low_memory=True)
@@ -438,7 +422,7 @@ def sample_report(page_n, data_content, lasso_selected, data_store):
     species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page, data_content, species_plot_data))
+        html.Div(children_sample_list_report(page, species_plot_data))
     ]
 
 @app.callback(
@@ -467,20 +451,15 @@ def update_nextpage(page_n, max_page):
 @app.callback(
     Output("current-report", "children"),
     [
-        # Input("update-qcquickie", "n_clicks_timestamp"),
         Input("update-assemblatron", "n_clicks_timestamp"),
-        Input("update-analyzer", "n_clicks_timestamp"),
-        # Input("update-table", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
-    [State("lasso-sample-ids", "children"),
+    [
+        State("lasso-sample-ids", "children"),
         State("data-store", "data")]
 )
-# def update_report(n_qcquickie_ts, n_assemblatron_ts,
-def update_report(n_assemblatron_ts,
-                n_analyzer_ts, n_generate_ts,
+
+def update_report(n_assemblatron_ts, n_generate_ts,
                 lasso_selected, data_store):
-    n_qcquickie_ts = -1
-    n_table_ts = -1
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
@@ -491,23 +470,14 @@ def update_report(n_assemblatron_ts,
     
     max_page = len(samples) // PAGESIZE
 
-    last_module_ts = max(
-        n_qcquickie_ts, n_assemblatron_ts, n_analyzer_ts, n_generate_ts, n_table_ts)
-    if min(n_qcquickie_ts, n_assemblatron_ts,
-            n_analyzer_ts, n_generate_ts, n_table_ts) == last_module_ts:
+    last_module_ts = max(n_assemblatron_ts, n_generate_ts)
+    if min(n_assemblatron_ts,
+            n_generate_ts) == last_module_ts:
         return []
     report = False
-    if n_qcquickie_ts == last_module_ts:
-        title = "QCQuickie Report"
-        content = "qcquickie"
-        report = True
-    elif n_assemblatron_ts == last_module_ts:
+    if n_assemblatron_ts == last_module_ts:
         title = "Assemblatron Report"
         content = "assemblatron"
-        report = True
-    elif n_analyzer_ts == last_module_ts:
-        title = "Analyzer Report"
-        content = "analyzer"
         report = True
     if report:
         return [
@@ -540,25 +510,44 @@ def update_report(n_assemblatron_ts,
                 className="row"
             ),
             
-            html.Div(id="sample-report", **{"data-content": content}),
+            html.Div(id="sample-report"),
         ]
     elif n_generate_ts == last_module_ts:
         return generate_sample_folder(samples)
     return []
 
+
+@app.callback(
+    Output(component_id="last-filter-change", component_property="data"),
+    [Input(component_id="species-list", component_property="value"),
+        Input(component_id="group-list", component_property="value"),
+        Input(component_id="qc-list", component_property="value"),
+        Input(component_id="run-name", component_property="children")]
+)
+def update_filter_ts(species_list, group_list, qc_list, run_name):
+    d = datetime.now()
+    for_js = int(time.mktime(d.timetuple())) * 1000
+    return {"timestamp": for_js}
+
 @app.callback(
     Output(component_id="data-store", component_property="data"),
-    [Input(component_id="apply-filter-button", component_property="n_clicks")],
+    [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
+     Input(component_id="last-filter-change", component_property="data")],
     [State(component_id="species-list", component_property="value"),
         State(component_id="group-list", component_property="value"),
         State(component_id="qc-list", component_property="value"),
-        State(component_id="run-name", component_property="children")]
+        State(component_id="run-name", component_property="children"),
+        ]
 )
-def update_selected_samples(n_clicks_ignored, species_list, group_list, qc_list, run_name):
+def update_selected_samples(apply_button_ts, filter_change, species_list, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
+        filter_change_ts = filter_change["timestamp"]
+
+        if run_name == "" and filter_change_ts > apply_button_ts:
+            raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_csv()
@@ -720,15 +709,22 @@ def update_test_table(data_store):
     # reorder columns
     renamed = renamed[list(rename_dict.values())]
 
-    csv_string = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
-    csv_string = 'data:text/tab-separated-values;charset=utf-8,' + \
-        urllib.parse.quote(csv_string)
+    csv_string_eur = renamed.to_csv(index=False, encoding="utf-8", sep=";", decimal=",")
+    tsv_string_us = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
+    full_csv_string_eur = 'data:text/csv;charset=utf-8,' + \
+        urllib.parse.quote(csv_string_eur)
+    full_tsv_string_us = 'data:text/tab-separated-values;charset=utf-8,' + \
+        urllib.parse.quote(tsv_string_us)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
         html.Div([
             html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
             html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-            html.A("Download Table (tsv)", href=csv_string, download='report.tsv')
+            html.A("Download Table (tsv, US format)",
+                   href=full_tsv_string_us, download='report.tsv'),
+            " - ",
+            html.A("Download Table (csv, EUR Excel format)",
+                   href=full_csv_string_eur, download='report.csv')
         ]),
         html.Div(table)
         ]

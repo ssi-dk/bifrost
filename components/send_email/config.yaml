@@ -1,0 +1,28 @@
+#-Information---------------------------------------------------------------------------------------
+name: send_email
+version: 1.0
+target: run
+type: filler
+recommendation: optional
+description: >
+  TEMPORARY COMPONENT!\n\n
+  This component has been implemented as a temporary measure to allow old scripts work with the new
+  system. What it'll do is launch the program and not store any of the results into the DB other 
+  than if the job ran to completion or not.
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  sample:
+    properties:
+      species: Clostridioides difficile
+#---------------------------------------------------------------------------------------------------
