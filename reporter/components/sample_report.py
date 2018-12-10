@@ -84,6 +84,8 @@ def html_organisms_table(sample_data, **kwargs):
         sample_data.get("whats_my_species.percent_unclassified", math.nan)
     ]
 
+    color_0 = "#b3ccc1"
+
     color_1 = get_species_color(
         sample_data.get("whats_my_species.name_classified_species_1"))  # Default
 #    color_2 = COLOR_DICT.get(
@@ -97,9 +99,14 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
+                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data") + " + Undetermined"), className="cell"),
+                html_td_percentage(percentages[0] + percentages[2], color_0)
+            ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
+            html.Tr([
+                html.Td(
                     html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
-            ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
+            ], className="trow"),
             html.Tr([
                 html.Td(
                     html.I(sample_data.get("whats_my_species.name_classified_species_2", "No data")), className="cell"),
