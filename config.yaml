@@ -24,7 +24,8 @@ tmp_dir: "/scratch" # Run compute intensive steps on a scratch dir to avoid over
 # --Optional override values--
 # run_name: NAME                              # if provided use that for db if not use folder
 
-mongo_db_key_location: "../resources/keys.txt"  # location of keys.py used for accessing mongodb (required for all components when using mongodb)
+# Path has to be absolute
+mongo_db_key_location: "/srv/data/tools/git.repositories/bifrost-private/resources/keys.txt"  # location of keys.py used for accessing mongodb (required for all components when using mongodb)
 
 
 # MLST DB's is handled in species DB
