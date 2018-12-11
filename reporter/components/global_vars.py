@@ -152,7 +152,7 @@ plot_values = [
     {
         "name": "Genome_size_1x",
         "id": "assemblatron.bin_length_at_1x",
-        "limits": [2000000, 8000000]
+        "limits": [1500000, 8000000]
     },
     {
         "name": "Genome_size_10x",

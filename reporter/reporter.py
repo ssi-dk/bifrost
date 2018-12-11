@@ -789,16 +789,26 @@ def update_coverage_figure(selected_species, rows, selected_rows):
 
     if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
         for plot_value in plot_values:
-            plot_id = plot_value["id"].replace(".","_").replace(":", "_") #HACK
+            plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
             species_df = plot_df[plot_df[species_col] == selected_species]
+            species_df[plot_id] = species_df[plot_id].astype("float64")
             if (plot_id in species_df.columns):
+                data_range = plot_value["limits"][1] - plot_value["limits"][0]
                 low_limit = min(float(species_df[plot_id].min()), plot_value["limits"][0])
+                if low_limit == float(species_df[plot_id].min()):
+                    low_limit -= data_range * 0.1
+                print("high limits")
+                print(float(species_df[plot_id].max()))
+                print(species_df[plot_id])
+                print(plot_value["limits"][1])
                 high_limit = max(float(species_df[plot_id].max()), plot_value["limits"][1])
+                if high_limit == float(species_df[plot_id].max()):
+                    high_limit += data_range*0.1
                 trace_ranges.append([low_limit, high_limit])
                 traces.append(
                     go.Box(
                         x=species_df.loc[:, plot_id],
-                        text=plot_value["name"],
+                        text=species_df["_id"],
                         marker=dict(
                             size=4
                         ),
@@ -807,7 +817,7 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                         jitter=0.3,
                         pointpos=-1.8,
                         selectedpoints=list(
-                            range(species_df["_id"].count())),
+                            range(len(species_df.index))),
                         name=plot_value["name"],
                         showlegend=False,
                         customdata=species_df["_id"]
@@ -824,7 +834,7 @@ def update_coverage_figure(selected_species, rows, selected_rows):
             b=25,
             t=50
         ),
-        yaxis={"tickfont":{"size": 10}},
+        # yaxis={"tickfont":{"size": 10}},
         xaxis={"showgrid": True}
     )
     i = 1

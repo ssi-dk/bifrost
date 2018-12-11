@@ -373,7 +373,9 @@ def children_sample_list_report(filtered_df, plot_data):
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species, plot_data.get(species,[]))
+            html_species_report(filtered_df, species,[])
+            # html_species_report(filtered_df, species,
+                                # plot_data.get(species, []))
         ]))
     return report
 
