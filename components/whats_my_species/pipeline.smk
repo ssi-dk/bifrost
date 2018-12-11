@@ -69,7 +69,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -232,4 +232,4 @@ rule datadump_whats_my_species:
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_whats_my_species.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

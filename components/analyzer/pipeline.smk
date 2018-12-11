@@ -1,6 +1,5 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 from bifrostlib import datahandling
 
 component = "analyzer"  # Depends on component name, should be same as folder
@@ -69,7 +68,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "ariba_resfinder"
@@ -273,4 +272,4 @@ rule datadump_analysis:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_analyzer.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

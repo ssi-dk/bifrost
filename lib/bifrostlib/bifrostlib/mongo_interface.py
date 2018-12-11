@@ -12,7 +12,7 @@ def get_connection():
         config_file = "../run_config.yaml"
     with open(config_file, "r") as file_handle:
         config = yaml.load(file_handle)
-    mongo_db_key_location = os.path.join(os.path.dirname(__file__), config["mongo_db_key_location"])
+    mongo_db_key_location = config["mongo_db_key_location"]
     with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
         mongodb_url = mongo_db_key_location_handle.readline().strip()
     "Return mongodb connection"

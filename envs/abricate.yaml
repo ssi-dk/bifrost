@@ -1,5 +1,0 @@
-name: abricate
-channels:
-  - bioconda
-dependencies:
-  - abricate

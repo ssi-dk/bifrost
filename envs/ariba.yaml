@@ -1,7 +1,0 @@
-name: ariba
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - python
-  - ariba

@@ -1,5 +1,0 @@
-name: prokka
-channels:
-  - bioconda
-dependencies:
-  - prokka

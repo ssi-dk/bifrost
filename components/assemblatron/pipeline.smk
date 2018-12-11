@@ -1,6 +1,5 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 from bifrostlib import datahandling
 
 component = "assemblatron"  # Depends on component name, should be same as folder
@@ -67,7 +66,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -375,7 +374,7 @@ rule summarize__depth:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_depth.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_depth.py")
 
 
 rule_name = "post_assembly__call_variants"
@@ -428,7 +427,7 @@ rule summarize__variants:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_variants.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_variants.py")
 
 
 rule_name = "post_assembly__annotate"
@@ -493,4 +492,4 @@ rule datadump_assemblatron:
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder,
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_assemblatron.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
