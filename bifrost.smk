@@ -11,7 +11,7 @@ import pandas
 import pkg_resources
 import hashlib
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
-import datahandling
+import datahandling from bifrostlib
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 #Saving the config
