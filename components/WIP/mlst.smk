@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 
 configfile: "../run_config.yaml"

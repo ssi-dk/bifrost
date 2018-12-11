@@ -3,7 +3,7 @@ import sys
 import pandas
 import Bio.SeqIO
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 component = "qcquickie"  # Depends on component name, should be same as folder
 
