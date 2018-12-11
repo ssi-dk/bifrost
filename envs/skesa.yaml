@@ -1,5 +1,0 @@
-name: skesa
-channels:
-  - bioconda
-dependencies:
-  - skesa
