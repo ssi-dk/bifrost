@@ -2,7 +2,6 @@ import os
 import sys
 import pandas
 import Bio.SeqIO
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 from bifrostlib import datahandling
 
 component = "qcquickie"  # Depends on component name, should be same as folder
@@ -69,7 +68,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "fastqc_on_reads"
@@ -423,7 +422,7 @@ rule summarize__depth:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_depth.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_depth.py")
 
 
 rule_name = "assembly_check__call_variants"
@@ -476,7 +475,7 @@ rule summarize__variants:
     conda:
         "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/summarize_variants.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_variants.py")
 
 
 rule_name = "datadump_qcquickie"
@@ -508,4 +507,4 @@ rule datadump_qcquickie:
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder,
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_qcquickie.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

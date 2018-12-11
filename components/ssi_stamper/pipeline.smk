@@ -67,7 +67,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "run_ssi_stamper"
@@ -95,5 +95,4 @@ rule run_ssi_stamper:
     output:
         complete = touch(rules.all.input)
     script:
-        os.path.join(os.path.dirname(workflow.snakefile),
-                     "../../scripts/ssi_stamper.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/ssi_stamper.py")
