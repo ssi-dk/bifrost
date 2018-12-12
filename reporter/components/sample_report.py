@@ -99,7 +99,7 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")) + " + Unclassified", className="cell"),
+                    [html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
                 html_td_percentage(percentages[0] + percentages[2], color_0)
             ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
             html.Tr([
