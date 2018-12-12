@@ -441,8 +441,10 @@ def get_sample_component_status(run_name):
             status = s_c["status"]
             if status == "Success":
                 status_code = 2
-            elif status == "initialized":
+            elif status == "Running":
                 status_code = 1
+            elif status == "initialized":
+                status_code = 0
             elif status == "Failure":
                 status_code = -1
             elif status == 'queued to run':

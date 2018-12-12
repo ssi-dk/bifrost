@@ -244,6 +244,22 @@ def html_div_summary():
                 ],
                 className="row"
             ),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Label("Plot species",
+                                       htmlFor="plot-species"),
+                            html.Div(dcc.Dropdown(
+                                id="plot-species"
+                            ),id="plot-species-div")
+                            
+                        ],
+                        className="twelve columns"
+                    )
+                ],
+                className="row"
+            ),
             dcc.Graph(id="summary-plot"),
             html.Div(
                 [

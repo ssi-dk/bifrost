@@ -14,6 +14,7 @@ import dash_auth
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
+from plotly import tools 
 from dash.dependencies import Input, Output, State
 
 import dash_scroll_up
@@ -584,8 +585,8 @@ def update_test_table(data_store):
         tests_df["R1"] = np.nan
 
     #Temporary fix for Undetermined:
-    skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
-    tests_df.loc[skipped_mask, qc_action] = "skipped"
+    # skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
+    # tests_df.loc[skipped_mask, qc_action] = "skipped"
     no_reads_mask = pd.isnull(tests_df["R1"])
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
@@ -731,6 +732,30 @@ def update_test_table(data_store):
 
 
 @app.callback(
+    Output("plot-species-div", "children"),
+    [Input("species-list", "value")],
+    [State("plot-species", "value")]
+)
+def plot_species_dropdown(species_list, selected_species):
+    if species_list is None:
+        return dcc.Dropdown(
+            id="plot-species"
+        )
+    if selected_species == "" or selected_species not in species_list:
+        selected_species = species_list[0]
+    species_list_options = [
+        {
+            "label": species,
+            "value": species
+        } for species in species_list]
+    return dcc.Dropdown(
+        id="plot-species",
+        options=species_list_options,
+        value=selected_species
+    )
+
+
+@app.callback(
     Output(component_id="summary-plot", component_property="selectedData"),
     [Input("data-store", "data"),
      Input(component_id="plot-list", component_property="value"),
@@ -743,46 +768,48 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 
 @app.callback(
     Output(component_id="summary-plot", component_property="figure"),
-    [Input(component_id="plot-list", component_property="value"),
+    [Input(component_id="plot-species", component_property="value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
-def update_coverage_figure(plot_value, rows, selected_rows):
+def update_coverage_figure(selected_species, rows, selected_rows):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
-    plot_query = global_vars.PLOTS[plot_value]["projection"]
-    data = []
+    plot_values = global_vars.plot_values
+    traces = []
+    trace_ranges = []
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
     df_ids = plot_df["_id"]
-
-    species_count = 0
     
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
-    plot_query = plot_query.replace(".", "_")
     # end HACK
 
-    if species_col in plot_df:
-
-        # reverse the list so it looks right on plot
-        species_list = plot_df[species_col].unique()
-
-        for species in reversed(species_list):
-            species_df = plot_df[plot_df[species_col] == species]
-            if species == "Not classified":
-                species_name = species
-            else:
-                species_name = "<i>{}</i>".format(short_species(species))
-            if (plot_query in species_df):
-                if (len(species_df)): species_count += 1
-                data.append(
+    if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
+        for plot_value in plot_values:
+            plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
+            species_df = plot_df[plot_df[species_col] == selected_species]
+            species_df[plot_id] = species_df[plot_id].astype("float64")
+            if (plot_id in species_df.columns):
+                data_range = plot_value["limits"][1] - plot_value["limits"][0]
+                low_limit = min(float(species_df[plot_id].min()), plot_value["limits"][0])
+                if low_limit == float(species_df[plot_id].min()):
+                    low_limit -= data_range * 0.1
+                print("high limits")
+                print(float(species_df[plot_id].max()))
+                print(species_df[plot_id])
+                print(plot_value["limits"][1])
+                high_limit = max(float(species_df[plot_id].max()), plot_value["limits"][1])
+                if high_limit == float(species_df[plot_id].max()):
+                    high_limit += data_range*0.1
+                trace_ranges.append([low_limit, high_limit])
+                traces.append(
                     go.Box(
-                        x=species_df.loc[:, plot_query],
-                        text=species_df["name"],
+                        x=species_df.loc[:, plot_id],
+                        text=species_df["_id"],
                         marker=dict(
-                            color=COLOR_DICT.get(species, None),
                             size=4
                         ),
                         
@@ -790,31 +817,32 @@ def update_coverage_figure(plot_value, rows, selected_rows):
                         jitter=0.3,
                         pointpos=-1.8,
                         selectedpoints=list(
-                            range(species_df["_id"].count())),
-                        name="{} ({})".format(species_name,
-                                              species_df["_id"].count()),
+                            range(len(species_df.index))),
+                        name=plot_value["name"],
                         showlegend=False,
                         customdata=species_df["_id"]
                     )
             )
-    height = max(450, species_count*20 + 200)
-    return {
-        "data": data,
-        "layout": go.Layout(
-            hovermode="closest",
-            title="{} - selected samples ({})".format(plot_value.replace("_",
-                                                               " "), len(plot_df["_id"])),
-            height=height,
-            margin=go.layout.Margin(
-                l=175,
-                r=50,
-                b=25,
-                t=50
-            ),
-            yaxis={"tickfont":{"size": 10}},
-            xaxis={"showgrid": True}
-        )
-    }
+    fig = tools.make_subplots(rows=len(traces), cols=1)
+    fig["layout"].update(
+        hovermode="closest",
+        title=selected_species,
+        height=650,
+        margin=go.layout.Margin(
+            l=175,
+            r=50,
+            b=25,
+            t=50
+        ),
+        # yaxis={"tickfont":{"size": 10}},
+        xaxis={"showgrid": True}
+    )
+    i = 1
+    for trace in traces:
+        fig.append_trace(trace, i, 1)
+        fig["layout"]["xaxis{}".format(i)].update(range=trace_ranges[i-1])
+        i += 1
+    return fig
 
 @app.callback(
     Output("group-list", "value"),
