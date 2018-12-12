@@ -590,7 +590,7 @@ def update_test_table(data_store):
     no_reads_mask = pd.isnull(tests_df["R1"])
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
-    tests_df.loc[mask, qc_action] = "core facility"
+    tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
