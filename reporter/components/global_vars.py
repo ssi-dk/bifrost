@@ -157,7 +157,7 @@ plot_values = [
     {
         "name": "Genome_size_10x",
         "id": "assemblatron.bin_length_at_10x",
-        "limits": [2000000, 8000000]
+        "limits": [1500000, 8000000]
     },
     {
         "name": "G_size_difference_1x_10",

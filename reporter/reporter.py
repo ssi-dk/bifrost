@@ -240,7 +240,6 @@ def display_selected_data(selected_data, rows, selected_rows):
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
     sample_ids = list(dtdf["_id"])
-
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
                     for sample in selected_data["points"]])
@@ -249,7 +248,7 @@ def display_selected_data(selected_data, rows, selected_rows):
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
         # This way we keep the table order.
-        points = [str(point) for point in points if point in union_points]
+        points = list(df[df["_id"].isin(lasso_sample_ids)]["name"])
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
     return [
         html.Label(
@@ -791,16 +790,12 @@ def update_coverage_figure(selected_species, rows, selected_rows):
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
             species_df = plot_df[plot_df[species_col] == selected_species]
-            species_df[plot_id] = species_df[plot_id].astype("float64")
+            species_df[plot_id] = pd.to_numeric(species_df[plot_id], errors="coerce")
             if (plot_id in species_df.columns):
                 data_range = plot_value["limits"][1] - plot_value["limits"][0]
                 low_limit = min(float(species_df[plot_id].min()), plot_value["limits"][0])
                 if low_limit == float(species_df[plot_id].min()):
                     low_limit -= data_range * 0.1
-                print("high limits")
-                print(float(species_df[plot_id].max()))
-                print(species_df[plot_id])
-                print(plot_value["limits"][1])
                 high_limit = max(float(species_df[plot_id].max()), plot_value["limits"][1])
                 if high_limit == float(species_df[plot_id].max()):
                     high_limit += data_range*0.1
@@ -808,7 +803,7 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                 traces.append(
                     go.Box(
                         x=species_df.loc[:, plot_id],
-                        text=species_df["_id"],
+                        text=species_df["name"],
                         marker=dict(
                             size=4
                         ),
