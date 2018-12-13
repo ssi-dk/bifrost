@@ -95,4 +95,5 @@ rule run_ssi_stamper:
     output:
         complete = touch(rules.all.input)
     script:
+        # Should be refactored to a datadump
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/ssi_stamper.py")

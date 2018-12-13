@@ -7,12 +7,12 @@ yaml.default_flow_style = False
 
 
 def get_connection():
-    config_file = "run_config.yaml"
-    if not os.path.isfile("run_config.yaml"):
-        config_file = "../run_config.yaml"
-    with open(config_file, "r") as file_handle:
-        config = yaml.load(file_handle)
-    mongo_db_key_location = config["mongo_db_key_location"]
+    # config_file = "run_config.yaml"
+    # if not os.path.isfile("run_config.yaml"):
+    #     config_file = "../run_config.yaml"
+    # with open(config_file, "r") as file_handle:
+    #     config = yaml.load(file_handle)
+    mongo_db_key_location = os.getenv("BIFROST_DB_KEY", None)
     with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
         mongodb_url = mongo_db_key_location_handle.readline().strip()
     "Return mongodb connection"
