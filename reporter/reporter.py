@@ -821,7 +821,6 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                         customdata=species_df["_id"]
                     )
                 )
-                axis_index += 1
     fig = tools.make_subplots(rows=7, cols=1)
     fig["layout"].update(
         hovermode="closest",
