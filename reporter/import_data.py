@@ -138,3 +138,7 @@ def get_read_paths(samples):
 # For run_checker
 def get_sample_component_status(run_name):
     return mongo_interface.get_sample_component_status(run_name)
+
+
+def get_species_QC_values(ncbi_species):
+    return mongo_interface.get_species_QC_values(ncbi_species)

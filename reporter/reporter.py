@@ -784,7 +784,8 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
     df_ids = plot_df["_id"]
-    
+
+
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
     # end HACK
@@ -858,6 +859,125 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     fig["layout"]["yaxis5"].update(domain=(0.28, 0.375))
     fig["layout"]["yaxis6"].update(domain=(0.155, 0.25))
     fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
+
+    species_size = import_data.get_species_QC_values(selected_species)
+    if species_size is None:
+        species_size = import_data.get_species_QC_values("default")
+
+    annotations = [
+        {
+            "x": species_size["min_length"],
+            "y": 0,
+            "xref": "x",
+            "yref": "y",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["min_length"],
+            "y": 1,
+            "xref": "x",
+            "yref": "y",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["max_length"],
+            "y": 0,
+            "xref": "x",
+            "yref": "y",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["max_length"],
+            "y": 1,
+            "xref": "x",
+            "yref": "y",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": 250000,
+            "y": 0,
+            "xref": "x2",
+            "yref": "y2",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 10,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "fail",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 25,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "low",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 50,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "warn",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Num reads
+            "x": 10000,
+            "y": 0,
+            "xref": "x5",
+            "yref": "y5",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {  # Main+uncl
+            "x": 0.95,
+            "y": 0,
+            "xref": "x6",
+            "yref": "y6",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {  # Uncl
+            "x": 0.2,
+            "y": 0,
+            "xref": "x7",
+            "yref": "y7",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+    ]
+
+    fig["layout"].update(annotations=annotations)
 
     return fig
 

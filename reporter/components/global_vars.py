@@ -163,7 +163,7 @@ plot_values = [
     {
         "name": "G_size_difference_1x_10",
         "id": "ssi_stamper.assemblatron:1x10xsizediff_text",
-        "limits": [0, 10000]
+        "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",

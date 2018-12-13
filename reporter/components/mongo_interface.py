@@ -455,3 +455,11 @@ def get_sample_component_status(run_name):
             output[s_c["sample"]["name"]] = sample
         return output
 
+
+def get_species_QC_values(ncbi_species):
+    with get_connection() as connection:
+        db = connection.get_database()
+        if ncbi_species != "default":
+            return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
+        else:
+            return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
