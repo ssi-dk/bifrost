@@ -94,8 +94,6 @@ rule fastqc_on_reads:
     output:
         folder = directory(rules.setup.params.folder + "/fastqc"),
         fastqc_summary = rules.setup.params.folder + "/fastqc_data.txt"
-    conda:
-        "../envs/fastqc.yaml"
     shell:
         """
         mkdir {output.folder}
@@ -128,8 +126,6 @@ rule setup__filter_reads_with_bbduk:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), db_component["adapters_fasta"])
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
 
@@ -156,8 +152,6 @@ rule assembly_check__combine_reads_with_bbmerge:
     output:
         merged_reads = temp(rules.setup.params.folder + "/merged.fastq"),
         unmerged_reads = temp(rules.setup.params.folder + "/unmerged.fastq")
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "bbmerge.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.filtered_reads} out={output.merged_reads} outu={output.unmerged_reads} 1> {log.out_file} 2> {log.err_file}"
 
@@ -184,8 +178,6 @@ rule assembly_check__quick_assembly_with_tadpole:
         unmerged_reads = rules.assembly_check__combine_reads_with_bbmerge.output.unmerged_reads
     output:
         contigs = temp(rules.setup.params.folder + "/raw_contigs.fasta")
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "tadpole.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.merged_reads},{input.unmerged_reads} out={output.contigs} 1> {log.out_file} 2> {log.err_file}"
 
@@ -254,8 +246,6 @@ rule assembly_check__quast_on_contigs:
         contigs = rules.assembly_check__rename_contigs.output.contigs
     output:
         quast = directory(rules.setup.params.folder + "/quast")
-    conda:
-        "../envs/quast.yaml"
     shell:
         "quast.py --threads {threads} {input.contigs} -o {output.quast} 1> {log.out_file} 2> {log.err_file}"
 
@@ -281,8 +271,6 @@ rule assembly_check__sketch_on_contigs:
         contigs = rules.assembly_check__rename_contigs.output.contigs
     output:
         sketch = rules.setup.params.folder + "/contigs.sketch"
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "sendsketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} outsketch={output.sketch} 1> {log.out_file} 2> {log.err_file}"
 
@@ -310,8 +298,6 @@ rule post_assembly__stats:
         contigs = rules.assembly_check__rename_contigs.output.contigs
     output:
         stats = touch(rules.setup.params.folder + "/post_assermbly__stats")
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "stats.sh -Xmx{resources.memory_in_GB}G {input.contigs} 1> {log.out_file} 2> {log.err_file}"
 
@@ -338,8 +324,6 @@ rule assembly_check__map_reads_to_assembly_with_bbmap:
         filtered = rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
         mapped = temp(rules.setup.params.folder + "/contigs.sam")
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "bbmap.sh threads={threads} -Xmx{resources.memory_in_GB}G ref={input.contigs} in={input.filtered} out={output.mapped} ambig=random 1> {log.out_file} 2> {log.err_file}"
 
@@ -365,8 +349,6 @@ rule post_assembly__samtools_stats:
         mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped
     output:
         stats = rules.setup.params.folder + "/contigs.stats",
-    conda:
-        "../envs/samtools.yaml"
     shell:
         "samtools stats -@ {threads} {input.mapped} 1> {output.stats} 2> {log.err_file}"
 
@@ -393,8 +375,6 @@ rule assembly_check__pileup_on_mapped_reads:
     output:
         coverage = temp(rules.setup.params.folder + "/contigs.cov"),
         pileup = rules.setup.params.folder + "/contigs.pileup"
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "pileup.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} basecov={output.coverage} out={output.pileup} 1> {log.out_file} 2> {log.err_file}"
 
@@ -419,8 +399,6 @@ rule summarize__depth:
     output:
         contig_depth_yaml = rules.setup.params.folder + "/contigs.sum.cov",
         binned_depth_yaml = rules.setup.params.folder + "/contigs.bin.cov"
-    conda:
-        "../envs/python_packages.yaml"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_depth.py")
 
@@ -447,8 +425,6 @@ rule assembly_check__call_variants:
         mapped = rules.assembly_check__map_reads_to_assembly_with_bbmap.output.mapped,
     output:
         variants = temp(rules.setup.params.folder + "/contigs.vcf")
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "callvariants.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.mapped} vcf={output.variants} ref={input.contigs} ploidy=1 clearfilters 1> {log.out_file} 2> {log.err_file}"
 
@@ -472,8 +448,6 @@ rule summarize__variants:
         variants = rules.assembly_check__call_variants.output.variants,
     output:
         variants_yaml = rules.setup.params.folder + "/contigs.variants",
-    conda:
-        "../envs/python_packages.yaml"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/summarize_variants.py")
 
