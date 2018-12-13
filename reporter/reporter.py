@@ -787,6 +787,7 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     # end HACK
 
     if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
+        axis_index = 1
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
             species_df = plot_df[plot_df[species_col] == selected_species]
@@ -800,6 +801,16 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                 if high_limit == float(species_df[plot_id].max()):
                     high_limit += data_range*0.1
                 trace_ranges.append([low_limit, high_limit])
+                if "xaxis" in plot_value:
+                    xaxis = plot_value["xaxis"]
+                    yaxis = "y"
+                elif axis_index == 1:
+                    xaxis = "x"
+                    yaxis = "y"
+                else:
+                    xaxis = "x" + str(axis_index)
+                    yaxis = "y" + str(axis_index)
+                print(xaxis)
                 traces.append(
                     go.Box(
                         x=species_df.loc[:, plot_id],
@@ -810,33 +821,55 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                         
                         boxpoints="all",
                         jitter=0.3,
-                        pointpos=-1.8,
+                        pointpos=-1.6,
                         selectedpoints=list(
                             range(len(species_df.index))),
                         name=plot_value["name"],
                         showlegend=False,
-                        customdata=species_df["_id"]
+                        customdata=species_df["_id"],
+                        # xaxis=xaxis,
+                        yaxis=yaxis
                     )
-            )
-    fig = tools.make_subplots(rows=len(traces), cols=1)
+                )
+                axis_index += 1
+    fig = tools.make_subplots(rows=7, cols=1)
     fig["layout"].update(
         hovermode="closest",
         title=selected_species,
-        height=650,
+        height=750,
         margin=go.layout.Margin(
             l=175,
             r=50,
             b=25,
             t=50
         ),
-        # yaxis={"tickfont":{"size": 10}},
-        xaxis={"showgrid": True}
     )
-    i = 1
-    for trace in traces:
-        fig.append_trace(trace, i, 1)
-        fig["layout"]["xaxis{}".format(i)].update(range=trace_ranges[i-1])
-        i += 1
+
+    fig.append_trace(traces[0], 1, 1)
+    fig.append_trace(traces[1], 1, 1)
+    fig.append_trace(traces[2], 2, 1)
+    fig.append_trace(traces[3], 3, 1)
+    fig.append_trace(traces[4], 4, 1)
+    fig.append_trace(traces[5], 5, 1)
+    fig.append_trace(traces[6], 6, 1)
+    fig.append_trace(traces[7], 7, 1)
+
+    fig["layout"]["xaxis"].update(range=trace_ranges[0])
+    fig["layout"]["xaxis2"].update(range=trace_ranges[2])
+    fig["layout"]["xaxis3"].update(range=trace_ranges[3])
+    fig["layout"]["xaxis4"].update(range=trace_ranges[4])
+    fig["layout"]["xaxis5"].update(range=trace_ranges[5])
+    fig["layout"]["xaxis6"].update(range=trace_ranges[6])
+    fig["layout"]["xaxis7"].update(range=trace_ranges[7])
+
+    fig["layout"]["yaxis"].update(domain=(0.78,1))
+    fig["layout"]["yaxis2"].update(domain=(0.655, 0.75))
+    fig["layout"]["yaxis3"].update(domain=(0.53, 0.625))
+    fig["layout"]["yaxis4"].update(domain=(0.415, 0.5))
+    fig["layout"]["yaxis5"].update(domain=(0.28, 0.375))
+    fig["layout"]["yaxis6"].update(domain=(0.155, 0.25))
+    fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
+
     return fig
 
 @app.callback(
