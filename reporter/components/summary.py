@@ -231,23 +231,6 @@ def html_div_summary():
                 [
                     html.Div(
                         [
-                            html.Label("Plot value",
-                                       htmlFor="plot-list"),
-                            dcc.Dropdown(
-                                id="plot-list",
-                                options=plot_values_options,
-                                value=DEFAULT_PLOT
-                            )
-                        ],
-                        className="twelve columns"
-                    )
-                ],
-                className="row"
-            ),
-            html.Div(
-                [
-                    html.Div(
-                        [
                             html.Label("Plot species",
                                        htmlFor="plot-species"),
                             html.Div(dcc.Dropdown(

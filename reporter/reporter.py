@@ -741,7 +741,10 @@ def plot_species_dropdown(species_list, selected_species):
             id="plot-species"
         )
     if selected_species == "" or selected_species not in species_list:
-        selected_species = species_list[0]
+        if species_list[0] == "Not classified" and len(species_list) > 1:
+            selected_species = species_list[1]
+        else:
+            selected_species = species_list[0]
     species_list_options = [
         {
             "label": species,
@@ -757,7 +760,7 @@ def plot_species_dropdown(species_list, selected_species):
 @app.callback(
     Output(component_id="summary-plot", component_property="selectedData"),
     [Input("data-store", "data"),
-     Input(component_id="plot-list", component_property="value"),
+     Input(component_id="plot-species", component_property="value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
