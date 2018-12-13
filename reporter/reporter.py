@@ -790,7 +790,6 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     # end HACK
 
     if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
-        axis_index = 1
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
             species_df = plot_df[plot_df[species_col] == selected_species]
@@ -804,16 +803,6 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                 if high_limit == float(species_df[plot_id].max()):
                     high_limit += data_range*0.1
                 trace_ranges.append([low_limit, high_limit])
-                if "xaxis" in plot_value:
-                    xaxis = plot_value["xaxis"]
-                    yaxis = "y"
-                elif axis_index == 1:
-                    xaxis = "x"
-                    yaxis = "y"
-                else:
-                    xaxis = "x" + str(axis_index)
-                    yaxis = "y" + str(axis_index)
-                print(xaxis)
                 traces.append(
                     go.Box(
                         x=species_df.loc[:, plot_id],
@@ -829,9 +818,7 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                             range(len(species_df.index))),
                         name=plot_value["name"],
                         showlegend=False,
-                        customdata=species_df["_id"],
-                        # xaxis=xaxis,
-                        yaxis=yaxis
+                        customdata=species_df["_id"]
                     )
                 )
                 axis_index += 1
