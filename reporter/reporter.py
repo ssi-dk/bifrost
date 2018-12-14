@@ -743,12 +743,13 @@ def plot_species_dropdown(rows, selected_rows, selected_species):
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
     # end HACK
-    species_list = plot_df[species_col].unique()
-    if species_list is None:
+    if "properties_detected_species" not in plot_df or plot_df[species_col].unique() is None:
         return dcc.Dropdown(
             id="plot-species"
         )
-    if selected_species == "" or selected_species not in species_list:
+    species_list = plot_df[species_col].unique()
+    species_list = list(species_list) + ["All species", ]
+    if selected_species == "" or selected_species is None or selected_species not in species_list:
         if species_list[0] == "Not classified" and len(species_list) > 1:
             selected_species = species_list[1]
         else:
@@ -758,6 +759,7 @@ def plot_species_dropdown(rows, selected_rows, selected_species):
             "label": species,
             "value": species
         } for species in species_list]
+    print(selected_species)
     return dcc.Dropdown(
         id="plot-species",
         options=species_list_options,
@@ -797,10 +799,14 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
     # end HACK
-    if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
+    if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
+        selected_species == "All species"):
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
-            species_df = plot_df[plot_df[species_col] == selected_species]
+            if selected_species == "All species":
+                species_df = plot_df
+            else:
+                species_df = plot_df[plot_df[species_col] == selected_species]
             species_df[plot_id] = pd.to_numeric(species_df[plot_id], errors="coerce")
             if (plot_id in species_df.columns):
                 data_range = plot_value["limits"][1] - plot_value["limits"][0]
