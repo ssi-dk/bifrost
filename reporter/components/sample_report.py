@@ -398,12 +398,17 @@ def generate_sample_folder(samples):
                 ))
     if len(errors):
         return [
+            html.H5("Use this script to generate a folder with all the sample reads linked in it."),
             "A few errors occurred locating the read paths. If you need more info, " +
             "please contact an admin.",
             html.Pre("\n".join(errors), className="error-pre"),
             html.Pre(script, className="folder-pre")
         ]
     else:
-        return [html.Pre(script, className="folder-pre")]
+            
+        return [
+            html.H5("Use this script to generate a folder with all the sample reads linked in it."),
+            html.Pre(script, className="folder-pre")
+            ]
 
 

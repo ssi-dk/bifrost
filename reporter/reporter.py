@@ -91,29 +91,17 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
+        html.Div(id="current-report"),
         html.Div(
             [
                 html.H5(
                     [
-                        "Update report (",
-                        html.Span(id="report-count"),
-                        " samples selected)"
+                        "Generate sample folder script"
                     ],
                     className="box-title"
                     ),
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                html.Button(
-                                    "QC & Analysis",
-                                    id="update-assemblatron",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="eight columns"
-                        ),
                         html.Div(
                             [
                                 html.Button(
@@ -123,8 +111,19 @@ app.layout = html.Div([
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="four columns"
-                        )
+                            className="twelve columns"
+                        ),
+                    ],
+                    className="row"
+                ),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                html.Div(id="sample-folder-div")
+                            ],
+                            className="twelve columns"
+                        ),
                     ],
                     className="row",
                     style={"marginBottom": "15px"}
@@ -132,7 +131,6 @@ app.layout = html.Div([
             ],
             className="border-box"
         ),
-        html.Div(id="current-report"),
     ]),
     dcc.Store(
         id="last-filter-change", storage_type="memory", data={"timestamp": 0}
@@ -198,16 +196,6 @@ def update_run_name(run_name):
         return None
     else:
         return html.H4(html.A("Link to Run Checker", href="{}/{}".format(keys.run_checker_url, run_name)))
-
-@app.callback(
-    Output("report-count", "children"),
-    [Input("lasso-sample-ids", "children")]
-)
-def display_selected_data(ids):
-    if ids is not None and len(ids):
-        return len(ids.split(","))
-    else:
-        return 0
 
 @app.callback(
     Output("lasso-div", "children"),
@@ -448,18 +436,21 @@ def update_nextpage(page_n, max_page):
     else:
         return False
 
+
 @app.callback(
-    Output("current-report", "children"),
+    Output("sample-folder-div", "children"),
     [
-        Input("update-assemblatron", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
     [
         State("lasso-sample-ids", "children"),
         State("data-store", "data")]
 )
+def generate_sample_folder_div(n_generate_ts,
+                  lasso_selected, data_store):
 
-def update_report(n_assemblatron_ts, n_generate_ts,
-                lasso_selected, data_store):
+    if n_generate_ts == 0:
+        return None
+
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
@@ -467,55 +458,63 @@ def update_report(n_assemblatron_ts, n_generate_ts,
         samples = pd.read_csv(csv_data, low_memory=True)["_id"]
     else:
         samples = []
-    
+
+    return generate_sample_folder(samples)
+
+
+@app.callback(
+    Output("current-report", "children"),
+    [
+        Input("lasso-sample-ids", "children"),
+        Input("data-store", "data")]
+)
+
+def update_report(lasso_selected, data_store):
+    if lasso_selected != "":
+        samples = lasso_selected.split(",")  # lasso first
+    elif data_store != None:
+        csv_data = StringIO(data_store)
+        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+    else:
+        samples = []
+    if len(samples) == 0:
+        return []
     max_page = len(samples) // PAGESIZE
 
-    last_module_ts = max(n_assemblatron_ts, n_generate_ts)
-    if min(n_assemblatron_ts,
-            n_generate_ts) == last_module_ts:
-        return []
-    report = False
-    if n_assemblatron_ts == last_module_ts:
-        title = "Assemblatron Report"
-        content = "assemblatron"
-        report = True
-    if report:
-        return [
-            html.H3(title),
-            html.Span("0", style={"display": "none"}, id="page-n"),
-            html.Span(max_page, style={"display": "none"}, id="max-page"),
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.Button(
-                                "Previous page", id="prevpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Button(
-                                "Next page", id="nextpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                ],
-                className="row"
-            ),
-            
-            html.Div(id="sample-report"),
-        ]
-    elif n_generate_ts == last_module_ts:
-        return generate_sample_folder(samples)
-    return []
-
+    title = "Assemblatron Report"
+    content = "assemblatron"
+    return [
+        html.H3(title),
+        html.Span("0", style={"display": "none"}, id="page-n"),
+        html.Span(max_page, style={"display": "none"}, id="max-page"),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.Button(
+                            "Previous page", id="prevpage", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        html.Button(
+                            "Next page", id="nextpage", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+            ],
+            className="row"
+        ),
+        
+        html.Div(id="sample-report"),
+    ]
 
 @app.callback(
     Output(component_id="last-filter-change", component_property="data"),
@@ -720,11 +719,11 @@ def update_test_table(data_store):
         html.Div([
             html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
             html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-            html.A("Download Table (tsv, US format)",
+            html.P(["Download Table ", html.A("(tsv, US format)",
                    href=full_tsv_string_us, download='report.tsv'),
             " - ",
-            html.A("Download Table (csv, EUR Excel format)",
-                   href=full_csv_string_eur, download='report.csv')
+            html.A("(csv, EUR Excel format)",
+                   href=full_csv_string_eur, download='report.csv')])
         ]),
         html.Div(table)
         ]
