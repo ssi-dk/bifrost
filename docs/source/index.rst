@@ -19,15 +19,28 @@ Bifrost is built around the idea of tracking analysis of samples through a DB wi
 DB Structure
 ============
 
-* initialization
-   * sub point?
+The structure of bifrost is currently based around the following tables
 * run
+    * Here we have a continuous flow of samples that are to be used for surveillance which undergo WGS. This is the basis for a run structure. A run structure can also be used to describe projects
 * sample
 * component
 * run_component
 * sample_component
 
+=================
+Starting up a run
+=================
 
+
+# species picker logic
+# Possibilities, 
+#   0. no provided species, no detected species -> leave blank
+#   1. no provided species -> set species to detected
+#   2. provided species not in DB -> set species to provided species
+#   3. provided species in DB as species -> set species to provided species
+#   4. provided species in DB as group
+#       a. detected species is a member of the group -> set species to detected species
+#       b. detected species is NOT a member of the group -> set species to None
 
 .. toctree::
    :maxdepth: 2
