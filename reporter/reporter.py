@@ -732,10 +732,18 @@ def update_test_table(data_store):
 
 @app.callback(
     Output("plot-species-div", "children"),
-    [Input("species-list", "value")],
+    [Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species", "value")]
 )
-def plot_species_dropdown(species_list, selected_species):
+def plot_species_dropdown(rows, selected_rows, selected_species):
+    plot_df = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        plot_df = plot_df.iloc[selected_rows]
+    # part of the HACK, replace with "properties.detected_species" when issue is solved
+    species_col = "properties_detected_species"
+    # end HACK
+    species_list = plot_df[species_col].unique()
     if species_list is None:
         return dcc.Dropdown(
             id="plot-species"
@@ -789,7 +797,6 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
     # end HACK
-
     if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
