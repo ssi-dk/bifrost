@@ -123,8 +123,6 @@ This should be done but is being hacked around for now
 #     params:
 #         folder = rules.setup.params.folder,
 #         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
-#     conda:
-#         "../envs/python_packages.yaml"
 #     shell:
 #         os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_analyzer.py")
 

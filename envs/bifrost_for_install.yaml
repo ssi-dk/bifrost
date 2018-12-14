@@ -1,4 +1,4 @@
-name: qcquickie
+name: bifrost
 channels:
   - defaults
   - bioconda
