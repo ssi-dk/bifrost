@@ -5,3 +5,4 @@ resources/keys.txt
 start.sh
 *.pyc
 reporter/keys.py
+docs/build
