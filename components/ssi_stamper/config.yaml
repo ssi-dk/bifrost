@@ -24,7 +24,7 @@ description: >
 requirements:
   components:
     assemblatron:
-      status: Success
+      status:
     whats_my_species:
       status: Success
 #---------------------------------------------------------------------------------------------------

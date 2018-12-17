@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 
 configfile: "../run_config.yaml"
@@ -62,8 +62,6 @@ rule ariba_resfinder:
         folder = directory(rules.setup.params.folder + "/ariba_resfinder")
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), config["ariba_resfinder_database"])
-    conda:
-        "../envs/ariba.yaml"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
@@ -91,7 +89,5 @@ rule datadump_analysis:lo
         folder = rules.setup.params.folder,
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         version = version
-    conda:
-        "../envs/python_packages.yaml"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_resfinder_db.py")

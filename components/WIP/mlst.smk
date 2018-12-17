@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 
 configfile: "../run_config.yaml"
@@ -104,8 +104,6 @@ rule ariba_mlst:
         folder = directory(rules.setup.params.folder + "/ariba_mlst")
     params:
         sample = sample
-    conda:
-        "../envs/ariba.yaml"
     run:
         try:
             log_out = str(log.out_file)
@@ -147,7 +145,5 @@ rule datadump_analysis:
     params:
         folder = rules.setup.params.folder,
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
-    conda:
-        "../envs/python_packages.yaml"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "../scripts/datadump_analyzer.py")

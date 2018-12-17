@@ -152,17 +152,18 @@ plot_values = [
     {
         "name": "Genome_size_1x",
         "id": "assemblatron.bin_length_at_1x",
-        "limits": [1500000, 8000000]
+        "limits": [1500000, 6000000]
     },
     {
         "name": "Genome_size_10x",
         "id": "assemblatron.bin_length_at_10x",
-        "limits": [2000000, 8000000]
+        "limits": [1500000, 6000000],
+        "xaxis": "x"
     },
     {
         "name": "G_size_difference_1x_10",
         "id": "ssi_stamper.assemblatron:1x10xsizediff_text",
-        "limits": [0, 10000]
+        "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",
@@ -170,12 +171,17 @@ plot_values = [
         "limits": [0, 200]
     },
     {
+        "name": "Contig_num_1x",
+        "id": "assemblatron.bin_contigs_at_1x",
+        "limits": [0, 700]
+    },
+    {
         "name": "Num_reads",
         "id": "assemblatron.filtered_reads_num",
         "limits": [1000, 8000000]
     },
     {
-        "name": "Main_species_plus_undetermined_read_percent",
+        "name": "Main_sp_plus_unclassified",
         "id": "ssi_stamper.whats_my_species:minspecies_text",
         "limits": [0.75, 1]
     },

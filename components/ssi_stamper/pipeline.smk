@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 component = "ssi_stamper"  # Depends on component name, should be same as folder
 
@@ -67,7 +67,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "run_ssi_stamper"
@@ -95,5 +95,5 @@ rule run_ssi_stamper:
     output:
         complete = touch(rules.all.input)
     script:
-        os.path.join(os.path.dirname(workflow.snakefile),
-                     "../../scripts/ssi_stamper.py")
+        # Should be refactored to a datadump
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/ssi_stamper.py")

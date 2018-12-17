@@ -91,29 +91,17 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
+        html.Div(id="current-report"),
         html.Div(
             [
                 html.H5(
                     [
-                        "Update report (",
-                        html.Span(id="report-count"),
-                        " samples selected)"
+                        "Generate sample folder script"
                     ],
                     className="box-title"
                     ),
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                html.Button(
-                                    "QC & Analysis",
-                                    id="update-assemblatron",
-                                    n_clicks_timestamp=0,
-                                    className="button-primary u-full-width"
-                                )
-                            ],
-                            className="eight columns"
-                        ),
                         html.Div(
                             [
                                 html.Button(
@@ -123,8 +111,19 @@ app.layout = html.Div([
                                     className="button-primary u-full-width"
                                 )
                             ],
-                            className="four columns"
-                        )
+                            className="twelve columns"
+                        ),
+                    ],
+                    className="row"
+                ),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                html.Div(id="sample-folder-div")
+                            ],
+                            className="twelve columns"
+                        ),
                     ],
                     className="row",
                     style={"marginBottom": "15px"}
@@ -132,7 +131,6 @@ app.layout = html.Div([
             ],
             className="border-box"
         ),
-        html.Div(id="current-report"),
     ]),
     dcc.Store(
         id="last-filter-change", storage_type="memory", data={"timestamp": 0}
@@ -200,16 +198,6 @@ def update_run_name(run_name):
         return html.H4(html.A("Link to Run Checker", href="{}/{}".format(keys.run_checker_url, run_name)))
 
 @app.callback(
-    Output("report-count", "children"),
-    [Input("lasso-sample-ids", "children")]
-)
-def display_selected_data(ids):
-    if ids is not None and len(ids):
-        return len(ids.split(","))
-    else:
-        return 0
-
-@app.callback(
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
@@ -240,7 +228,6 @@ def display_selected_data(selected_data, rows, selected_rows):
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
     sample_ids = list(dtdf["_id"])
-
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
                     for sample in selected_data["points"]])
@@ -249,7 +236,7 @@ def display_selected_data(selected_data, rows, selected_rows):
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
         # This way we keep the table order.
-        points = [str(point) for point in points if point in union_points]
+        points = list(df[df["_id"].isin(lasso_sample_ids)]["name"])
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
     return [
         html.Label(
@@ -449,18 +436,21 @@ def update_nextpage(page_n, max_page):
     else:
         return False
 
+
 @app.callback(
-    Output("current-report", "children"),
+    Output("sample-folder-div", "children"),
     [
-        Input("update-assemblatron", "n_clicks_timestamp"),
         Input("generate-folder", "n_clicks_timestamp")],
     [
         State("lasso-sample-ids", "children"),
         State("data-store", "data")]
 )
+def generate_sample_folder_div(n_generate_ts,
+                  lasso_selected, data_store):
 
-def update_report(n_assemblatron_ts, n_generate_ts,
-                lasso_selected, data_store):
+    if n_generate_ts == 0:
+        return None
+
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
@@ -468,55 +458,63 @@ def update_report(n_assemblatron_ts, n_generate_ts,
         samples = pd.read_csv(csv_data, low_memory=True)["_id"]
     else:
         samples = []
-    
+
+    return generate_sample_folder(samples)
+
+
+@app.callback(
+    Output("current-report", "children"),
+    [
+        Input("lasso-sample-ids", "children"),
+        Input("data-store", "data")]
+)
+
+def update_report(lasso_selected, data_store):
+    if lasso_selected != "":
+        samples = lasso_selected.split(",")  # lasso first
+    elif data_store != None:
+        csv_data = StringIO(data_store)
+        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+    else:
+        samples = []
+    if len(samples) == 0:
+        return []
     max_page = len(samples) // PAGESIZE
 
-    last_module_ts = max(n_assemblatron_ts, n_generate_ts)
-    if min(n_assemblatron_ts,
-            n_generate_ts) == last_module_ts:
-        return []
-    report = False
-    if n_assemblatron_ts == last_module_ts:
-        title = "Assemblatron Report"
-        content = "assemblatron"
-        report = True
-    if report:
-        return [
-            html.H3(title),
-            html.Span("0", style={"display": "none"}, id="page-n"),
-            html.Span(max_page, style={"display": "none"}, id="max-page"),
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.Button(
-                                "Previous page", id="prevpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Button(
-                                "Next page", id="nextpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                ],
-                className="row"
-            ),
-            
-            html.Div(id="sample-report"),
-        ]
-    elif n_generate_ts == last_module_ts:
-        return generate_sample_folder(samples)
-    return []
-
+    title = "Assemblatron Report"
+    content = "assemblatron"
+    return [
+        html.H3(title),
+        html.Span("0", style={"display": "none"}, id="page-n"),
+        html.Span(max_page, style={"display": "none"}, id="max-page"),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.Button(
+                            "Previous page", id="prevpage", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        html.Button(
+                            "Next page", id="nextpage", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+            ],
+            className="row"
+        ),
+        
+        html.Div(id="sample-report"),
+    ]
 
 @app.callback(
     Output(component_id="last-filter-change", component_property="data"),
@@ -721,11 +719,11 @@ def update_test_table(data_store):
         html.Div([
             html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
             html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-            html.A("Download Table (tsv, US format)",
+            html.P(["Download Table ", html.A("(tsv, US format)",
                    href=full_tsv_string_us, download='report.tsv'),
             " - ",
-            html.A("Download Table (csv, EUR Excel format)",
-                   href=full_csv_string_eur, download='report.csv')
+            html.A("(csv, EUR Excel format)",
+                   href=full_csv_string_eur, download='report.csv')])
         ]),
         html.Div(table)
         ]
@@ -733,21 +731,34 @@ def update_test_table(data_store):
 
 @app.callback(
     Output("plot-species-div", "children"),
-    [Input("species-list", "value")],
+    [Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species", "value")]
 )
-def plot_species_dropdown(species_list, selected_species):
-    if species_list is None:
+def plot_species_dropdown(rows, selected_rows, selected_species):
+    plot_df = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        plot_df = plot_df.iloc[selected_rows]
+    # part of the HACK, replace with "properties.detected_species" when issue is solved
+    species_col = "properties_detected_species"
+    # end HACK
+    if "properties_detected_species" not in plot_df or plot_df[species_col].unique() is None:
         return dcc.Dropdown(
             id="plot-species"
         )
-    if selected_species == "" or selected_species not in species_list:
-        selected_species = species_list[0]
+    species_list = plot_df[species_col].unique()
+    species_list = list(species_list) + ["All species", ]
+    if selected_species == "" or selected_species is None or selected_species not in species_list:
+        if species_list[0] == "Not classified" and len(species_list) > 1:
+            selected_species = species_list[1]
+        else:
+            selected_species = species_list[0]
     species_list_options = [
         {
             "label": species,
             "value": species
         } for species in species_list]
+    print(selected_species)
     return dcc.Dropdown(
         id="plot-species",
         options=species_list_options,
@@ -758,7 +769,7 @@ def plot_species_dropdown(species_list, selected_species):
 @app.callback(
     Output(component_id="summary-plot", component_property="selectedData"),
     [Input("data-store", "data"),
-     Input(component_id="plot-list", component_property="value"),
+     Input(component_id="plot-species", component_property="value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
@@ -782,25 +793,25 @@ def update_coverage_figure(selected_species, rows, selected_rows):
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
     df_ids = plot_df["_id"]
-    
+
+
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
     # end HACK
-
-    if species_col in plot_df.columns and selected_species in plot_df[species_col].unique():
+    if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
+        selected_species == "All species"):
         for plot_value in plot_values:
             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
-            species_df = plot_df[plot_df[species_col] == selected_species]
-            species_df[plot_id] = species_df[plot_id].astype("float64")
+            if selected_species == "All species":
+                species_df = plot_df
+            else:
+                species_df = plot_df[plot_df[species_col] == selected_species]
+            species_df[plot_id] = pd.to_numeric(species_df[plot_id], errors="coerce")
             if (plot_id in species_df.columns):
                 data_range = plot_value["limits"][1] - plot_value["limits"][0]
                 low_limit = min(float(species_df[plot_id].min()), plot_value["limits"][0])
                 if low_limit == float(species_df[plot_id].min()):
                     low_limit -= data_range * 0.1
-                print("high limits")
-                print(float(species_df[plot_id].max()))
-                print(species_df[plot_id])
-                print(plot_value["limits"][1])
                 high_limit = max(float(species_df[plot_id].max()), plot_value["limits"][1])
                 if high_limit == float(species_df[plot_id].max()):
                     high_limit += data_range*0.1
@@ -808,40 +819,178 @@ def update_coverage_figure(selected_species, rows, selected_rows):
                 traces.append(
                     go.Box(
                         x=species_df.loc[:, plot_id],
-                        text=species_df["_id"],
+                        text=species_df["name"],
                         marker=dict(
                             size=4
                         ),
                         
                         boxpoints="all",
                         jitter=0.3,
-                        pointpos=-1.8,
+                        pointpos=-1.6,
                         selectedpoints=list(
                             range(len(species_df.index))),
                         name=plot_value["name"],
                         showlegend=False,
                         customdata=species_df["_id"]
                     )
-            )
-    fig = tools.make_subplots(rows=len(traces), cols=1)
+                )
+    fig = tools.make_subplots(rows=7, cols=1)
     fig["layout"].update(
         hovermode="closest",
         title=selected_species,
-        height=650,
+        height=750,
         margin=go.layout.Margin(
             l=175,
             r=50,
             b=25,
             t=50
         ),
-        # yaxis={"tickfont":{"size": 10}},
-        xaxis={"showgrid": True}
     )
-    i = 1
-    for trace in traces:
-        fig.append_trace(trace, i, 1)
-        fig["layout"]["xaxis{}".format(i)].update(range=trace_ranges[i-1])
-        i += 1
+
+    fig.append_trace(traces[0], 1, 1)
+    fig.append_trace(traces[1], 1, 1)
+    fig.append_trace(traces[2], 2, 1)
+    fig.append_trace(traces[3], 3, 1)
+    fig.append_trace(traces[4], 4, 1)
+    fig.append_trace(traces[5], 5, 1)
+    fig.append_trace(traces[6], 6, 1)
+    fig.append_trace(traces[7], 7, 1)
+
+    fig["layout"]["xaxis"].update(range=trace_ranges[0])
+    fig["layout"]["xaxis2"].update(range=trace_ranges[2])
+    fig["layout"]["xaxis3"].update(range=trace_ranges[3])
+    fig["layout"]["xaxis4"].update(range=trace_ranges[4])
+    fig["layout"]["xaxis5"].update(range=trace_ranges[5])
+    fig["layout"]["xaxis6"].update(range=trace_ranges[6])
+    fig["layout"]["xaxis7"].update(range=trace_ranges[7])
+
+    fig["layout"]["yaxis"].update(domain=(0.78,1))
+    fig["layout"]["yaxis2"].update(domain=(0.655, 0.75))
+    fig["layout"]["yaxis3"].update(domain=(0.53, 0.625))
+    fig["layout"]["yaxis4"].update(domain=(0.415, 0.5))
+    fig["layout"]["yaxis5"].update(domain=(0.28, 0.375))
+    fig["layout"]["yaxis6"].update(domain=(0.155, 0.25))
+    fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
+
+    species_size = import_data.get_species_QC_values(selected_species)
+    if species_size is None:
+        species_size = import_data.get_species_QC_values("default")
+
+    annotations = [
+        {
+            "x": species_size["min_length"],
+            "y": 0,
+            "xref": "x",
+            "yref": "y",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["min_length"],
+            "y": 1,
+            "xref": "x",
+            "yref": "y",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["max_length"],
+            "y": 0,
+            "xref": "x",
+            "yref": "y",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": species_size["max_length"],
+            "y": 1,
+            "xref": "x",
+            "yref": "y",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {
+            "x": 250000,
+            "y": 0,
+            "xref": "x2",
+            "yref": "y2",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 10,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "fail",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 25,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "low",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Cov
+            "x": 50,
+            "y": 0,
+            "xref": "x3",
+            "yref": "y3",
+            "text": "warn",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        { # Num reads
+            "x": 10000,
+            "y": 0,
+            "xref": "x5",
+            "yref": "y5",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {  # Main+uncl
+            "x": 0.95,
+            "y": 0,
+            "xref": "x6",
+            "yref": "y6",
+            "text": "min",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+        {  # Uncl
+            "x": 0.2,
+            "y": 0,
+            "xref": "x7",
+            "yref": "y7",
+            "text": "max",
+            "arrowhead": 0,
+            "ax": 0,
+            "ay": 40
+        },
+    ]
+
+    fig["layout"].update(annotations=annotations)
+
     return fig
 
 @app.callback(

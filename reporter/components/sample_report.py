@@ -99,7 +99,7 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data") + " + Undetermined"), className="cell"),
+                    [html.I(sample_data.get("whats_my_species.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
                 html_td_percentage(percentages[0] + percentages[2], color_0)
             ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
             html.Tr([
@@ -398,12 +398,17 @@ def generate_sample_folder(samples):
                 ))
     if len(errors):
         return [
+            html.H5("Use this script to generate a folder with all the sample reads linked in it."),
             "A few errors occurred locating the read paths. If you need more info, " +
             "please contact an admin.",
             html.Pre("\n".join(errors), className="error-pre"),
             html.Pre(script, className="folder-pre")
         ]
     else:
-        return [html.Pre(script, className="folder-pre")]
+            
+        return [
+            html.H5("Use this script to generate a folder with all the sample reads linked in it."),
+            html.Pre(script, className="folder-pre")
+            ]
 
 

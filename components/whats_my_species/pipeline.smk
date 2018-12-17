@@ -3,7 +3,7 @@ import sys
 import pandas
 import Bio.SeqIO
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 component = "whats_my_species"  # Depends on component name, should be same as folder
 
@@ -69,7 +69,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -96,8 +96,6 @@ rule setup__filter_reads_with_bbduk:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
         adapters = os.path.join(os.path.dirname(workflow.snakefile), db_component["adapters_fasta"])
-    conda:
-        "../envs/bbmap.yaml"
     shell:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
 
@@ -125,8 +123,6 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
         kraken_report = rules.setup.params.folder + "/kraken_report.txt"
     params:
         db = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_database"])
-    conda:
-        "../envs/kraken.yaml"
     shell:
         "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
@@ -155,8 +151,6 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         kraken_report_bracken = rules.setup.params.folder + "/kraken_report_bracken.txt"
     params:
         kmer_dist = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_kmer_dist"])
-    conda:
-        "../envs/bracken.yaml"
     shell:
         """
         est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} 1> {log.out_file} 2> {log.err_file}
@@ -172,8 +166,6 @@ rule species_check__set_species:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -232,4 +224,4 @@ rule datadump_whats_my_species:
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
         folder = rules.setup.params.folder
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_whats_my_species.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

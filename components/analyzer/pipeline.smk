@@ -1,7 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 component = "analyzer"  # Depends on component name, should be same as folder
 
@@ -52,8 +51,6 @@ rule check_requirements:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -69,7 +66,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 rule_name = "ariba_resfinder"
@@ -97,8 +94,6 @@ rule ariba_resfinder:
         folder = directory(rules.setup.params.folder + "/ariba_resfinder")
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_resfinder_database"])
-    conda:
-        "../envs/ariba.yaml"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
@@ -126,8 +121,6 @@ rule abricate_on_ariba_resfinder:
         report = rules.setup.params.folder + "/abricate_on_resfinder_from_ariba.tsv",
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["abricate_resfinder_database"])
-    conda:
-        "../envs/abricate.yaml"
     shell:
         """
         if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
@@ -162,8 +155,6 @@ rule ariba_plasmidfinder:
         folder = directory(rules.setup.params.folder + "/ariba_plasmidfinder")
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_plasmidfinder_database"])
-    conda:
-        "../envs/ariba.yaml"
     shell:
         "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
@@ -191,8 +182,6 @@ rule abricate_on_ariba_plasmidfinder:
         report = rules.setup.params.folder + "/abricate_on_plasmidfinder_from_ariba.tsv",
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["abricate_plasmidfinder_database"])
-    conda:
-        "../envs/abricate.yaml"
     shell:
         """
         if [[ -e {input.folder}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.folder}/assemblies.fa.gz | head -c1) ]];
@@ -227,8 +216,6 @@ rule ariba_mlst:
         folder = directory(rules.setup.params.folder + "/ariba_mlst")
     params:
         sample = sample
-    conda:
-        "../envs/ariba.yaml"
     run:
         try:
             log_out = str(log.out_file)
@@ -270,7 +257,5 @@ rule datadump_analysis:
     params:
         folder = rules.setup.params.folder,
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
-    conda:
-        "../envs/python_packages.yaml"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/datadump_analyzer.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

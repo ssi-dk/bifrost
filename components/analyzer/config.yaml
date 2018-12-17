@@ -24,5 +24,7 @@ ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder/"
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  sample:
+    properties:
+      species:
 #---------------------------------------------------------------------------------------------------

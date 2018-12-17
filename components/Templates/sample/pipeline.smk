@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-import datahandling
+from bifrostlib import datahandling
 
 
 configfile: "../run_config.yaml"  # Relative to run directory
@@ -72,7 +72,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../../scripts/check_requirements.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
 
