@@ -370,16 +370,18 @@ def update_run_table(run_name, pathname):
     Output(component_id="page-n",
             component_property="children"),
     [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage", component_property="n_clicks_timestamp")],
+        Input(component_id="prevpage2", component_property="n_clicks_timestamp"),
+        Input(component_id="nextpage", component_property="n_clicks_timestamp"),
+        Input(component_id="nextpage2", component_property="n_clicks_timestamp")],
     [State(component_id="page-n", component_property="children"),
         State(component_id="max-page", component_property="children")]
 )
-def next_page(prev_ts, next_ts, page_n, max_page):
+def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
     page_n = int(page_n)
     max_page = int(max_page)
-    if prev_ts > next_ts:
+    if max(prev_ts, prev_ts2) > max(next_ts, next_ts2):
         return max(page_n - 1, 0)
-    elif next_ts > prev_ts:
+    elif max(next_ts, next_ts2) > max(prev_ts, prev_ts2):
         return min(page_n + 1, max_page)
     else:
         return 0
@@ -410,7 +412,8 @@ def sample_report(page_n, lasso_selected, data_store):
     species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page, species_plot_data))
+        html.Div(children_sample_list_report(page, species_plot_data)),
+        html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
     ]
 
 @app.callback(
@@ -514,6 +517,32 @@ def update_report(lasso_selected, data_store):
         ),
         
         html.Div(id="sample-report"),
+
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.Button(
+                            "Previous page", id="prevpage2", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                    ],
+                    className="three columns"
+                ),
+                html.Div(
+                    [
+                        html.Button(
+                            "Next page", id="nextpage2", n_clicks_timestamp=0),
+                    ],
+                    className="three columns"
+                ),
+            ],
+            className="row"
+        ),
     ]
 
 @app.callback(
