@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_table as dt
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
-from import_data import get_read_paths
+from components.import_data import get_read_paths
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -280,7 +280,7 @@ def html_sample_tables(sample_data, **kwargs):
                 html.H6(title, className="table-header"),
                 table,
                 html.H6("MLST", className="table-header"),
-                html_table([[sample_data.get("analyzer.mlst_report", "No results")]])
+                html_table([[sample_data.get("analyzer.mlst_report", "No results")]], className="mlst-table")
             ], className="six columns")
         ], className="row"),
         html.Div([

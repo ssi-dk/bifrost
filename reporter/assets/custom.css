@@ -369,3 +369,11 @@ body, .appcontainer {
 .main-logo {
   height: 100px;
 }
+
+.mlst-table {
+  table-layout: fixed;
+}
+
+.mlst-table tr td {
+  word-wrap: break-word;
+}

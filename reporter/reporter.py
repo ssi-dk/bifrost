@@ -24,7 +24,7 @@ import flask  #used for the image server
 import keys
 
 import components.mongo_interface
-import import_data
+import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report, generate_sample_folder
@@ -1051,3 +1051,6 @@ def all_QCs(n_clicks):
 
 application = app.server # Required for uwsgi
 
+if __name__ == '__main__':
+    # 0.0.0.0 exposes the app to the network.
+    app.run_server(debug=True, host="0.0.0.0")
