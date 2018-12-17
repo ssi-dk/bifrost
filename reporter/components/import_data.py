@@ -1,10 +1,10 @@
 import sys
 import pandas as pd
 from datetime import datetime
-import components.mongo_interface as mongo_interface
+import mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
-import components.global_vars as global_vars
+import global_vars
 
 pd.options.mode.chained_assignment = None
 
