@@ -360,10 +360,13 @@ def update_run_table(run_name, pathname):
         run = "No run selected"
     else:
         run = run_name
-    if len(path) > 2 and path[2] != "":
-        group = path[2]
-        return html_table([["Run Name", run], ["Supplying lab", group]])
-    else:
+        year = run[:2]
+        run_path = keys.run_path + "20{}/{}".format(year, run_name)
+        if len(path) > 2 and path[2] != "":
+            group = path[2]
+            return html_table([["Run Name", run], ["Run Path", run_path], ["Supplying lab", group]])
+        else:
+            return html_table([["Run Name", run], ["Run Path", run_path]])
         return html_table([["Run Name", run]])
 
 @app.callback(
