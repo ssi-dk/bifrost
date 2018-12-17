@@ -12,7 +12,7 @@ AVGCOVERAGE_WARN = 50
 NUMREADS_FAIL = 10000
 #NUMREADS_WARN = 100000
 
-MAXDIFFSIZE1x25x = 250000
+MAXDIFFSIZE1x10x = 250000
 
 
 def generate_summary(results, actions):
@@ -256,7 +256,7 @@ def test(whats_my_species, qcquickie, assemblatron, species, sample):
                 size_1x = assembly_component["summary"]["bin_length_at_1x"]
                 size_10x = assembly_component["summary"]["bin_length_at_10x"]
                 diff = size_1x - size_10x
-                max_diff = MAXDIFFSIZE1x25x
+                max_diff = MAXDIFFSIZE1x10x
                 if isinstance(diff, float):
                     test["value"] = "{}".format(round(diff, 3))
                 else:
