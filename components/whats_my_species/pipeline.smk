@@ -199,7 +199,7 @@ rule species_check__set_species:
                     sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
             datahandling.save_sample(sample_db, sample)
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 rule_name = "datadump_whats_my_species"
 rule datadump_whats_my_species:

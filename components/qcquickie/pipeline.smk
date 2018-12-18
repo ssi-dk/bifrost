@@ -220,7 +220,7 @@ rule assembly_check__rename_contigs:
                 Bio.SeqIO.write(records, output_handle, "fasta")
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "assembly_check__quast_on_contigs"

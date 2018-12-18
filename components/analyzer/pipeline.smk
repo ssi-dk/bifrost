@@ -231,7 +231,7 @@ rule ariba_mlst:
                 shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 rule_name = "datadump_analyzer"
 rule datadump_analysis:
