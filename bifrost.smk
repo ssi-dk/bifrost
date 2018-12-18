@@ -10,6 +10,7 @@ import datetime
 import pandas
 import pkg_resources
 import hashlib
+import traceback
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 from bifrostlib import datahandling
 
@@ -235,7 +236,7 @@ rule initialize_components:
                 datahandling.save_component(component_db, component + "/" + component_name + ".yaml")
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_samples_from_sample_folder"
@@ -303,7 +304,7 @@ rule initialize_samples_from_sample_folder:
                     datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "check__provided_sample_info"
@@ -373,7 +374,7 @@ rule check__provided_sample_info:
             df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "set_samples_from_sample_info"
@@ -437,7 +438,7 @@ rule set_samples_from_sample_info:
                 datahandling.log(log_err, ("No samplesheet data\n"))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "set_sample_species"
@@ -489,7 +490,7 @@ rule set_sample_species:
                 datahandling.log(log_err, "No samplesheet data\n")
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "add_components_to_samples"
@@ -553,7 +554,7 @@ rule add_components_to_samples:
                     datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_sample_components_for_each_sample"
@@ -617,7 +618,7 @@ rule initialize_sample_components_for_each_sample:
                             datahandling.save_sample_component(sample_component_db, sample_component_path)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_run"
@@ -696,7 +697,7 @@ rule initialize_run:
             datahandling.save_run(run_db, component + "/run.yaml")
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "setup_sample_components_to_run"
@@ -802,7 +803,7 @@ rule setup_sample_components_to_run:
                         run_cmd_handle.write("cd {};\n".format(os.getcwd()))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(e))
+            datahandling.log(log_err, str(traceback.format_exc()))
 
 
 rule create_end_file:
