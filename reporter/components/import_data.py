@@ -40,8 +40,8 @@ def get_group_list(run_name=None):
 def get_qc_list(run_name=None):
     return mongo_interface.get_qc_list(run_name)
 
-def get_species_list(run_name=None):
-    return mongo_interface.get_species_list(run_name)
+def get_species_list(species_source, run_name=None):
+    return mongo_interface.get_species_list(species_source, run_name)
 
 def filter_name(species=None, group=None, qc_list=None, run_name=None):
     result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1, "flag": 1},
@@ -49,7 +49,7 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
     return list(result)
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
-def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
+def filter_all(species=None, species_source=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
 
     if sample_ids is None:
         query_result =  mongo_interface.filter(
@@ -59,7 +59,7 @@ def filter_all(species=None, group=None, qc_list=None, run_name=None, func=None,
                 "sample_sheet": 1,
                 "reads": 1
             },
-            run_name, species, group, qc_list=qc_list)
+            run_name, species, species_source, group, qc_list=qc_list)
     else:
         query_result = mongo_interface.filter(
             {

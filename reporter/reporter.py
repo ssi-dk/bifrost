@@ -300,15 +300,16 @@ def update_group_list(run_name, pathname):
 
 @app.callback(
     Output("species-div", "children"),
-    [Input("run-name", "children")]
+    [Input("run-name", "children"),
+    Input("form-species-source", "value")]
 )
-def update_species_list(run_name):
+def update_species_list(run_name, form_species):
     if run_name == "Loading...":
         return None
     if len(run_name) == 0:
-        species_list = import_data.get_species_list()
+        species_list = import_data.get_species_list(form_species)
     else:
-        species_list = import_data.get_species_list(run_name)
+        species_list = import_data.get_species_list(form_species, run_name)
     species_options = []
     species_list_options = []
     for item in species_list:
@@ -565,12 +566,13 @@ def update_filter_ts(species_list, group_list, qc_list, run_name):
     [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
      Input(component_id="last-filter-change", component_property="data")],
     [State(component_id="species-list", component_property="value"),
+     State(component_id="form-species-source", component_property="value"),
         State(component_id="group-list", component_property="value"),
         State(component_id="qc-list", component_property="value"),
         State(component_id="run-name", component_property="children"),
         ]
 )
-def update_selected_samples(apply_button_ts, filter_change, species_list, group_list, qc_list, run_name):
+def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
@@ -579,7 +581,7 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, group_
 
         if run_name == "" and filter_change_ts > apply_button_ts:
             raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
-        samples = import_data.filter_all(species=species_list,
+        samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_csv()
 
@@ -764,17 +766,23 @@ def update_test_table(data_store):
 @app.callback(
     Output("plot-species-div", "children"),
     [Input('datatable-ssi_stamper', 'derived_virtual_data'),
-     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows'),
+     Input("plot-species-source", "value")],
     [State("plot-species", "value")]
 )
-def plot_species_dropdown(rows, selected_rows, selected_species):
+def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
+
+    if plot_species == "provided":
+        species_col = "properties_provided_species"
+    elif plot_species == "detected":
+        species_col = "properties_detected_species"
     # end HACK
-    if "properties_detected_species" not in plot_df or plot_df[species_col].unique() is None:
+    if species_col not in plot_df or plot_df[species_col].unique() is None:
         return dcc.Dropdown(
             id="plot-species"
         )
@@ -813,9 +821,10 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
     Output(component_id="summary-plot", component_property="figure"),
     [Input(component_id="plot-species", component_property="value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
-     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
+    [State("plot-species-source", "value")]
 )
-def update_coverage_figure(selected_species, rows, selected_rows):
+def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_values = global_vars.plot_values
@@ -826,9 +835,12 @@ def update_coverage_figure(selected_species, rows, selected_rows):
         plot_df = plot_df.iloc[selected_rows]
     df_ids = plot_df["_id"]
 
-
-    # part of the HACK, replace with "properties.detected_species" when issue is solved
+     # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
+    if plot_species == "provided":
+        species_col = "properties_provided_species"
+    elif plot_species == "detected":
+        species_col = "properties_detected_species"
     # end HACK
     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
         selected_species == "All species"):
@@ -1055,15 +1067,15 @@ def all_groups(n_clicks, pathname, run_name):
 @app.callback(
     Output("species-list", "value"),
     [Input("species-all", "n_clicks")],
-    [State("run-name", "children")]
+    [State("form-species-source", "value"), State("run-name", "children")]
 )
-def all_species(n_clicks, run_name):
+def all_species(n_clicks, species_source, run_name):
     if run_name == "Loading...":
         return None
     if len(run_name) == 0:
-        species_list = import_data.get_species_list()
+        species_list = import_data.get_species_list(species_source)
     else:
-        species_list = import_data.get_species_list(run_name)
+        species_list = import_data.get_species_list(species_source, run_name)
     species_options = []
     for item in species_list:
         if item["_id"] == None:

@@ -146,9 +146,13 @@ def get_group_list(run_name=None):
     return groups
 
 
-def get_species_list(run_name=None):
+def get_species_list(species_source, run_name=None):
     with get_connection() as connection:
         db = connection.get_database()
+        if species_source == "provided":
+            spe_field = "properties.provided_species"
+        else:
+            spe_field = "properties.detected_species"
         if run_name is not None:
             run = db.runs.find_one(
                 {"name": run_name},
@@ -170,7 +174,7 @@ def get_species_list(run_name=None):
                 },
                 {
                     "$group": {
-                        "_id": "$properties.species",
+                        "_id": "$" + spe_field,
                         "count": {"$sum": 1}
                     }
                 },
@@ -182,7 +186,7 @@ def get_species_list(run_name=None):
             species = list(db.samples.aggregate([
                 {
                     "$group": {
-                        "_id": "$properties.species",
+                        "_id": "$" + spe_field,
                         "count": {"$sum": 1}
                     }
                 },
@@ -342,9 +346,15 @@ def filter_qc(db, qc_list, query):
 
 
 def filter(projection=None, run_name=None,
-           species=None, group=None, qc_list=None, samples=None):
+           species=None, species_source="species", group=None, qc_list=None, samples=None):
     if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
         qc_list = None
+    if species_source == "provided":
+        spe_field = "properties.provided_species"
+    elif species_source == "detected":
+        spe_field = "properties.detected_species"
+    else:
+        spe_field = "properties.species"
     with get_connection() as connection:
         db = connection.get_database()
         query = []
@@ -371,16 +381,18 @@ def filter(projection=None, run_name=None,
             else:
                 query.append({"_id": {"$in": list(run_sample_set)}})
         if species is not None and len(species) != 0:
+            
+
             if "Not classified" in species:
                 query.append({"$or":
                     [
-                        {"properties.species": None},
-                        {"properties.species": {"$in": species}},
-                        {"properties.species": {"$exists": False}}
+                        {"spe_field": None},
+                        {"spe_field": {"$in": species}},
+                        {"spe_field": {"$exists": False}}
                     ]
                 })
             else:
-                query.append({"properties.species": {"$in": species}})
+                query.append({"spe_field": {"$in": species}})
         if group is not None and len(group) != 0:
             if "Not defined" in group:
                 query.append({"$or":
@@ -398,7 +410,7 @@ def filter(projection=None, run_name=None,
             query_result = filter_qc(db, qc_list, query)
         else:
             query_result = list(db.samples.find({"$and": query}, projection)
-                            .sort([("properties.species", pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
+                                .sort([(spe_field, pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
         return query_result
 
 

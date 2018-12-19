@@ -103,7 +103,7 @@ def html_div_summary():
                                         [
                                             html.Label(
                                                 [
-                                                    "Detected organism ",
+                                                    "Species ",
                                                     html.Small(
                                                         [
                                                             "(",
@@ -118,6 +118,18 @@ def html_div_summary():
                                                     )
                                                 ],
                                                 htmlFor="species-list"
+                                            ),
+                                            dcc.RadioItems(
+                                                options=[
+                                                    {"label": "Provided",
+                                                     "value": "provided"},
+                                                    {"label": "Detected",
+                                                     "value": "detected"},
+                                                ],
+                                                value="provided",
+                                                labelStyle={
+                                                    'display': 'inline-block'},
+                                                id="form-species-source"
                                             ),
                                             html.Div(
                                                 dcc.Dropdown(
@@ -189,30 +201,6 @@ def html_div_summary():
                         ],
                         className="twelve columns"
                     ),
-                    html.Div(
-                        [
-                            html.Label(
-                                [
-                                    "Selected Samples ():"
-                                ],
-                                htmlFor="plot-list"),
-                            dcc.Textarea(
-                                className="u-full-width",
-                                style={"resize": "none",
-                                       "height": "300px"},
-                                readOnly=True,
-                                value=[""],
-                                id="selected-samples-list"
-                            ),
-                            html.Div("",
-                                     style={"display": "none"},
-                                     id="selected-samples-ids")
-                        ],
-                        style={"display": "none"},
-                        #className="four columns",
-                        id="selected-samples"
-                    ),
-                    
                 ],
                 className="row mt-1"
             ),
@@ -233,6 +221,18 @@ def html_div_summary():
                         [
                             html.Label("Plot species",
                                        htmlFor="plot-species"),
+                            dcc.RadioItems(
+                                options=[
+                                    {"label": "Provided",
+                                     "value": "provided"},
+                                    {"label": "Detected",
+                                     "value": "detected"},
+                                ],
+                                value="provided",
+                                labelStyle={
+                                    'display': 'inline-block'},
+                                id="plot-species-source"
+                            ),
                             html.Div(dcc.Dropdown(
                                 id="plot-species"
                             ),id="plot-species-div")
