@@ -759,7 +759,7 @@ rule setup_sample_components_to_run:
 
                                 command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={}{} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], advres, component, sample_name, group, group))
                             elif config["grid"] == "slurm":
-                                command.write("#SBATCH --mem={}G -p {} -c {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], component, sample_name))
+                                command.write("#SBATCH --mem={}G -p {} -c {} -t {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], config["walltime"], component, sample_name))
 
                             if "tmp_dir" in config:
                                 tmp_dir = " --shadow-prefix {}".format(
