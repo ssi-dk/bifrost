@@ -292,7 +292,7 @@ rule initialize_samples_from_sample_folder:
                             if sample_name == result.group("sample_name"):
                                 sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
                                 md5sum_key = result.group("paired_read_number") + "_md5sum"
-                                if "md5skip" in config and config["md5skip"] and md5sumkey in sample_db["reads"]:
+                                if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
                                     pass
                                 else:
                                     with open(os.path.realpath(os.path.join(sample_folder, file)), "rb") as fh:
