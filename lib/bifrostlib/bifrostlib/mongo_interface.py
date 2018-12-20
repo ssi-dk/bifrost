@@ -4,6 +4,7 @@ import os
 import ruamel.yaml
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
+import traceback
 
 
 def get_connection():
@@ -125,6 +126,7 @@ def query_mlst_species(ncbi_species_name):
             else:
                 return None
     except Exception as e:
+        print(traceback.format_exc())
         return None
 
 
@@ -147,6 +149,7 @@ def query_ncbi_species(species_entry):
                 else:
                     return None
     except Exception as e:
+        print(traceback.format_exc())
         return None
 
 def query_species(ncbi_species_name):
@@ -159,6 +162,20 @@ def query_species(ncbi_species_name):
             else:
                 return species_db.find_one({"organism": "default"})
     except Exception as e:
+        print(traceback.format_exc())
+        return None
+
+def load_run(name=None):
+    try:
+        with get_connection() as connection:
+            db = connection.get_database()
+            if name is not None:
+                return db.runs.find_one({"name": name, "type": "routine"})
+            else:
+                return db.runs.find_one(
+                    {"$query": {"type": "routine"}, "$orderby": {"_id": -1}})
+    except Exception as e:
+        print(traceback.format_exc())
         return None
 
 def load_sample(sample_id):
@@ -167,6 +184,16 @@ def load_sample(sample_id):
             db = connection.get_database()
             return db.samples.find_one({"_id": sample_id})
     except Exception as e:
+        print(traceback.format_exc())
+        return None
+
+def load_samples(sample_ids):
+    try:
+        with get_connection() as connection:
+            db = connection.get_database()
+            return list(db.samples.find({"_id": {"$in": sample_ids}}))
+    except Exception as e:
+        print(traceback.format_exc())
         return None
 
 def load_last_sample_component(sample_id, component_name):
@@ -181,19 +208,22 @@ def load_last_sample_component(sample_id, component_name):
                 return None
 
     except Exception as e:
+        print(traceback.format_exc())
         return None
 
 
-def load_samples_from_runs(run_ids):
+def load_samples_from_runs(run_ids=None, names=None):
     try:
         with get_connection() as connection:
             db = connection.get_database()
-            if type(run_ids) == list:
+            if run_ids is not None:
                 return list(db.runs.find({"_id": {"$in": run_ids}}, {"samples": 1}))
+            elif names is not None:
+                return list(db.runs.find({"name": {"$in": names}}, {"samples": 1}))
             else:
-                return list(db.runs.find_one({"_id": run_ids}, {"samples": 1}))
-
+                return [db.runs.find_one({"$query": {"type": "routine"}, "$orderby": {"_id": -1}})]
     except Exception as e:
+        print(traceback.format_exc())
         return None
 
 def load_all_samples():
@@ -208,4 +238,5 @@ def load_all_samples():
         return list(sample_ids)
 
     except Exception as e:
+        print(traceback.format_exc())
         return None

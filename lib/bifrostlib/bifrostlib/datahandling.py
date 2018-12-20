@@ -168,10 +168,16 @@ def datadump_template(data_dict, component_folder, file_path, extraction_callbac
             data_dict["results"][file_path_key]["status"] = "datadumper error"
         return data_dict
 
+def load_run_from_db(name=None):
+    return mongo_interface.load_run(name)
 
 def load_sample_from_db(sample_id):
     return mongo_interface.load_sample(bson.objectid.ObjectId(sample_id))
 
+
+def load_samples_from_db(sample_ids):
+    sample_ids = [bson.objectid.ObjectId(id) for id in sample_ids]
+    return mongo_interface.load_samples(sample_ids)
 
 def save_sample_to_db(sample):
     return mongo_interface.dump_sample_info(sample)
@@ -189,11 +195,12 @@ def load_last_sample_component(sample_id, component_name):
     return mongo_interface.load_last_sample_component(bson.objectid.ObjectId(sample_id), component_name)
 
 
-def load_samples_from_runs(run_ids):
-    if type(run_ids) == str:
-        run_ids = [run_ids]
-    run_ids = [bson.objectid.ObjectId(id) for id in run_ids]
-    res = mongo_interface.load_samples_from_runs(run_ids)
+def load_samples_from_runs(run_ids=None, names=None):
+    if run_ids is not None:
+        if type(run_ids) == str:
+            run_ids = [run_ids]
+        run_ids = [bson.objectid.ObjectId(id) for id in run_ids]
+    res = mongo_interface.load_samples_from_runs(run_ids, names)
     sample_ids = set()  # avoid dupes
     for run in res:
         sample_ids.update(list(map(lambda x: x["_id"], run["samples"])))
