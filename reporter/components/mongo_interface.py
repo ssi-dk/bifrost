@@ -386,13 +386,13 @@ def filter(projection=None, run_name=None,
             if "Not classified" in species:
                 query.append({"$or":
                     [
-                        {"spe_field": None},
-                        {"spe_field": {"$in": species}},
-                        {"spe_field": {"$exists": False}}
+                        {spe_field: None},
+                        {spe_field: {"$in": species}},
+                        {spe_field: {"$exists": False}}
                     ]
                 })
             else:
-                query.append({"spe_field": {"$in": species}})
+                query.append({spe_field: {"$in": species}})
         if group is not None and len(group) != 0:
             if "Not defined" in group:
                 query.append({"$or":
