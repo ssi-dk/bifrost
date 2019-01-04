@@ -28,7 +28,7 @@ import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report, generate_sample_folder
-from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
+from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
 import components.global_vars as global_vars
 
 #Globals
@@ -91,10 +91,6 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
-        dcc.ConfirmDialog(
-            id='qc-confirm',
-            message='Are you sure you want to submit the change?',
-        ),
         html.Div(id="current-report"),
         html.Div(
             [
@@ -757,34 +753,14 @@ def update_test_table(data_store):
         html.Div([
             html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
             html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-            html.Div([
-                html.Div([
-                    "Download Table ",
-                    html.A("(tsv, US format)",
-                           href=full_tsv_string_us, download='report.tsv'),
-                    " - ",
-                    html.A("(csv, EUR Excel format)",
-                           href=full_csv_string_eur, download='report.csv')
-                ], className=["six columns"]),
-                html.Div([
-                    "Selected samples: ", 
-                    html.Button("Pass", className="button passfail", id="qc-pass-button"),
-                    html.Button("Fail", className="button passfail",
-                                id="qc-fail-button")
-                ], className="u-pull-right", id="qc-buttons")
-            ], className="row")
+            html.P(["Download Table ", html.A("(tsv, US format)",
+                   href=full_tsv_string_us, download='report.tsv'),
+            " - ",
+            html.A("(csv, EUR Excel format)",
+                   href=full_csv_string_eur, download='report.csv')])
         ]),
         html.Div(table)
         ]
-
-
-    @app.callback(Output('qc-confirm', 'displayed'),
-                [Input('qc-pass-button', 'n_clicks_timestamp'),
-                 Input('qc-fail-button', 'n_clicks_timestamp')])
-    def display_confirm(qc_pass, qc_fail):
-        # if qc_pass > 1 or qc_fail > 1:
-        return True
-        return False
 
 
 @app.callback(

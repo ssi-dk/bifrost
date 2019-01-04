@@ -376,7 +376,3 @@ body, .appcontainer {
 .mlst-table tr td {
   word-wrap: break-word;
 }
-
-button.passfail {
-  margin: 5px;
-}
