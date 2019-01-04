@@ -143,7 +143,7 @@ def query_ncbi_species(species_entry):
             if result is not None:
                 return result["ncbi_species"]
             elif group_result is not None:
-                return result["ncbi_species"]
+                return group_result["ncbi_species"]
             else:
                 return None
     except Exception as e:
