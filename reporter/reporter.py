@@ -28,7 +28,7 @@ import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report, generate_sample_folder
-from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
+from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
 
 #Globals
@@ -91,6 +91,10 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
+        dcc.ConfirmDialog(
+            id='qc-confirm',
+            message='Are you sure you want to submit the change?',
+        ),
         html.Div(id="current-report"),
         html.Div(
             [
@@ -477,7 +481,7 @@ def generate_sample_folder_div(n_generate_ts,
 )
 
 def update_report(lasso_selected, data_store):
-    if lasso_selected != "":
+    if lasso_selected is not None and lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
         csv_data = StringIO(data_store)
@@ -791,6 +795,13 @@ def update_test_table(data_store):
         html.Div(table)
         ]
 
+@app.callback(Output('qc-confirm', 'displayed'),
+                [Input('qc-pass-button', 'n_clicks_timestamp'),
+                Input('qc-fail-button', 'n_clicks_timestamp')])
+def display_confirm(qc_pass, qc_fail):
+    if qc_pass is not None or qc_fail is not None:
+        return True
+    return False
 
 @app.callback(
     Output("plot-species-div", "children"),
@@ -827,7 +838,6 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
             "label": species,
             "value": species
         } for species in species_list]
-    print(selected_species)
     return dcc.Dropdown(
         id="plot-species",
         options=species_list_options,
