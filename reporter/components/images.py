@@ -12,6 +12,6 @@ static_image_route = "/assets/"
 COLOR_DICT = get_species_colors()
 def get_species_color(species):
     color = COLOR_DICT.get(species, "#b3ccc1")
-    if color == "":
+    if color is None:
         color = "#b3ccc1"  # Default
     return color

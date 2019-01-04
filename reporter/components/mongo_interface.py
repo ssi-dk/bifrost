@@ -30,7 +30,11 @@ def get_species_colors():
         species_col = db.species
         colors = {}
         for species in species_col.find():
-            colors[species["organism"]] = species["color"]
+            if "color" in species:
+                colors[species["organism"]] = species["color"]
+            else:
+                colors[species["organism"]] = None
+
     return colors
 
 def get_species_plot_data(species_list, id_list, component="assemblatron"):
