@@ -140,9 +140,9 @@ def query_ncbi_species(species_entry):
             species_db = db.species  # Collection name is samples
             result = species_db.find_one({"organism": species_entry}, {"ncbi_species": 1, "_id": 0})
             group_result = species_db.find_one({"group": species_entry}, {"ncbi_species": 1, "_id": 0})
-            if result["ncbi_species"] is not None:
+            if result is not None:
                 return result["ncbi_species"]
-            elif group_result["ncbi_species"] is not None:
+            elif group_result is not None:
                 return result["ncbi_species"]
             else:
                 return None
