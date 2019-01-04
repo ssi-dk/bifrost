@@ -2,9 +2,9 @@ import pymongo
 import re
 import os
 import ruamel.yaml
+import traceback
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
-import traceback
 
 
 def get_connection():
@@ -139,18 +139,17 @@ def query_ncbi_species(species_entry):
             db = connection.get_database()  # Database name is ngs_runs
             species_db = db.species  # Collection name is samples
             result = species_db.find_one({"organism": species_entry}, {"ncbi_species": 1, "_id": 0})
-            if result["ncbi_species"] is not None:
+            group_result = species_db.find_one({"group": species_entry}, {"ncbi_species": 1, "_id": 0})
+            if result is not None:
                 return result["ncbi_species"]
+            elif group_result is not None:
+                return group_result["ncbi_species"]
             else:
-                # Returns real group name, instead of species_entry in case it contains
-                in_group = species_db.find_one({"group": species_entry}, {"group": 1, "_id": 0})
-                if in_group["group"] is not None:
-                    return in_group["group"]
-                else:
-                    return None
+                return None
     except Exception as e:
         print(traceback.format_exc())
         return None
+
 
 def query_species(ncbi_species_name):
     try:
@@ -165,6 +164,7 @@ def query_species(ncbi_species_name):
         print(traceback.format_exc())
         return None
 
+
 def load_run(name=None):
     try:
         with get_connection() as connection:
@@ -178,6 +178,7 @@ def load_run(name=None):
         print(traceback.format_exc())
         return None
 
+
 def load_sample(sample_id):
     try:
         with get_connection() as connection:
@@ -187,6 +188,7 @@ def load_sample(sample_id):
         print(traceback.format_exc())
         return None
 
+
 def load_samples(sample_ids):
     try:
         with get_connection() as connection:
@@ -195,6 +197,7 @@ def load_samples(sample_ids):
     except Exception as e:
         print(traceback.format_exc())
         return None
+
 
 def load_last_sample_component(sample_id, component_name):
     """Loads most recent sample component for a sample"""
@@ -225,6 +228,7 @@ def load_samples_from_runs(run_ids=None, names=None):
     except Exception as e:
         print(traceback.format_exc())
         return None
+
 
 def load_all_samples():
     try:
