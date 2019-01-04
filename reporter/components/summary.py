@@ -212,6 +212,21 @@ def html_div_summary():
                         html.P(
                             'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
                     ]),
+                    html.Div([
+                        html.Div([
+                            "Download Table ",
+                            html.A("(tsv, US format)", download='report.tsv'),
+                            " - ",
+                            html.A("(csv, EUR Excel format)", download='report.csv')
+                        ], className=["six columns"]),
+                        html.Div([
+                            "Selected samples: ",
+                            html.Button(
+                                "Pass", className="button passfail", id="qc-pass-button"),
+                            html.Button("Fail", className="button passfail",
+                                        id="qc-fail-button")
+                        ], className="u-pull-right", id="qc-buttons")
+                    ], className="row"),
                     html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
                 ],
                      id="ssi_stamper-report", className="bigtable"),
