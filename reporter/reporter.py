@@ -17,6 +17,8 @@ import plotly.graph_objs as go
 from plotly import tools 
 from dash.dependencies import Input, Output, State
 
+from flask import request # To get client IP for pass/fail stamp
+
 import dash_scroll_up
 
 import flask  #used for the image server
@@ -73,6 +75,7 @@ app.css.append_css(
 
 app.layout = html.Div([
     html.Div(className="container", children=[
+        html.Div(id="placeholder", style={"display": "none"}),
         dash_scroll_up.DashScrollUp(
             id="input",
             label="UP",
@@ -92,8 +95,16 @@ app.layout = html.Div([
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
         dcc.ConfirmDialog(
-            id='qc-confirm',
-            message='Are you sure you want to submit the change?',
+            id='qc-confirm-pass',
+            message='Are you sure you want to mark these as "OK"?',
+        ),
+        dcc.ConfirmDialog(
+            id='qc-confirm-sl',
+            message='Are you sure you want to mark these as "supplying lab"?',
+        ),
+        dcc.ConfirmDialog(
+            id='qc-confirm-cf',
+            message='Are you sure you want to mark these as "core facility"?',
         ),
         html.Div(id="current-report"),
         html.Div(
@@ -802,6 +813,46 @@ def display_confirm(qc_pass, qc_fail):
     if qc_pass is not None or qc_fail is not None:
         return True
     return False
+
+
+@app.callback(Output('placeholder', 'children'),
+              [Input('qc-confirm-pass', 'submit_n_clicks')])
+def pass_samples(submit_n_clicks):
+    if submit_n_clicks:
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "value": "pass:OK",
+            "samples": "todo"
+        }
+        print(stamp)
+        return None
+
+@app.callback(Output('placeholder', 'children'),
+              [Input('qc-confirm-sl', 'submit_n_clicks')])
+def supplying_lab_samples(submit_n_clicks):
+    if submit_n_clicks:
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "value": "fail:supplying lab",
+            "samples": "todo"
+        }
+        print(stamp)
+        return None
+
+@app.callback(Output('placeholder', 'children'),
+              [Input('qc-confirm-cf', 'submit_n_clicks')])
+def core_fac_samples(submit_n_clicks):
+    if submit_n_clicks:
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "value": "fail:core facility",
+            "samples": "todo"
+        }
+        print(stamp)
+        return None
 
 @app.callback(
     Output("plot-species-div", "children"),
