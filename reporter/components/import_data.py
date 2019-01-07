@@ -142,3 +142,11 @@ def get_sample_component_status(run_name):
 
 def get_species_QC_values(ncbi_species):
     return mongo_interface.get_species_QC_values(ncbi_species)
+
+def post_stamp(stamp, samples):
+    for sample_id in samples:
+        sample_db = mongo_interface.get_sample(ObjectId(sample_id))
+        stamp_list = sample_db.get("stamps", [])
+        stamp_list.append(stamp)
+        sample_db["stamps"] = stamp_list
+        mongo_interface.save_sample(sample_db)

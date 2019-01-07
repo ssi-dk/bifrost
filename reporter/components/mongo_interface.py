@@ -479,3 +479,34 @@ def get_species_QC_values(ncbi_species):
             return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
         else:
             return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
+
+
+def get_sample(sample_id):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return db.samples.find_one({"_id": sample_id})
+        
+
+def save_sample(data_dict):
+    """COPIED FROM BIFROSTLIB Insert sample dict into mongodb.
+    Return the dict with an _id element"""
+    with get_connection() as connection:
+        db = connection.get_database()
+        samples_db = db.samples  # Collection name is samples
+        if "_id" in data_dict:
+            data_dict = samples_db.find_one_and_update(
+                filter={"_id": data_dict["_id"]},
+                update={"$set": data_dict},
+                # return new doc if one is upserted
+                return_document=pymongo.ReturnDocument.AFTER,
+                upsert=False  # insert the document if it does not exist
+            )
+        else:
+            data_dict = samples_db.find_one_and_update(
+                filter=data_dict,
+                update={"$setOnInsert": data_dict},
+                # return new doc if one is upserted
+                return_document=pymongo.ReturnDocument.AFTER,
+                upsert=True  # insert the document if it does not exist
+            )
+        return data_dict

@@ -2,7 +2,7 @@
 import os
 import sys
 import urllib
-from datetime import datetime
+import datetime
 import time
 from io import StringIO
 
@@ -574,7 +574,7 @@ def update_report(lasso_selected, data_store):
         Input(component_id="run-name", component_property="children")]
 )
 def update_filter_ts(species_list, group_list, qc_list, run_name):
-    d = datetime.now()
+    d = datetime.datetime.now()
     for_js = int(time.mktime(d.timetuple())) * 1000
     return {"timestamp": for_js}
 
@@ -847,10 +847,10 @@ def pass_samples(submit_n_clicks, rows, selected_rows):
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
-            "value": "pass:OK",
-            "samples": sample_ids
+            "date": datetime.datetime.utcnow(),
+            "value": "pass:OK"
         }
-        print(stamp)
+        import_data.post_stamp(stamp, sample_ids)
         return None
 
 @app.callback(Output('placeholder1', 'children'),
@@ -866,10 +866,10 @@ def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
-            "value": "fail:supplying lab",
-            "samples": sample_ids
+            "date": datetime.datetime.utcnow(),
+            "value": "fail:supplying lab"
         }
-        print(stamp)
+        import_data.post_stamp(stamp, sample_ids)
         return None
 
 @app.callback(Output('placeholder2', 'children'),
@@ -885,10 +885,10 @@ def core_fac_samples(submit_n_clicks, rows, selected_rows):
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
-            "value": "fail:core facility",
-            "samples": sample_ids
+            "date": datetime.datetime.utcnow(),
+            "value": "fail:core facility"
         }
-        print(stamp)
+        import_data.post_stamp(stamp, sample_ids)
         return None
 
 @app.callback(
