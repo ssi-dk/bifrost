@@ -224,9 +224,11 @@ def html_div_summary():
                     html.Div([
                         "Selected samples: ",
                         html.Button(
-                            "Pass", className="button passfail", id="qc-pass-button"),
-                        html.Button("Fail", className="button passfail",
-                                    id="qc-fail-button")
+                            "OK", className="button passfail", id="qc-pass-button"),
+                        html.Button("suppl. lab", className="button passfail",
+                                    id="qc-sl-button"),
+                        html.Button("core fac.", className="button passfail",
+                                    id="qc-cf-button")
                     ], className="u-pull-right", id="qc-buttons")
                 ], className="row"),
                 html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})

@@ -75,7 +75,9 @@ app.css.append_css(
 
 app.layout = html.Div([
     html.Div(className="container", children=[
-        html.Div(id="placeholder", style={"display": "none"}),
+        html.Div(id="placeholder0", style={"display": "none"}),
+        html.Div(id="placeholder1", style={"display": "none"}),
+        html.Div(id="placeholder2", style={"display": "none"}),
         dash_scroll_up.DashScrollUp(
             id="input",
             label="UP",
@@ -627,9 +629,11 @@ def update_test_table(data_store):
             html.Div([
                 "Selected samples: ",
                 html.Button(
-                    "Pass", className="button passfail", id="qc-pass-button"),
-                html.Button("Fail", className="button passfail",
-                            id="qc-fail-button")
+                    "OK", className="button passfail", id="qc-pass-button"),
+                html.Button("suppl. lab", className="button passfail",
+                            id="qc-sl-button"),
+                html.Button("core fac.", className="button passfail",
+                            id="qc-cf-button")
             ], className="u-pull-right", id="qc-buttons")
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
@@ -798,58 +802,91 @@ def update_test_table(data_store):
             html.Div([
                 "Selected samples: ",
                 html.Button(
-                    "Pass", className="button passfail", id="qc-pass-button"),
-                html.Button("Fail", className="button passfail",
-                            id="qc-fail-button")
+                    "OK", className="button passfail", id="qc-pass-button"),
+                html.Button("suppl. lab", className="button passfail",
+                            id="qc-sl-button"),
+                html.Button("core fac.", className="button passfail",
+                            id="qc-cf-button")
             ], className="u-pull-right", id="qc-buttons")
         ], className="row"),
         html.Div(table)
         ]
 
-@app.callback(Output('qc-confirm', 'displayed'),
-                [Input('qc-pass-button', 'n_clicks_timestamp'),
-                Input('qc-fail-button', 'n_clicks_timestamp')])
-def display_confirm(qc_pass, qc_fail):
-    if qc_pass is not None or qc_fail is not None:
+
+@app.callback(Output('qc-confirm-pass', 'displayed'),
+              [Input('qc-pass-button', 'n_clicks_timestamp')])
+def display_confirm_pass(button):
+    if button is not None:
         return True
     return False
 
+@app.callback(Output('qc-confirm-sl', 'displayed'),
+              [Input('qc-sl-button', 'n_clicks_timestamp')])
+def display_confirm_sl(button):
+    if button is not None:
+        return True
+    return False
 
-@app.callback(Output('placeholder', 'children'),
-              [Input('qc-confirm-pass', 'submit_n_clicks')])
-def pass_samples(submit_n_clicks):
-    if submit_n_clicks:
+@app.callback(Output('qc-confirm-cf', 'displayed'),
+              [Input('qc-cf-button', 'n_clicks_timestamp')])
+def display_confirm_cf(button):
+    if button is not None:
+        return True
+    return False
+
+@app.callback(Output('placeholder0', 'children'),
+              [Input('qc-confirm-pass', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def pass_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
             "value": "pass:OK",
-            "samples": "todo"
+            "samples": sample_ids
         }
         print(stamp)
         return None
 
-@app.callback(Output('placeholder', 'children'),
-              [Input('qc-confirm-sl', 'submit_n_clicks')])
-def supplying_lab_samples(submit_n_clicks):
-    if submit_n_clicks:
+@app.callback(Output('placeholder1', 'children'),
+              [Input('qc-confirm-sl', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
             "value": "fail:supplying lab",
-            "samples": "todo"
+            "samples": sample_ids
         }
         print(stamp)
         return None
 
-@app.callback(Output('placeholder', 'children'),
-              [Input('qc-confirm-cf', 'submit_n_clicks')])
-def core_fac_samples(submit_n_clicks):
-    if submit_n_clicks:
+@app.callback(Output('placeholder2', 'children'),
+              [Input('qc-confirm-cf', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def core_fac_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
             "value": "fail:core facility",
-            "samples": "todo"
+            "samples": sample_ids
         }
         print(stamp)
         return None
