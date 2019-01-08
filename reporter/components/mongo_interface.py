@@ -56,7 +56,7 @@ def get_species_plot_data(species_list, id_list, component="assemblatron"):
                     "_id": {"$in": routine_list, "$nin": id_list},
                     "properties.species": {"$in": species_list},
                     # NOTE change stamp structure from list to dict to keep only latest.
-                    "stamps" : {"$elemMatch": {"name": "ssi_stamper", "value": "pass:OK"}}
+                    "stamps.ssi_stamper" : "pass:OK"
                 }
             },
             {
