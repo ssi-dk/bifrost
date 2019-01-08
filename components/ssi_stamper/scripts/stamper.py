@@ -112,10 +112,12 @@ def main(argv):
             sample_db["components"] = [{"name":component_db["name"], "_id":component_db["_id"]}]
         
         stamp["_sample_component"] = s_c_db["_id"]
-        if "stamps" in sample_db:
-            sample_db["stamps"].append(stamp)
-        else:
-            sample_db["stamps"] = [stamp]
+        stamp_dict = sample_db.get("stamps", {})
+        stamp_list = stamp_dict.get("stamp_list", [])
+        stamp_list.append(stamp)
+        stamp_dict["stamp_list"] = stamp_list
+        stamp_dict[stamp["name"]] = stamp
+        sample_db["stamps"] = stamp_dict
 
         datahandling.save_sample_to_db(sample_db)
 
