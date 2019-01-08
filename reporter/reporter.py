@@ -32,6 +32,7 @@ from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
+import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
@@ -57,7 +58,8 @@ def short_species(species):
 
 app = dash.Dash()
 
-if hasattr(keys, 'USERNAME_PASSWORD'):
+if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
+    and hasattr(keys, 'USERNAME_PASSWORD'):
     auth = dash_auth.BasicAuth(
         app,
         keys.USERNAME_PASSWORD
@@ -626,15 +628,7 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            html.Div([
-                "Selected samples: ",
-                html.Button(
-                    "OK", className="button passfail", id="qc-pass-button"),
-                html.Button("suppl. lab", className="button passfail",
-                            id="qc-sl-button"),
-                html.Button("core fac.", className="button passfail",
-                            id="qc-cf-button")
-            ], className="u-pull-right", id="qc-buttons")
+            admin.selected_samples_div()
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
@@ -799,15 +793,7 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            html.Div([
-                "Selected samples: ",
-                html.Button(
-                    "OK", className="button passfail", id="qc-pass-button"),
-                html.Button("suppl. lab", className="button passfail",
-                            id="qc-sl-button"),
-                html.Button("core fac.", className="button passfail",
-                            id="qc-cf-button")
-            ], className="u-pull-right", id="qc-buttons")
+            admin.selected_samples_div()
         ], className="row"),
         html.Div(table)
         ]
