@@ -2,7 +2,7 @@
 import os
 import sys
 import urllib
-from datetime import datetime
+import datetime
 import time
 from io import StringIO
 
@@ -17,6 +17,8 @@ import plotly.graph_objs as go
 from plotly import tools 
 from dash.dependencies import Input, Output, State
 
+from flask import request # To get client IP for pass/fail stamp
+
 import dash_scroll_up
 
 import flask  #used for the image server
@@ -28,8 +30,9 @@ import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary
 from components.sample_report import children_sample_list_report, generate_sample_folder
-from components.images import list_of_images, static_image_route, get_species_color, COLOR_DICT, image_directory
+from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
+import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
@@ -55,7 +58,8 @@ def short_species(species):
 
 app = dash.Dash()
 
-if hasattr(keys, 'USERNAME_PASSWORD'):
+if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
+    and hasattr(keys, 'USERNAME_PASSWORD'):
     auth = dash_auth.BasicAuth(
         app,
         keys.USERNAME_PASSWORD
@@ -73,6 +77,9 @@ app.css.append_css(
 
 app.layout = html.Div([
     html.Div(className="container", children=[
+        html.Div(id="placeholder0", style={"display": "none"}),
+        html.Div(id="placeholder1", style={"display": "none"}),
+        html.Div(id="placeholder2", style={"display": "none"}),
         dash_scroll_up.DashScrollUp(
             id="input",
             label="UP",
@@ -91,6 +98,18 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
+        dcc.ConfirmDialog(
+            id='qc-confirm-pass',
+            message='Are you sure you want to mark these as "OK"?',
+        ),
+        dcc.ConfirmDialog(
+            id='qc-confirm-sl',
+            message='Are you sure you want to mark these as "supplying lab"?',
+        ),
+        dcc.ConfirmDialog(
+            id='qc-confirm-cf',
+            message='Are you sure you want to mark these as "core facility"?',
+        ),
         html.Div(id="current-report"),
         html.Div(
             [
@@ -477,7 +496,7 @@ def generate_sample_folder_div(n_generate_ts,
 )
 
 def update_report(lasso_selected, data_store):
-    if lasso_selected != "":
+    if lasso_selected is not None and lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
         csv_data = StringIO(data_store)
@@ -557,7 +576,7 @@ def update_report(lasso_selected, data_store):
         Input(component_id="run-name", component_property="children")]
 )
 def update_filter_ts(species_list, group_list, qc_list, run_name):
-    d = datetime.now()
+    d = datetime.datetime.now()
     for_js = int(time.mktime(d.timetuple())) * 1000
     return {"timestamp": for_js}
 
@@ -609,13 +628,7 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            html.Div([
-                "Selected samples: ",
-                html.Button(
-                    "Pass", className="button passfail", id="qc-pass-button"),
-                html.Button("Fail", className="button passfail",
-                            id="qc-fail-button")
-            ], className="u-pull-right", id="qc-buttons")
+            admin.selected_samples_div()
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
@@ -780,17 +793,89 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            html.Div([
-                "Selected samples: ",
-                html.Button(
-                    "Pass", className="button passfail", id="qc-pass-button"),
-                html.Button("Fail", className="button passfail",
-                            id="qc-fail-button")
-            ], className="u-pull-right", id="qc-buttons")
+            admin.selected_samples_div()
         ], className="row"),
         html.Div(table)
         ]
 
+
+@app.callback(Output('qc-confirm-pass', 'displayed'),
+              [Input('qc-pass-button', 'n_clicks_timestamp')])
+def display_confirm_pass(button):
+    if button is not None:
+        return True
+    return False
+
+@app.callback(Output('qc-confirm-sl', 'displayed'),
+              [Input('qc-sl-button', 'n_clicks_timestamp')])
+def display_confirm_sl(button):
+    if button is not None:
+        return True
+    return False
+
+@app.callback(Output('qc-confirm-cf', 'displayed'),
+              [Input('qc-cf-button', 'n_clicks_timestamp')])
+def display_confirm_cf(button):
+    if button is not None:
+        return True
+    return False
+
+@app.callback(Output('placeholder0', 'children'),
+              [Input('qc-confirm-pass', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def pass_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "date": datetime.datetime.utcnow(),
+            "value": "pass:OK"
+        }
+        import_data.post_stamp(stamp, sample_ids)
+        return None
+
+@app.callback(Output('placeholder1', 'children'),
+              [Input('qc-confirm-sl', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "date": datetime.datetime.utcnow(),
+            "value": "fail:supplying lab"
+        }
+        import_data.post_stamp(stamp, sample_ids)
+        return None
+
+@app.callback(Output('placeholder2', 'children'),
+              [Input('qc-confirm-cf', 'submit_n_clicks')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def core_fac_samples(submit_n_clicks, rows, selected_rows):
+    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        points = list(map(str, list(dtdf["name"])))
+        sample_ids = list(dtdf["_id"])
+        stamp = {
+            "name": "ssi_expert_check",
+            "user-ip": str(request.remote_addr),
+            "date": datetime.datetime.utcnow(),
+            "value": "fail:core facility"
+        }
+        import_data.post_stamp(stamp, sample_ids)
+        return None
 
 @app.callback(
     Output("plot-species-div", "children"),
@@ -827,7 +912,6 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
             "label": species,
             "value": species
         } for species in species_list]
-    print(selected_species)
     return dcc.Dropdown(
         id="plot-species",
         options=species_list_options,

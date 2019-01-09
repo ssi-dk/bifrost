@@ -30,9 +30,13 @@ def script__test_ssi_stamper(sample, sample_yaml, sample_component):
     datadump_dict = datahandling.load_sample_component(sample_component)
     stamp["_sample_component"] = datadump_dict["_id"]
 
-    stamp_list = sample.get("stamps", [])
+    stamp_dict = sample.get("stamps", {})
+    stamp_list = stamp_dict.get("stamp_list", [])
     stamp_list.append(stamp)
-    sample["stamps"] = stamp_list
+    stamp_dict["stamp_list"] = stamp_list
+    stamp_dict[stamp["name"]] = stamp
+    sample["stamps"] = stamp_dict
+
     datahandling.save_sample(sample, sample_yaml)
     return 0
 

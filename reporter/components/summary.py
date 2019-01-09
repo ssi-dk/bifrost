@@ -2,6 +2,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
 import components.import_data as import_data
+import components.admin as admin
 
 
 from components.global_vars import PLOTS, DEFAULT_PLOT
@@ -221,13 +222,7 @@ def html_div_summary():
                         html.A("(csv, EUR Excel format)",
                             download='report.csv')
                     ], className="six columns"),
-                    html.Div([
-                        "Selected samples: ",
-                        html.Button(
-                            "Pass", className="button passfail", id="qc-pass-button"),
-                        html.Button("Fail", className="button passfail",
-                                    id="qc-fail-button")
-                    ], className="u-pull-right", id="qc-buttons")
+                    admin.selected_samples_div()
                 ], className="row"),
                 html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
             ], id="ssi_stamper-report", className="bigtable"),
