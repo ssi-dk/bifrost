@@ -1,11 +1,5 @@
 import os
 import sys
-import platform
-print(platform.sys.version_info)
-for p in sys.path:
-    print(p)
-print(os.environ)
-import pandas
 import Bio.SeqIO
 from bifrostlib import datahandling
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
