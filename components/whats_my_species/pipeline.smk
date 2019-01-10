@@ -2,8 +2,6 @@ import os
 import sys
 import Bio.SeqIO
 from bifrostlib import datahandling
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
-
 
 component = "whats_my_species"  # Depends on component name, should be same as folder
 
