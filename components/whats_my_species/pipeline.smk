@@ -1,9 +1,13 @@
 import os
 import sys
+for p in sys.path:
+    print(p)
+print(os.environ)
 import pandas
 import Bio.SeqIO
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
 from bifrostlib import datahandling
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts"))
+
 
 component = "whats_my_species"  # Depends on component name, should be same as folder
 
