@@ -1,5 +1,7 @@
 import os
 import sys
+import platform
+print(platform.sys.version_info)
 for p in sys.path:
     print(p)
 print(os.environ)
