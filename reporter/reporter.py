@@ -645,10 +645,8 @@ def update_test_table(data_store):
  
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
+    print(tests_df.columns)
 
-    #Temporary fix for Undetermined:
-    # skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
-    # tests_df.loc[skipped_mask, qc_action] = "skipped"
     no_reads_mask = pd.isnull(tests_df["R1"])
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
