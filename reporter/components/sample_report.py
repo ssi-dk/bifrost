@@ -171,7 +171,7 @@ def html_sample_tables(sample_data, **kwargs):
                     }
                 ])
     else:
-        sample_sheet_table = []
+        sample_sheet_table = html_table([])
 
     title = "Assemblatron Results"
     table = html.Div([
@@ -245,11 +245,8 @@ def html_sample_tables(sample_data, **kwargs):
             ] 
         ])
     ])
-
-    resfinder = sample_data.get('analyzer.ariba_resfinder', "[{}]")
-    if type(resfinder) == str:
-        resfinder = resfinder.replace("'", "\"")
-        resfinder = json.loads(resfinder)
+    resfinder = sample_data.get('analyzer.ariba_resfinder', [])
+    if type(resfinder) == list:
         columns = []
         if len(resfinder):
             columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
@@ -268,6 +265,26 @@ def html_sample_tables(sample_data, **kwargs):
     if type(resfinder) == float or not len(resfinder):
         resfinder_div = html.P("No antibiotic resistance genes found")
     
+    plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
+    if type(plasmidfinder) == list:
+        columns = []
+        if len(plasmidfinder):
+            columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
+            plasmidfinder_div = html.Div(
+                dt.DataTable(
+                    style_table={
+                        'overflowX': 'scroll',
+                        'overflowY': 'scroll',
+                        'maxHeight': '480'
+                    },
+
+                    columns=columns,
+                    data=plasmidfinder,
+                    pagination_mode=False
+                ), className="grey-border")
+    if type(plasmidfinder) == float or not len(plasmidfinder):
+        plasmidfinder_div = html.P("No plasmids found")
+
     return html.Div([
         html.Div([
             html.Div([
@@ -287,7 +304,11 @@ def html_sample_tables(sample_data, **kwargs):
             html.Div([
                 html.H6("Resfinder", className="table-header"),
                 resfinder_div
-            ], className="twelve columns")
+            ], className="six columns"),
+            html.Div([
+                html.H6("Plasmidfinder", className="table-header"),
+                plasmidfinder_div
+            ], className="six columns")
         ], className="row")
     ], **kwargs)
 

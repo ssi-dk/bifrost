@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from bifrostlib import datahandling
 
 component = "analyzer"  # Depends on component name, should be same as folder
