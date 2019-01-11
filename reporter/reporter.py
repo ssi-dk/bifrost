@@ -418,8 +418,8 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
         )
 def sample_report(page_n, lasso_selected, data_store):
     page_n = int(page_n)
-    csv_data = StringIO(data_store)
-    data = pd.read_csv(csv_data, low_memory=True)
+    json_data = StringIO(data_store)
+    data = pd.read_json(json_data)
     if lasso_selected != "" and lasso_selected is not None:
         lasso = lasso_selected.split(",")  # lasso first
         data = data[data._id.isin(lasso)]
@@ -480,8 +480,8 @@ def generate_sample_folder_div(n_generate_ts,
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
-        csv_data = StringIO(data_store)
-        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+        json_data = StringIO(data_store)
+        samples = pd.read_json(json_data)["_id"]
     else:
         samples = []
 
@@ -499,8 +499,8 @@ def update_report(lasso_selected, data_store):
     if lasso_selected is not None and lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
-        csv_data = StringIO(data_store)
-        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+        json_data = StringIO(data_store)
+        samples = pd.read_json(json_data)["_id"]
     else:
         samples = []
     if len(samples) == 0:
@@ -602,7 +602,7 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
             raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
-    return samples.to_csv()
+    return samples.to_json()
 
 
 @app.callback(
@@ -635,8 +635,8 @@ def update_test_table(data_store):
     ]
     if data_store == '""':
         return empty_table
-    csv_data = StringIO(data_store)
-    tests_df = pd.read_csv(csv_data, low_memory=True)
+    json_data = StringIO(data_store)
+    tests_df = pd.read_json(json_data)
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
