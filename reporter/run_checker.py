@@ -23,7 +23,8 @@ PAGESIZE = 100
 COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'ssi_stamper']
 
 app = dash.Dash()
-if hasattr(keys, 'USERNAME_PASSWORD'):
+if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
+        and hasattr(keys, 'USERNAME_PASSWORD'):
     auth = dash_auth.BasicAuth(
         app,
         keys.USERNAME_PASSWORD
@@ -57,6 +58,10 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.H1("SerumQC Run Checker"),
+        dcc.Interval(
+            id='table-interval',
+            interval=30*1000,  # in milliseconds
+            n_intervals=0),
         html.Div([
             html.Div(
                 [
@@ -84,6 +89,7 @@ app.layout = html.Div([
         html.H2("", id="run-name"),
         html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
+        html.P("The table will update every 30s automatically."),
         html.Div(id="run-report", className="run_checker_report")
 
     ]),
@@ -138,9 +144,10 @@ def update_run_button(run):
 
 @app.callback(
     Output("run-report", "children"),
-    [Input("run-name", "children")]
+    [Input("run-name", "children"),
+    Input("table-interval", "n_intervals")]
 )
-def update_run_report(run):
+def update_run_report(run, n_intervals):
     data = []
     figure = {}
     if run != "":
