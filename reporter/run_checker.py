@@ -89,6 +89,7 @@ app.layout = html.Div([
         html.H2("", id="run-name"),
         html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
+        html.P("The table will update every 30s automatically."),
         html.Div(id="run-report", className="run_checker_report")
 
     ]),
