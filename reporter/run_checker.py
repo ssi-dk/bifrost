@@ -180,4 +180,5 @@ application = app.server  # Required for uwsgi
 #app.run_server(debug=True, host="0.0.0.0")
 if __name__ == '__main__':
     # 0.0.0.0 exposes the app to the network.
-    app.run_server(debug=True, host="0.0.0.0", port=8051)
+    app.run_server(debug=True, host="0.0.0.0",
+                   port=8051, dev_tools_hot_reload=True)
