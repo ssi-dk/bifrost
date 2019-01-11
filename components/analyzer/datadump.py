@@ -58,7 +58,7 @@ def script__datadump_analyzer(analyzer_folder, sample):
     
     ## Summary:
     try:
-        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_resfinder_from_ariba"]["values"]
+        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_resfinder_from_ariba_tsv"]["values"]
     except KeyError as e:
         datadump_dict["summary"]["ariba_resfinder"] = "KeyError: {}".format(e)
     try:
