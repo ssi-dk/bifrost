@@ -58,9 +58,13 @@ def script__datadump_analyzer(analyzer_folder, sample):
     
     ## Summary:
     try:
-        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_plasmidfinder_from_ariba_tsv"]["values"]
+        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_resfinder_from_ariba"]["values"]
     except KeyError as e:
         datadump_dict["summary"]["ariba_resfinder"] = "KeyError: {}".format(e)
+    try:
+        datadump_dict["summary"]["ariba_plasmidfinder"] = datadump_dict["results"]["abricate_on_plasmidfinder_from_ariba_tsv"]["values"]
+    except KeyError as e:
+        datadump_dict["summary"]["ariba_plasmidfinder"] = "KeyError: {}".format(e)
     try:
         datadump_dict["summary"]["mlst_report"] = ",".join(
             ["{}:{}".format(key, val) for key, val in
