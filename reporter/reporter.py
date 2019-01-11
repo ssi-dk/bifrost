@@ -640,12 +640,12 @@ def update_test_table(data_store):
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
+    qc_action = "stamps.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
  
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
-    print(tests_df.columns)
 
     no_reads_mask = pd.isnull(tests_df["R1"])
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"

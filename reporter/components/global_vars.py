@@ -75,7 +75,8 @@ COLUMNS = [
     },
     {
         "name": "QC_action",
-        "id": "ssi_stamper.assemblatron:action"
+        "id": "stamp.ssi_stamper.value",
+        # "id": "ssi_stamper.assemblatron:action"
     },
     {
         "name": "Comments",
