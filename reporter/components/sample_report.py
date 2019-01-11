@@ -171,7 +171,7 @@ def html_sample_tables(sample_data, **kwargs):
                     }
                 ])
     else:
-        sample_sheet_table = []
+        sample_sheet_table = html_table([])
 
     title = "Assemblatron Results"
     table = html.Div([

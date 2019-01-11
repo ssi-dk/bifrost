@@ -497,12 +497,12 @@ def generate_sample_folder_div(n_generate_ts,
 
 def update_report(lasso_selected, data_store):
     if lasso_selected is not None and lasso_selected != "":
-        samples = lasso_selected.split(",")  # lasso first
-    elif data_store != None:
-        #json_data = StringIO(data_store)
+        samples = lasso_selected.split(",")  # lasso first'
+
+    elif len(data_store) != 0:
         samples = pd.DataFrame.from_dict(data_store)["_id"]
     else:
-        samples = []
+        samples = {}
     if len(samples) == 0:
         return []
     max_page = len(samples) // PAGESIZE
@@ -1003,7 +1003,6 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
             t=50
         ),
     )
-    print(traces)
     fig.append_trace(traces[0], 1, 1)
     fig.append_trace(traces[1], 1, 1)
     fig.append_trace(traces[2], 2, 1)
