@@ -61,10 +61,11 @@ rule check_requirements:
     # Dynamic
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+        requirements_file = component_file_name
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
+        component = component_file_name,
         sample = sample,
         sample_component = sample_component_file_name
     script:
