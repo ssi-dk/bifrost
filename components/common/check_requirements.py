@@ -3,9 +3,11 @@ from bifrostlib import datahandling
 import pandas
 import os
 
+
 def script__initialization(requirements_file, component, sample, sample_component, output_file, log_out, log_err):
     set_status_to_running(sample_component)
-    datahandling.save_component(component)
+    component_db = datahandling.load_component(component)
+    datahandling.save_component(component_db, component)
     if requirements_met(requirements_file, sample, log_out, log_err) == True:
         datahandling.log(log_out, "{}\n{}\n".format(os.getcwd(), output_file))
         with open(str(output_file), "w") as handle:
