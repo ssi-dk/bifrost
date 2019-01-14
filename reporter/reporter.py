@@ -28,7 +28,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.summary import html_div_summary
+from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
@@ -247,7 +247,6 @@ def display_selected_data(selected_data, rows, selected_rows):
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
     sample_ids = list(dtdf["_id"])
-    print(sample_ids)
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
                     for sample in selected_data["points"]])
@@ -255,7 +254,6 @@ def display_selected_data(selected_data, rows, selected_rows):
                         for sample in selected_data["points"]])
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
-        print("lasso", lasso_sample_ids)
         # This way we keep the table order.
         points = list(df[df["_id"].isin(lasso_sample_ids)]["name"])
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
@@ -615,12 +613,7 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
 def update_test_table(data_store):
     empty_table = [
         html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-        html.Div([
-            html.P(
-                'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P(
-                'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
@@ -658,16 +651,16 @@ def update_test_table(data_store):
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
-    # print(tests_df[qc_action])
-    
     user_stamp_col = "stamp.ssi_expert_check.value"
+    print(tests_df.columns)
     # Overload user stamp to ssi_stamper
-    user_OK_mask = tests_df[user_stamp_col] = "OK"
-    tests_df.loc[user_OK_mask, user_stamp_col] = "OK*"
-    user_sl_mask = tests_df[user_stamp_col] = "warning: supplying lab"
-    tests_df.loc[user_sl_mask, user_stamp_col] = "warning: supplying lab*"
-    user_cf_mask = tests_df[user_stamp_col] = "core facility"
-    tests_df.loc[user_cf_mask, user_stamp_col] = "core facility*"
+    if user_stamp_col in tests_df.columns:
+        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
+        tests_df.loc[user_OK_mask, qc_action] = "*OK"
+        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab*"
+        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility*"
 
     # Split test columns
     columns = tests_df.columns
@@ -792,10 +785,7 @@ def update_test_table(data_store):
         urllib.parse.quote(tsv_string_us)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
-        html.Div([
-            html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
