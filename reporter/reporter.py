@@ -247,6 +247,7 @@ def display_selected_data(selected_data, rows, selected_rows):
         dtdf = dtdf.iloc[selected_rows]
     points = list(map(str, list(dtdf["name"])))
     sample_ids = list(dtdf["_id"])
+    print(sample_ids)
     if selected_data is not None and len(selected_data["points"]):
         lasso_points = set([sample["text"]
                     for sample in selected_data["points"]])
@@ -254,6 +255,7 @@ def display_selected_data(selected_data, rows, selected_rows):
                         for sample in selected_data["points"]])
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
+        print("lasso", lasso_sample_ids)
         # This way we keep the table order.
         points = list(df[df["_id"].isin(lasso_sample_ids)]["name"])
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
@@ -657,6 +659,15 @@ def update_test_table(data_store):
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
     # print(tests_df[qc_action])
+    
+    user_stamp_col = "stamp.ssi_expert_check.value"
+    # Overload user stamp to ssi_stamper
+    user_OK_mask = tests_df[user_stamp_col] = "OK"
+    tests_df.loc[user_OK_mask, user_stamp_col] = "OK*"
+    user_sl_mask = tests_df[user_stamp_col] = "warning: supplying lab"
+    tests_df.loc[user_sl_mask, user_stamp_col] = "warning: supplying lab*"
+    user_cf_mask = tests_df[user_stamp_col] = "core facility"
+    tests_df.loc[user_cf_mask, user_stamp_col] = "core facility*"
 
     # Split test columns
     columns = tests_df.columns
