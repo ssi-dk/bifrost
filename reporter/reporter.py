@@ -652,7 +652,6 @@ def update_test_table(data_store):
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
     user_stamp_col = "stamp.ssi_expert_check.value"
-    print(tests_df.columns)
     # Overload user stamp to ssi_stamper
     if user_stamp_col in tests_df.columns:
         user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
