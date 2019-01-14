@@ -28,7 +28,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.summary import html_div_summary
+from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
@@ -613,12 +613,7 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
 def update_test_table(data_store):
     empty_table = [
         html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-        html.Div([
-            html.P(
-                'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P(
-                'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
@@ -640,15 +635,15 @@ def update_test_table(data_store):
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
+    qc_action = "stamp.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
+    else:
+        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
  
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
 
-    #Temporary fix for Undetermined:
-    # skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
-    # tests_df.loc[skipped_mask, qc_action] = "skipped"
     no_reads_mask = pd.isnull(tests_df["R1"])
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
@@ -656,6 +651,15 @@ def update_test_table(data_store):
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
+    user_stamp_col = "stamp.ssi_expert_check.value"
+    # Overload user stamp to ssi_stamper
+    if user_stamp_col in tests_df.columns:
+        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
+        tests_df.loc[user_OK_mask, qc_action] = "*OK"
+        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab*"
+        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility*"
 
     # Split test columns
     columns = tests_df.columns
@@ -780,10 +784,7 @@ def update_test_table(data_store):
         urllib.parse.quote(tsv_string_us)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
-        html.Div([
-            html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
