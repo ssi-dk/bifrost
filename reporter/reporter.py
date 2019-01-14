@@ -690,7 +690,8 @@ def update_test_table(data_store):
                 tests_df["analyzer_mlst_type"] = second_split[1]
                 tests_df["analyzer_mlst_alleles"] = first_split[1]
 
-    test_cols = [col for col in columns if col.startswith("ssi_stamper")]
+    test_cols = [col for col in columns if (col.startswith(
+        "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
     def concatenate_failed(row):
         res = []
         for col in test_cols:
