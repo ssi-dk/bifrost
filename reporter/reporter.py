@@ -640,9 +640,11 @@ def update_test_table(data_store):
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
-    qc_action = "stamps.ssi_stamper.value"
+    qc_action = "stamp.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
+    else:
+        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
  
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
@@ -654,6 +656,7 @@ def update_test_table(data_store):
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
+    # print(tests_df[qc_action])
 
     # Split test columns
     columns = tests_df.columns
