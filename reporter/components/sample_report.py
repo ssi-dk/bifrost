@@ -262,7 +262,7 @@ def html_sample_tables(sample_data, **kwargs):
                     data=resfinder,
                     pagination_mode=False
                 ), className="grey-border")
-    if type(resfinder) == float or not len(resfinder):
+    if type(resfinder) == float or resfinder is None or not len(resfinder):
         resfinder_div = html.P("No antibiotic resistance genes found")
     
     plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
@@ -282,7 +282,7 @@ def html_sample_tables(sample_data, **kwargs):
                     data=plasmidfinder,
                     pagination_mode=False
                 ), className="grey-border")
-    if type(plasmidfinder) == float or not len(plasmidfinder):
+    if type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder):
         plasmidfinder_div = html.P("No plasmids found")
 
     return html.Div([
