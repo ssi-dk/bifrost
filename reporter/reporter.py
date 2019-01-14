@@ -788,9 +788,11 @@ def update_test_table(data_store):
             html.Div([
                 "Download Table ",
                 html.A("(tsv, US format)",
+                       href=full_tsv_string_us,
                        download='report.tsv'),
                 " - ",
                 html.A("(csv, EUR Excel format)",
+                       href=full_csv_string_eur,
                        download='report.csv')
             ], className="six columns"),
             admin.selected_samples_div()
