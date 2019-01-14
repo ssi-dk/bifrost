@@ -1,0 +1,24 @@
+#-Information---------------------------------------------------------------------------------------
+name: ariba_resfinder
+version: 1.0
+target: sample
+type: pipeline
+recommendation: recommended
+description: >
+  This preforms read based mapping against the resfinder DB's.
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+# -None
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  # None
+#---------------------------------------------------------------------------------------------------
