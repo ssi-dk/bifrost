@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "../../scripts
 from bifrostlib import datahandling
 
 
-configfile: "../run_config.yaml"  # Relative to run directory
+configfile: "../config.yaml"  # Relative to run directory
 initialization_config = config
 global_threads = initialization_config["threads"]
 global_memory_in_GB = initialization_config["memory"]

@@ -6,7 +6,7 @@ from bifrostlib import datahandling
 
 component = "ssi_stamper"  # Depends on component name, should be same as folder
 
-configfile: "../run_config.yaml"  # Relative to run directory
+configfile: "../config.yaml"  # Relative to run directory
 global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 sample = config["Sample"]
