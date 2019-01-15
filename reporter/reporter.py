@@ -390,14 +390,14 @@ def update_run_table(run_name, pathname):
         return html_table([["Run Name", run]])
 
 @app.callback(
-    Output(component_id="page-n",
-            component_property="children"),
-    [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-        Input(component_id="prevpage2", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage2", component_property="n_clicks_timestamp")],
-    [State(component_id="page-n", component_property="children"),
-        State(component_id="max-page", component_property="children")]
+    Output("page-n",
+            "children"),
+    [Input("prevpage", "n_clicks_timestamp"),
+        Input("prevpage2", "n_clicks_timestamp"),
+        Input("nextpage", "n_clicks_timestamp"),
+        Input("nextpage2", "n_clicks_timestamp")],
+    [State("page-n", "children"),
+        State("max-page", "children")]
 )
 def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
     page_n = int(page_n)
@@ -411,8 +411,8 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
 
 
 @app.callback(
-    Output(component_id="sample-report", component_property="children"),
-    [Input(component_id="page-n", component_property="children")],
+    Output("sample-report", "children"),
+    [Input("page-n", "children")],
     [State("lasso-sample-ids", "children"),
         State("data-store", "data")]
         )
@@ -440,8 +440,8 @@ def sample_report(page_n, lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="prevpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children")]
+    Output("prevpage", "disabled"),
+    [Input("page-n", "children")]
 )
 def update_prevpage(page_n):
     if int(page_n) == 0:
@@ -450,9 +450,9 @@ def update_prevpage(page_n):
         return False
 
 @app.callback(
-    Output(component_id="nextpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children"),
-        Input(component_id="max-page", component_property="children")]
+    Output("nextpage", "disabled"),
+    [Input("page-n", "children"),
+        Input("max-page", "children")]
 )
 def update_nextpage(page_n, max_page):
     page_n = int(page_n)
@@ -569,11 +569,11 @@ def update_report(lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="last-filter-change", component_property="data"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="qc-list", component_property="value"),
-        Input(component_id="run-name", component_property="children")]
+    Output("last-filter-change", "data"),
+    [Input("species-list", "value"),
+        Input("group-list", "value"),
+        Input("qc-list", "value"),
+        Input("run-name", "children")]
 )
 def update_filter_ts(species_list, group_list, qc_list, run_name):
     d = datetime.datetime.now()
@@ -581,14 +581,14 @@ def update_filter_ts(species_list, group_list, qc_list, run_name):
     return {"timestamp": for_js}
 
 @app.callback(
-    Output(component_id="data-store", component_property="data"),
-    [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
-     Input(component_id="last-filter-change", component_property="data")],
-    [State(component_id="species-list", component_property="value"),
-     State(component_id="form-species-source", component_property="value"),
-        State(component_id="group-list", component_property="value"),
-        State(component_id="qc-list", component_property="value"),
-        State(component_id="run-name", component_property="children"),
+    Output("data-store", "data"),
+    [Input("apply-filter-button", "n_clicks_timestamp"),
+     Input("last-filter-change", "data")],
+    [State("species-list", "value"),
+     State("form-species-source", "value"),
+        State("group-list", "value"),
+        State("qc-list", "value"),
+        State("run-name", "children"),
         ]
 )
 def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
@@ -606,9 +606,9 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
 
 
 @app.callback(
-    Output(component_id="ssi_stamper-report",
-           component_property="children"), 
-    [Input(component_id="data-store", component_property="data")]
+    Output("ssi_stamper-report",
+           "children"), 
+    [Input("data-store", "data")]
 )
 def update_test_table(data_store):
     empty_table = [
@@ -921,9 +921,9 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="selectedData"),
+    Output("summary-plot", "selectedData"),
     [Input("data-store", "data"),
-     Input(component_id="plot-species", component_property="value"),
+     Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
@@ -932,8 +932,8 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="figure"),
-    [Input(component_id="plot-species", component_property="value"),
+    Output("summary-plot", "figure"),
+    [Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species-source", "value")]
