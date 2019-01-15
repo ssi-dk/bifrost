@@ -13,7 +13,9 @@ sample = config["Sample"]
 sample_file_name = sample
 db_sample = datahandling.load_sample(sample_file_name)
 
-component_file_name = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+component_file_name = "../components/" + component + ".yaml"
+if not os.path.isfile(component_file_name):
+    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
 db_component = datahandling.load_component(component_file_name)
 
 sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
