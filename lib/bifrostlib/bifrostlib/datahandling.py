@@ -24,9 +24,9 @@ def log(log_file, content):
 
 
 def load_config():
-    config_file = "run_config.yaml"
-    if not os.path.isfile("run_config.yaml"):
-        config_file = "../run_config.yaml"
+    config_file = "config.yaml"
+    if not os.path.isfile("config.yaml"):
+        config_file = "../config.yaml"
     with open(config_file, "r") as file_handle:
         return yaml.load(file_handle)
 
