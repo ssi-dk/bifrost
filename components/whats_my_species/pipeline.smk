@@ -3,6 +3,7 @@ import sys
 import Bio.SeqIO
 import traceback
 import shutil
+import pandas
 from bifrostlib import datahandling
 
 component = "whats_my_species"  # Depends on component name, should be same as folder
