@@ -1,6 +1,8 @@
 import os
 import sys
 import traceback
+import shutil
+
 from bifrostlib import datahandling
 
 component = "ariba_plasmidfinder"  # Depends on component name, should be same as folder

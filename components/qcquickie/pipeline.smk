@@ -2,6 +2,8 @@ import os
 import sys
 import pandas
 import Bio.SeqIO
+import traceback
+import shutil
 from bifrostlib import datahandling
 
 component = "qcquickie"  # Depends on component name, should be same as folder

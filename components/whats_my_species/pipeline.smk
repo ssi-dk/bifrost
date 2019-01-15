@@ -1,6 +1,8 @@
 import os
 import sys
 import Bio.SeqIO
+import traceback
+import shutil
 from bifrostlib import datahandling
 
 component = "whats_my_species"  # Depends on component name, should be same as folder

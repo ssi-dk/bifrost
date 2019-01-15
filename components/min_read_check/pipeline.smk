@@ -3,6 +3,7 @@ import sys
 import pandas
 import Bio.SeqIO
 import re
+import traceback
 import shutil
 from bifrostlib import datahandling
 
