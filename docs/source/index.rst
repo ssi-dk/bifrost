@@ -57,6 +57,22 @@ Currently the bifrost system is only designed to handle Illumina Paired-end read
 Starting up a run
 =================
 
+01. find all potential samples which will be included in the run
+02. create the samples folder based on the potential samples
+03. find all potential components which will be included in the run
+04. create the components folder based on the potential components
+05. create the components into the component DB entry
+06. create the run folder
+07. save the samples and components (both sample and run) into the run DB entry
+08. add run_components to run folder
+09. add run_components DB entry with run and component info
+10. add sample DB entry
+11. add components to samples DB entry
+12. add sample_components to sample folder
+13. add sample_components DB entry with sample and component info
+14. Create shell script for running program
+15. run program
+
 
 # species picker logic
 # Possibilities, 
