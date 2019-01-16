@@ -32,7 +32,6 @@ from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
-import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
@@ -98,10 +97,10 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
-        html.Div(dcc.ConfirmDialog(
+        dcc.ConfirmDialog(
             id='qc-confirm-pass',
             message='Are you sure you want to mark these as "OK"?',
-        ), id="qc-confirm-pass-div"),
+        ),
         dcc.ConfirmDialog(
             id='qc-confirm-sl',
             message='Are you sure you want to mark these as "supplying lab"?',
@@ -623,7 +622,6 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
@@ -657,9 +655,9 @@ def update_test_table(data_store):
         user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
         tests_df.loc[user_OK_mask, qc_action] = "*OK"
         user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
-        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab*"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
         user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
-        tests_df.loc[user_cf_mask, qc_action] = "*core facility*"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     # Split test columns
     columns = tests_df.columns
@@ -794,32 +792,17 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(table)
         ]
 
 
-@app.callback(Output('qc-confirm-pass-div', 'children'),
-              [Input('qc-pass-button', 'n_clicks_timestamp')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def display_confirm_pass(button, rows, selected_rows):
-    displayed = False
+@app.callback(Output('qc-confirm-pass', 'displayed'),
+              [Input('qc-pass-button', 'n_clicks_timestamp')])
+def display_confirm_pass(button):
     if button is not None:
-        displayed = True
-
-    sample_ids = []
-    if selected_rows is not None and len(selected_rows) > 0:
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
-
-    return dcc.ConfirmDialog(
-        id='qc-confirm-pass',
-        message='Are you sure you want to mark these as "OK"?\n{}'.format(",".join(sample_ids)),
-        displayed=displayed
-    )
+        return True
+    return False
 
 @app.callback(Output('qc-confirm-sl', 'displayed'),
               [Input('qc-sl-button', 'n_clicks_timestamp')])
@@ -837,13 +820,10 @@ def display_confirm_cf(button):
 
 @app.callback(Output('placeholder0', 'children'),
               [Input('qc-confirm-pass', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def pass_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
+              [State("lasso-sample-ids", "children")])
+def pass_samples(submit_n_clicks, lasso_selected):
+    if submit_n_clicks and (lasso_selected != "" and lasso_selected is not None):
+        sample_ids = lasso_selected.split(",")
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
