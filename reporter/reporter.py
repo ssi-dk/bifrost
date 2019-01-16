@@ -98,10 +98,10 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
-        dcc.ConfirmDialog(
+        html.Div(dcc.ConfirmDialog(
             id='qc-confirm-pass',
             message='Are you sure you want to mark these as "OK"?',
-        ),
+        ), id="qc-confirm-pass-div"),
         dcc.ConfirmDialog(
             id='qc-confirm-sl',
             message='Are you sure you want to mark these as "supplying lab"?',
@@ -800,12 +800,26 @@ def update_test_table(data_store):
         ]
 
 
-@app.callback(Output('qc-confirm-pass', 'displayed'),
-              [Input('qc-pass-button', 'n_clicks_timestamp')])
-def display_confirm_pass(button):
+@app.callback(Output('qc-confirm-pass-div', 'children'),
+              [Input('qc-pass-button', 'n_clicks_timestamp')],
+              [State('datatable-ssi_stamper', 'derived_virtual_data'),
+               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
+def display_confirm_pass(button, rows, selected_rows):
+    displayed = False
     if button is not None:
-        return True
-    return False
+        displayed = True
+
+    sample_ids = []
+    if selected_rows is not None and len(selected_rows) > 0:
+        dtdf = pd.DataFrame(rows)
+        dtdf = dtdf.iloc[selected_rows]
+        sample_ids = list(dtdf["_id"])
+
+    return dcc.ConfirmDialog(
+        id='qc-confirm-pass',
+        message='Are you sure you want to mark these as "OK"?\n{}'.format(",".join(sample_ids)),
+        displayed=displayed
+    )
 
 @app.callback(Output('qc-confirm-sl', 'displayed'),
               [Input('qc-sl-button', 'n_clicks_timestamp')])
@@ -829,7 +843,6 @@ def pass_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -848,7 +861,6 @@ def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -867,7 +879,6 @@ def core_fac_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
