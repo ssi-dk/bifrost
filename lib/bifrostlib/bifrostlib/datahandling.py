@@ -120,7 +120,8 @@ def update_sample_component_success(file_yaml, component):
 
 def update_sample_component_failure(file_yaml, component):
     sample_component_dict = load_sample_component(file_yaml)
-    sample_component_dict["status"] = "Failure"
+    if sample_component_dict["status"] != "Requirements not met":
+        sample_component_dict["status"] = "Failure"
     sample_component_dict["path"] = os.path.join(os.getcwd(), component)
     save_sample_component(sample_component_dict, file_yaml)
 
