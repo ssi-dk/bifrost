@@ -19,8 +19,8 @@ import components.import_data as import_data
 
 
 #Globals
-PAGESIZE = 100
-COMPONENTS = ['whats_my_species', 'qcquickie', 'assemblatron', 'analyzer', 'ssi_stamper']
+COMPONENTS = ['whats_my_species', 'qcquickie',
+              'analyzer', 'assemblatron', 'ssi_stamper', 'sp_cdiff_fbi', 'sp_ecoli_fbi', 'sp_salm_fbi']
 
 app = dash.Dash()
 if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
