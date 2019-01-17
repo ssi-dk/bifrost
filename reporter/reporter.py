@@ -32,7 +32,6 @@ from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
-import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
@@ -390,14 +389,14 @@ def update_run_table(run_name, pathname):
         return html_table([["Run Name", run]])
 
 @app.callback(
-    Output(component_id="page-n",
-            component_property="children"),
-    [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-        Input(component_id="prevpage2", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage2", component_property="n_clicks_timestamp")],
-    [State(component_id="page-n", component_property="children"),
-        State(component_id="max-page", component_property="children")]
+    Output("page-n",
+            "children"),
+    [Input("prevpage", "n_clicks_timestamp"),
+        Input("prevpage2", "n_clicks_timestamp"),
+        Input("nextpage", "n_clicks_timestamp"),
+        Input("nextpage2", "n_clicks_timestamp")],
+    [State("page-n", "children"),
+        State("max-page", "children")]
 )
 def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
     page_n = int(page_n)
@@ -411,8 +410,8 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
 
 
 @app.callback(
-    Output(component_id="sample-report", component_property="children"),
-    [Input(component_id="page-n", component_property="children")],
+    Output("sample-report", "children"),
+    [Input("page-n", "children")],
     [State("lasso-sample-ids", "children"),
         State("data-store", "data")]
         )
@@ -440,8 +439,8 @@ def sample_report(page_n, lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="prevpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children")]
+    Output("prevpage", "disabled"),
+    [Input("page-n", "children")]
 )
 def update_prevpage(page_n):
     if int(page_n) == 0:
@@ -450,9 +449,9 @@ def update_prevpage(page_n):
         return False
 
 @app.callback(
-    Output(component_id="nextpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children"),
-        Input(component_id="max-page", component_property="children")]
+    Output("nextpage", "disabled"),
+    [Input("page-n", "children"),
+        Input("max-page", "children")]
 )
 def update_nextpage(page_n, max_page):
     page_n = int(page_n)
@@ -569,11 +568,11 @@ def update_report(lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="last-filter-change", component_property="data"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="qc-list", component_property="value"),
-        Input(component_id="run-name", component_property="children")]
+    Output("last-filter-change", "data"),
+    [Input("species-list", "value"),
+        Input("group-list", "value"),
+        Input("qc-list", "value"),
+        Input("run-name", "children")]
 )
 def update_filter_ts(species_list, group_list, qc_list, run_name):
     d = datetime.datetime.now()
@@ -581,14 +580,14 @@ def update_filter_ts(species_list, group_list, qc_list, run_name):
     return {"timestamp": for_js}
 
 @app.callback(
-    Output(component_id="data-store", component_property="data"),
-    [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
-     Input(component_id="last-filter-change", component_property="data")],
-    [State(component_id="species-list", component_property="value"),
-     State(component_id="form-species-source", component_property="value"),
-        State(component_id="group-list", component_property="value"),
-        State(component_id="qc-list", component_property="value"),
-        State(component_id="run-name", component_property="children"),
+    Output("data-store", "data"),
+    [Input("apply-filter-button", "n_clicks_timestamp"),
+     Input("last-filter-change", "data")],
+    [State("species-list", "value"),
+     State("form-species-source", "value"),
+        State("group-list", "value"),
+        State("qc-list", "value"),
+        State("run-name", "children"),
         ]
 )
 def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
@@ -606,9 +605,9 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
 
 
 @app.callback(
-    Output(component_id="ssi_stamper-report",
-           component_property="children"), 
-    [Input(component_id="data-store", component_property="data")]
+    Output("ssi_stamper-report",
+           "children"), 
+    [Input("data-store", "data")]
 )
 def update_test_table(data_store):
     empty_table = [
@@ -623,7 +622,6 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
@@ -657,9 +655,9 @@ def update_test_table(data_store):
         user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
         tests_df.loc[user_OK_mask, qc_action] = "*OK"
         user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
-        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab*"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
         user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
-        tests_df.loc[user_cf_mask, qc_action] = "*core facility*"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     # Split test columns
     columns = tests_df.columns
@@ -797,7 +795,6 @@ def update_test_table(data_store):
                        href=full_csv_string_eur,
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(table)
         ]
@@ -826,14 +823,10 @@ def display_confirm_cf(button):
 
 @app.callback(Output('placeholder0', 'children'),
               [Input('qc-confirm-pass', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def pass_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
-        sample_ids = list(dtdf["_id"])
+              [State("lasso-sample-ids", "children")])
+def pass_samples(submit_n_clicks, lasso_selected):
+    if submit_n_clicks and (lasso_selected != "" and lasso_selected is not None):
+        sample_ids = lasso_selected.split(",")
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
@@ -851,7 +844,6 @@ def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -870,7 +862,6 @@ def core_fac_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -924,9 +915,9 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="selectedData"),
+    Output("summary-plot", "selectedData"),
     [Input("data-store", "data"),
-     Input(component_id="plot-species", component_property="value"),
+     Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
@@ -935,8 +926,8 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="figure"),
-    [Input(component_id="plot-species", component_property="value"),
+    Output("summary-plot", "figure"),
+    [Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species-source", "value")]

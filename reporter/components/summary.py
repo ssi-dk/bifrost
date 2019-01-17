@@ -225,7 +225,7 @@ def html_div_summary():
                         html.A("(csv, EUR Excel format)",
                             download='report.csv')
                     ], className="six columns"),
-                    admin.selected_samples_div()
+                    
                 ], className="row"),
                 html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
             ], id="ssi_stamper-report", className="bigtable"),
@@ -280,6 +280,7 @@ def html_div_summary():
                         className="twelve columns"
                     )
                 ]
-                , className="row")
+                , className="row"),
+            html.Div(admin.selected_samples_div(),className="row")
         ], className="border-box"
     )
