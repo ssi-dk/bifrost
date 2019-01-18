@@ -2,8 +2,7 @@ import os
 import dash_html_components as html
 
 def selected_samples_div():
-    global ADMIN
-    if ADMIN == True:
+    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
         return (html.Div([
             "Selected samples: ",
             html.Button(
