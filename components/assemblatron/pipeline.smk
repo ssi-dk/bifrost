@@ -119,7 +119,7 @@ rule assembly__spades:
     output:
         spades_folder = temp(directory("spades")),
         contigs = rules.setup.params.folder + "/temp.fasta",
-        assembly_with = touch(rules.setup.params.folder + "/assembly_with_SPAdes"),
+        assembly_with = touch(rules.setup.params.folder + "/assembly_with_spades"),
     shell:
         """
         spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful 1> {log.out_file} 2> {log.err_file}
