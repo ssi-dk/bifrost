@@ -35,7 +35,7 @@ import components.global_vars as global_vars
 #Globals
 #also defined in mongo_interface.py
 PAGESIZE = 25
-
+ADMIN = False
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
