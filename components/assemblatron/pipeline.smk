@@ -123,7 +123,7 @@ rule assembly__spades:
     shell:
         """
         spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful 1> {log.out_file} 2> {log.err_file}
-        mv {spades_folder}/contigs.fasta {output.contigs}
+        mv {output.spades_folder}/contigs.fasta {output.contigs}
         """
 
 
