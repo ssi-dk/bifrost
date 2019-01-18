@@ -1,2 +1,2 @@
 . activate bifrost
-gunicorn --bind '0.0.0.0:8051' run_checker:server
+uwsgi -s /tmp/run_checker.sock --manage-script-name --mount /=run_checker:application --http :8051
