@@ -886,7 +886,7 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
             id="plot-species"
         )
     species_list = plot_df[species_col].unique()
-    species_list = list(species_list) + ["All species", ]
+    species_list = ["All species", ] + list(species_list)
     if selected_species == "" or selected_species is None or selected_species not in species_list:
         if species_list[0] == "Not classified" and len(species_list) > 1:
             selected_species = species_list[1]
