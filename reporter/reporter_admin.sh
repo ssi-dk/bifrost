@@ -1,2 +1,2 @@
 . activate bifrost
-uwsgi -s /tmp/reporter.sock --manage-script-name --mount /=reporter:application --http :8052 --ini reporter_admin.ini
+gunicorn --bind '0.0.0.0:8052' reporter_admin:server

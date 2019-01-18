@@ -10,7 +10,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
-import dash_auth
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
@@ -53,16 +52,7 @@ def short_species(species):
     return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
 
-
-
 app = dash.Dash()
-
-if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
-    and hasattr(keys, 'USERNAME_PASSWORD'):
-    auth = dash_auth.BasicAuth(
-        app,
-        keys.USERNAME_PASSWORD
-    )
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
@@ -1199,7 +1189,7 @@ def all_species(n_clicks, species_source, run_name):
 def all_QCs(n_clicks):
     return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
-application = app.server # Required for uwsgi
+server = app.server # Required for gunicorn
 
 if __name__ == '__main__':
     # 0.0.0.0 exposes the app to the network.

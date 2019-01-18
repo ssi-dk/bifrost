@@ -23,12 +23,6 @@ COMPONENTS = ['whats_my_species', 'qcquickie',
               'analyzer', 'assemblatron', 'ssi_stamper', 'sp_cdiff_fbi', 'sp_ecoli_fbi', 'sp_salm_fbi']
 
 app = dash.Dash()
-if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
-        and hasattr(keys, 'USERNAME_PASSWORD'):
-    auth = dash_auth.BasicAuth(
-        app,
-        keys.USERNAME_PASSWORD
-    )
 
 app.config["suppress_callback_exceptions"] = True
 app.title = "Serum QC Run Checker"
@@ -175,7 +169,7 @@ def update_run_report(run, n_intervals):
 
 
 
-application = app.server  # Required for uwsgi
+server = app.server  # Required for gunicorn
 
 #app.run_server(debug=True, host="0.0.0.0")
 if __name__ == '__main__':
