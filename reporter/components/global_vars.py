@@ -103,7 +103,7 @@ COLUMNS = [
         "id": "assemblatron.bin_length_at_10x"
     },
     {
-        "name": "G_size_difference_1x_10",
+        "name": "G_size_diff_1x_10",
         "id": "ssi_stamper.assemblatron:1x10xsizediff_text"
     },
     {
@@ -131,7 +131,7 @@ COLUMNS = [
         "id": "analyzer_mlst_alleles"
     },
     {
-        "name": "Main_species_plus_undetermined_read_percent",
+        "name": "Main_sp_plus_uncl",
         "id": "ssi_stamper.whats_my_species:minspecies_text"
     },
     {

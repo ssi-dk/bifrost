@@ -734,7 +734,7 @@ def update_test_table(data_store):
         columns=COLUMNS,
         # n_fixed_columns=1,
         style_cell={
-            'width': '250px',
+            'width': '200px',
             'padding': '0 15px'
         },
         style_cell_conditional=[
@@ -937,7 +937,7 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     elif plot_species_source == "detected":
         species_col = "properties_detected_species"
     # end HACK
-    
+
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
