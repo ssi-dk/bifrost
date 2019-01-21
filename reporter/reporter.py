@@ -885,9 +885,10 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
         return dcc.Dropdown(
             id="plot-species"
         )
+    plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
     species_list = plot_df[species_col].unique()
-    species_list = ["All species", ] + list(species_list)
-    if selected_species == "" or selected_species is None or selected_species not in species_list:
+    species_list = ["All species",] + list(species_list)
+    if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
         if species_list[0] == "Not classified" and len(species_list) > 1:
             selected_species = species_list[1]
         else:
@@ -922,24 +923,28 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species-source", "value")]
 )
-def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
+def update_coverage_figure(selected_species, rows, selected_rows, plot_species_source):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_values = global_vars.plot_values
     traces = []
     trace_ranges = []
-    plot_df = pd.DataFrame(rows)
-    if selected_rows is not None and len(selected_rows) > 0:
-        plot_df = plot_df.iloc[selected_rows]
-    df_ids = plot_df["_id"]
 
      # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
-    if plot_species == "provided":
+    if plot_species_source == "provided":
         species_col = "properties_provided_species"
-    elif plot_species == "detected":
+    elif plot_species_source == "detected":
         species_col = "properties_detected_species"
     # end HACK
+    
+    plot_df = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        plot_df = plot_df.iloc[selected_rows]
+    plot_df.loc[pd.isnull(plot_df[species_col]),
+                species_col] = "Not classified"
+
+    df_ids = plot_df["_id"]
     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
         selected_species == "All species"):
         for plot_value in plot_values:
