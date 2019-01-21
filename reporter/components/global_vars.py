@@ -146,7 +146,6 @@ COLUMNS = [
         "name": "Failed_tests",
         "id": "ssi_stamper_failed_tests"
     }
-
 ]
 
 plot_values = [
