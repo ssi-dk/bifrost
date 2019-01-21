@@ -632,7 +632,7 @@ def update_test_table(data_store):
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
 
-    no_reads_mask = pd.isnull(tests_df["R1"])
+    no_reads_mask = tests_df["R1"] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
