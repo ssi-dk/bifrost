@@ -481,6 +481,28 @@ def get_species_QC_values(ncbi_species):
             return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
 
 
+def get_sample_QC_status(run):
+    with get_connection() as connections:
+        db = connection.get_database()
+        run = db.runs.find_one({"name": run_name})
+        sample_ids = list(map(lambda x: x["_id"], run["samples"]))
+        samples = list(db.samples.find(
+            {"_id": {"$in": sample_ids}},
+            {"name": 1, "stamp.ssi_stamper": 1}
+        ).sort([{"name": 1}]))
+        return samples
+
+
+def get_previous_run_status(sample_list, current_run):
+    with get_connection() as connections:
+        db = connection.get_database()
+        sample_old_runs = {}
+        for sample in samples:
+            sample_dict = {}
+            runs = db.runs.find({"samples.name": sample["name"]})
+
+
+
 def get_sample(sample_id):
     with get_connection() as connection:
         db = connection.get_database()
