@@ -154,6 +154,13 @@ def get_sample_component_status(run_name):
 def get_species_QC_values(ncbi_species):
     return mongo_interface.get_species_QC_values(ncbi_species)
 
+def get_sample_QC_status(run):
+    return mongo_interface.get_sample_QC_status(run)
+
+def get_last_runs(run, n):
+    return list(map(lambda x:x["name"],mongo_interface.get_last_runs(run, n)))
+
+
 def post_stamp(stamp, samples):
     for sample_id in samples:
         sample_db = mongo_interface.get_sample(ObjectId(sample_id))
