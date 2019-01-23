@@ -76,34 +76,6 @@ rule check_requirements:
         os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
-rule_name = "setup__filter_reads_with_bbduk"
-rule setup__filter_reads_with_bbduk:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        rules.check_requirements.output.check_file,
-        reads = (R1, R2),
-    output:
-        filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
-    params:
-        adapters = os.path.join(os.path.dirname(workflow.snakefile), db_component["adapters_fasta"])
-    shell:
-        "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo minbasequality=14 1> {log.out_file} 2> {log.err_file}"
-
-
 rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
 rule contaminant_check__classify_reads_kraken_minikraken_db:
     # Static
@@ -122,13 +94,14 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
+        rules.check_requirements.output.check_file,
+        reads = (R1, R2)
     output:
         kraken_report = rules.setup.params.folder + "/kraken_report.txt"
     params:
         db = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_database"])
     shell:
-        "kraken --threads {threads} -db {params.db} --fastq-input {input.filtered_reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "kraken --threads {threads} -db {params.db} --fastq-input {input.reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
 
 rule_name = "contaminant_check__determine_species_bracken_on_minikraken_results"

@@ -441,6 +441,33 @@ rule post_assembly__annotate:
         """ 
 
 
+rule_name = "rename_contigs"
+rule rename_contigs:
+    # Static
+    message:
+        "Running step:" + rule_name
+    threads:
+        global_threads
+    resources:
+        memory_in_GB = global_memory_in_GB
+    shadow:
+        "shallow"
+    log:
+        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
+        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+    benchmark:
+        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
+    # Dynamic
+    input:
+        contigs = rules.assembly__selection.output,
+    output:
+        contigs = rules.setup.params.folder + "/" + db_sample["name"] + ".fasta",
+    params:
+        sample_name = db_sample["name"]
+    shell:
+        "sed -e 's/Contig/{params.sample_name}/' {input.contigs} > {output.contigs}"
+
+
 rule_name = "datadump_assemblatron"
 rule datadump_assemblatron:
     # Static
@@ -465,6 +492,7 @@ rule datadump_assemblatron:
         rules.post_assembly__stats.output.stats,
         rules.post_assembly__samtools_stats.output.stats,
         rules.assembly_check__sketch_on_contigs.output.sketch,
+        rules.rename_contigs.output.contigs,
     output:
         summary = touch(rules.all.input)
     params:

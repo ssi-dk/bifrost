@@ -84,6 +84,16 @@ Starting up a run
 #       a. detected species is a member of the group -> set species to detected species
 #       b. detected species is NOT a member of the group -> set species to None
 
+=================
+Anonymizer approach
+=================
+New DB table with mapping from ID to name, names are internally saved as ID both in DB and in server
+a mirrored directory could exist linking the IDs to dynamix names which the DB mapping table would
+provide, updatig the table should update the name in all locations then. If you don't have a mapping 
+a name would be assigned. If you want to export data you could choose which to anonymize and which 
+to leave.
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
