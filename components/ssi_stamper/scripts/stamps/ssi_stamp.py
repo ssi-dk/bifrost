@@ -188,9 +188,10 @@ def test(whats_my_species, qcquickie, assemblatron, species, sample):
                 else:
                     test["status"] = "pass"
                     test["reason"] = ""
-        except KeyError:
+        except KeyError as e:
             test["status"] = "fail"
-            test["reason"] = "Value is undefined (KeyError)"
+            test["reason"] = "Value is undefined (KeyError): {}".format(
+                e.args[0])
         results.append(test)
 
     for assembly_component, comp_name in ((qcquickie, "qcquickie"), (assemblatron, "assemblatron")):
