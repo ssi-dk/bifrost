@@ -446,10 +446,10 @@ def get_sample_component_status(run_name):
         db = connection.get_database()
         run = db.runs.find_one({"name": run_name})
         samples_ids = list(map(lambda x:x["_id"], run["samples"]))
-        components_ids = list(map(lambda x: x["_id"], run["components"]))
+        components_names = list(map(lambda x: x["name"], run["components"]))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": samples_ids},
-            "component._id": {"$in": components_ids}
+            "component.name": {"$in": components_names}
         })
         output = {}
         for s_c in s_c_list:
