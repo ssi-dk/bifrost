@@ -482,24 +482,34 @@ def get_species_QC_values(ncbi_species):
 
 
 def get_sample_QC_status(run):
-    with get_connection() as connections:
+    with get_connection() as connection:
         db = connection.get_database()
-        run = db.runs.find_one({"name": run_name})
-        sample_ids = list(map(lambda x: x["_id"], run["samples"]))
-        samples = list(db.samples.find(
-            {"_id": {"$in": sample_ids}},
-            {"name": 1, "stamp.ssi_stamper": 1}
-        ).sort([{"name": 1}]))
-        return samples
-
-
-def get_previous_run_status(sample_list, current_run):
-    with get_connection() as connections:
-        db = connection.get_database()
+        current_run = db.runs.find_one({"name": run})
+        samples = [s for s in current_run["samples"]]
         sample_old_runs = {}
         for sample in samples:
             sample_dict = {}
-            runs = db.runs.find({"samples.name": sample["name"]})
+            runs = db.runs.find({"samples.name": sample["name"]}).sort(
+                [("name", pymongo.DESCENDING)])
+            for run in runs:
+                sample_id = None
+                for r_sample in run["samples"]:
+                    if r_sample["name"] == sample["name"]:
+                        sample_id = r_sample["_id"]
+                        break
+                old_sample = db.samples.find_one({"_id": sample_id})
+                if "stamps" in old_sample:
+                    sample_dict[run["name"]] = old_sample["stamps"]["ssi_stamper"]["value"]
+                else:
+                    sample_dict[run["name"]] = "undefined"
+            sample_old_runs[sample["name"]] = sample_dict
+        return sample_old_runs
+
+def get_last_runs(run, n):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return list(db.runs.find({"name": {"$lt": run}, "type": "routine"}, {"name": 1, "_id": 0}).sort([("name", pymongo.DESCENDING)]).limit(n))
+
 
 
 
