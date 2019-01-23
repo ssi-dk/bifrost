@@ -7,6 +7,14 @@ import components.admin as admin
 
 from components.global_vars import PLOTS, DEFAULT_PLOT
 
+filter_notice_div = html.Div([
+    html.P(
+        'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
+    html.P(
+        'To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
+    html.P('* on QC: manually curated')
+])
+
 
 def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
@@ -207,12 +215,7 @@ def html_div_summary():
             ),
             html.Div([
                 html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-                html.Div([
-                    html.P(
-                        'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-                    html.P(
-                        'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
-                ]),
+                filter_notice_div,
                 html.Div([
                     html.Div([
                         "Download Table ",
@@ -222,7 +225,7 @@ def html_div_summary():
                         html.A("(csv, EUR Excel format)",
                             download='report.csv')
                     ], className="six columns"),
-                    admin.selected_samples_div()
+                    
                 ], className="row"),
                 html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
             ], id="ssi_stamper-report", className="bigtable"),
@@ -277,6 +280,7 @@ def html_div_summary():
                         className="twelve columns"
                     )
                 ]
-                , className="row")
+                , className="row"),
+            html.Div(admin.selected_samples_div(),className="row")
         ], className="border-box"
     )

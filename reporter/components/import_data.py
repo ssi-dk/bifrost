@@ -57,7 +57,8 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name" : 1,
                 "properties": 1,
                 "sample_sheet": 1,
-                "reads": 1
+                "reads": 1,
+                "stamps": 1
             },
             run_name, species, species_source, group, qc_list=qc_list)
     else:
@@ -66,7 +67,8 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name": 1,
                 "properties": 1,
                 "sample_sheet": 1,
-                "reads": 1
+                "reads": 1,
+                "stamps": 1
             },
             samples=sample_ids)
 
@@ -94,6 +96,15 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 for summary_key, summary_value in item["properties"].items():
                     clean_result[str(item["_id"])]["properties." +
                                         summary_key] = summary_value
+            if "stamps" in item:
+                for key, stamp in item["stamps"].items():
+                    if key == "stamp_list":
+                        continue
+                    else:
+                        clean_result[str(item["_id"])]["stamp." +
+                                                       key + ".value"] = stamp["value"]
+
+
         except KeyError as e:
             # we'll just ignore this for now
             sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
@@ -142,6 +153,13 @@ def get_sample_component_status(run_name):
 
 def get_species_QC_values(ncbi_species):
     return mongo_interface.get_species_QC_values(ncbi_species)
+
+def get_sample_QC_status(run):
+    return mongo_interface.get_sample_QC_status(run)
+
+def get_last_runs(run, n):
+    return list(map(lambda x:x["name"],mongo_interface.get_last_runs(run, n)))
+
 
 def post_stamp(stamp, samples):
     for sample_id in samples:

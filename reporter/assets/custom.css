@@ -380,3 +380,26 @@ body, .appcontainer {
 button.passfail {
   margin: 5px;
 }
+
+th.rotate {
+  /* Something you can count on */
+  height: 280px;
+  white-space: nowrap;
+}
+
+th.rotate > div {
+  transform: 
+    /* Magic Numbers */
+    translate(7px, 112px)
+    /* 45 is really 360 - 45 */
+    rotate(315deg);
+  width: 30px;
+}
+th.rotate > div > strong {
+  border-bottom: 1px solid #ccc;
+  padding: 5px 10px;
+}
+
+td.center {
+  text-align: center;
+}

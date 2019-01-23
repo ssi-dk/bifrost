@@ -40,8 +40,6 @@ def generate_sample_report(dataframe, sample, background):
                 == sample["species"]],
         background
     )
-    tests = html_test_table(sample, className="row")
-
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -58,8 +56,7 @@ def generate_sample_report(dataframe, sample, background):
                 img_div,
                 html_sample_tables(sample, className="row"),
                 # plot,
-                html.H6("Failed QC Tests", className="table-header"),
-                tests
+                html_test_tables(sample, className="row")
             ],
             className="border-box"
         )
@@ -85,9 +82,10 @@ def html_organisms_table(sample_data, **kwargs):
     ]
 
     color_0 = "#b3ccc1"
+    color_1 = "#b3ccc1" #Green
 
-    color_1 = get_species_color(
-        sample_data.get("whats_my_species.name_classified_species_1"))  # Default
+    # color_1 = get_species_color(
+    #     sample_data.get("whats_my_species.name_classified_species_1"))  # Default
 #    color_2 = COLOR_DICT.get(
 #        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
@@ -119,7 +117,8 @@ def html_organisms_table(sample_data, **kwargs):
         ])
     ], **kwargs)
 
-def html_test_table(sample_data,**kwargs):
+def html_test_tables(sample_data, **kwargs):
+    stamps_to_check = ["ssi_stamper", "ssi_expert_check"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("ssi_stamper.whats_my_species") \
@@ -133,10 +132,42 @@ def html_test_table(sample_data,**kwargs):
                     rows.append([name_v[1].capitalize(), values[1]])
             if (key.endswith(".action")):
                 rows.append(["QC Action", value])
+
+    stamp_rows = []
+    for stamp in stamps_to_check:
+        stamp_key = "stamp.{}.value".format(stamp)
+        if stamp_key in sample_data:
+            if str(sample_data[stamp_key]).startswith("pass"):
+                stamp_class = "test-pass"
+            elif str(sample_data[stamp_key]).startswith("fail"):
+                stamp_class = "test-fail"
+            else:
+                stamp_class = ""
+            stamp_rows.append({
+                "list": [stamp, sample_data[stamp_key]],
+                "className": stamp_class
+            })
+
     if len(rows):
-        return html.Div(html_table(rows, className="twelve columns"), **kwargs)
+        test_table = html_table(rows)
     else:
-        return html.Div(html.P("No failed tests."), **kwargs)
+        test_table = html.P("No failed tests.")
+    
+    if len(stamp_rows):
+        stamp_table = html_table(stamp_rows)
+    else:
+        stamp_table = html.P("No stamps.")
+
+    return html.Div([
+        html.Div([
+            html.H6("QC stamps", className="table-header"),
+            stamp_table
+        ], className="six columns"),
+        html.Div([
+            html.H6("Failed QC tests", className="table-header"),
+            test_table
+        ], className="six columns"),
+    ], **kwargs)
 
 def html_sample_tables(sample_data, **kwargs):
     """Generate the tables for each sample containing submitter information,
@@ -171,7 +202,7 @@ def html_sample_tables(sample_data, **kwargs):
                     }
                 ])
     else:
-        sample_sheet_table = []
+        sample_sheet_table = html_table([])
 
     title = "Assemblatron Results"
     table = html.Div([
@@ -245,11 +276,8 @@ def html_sample_tables(sample_data, **kwargs):
             ] 
         ])
     ])
-
-    resfinder = sample_data.get('analyzer.ariba_resfinder', "[{}]")
-    if type(resfinder) == str:
-        resfinder = resfinder.replace("'", "\"")
-        resfinder = json.loads(resfinder)
+    resfinder = sample_data.get('analyzer.ariba_resfinder', [])
+    if type(resfinder) == list:
         columns = []
         if len(resfinder):
             columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
@@ -265,9 +293,28 @@ def html_sample_tables(sample_data, **kwargs):
                     data=resfinder,
                     pagination_mode=False
                 ), className="grey-border")
-    if type(resfinder) == float or not len(resfinder):
+    if type(resfinder) == float or resfinder is None or not len(resfinder):
         resfinder_div = html.P("No antibiotic resistance genes found")
     
+    plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
+    if type(plasmidfinder) == list:
+        columns = []
+        if len(plasmidfinder):
+            columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
+            plasmidfinder_div = html.Div(
+                dt.DataTable(
+                    style_table={
+                        'overflowX': 'scroll',
+                        'overflowY': 'scroll',
+                        'maxHeight': '480'
+                    },
+                    columns=columns,
+                    data=plasmidfinder,
+                    pagination_mode=False
+                ), className="grey-border")
+    if type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder):
+        plasmidfinder_div = html.P("No plasmids found")
+
     return html.Div([
         html.Div([
             html.Div([
@@ -287,7 +334,11 @@ def html_sample_tables(sample_data, **kwargs):
             html.Div([
                 html.H6("Resfinder", className="table-header"),
                 resfinder_div
-            ], className="twelve columns")
+            ], className="six columns"),
+            html.Div([
+                html.H6("Plasmidfinder", className="table-header"),
+                plasmidfinder_div
+            ], className="six columns")
         ], className="row")
     ], **kwargs)
 

@@ -10,7 +10,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
-import dash_auth
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
@@ -28,16 +27,15 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.summary import html_div_summary
+from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
-import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
 PAGESIZE = 25
-
+ADMIN = False
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
@@ -54,16 +52,7 @@ def short_species(species):
     return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
 
-
-
 app = dash.Dash()
-
-if "REPORTER_PASSWORD" in os.environ and os.environ["REPORTER_PASSWORD"] == "True" \
-    and hasattr(keys, 'USERNAME_PASSWORD'):
-    auth = dash_auth.BasicAuth(
-        app,
-        keys.USERNAME_PASSWORD
-    )
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
@@ -390,14 +379,14 @@ def update_run_table(run_name, pathname):
         return html_table([["Run Name", run]])
 
 @app.callback(
-    Output(component_id="page-n",
-            component_property="children"),
-    [Input(component_id="prevpage", component_property="n_clicks_timestamp"),
-        Input(component_id="prevpage2", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage", component_property="n_clicks_timestamp"),
-        Input(component_id="nextpage2", component_property="n_clicks_timestamp")],
-    [State(component_id="page-n", component_property="children"),
-        State(component_id="max-page", component_property="children")]
+    Output("page-n",
+            "children"),
+    [Input("prevpage", "n_clicks_timestamp"),
+        Input("prevpage2", "n_clicks_timestamp"),
+        Input("nextpage", "n_clicks_timestamp"),
+        Input("nextpage2", "n_clicks_timestamp")],
+    [State("page-n", "children"),
+        State("max-page", "children")]
 )
 def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
     page_n = int(page_n)
@@ -411,15 +400,15 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
 
 
 @app.callback(
-    Output(component_id="sample-report", component_property="children"),
-    [Input(component_id="page-n", component_property="children")],
+    Output("sample-report", "children"),
+    [Input("page-n", "children")],
     [State("lasso-sample-ids", "children"),
         State("data-store", "data")]
         )
 def sample_report(page_n, lasso_selected, data_store):
     page_n = int(page_n)
-    csv_data = StringIO(data_store)
-    data = pd.read_csv(csv_data, low_memory=True)
+    #json_data = StringIO(data_store)
+    data = pd.DataFrame.from_dict(data_store)
     if lasso_selected != "" and lasso_selected is not None:
         lasso = lasso_selected.split(",")  # lasso first
         data = data[data._id.isin(lasso)]
@@ -440,8 +429,8 @@ def sample_report(page_n, lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="prevpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children")]
+    Output("prevpage", "disabled"),
+    [Input("page-n", "children")]
 )
 def update_prevpage(page_n):
     if int(page_n) == 0:
@@ -450,9 +439,9 @@ def update_prevpage(page_n):
         return False
 
 @app.callback(
-    Output(component_id="nextpage", component_property="disabled"),
-    [Input(component_id="page-n", component_property="children"),
-        Input(component_id="max-page", component_property="children")]
+    Output("nextpage", "disabled"),
+    [Input("page-n", "children"),
+        Input("max-page", "children")]
 )
 def update_nextpage(page_n, max_page):
     page_n = int(page_n)
@@ -480,8 +469,8 @@ def generate_sample_folder_div(n_generate_ts,
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
-        csv_data = StringIO(data_store)
-        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+        #json_data = StringIO(data_store)
+        samples = pd.DataFrame.from_dict(data_store)["_id"]
     else:
         samples = []
 
@@ -497,12 +486,12 @@ def generate_sample_folder_div(n_generate_ts,
 
 def update_report(lasso_selected, data_store):
     if lasso_selected is not None and lasso_selected != "":
-        samples = lasso_selected.split(",")  # lasso first
-    elif data_store != None:
-        csv_data = StringIO(data_store)
-        samples = pd.read_csv(csv_data, low_memory=True)["_id"]
+        samples = lasso_selected.split(",")  # lasso first'
+
+    elif len(data_store) != 0:
+        samples = pd.DataFrame.from_dict(data_store)["_id"]
     else:
-        samples = []
+        samples = {}
     if len(samples) == 0:
         return []
     max_page = len(samples) // PAGESIZE
@@ -569,11 +558,11 @@ def update_report(lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output(component_id="last-filter-change", component_property="data"),
-    [Input(component_id="species-list", component_property="value"),
-        Input(component_id="group-list", component_property="value"),
-        Input(component_id="qc-list", component_property="value"),
-        Input(component_id="run-name", component_property="children")]
+    Output("last-filter-change", "data"),
+    [Input("species-list", "value"),
+        Input("group-list", "value"),
+        Input("qc-list", "value"),
+        Input("run-name", "children")]
 )
 def update_filter_ts(species_list, group_list, qc_list, run_name):
     d = datetime.datetime.now()
@@ -581,14 +570,14 @@ def update_filter_ts(species_list, group_list, qc_list, run_name):
     return {"timestamp": for_js}
 
 @app.callback(
-    Output(component_id="data-store", component_property="data"),
-    [Input(component_id="apply-filter-button", component_property="n_clicks_timestamp"),
-     Input(component_id="last-filter-change", component_property="data")],
-    [State(component_id="species-list", component_property="value"),
-     State(component_id="form-species-source", component_property="value"),
-        State(component_id="group-list", component_property="value"),
-        State(component_id="qc-list", component_property="value"),
-        State(component_id="run-name", component_property="children"),
+    Output("data-store", "data"),
+    [Input("apply-filter-button", "n_clicks_timestamp"),
+     Input("last-filter-change", "data")],
+    [State("species-list", "value"),
+     State("form-species-source", "value"),
+        State("group-list", "value"),
+        State("qc-list", "value"),
+        State("run-name", "children"),
         ]
 )
 def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
@@ -602,23 +591,18 @@ def update_selected_samples(apply_button_ts, filter_change, species_list, specie
             raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
-    return samples.to_csv()
+    return samples.to_dict()
 
 
 @app.callback(
-    Output(component_id="ssi_stamper-report",
-           component_property="children"), 
-    [Input(component_id="data-store", component_property="data")]
+    Output("ssi_stamper-report",
+           "children"), 
+    [Input("data-store", "data")]
 )
 def update_test_table(data_store):
     empty_table = [
         html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-        html.Div([
-            html.P(
-                'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P(
-                'To filter on a number type eq, < or >, space and num(<number here>): > num(500)')
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
@@ -628,34 +612,42 @@ def update_test_table(data_store):
                 html.A("(csv, EUR Excel format)",
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(dash_table.DataTable(id="datatable-ssi_stamper",
                                       data=[{}]), style={"display": "none"})
     ]
     if data_store == '""':
         return empty_table
-    csv_data = StringIO(data_store)
-    tests_df = pd.read_csv(csv_data, low_memory=True)
+    ##json_data = StringIO(data_store)
+    tests_df = pd.DataFrame.from_dict(data_store)
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
+    qc_action = "stamp.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
+    else:
+        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
  
     if "R1" not in tests_df:
         tests_df["R1"] = np.nan
 
-    #Temporary fix for Undetermined:
-    # skipped_mask = tests_df.R1.notnull() & tests_df[qc_action].isnull()
-    # tests_df.loc[skipped_mask, qc_action] = "skipped"
-    no_reads_mask = pd.isnull(tests_df["R1"])
+    no_reads_mask = tests_df["R1"] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
+    user_stamp_col = "stamp.ssi_expert_check.value"
+    # Overload user stamp to ssi_stamper
+    if user_stamp_col in tests_df.columns:
+        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
+        tests_df.loc[user_OK_mask, qc_action] = "*OK"
+        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
+        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     # Split test columns
     columns = tests_df.columns
@@ -686,7 +678,8 @@ def update_test_table(data_store):
                 tests_df["analyzer_mlst_type"] = second_split[1]
                 tests_df["analyzer_mlst_alleles"] = first_split[1]
 
-    test_cols = [col for col in columns if col.startswith("ssi_stamper")]
+    test_cols = [col for col in columns if (col.startswith(
+        "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
     def concatenate_failed(row):
         res = []
         for col in test_cols:
@@ -741,7 +734,7 @@ def update_test_table(data_store):
         columns=COLUMNS,
         # n_fixed_columns=1,
         style_cell={
-            'width': '250px',
+            'width': '200px',
             'padding': '0 15px'
         },
         style_cell_conditional=[
@@ -780,20 +773,18 @@ def update_test_table(data_store):
         urllib.parse.quote(tsv_string_us)
     return [
         html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
-        html.Div([
-            html.P('To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-            html.P('To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-        ]),
+        filter_notice_div,
         html.Div([
             html.Div([
                 "Download Table ",
                 html.A("(tsv, US format)",
+                       href=full_tsv_string_us,
                        download='report.tsv'),
                 " - ",
                 html.A("(csv, EUR Excel format)",
+                       href=full_csv_string_eur,
                        download='report.csv')
             ], className="six columns"),
-            admin.selected_samples_div()
         ], className="row"),
         html.Div(table)
         ]
@@ -822,14 +813,10 @@ def display_confirm_cf(button):
 
 @app.callback(Output('placeholder0', 'children'),
               [Input('qc-confirm-pass', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def pass_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
-        sample_ids = list(dtdf["_id"])
+              [State("lasso-sample-ids", "children")])
+def pass_samples(submit_n_clicks, lasso_selected):
+    if submit_n_clicks and (lasso_selected != "" and lasso_selected is not None):
+        sample_ids = lasso_selected.split(",")
         stamp = {
             "name": "ssi_expert_check",
             "user-ip": str(request.remote_addr),
@@ -847,7 +834,6 @@ def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -866,7 +852,6 @@ def core_fac_samples(submit_n_clicks, rows, selected_rows):
     if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
         dtdf = pd.DataFrame(rows)
         dtdf = dtdf.iloc[selected_rows]
-        points = list(map(str, list(dtdf["name"])))
         sample_ids = list(dtdf["_id"])
         stamp = {
             "name": "ssi_expert_check",
@@ -900,9 +885,10 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
         return dcc.Dropdown(
             id="plot-species"
         )
+    plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
     species_list = plot_df[species_col].unique()
-    species_list = list(species_list) + ["All species", ]
-    if selected_species == "" or selected_species is None or selected_species not in species_list:
+    species_list = ["All species",] + list(species_list)
+    if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
         if species_list[0] == "Not classified" and len(species_list) > 1:
             selected_species = species_list[1]
         else:
@@ -920,9 +906,9 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="selectedData"),
+    Output("summary-plot", "selectedData"),
     [Input("data-store", "data"),
-     Input(component_id="plot-species", component_property="value"),
+     Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
 )
@@ -931,30 +917,34 @@ def reset_selection(sample_ids, plot_value, rows, selected_rows):
 
 
 @app.callback(
-    Output(component_id="summary-plot", component_property="figure"),
-    [Input(component_id="plot-species", component_property="value"),
+    Output("summary-plot", "figure"),
+    [Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
     [State("plot-species-source", "value")]
 )
-def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
+def update_coverage_figure(selected_species, rows, selected_rows, plot_species_source):
     if rows == [{}] or rows == [] or rows == None:
         return {"data":[]}
     plot_values = global_vars.plot_values
     traces = []
     trace_ranges = []
-    plot_df = pd.DataFrame(rows)
-    if selected_rows is not None and len(selected_rows) > 0:
-        plot_df = plot_df.iloc[selected_rows]
-    df_ids = plot_df["_id"]
 
      # part of the HACK, replace with "properties.detected_species" when issue is solved
     species_col = "properties_detected_species"
-    if plot_species == "provided":
+    if plot_species_source == "provided":
         species_col = "properties_provided_species"
-    elif plot_species == "detected":
+    elif plot_species_source == "detected":
         species_col = "properties_detected_species"
     # end HACK
+
+    plot_df = pd.DataFrame(rows)
+    if selected_rows is not None and len(selected_rows) > 0:
+        plot_df = plot_df.iloc[selected_rows]
+    plot_df.loc[pd.isnull(plot_df[species_col]),
+                species_col] = "Not classified"
+
+    df_ids = plot_df["_id"]
     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
         selected_species == "All species"):
         for plot_value in plot_values:
@@ -1003,7 +993,6 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
             t=50
         ),
     )
-
     fig.append_trace(traces[0], 1, 1)
     fig.append_trace(traces[1], 1, 1)
     fig.append_trace(traces[2], 2, 1)
@@ -1147,7 +1136,6 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species):
     ]
 
     fig["layout"].update(annotations=annotations)
-
     return fig
 
 @app.callback(
@@ -1206,8 +1194,8 @@ def all_species(n_clicks, species_source, run_name):
 def all_QCs(n_clicks):
     return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
-application = app.server # Required for uwsgi
+server = app.server # Required for gunicorn
 
 if __name__ == '__main__':
     # 0.0.0.0 exposes the app to the network.
-    app.run_server(debug=True, host="0.0.0.0")
+    app.run_server(debug=True, host="0.0.0.0", dev_tools_hot_reload=True)

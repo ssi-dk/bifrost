@@ -446,10 +446,10 @@ def get_sample_component_status(run_name):
         db = connection.get_database()
         run = db.runs.find_one({"name": run_name})
         samples_ids = list(map(lambda x:x["_id"], run["samples"]))
-        components_ids = list(map(lambda x: x["_id"], run["components"]))
+        components_names = list(map(lambda x: x["name"], run["components"]))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": samples_ids},
-            "component._id": {"$in": components_ids}
+            "component.name": {"$in": components_names}
         })
         output = {}
         for s_c in s_c_list:
@@ -479,6 +479,38 @@ def get_species_QC_values(ncbi_species):
             return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
         else:
             return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
+
+
+def get_sample_QC_status(run):
+    with get_connection() as connection:
+        db = connection.get_database()
+        current_run = db.runs.find_one({"name": run})
+        samples = [s for s in current_run["samples"]]
+        sample_old_runs = {}
+        for sample in samples:
+            sample_dict = {}
+            runs = db.runs.find({"samples.name": sample["name"]}).sort(
+                [("name", pymongo.DESCENDING)])
+            for run in runs:
+                sample_id = None
+                for r_sample in run["samples"]:
+                    if r_sample["name"] == sample["name"]:
+                        sample_id = r_sample["_id"]
+                        break
+                old_sample = db.samples.find_one({"_id": sample_id})
+                if "stamps" in old_sample:
+                    sample_dict[run["name"]] = old_sample["stamps"]["ssi_stamper"]["value"]
+                else:
+                    sample_dict[run["name"]] = "undefined"
+            sample_old_runs[sample["name"]] = sample_dict
+        return sample_old_runs
+
+def get_last_runs(run, n):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return list(db.runs.find({"name": {"$lt": run}, "type": "routine"}, {"name": 1, "_id": 0}).sort([("name", pymongo.DESCENDING)]).limit(n))
+
+
 
 
 def get_sample(sample_id):
