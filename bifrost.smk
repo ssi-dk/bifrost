@@ -50,7 +50,10 @@ rule setup:
     output:
         folder = directory(component)
     shell:
-        "mkdir {output}"
+        """
+        mkdir {output};
+        mkdir {output}/components;
+        """
 
 rule setup_rerun:
     input:
@@ -60,7 +63,7 @@ rule setup_rerun:
     shell:
         """
         mkdir {output};
-        mkdir {output}/components;
+        mkdir {input}/components;
         """
 
 
