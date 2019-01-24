@@ -244,7 +244,7 @@ def display_selected_data(selected_data, rows, selected_rows):
         union_points = set(points).intersection(lasso_points)
         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
         # This way we keep the table order.
-        points = list(df[df["_id"].isin(lasso_sample_ids)]["name"])
+        points = list(dtdf[dtdf["_id"].isin(lasso_sample_ids)]["name"])
         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
     return [
         html.Label(
