@@ -175,13 +175,14 @@ rule initialize_components:
         try:
             rule_name = str(params.rule_name)
             component = str(input.component)
+            components_dir = str(input.components_dir)
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
 
             for component_name in components:
-                component_file_name = "components/" + component + ".yaml"
+                component_file_name = os.path.join(components_dir, component + ".yaml")
                 if not os.path.isfile(component_file_name):
                     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "components", component, "config.yaml"), component_file_name)
                 db_component = datahandling.load_component(component_file_name)
