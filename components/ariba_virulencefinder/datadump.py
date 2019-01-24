@@ -28,9 +28,9 @@ def extract_tsv(datadump_dict, folder, relative_path):
             datadump_dict["results"][relative_path_key]["status"] = "datadumper error"
         datadump_dict["results"][relative_path_key]["values"] = values
     return datadump_dict
+    
 
-
-def script__datadump_ariba_mlst(folder, sample):
+def script__datadump_virulencefinder(folder, sample):
     folder = str(folder)
     sample = str(sample)
 
@@ -39,21 +39,19 @@ def script__datadump_ariba_mlst(folder, sample):
     datadump_dict["results"] = datadump_dict.get("results", {})
 
     datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/report.tsv")
+        datadump_dict, folder, "ariba_virulencefinder/report.tsv")
 
     datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/mlst_report.tsv")
-
+        datadump_dict, folder, "abricate_on_virulencefinder_from_ariba.tsv")
+    
     # Summary:
     try:
-        datadump_dict["summary"]["mlst_report"] = ",".join(
-            ["{}:{}".format(key, val) for key, val in
-                datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0].items()])
+        datadump_dict["summary"]["ariba_virulencefinder"] = datadump_dict["results"]["abricate_on_virulencefinder_from_ariba_tsv"]["values"]
     except KeyError as e:
-        datadump_dict["summary"]["mlst_report"] = "KeyError: {}".format(e)
+        datadump_dict["summary"]["ariba_virulencefinder"] = "KeyError: {}".format(e)
 
     datahandling.save_sample_component(datadump_dict, sample)
-
+    
     return 0
 
-script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample)
+script__datadump_virulencefinder(snakemake.params.folder, snakemake.params.sample)
