@@ -214,8 +214,6 @@ rule initialize_components:
     # Dynamic
     input:
         component = component,
-        git_hash = rules.generate_git_hash.output.git_hash,
-        conda_env = rules.export_conda_env.output.conda_yaml,
     output:
         touch(rerun_folder + "/initialize_components"),
         touch(component + "/initialize_components_complete"),
@@ -224,22 +222,19 @@ rule initialize_components:
     run:
         try:
             rule_name = str(params.rule_name)
-            git_hash = str(input.git_hash)
-            conda_env = str(input.conda_env)
             component = str(input.component)
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
-            component_db = {}
-            with open(git_hash, "r") as git_info:
-                git_hash = git_info.readlines()[0].strip()
-                component_db["git_hash"] = git_hash
-            component_db["conda_env"] = datahandling.load_yaml(conda_env)
-            component_db["config"] = config
+
             for component_name in components:
-                component_db["name"] = component_name.strip()
-                datahandling.save_component(component_db, component + "/" + component_name + ".yaml")
+                component_file_name = "components/" + component + ".yaml"
+                if not os.path.isfile(component_file_name):
+                    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "components", component, "config.yaml"), component_file_name)
+                db_component = datahandling.load_component(component_file_name)
+                datahandling.save_component(component_db, component_file_name)
+
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
@@ -552,7 +547,7 @@ rule add_components_to_samples:
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
                     for component_name in components:
-                        component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                        component_id = datahandling.load_component("components/" + component + ".yaml").get("_id",)
                         if component_id is not None:
                             insert_component = True
                             for sample_component in sample_db["components"]:
@@ -698,7 +693,7 @@ rule initialize_run:
 
             run_db["components"] = run_db.get("components", [])
             for component_name in components:
-                component_id = datahandling.load_component(os.path.join(component, component_name + ".yaml")).get("_id",)
+                component_id = datahandling.load_component("components/" + component + ".yaml").get("_id",)
                 if component_id is not None:
                     insert_component = True
                     for run_components in run_db["components"]:
