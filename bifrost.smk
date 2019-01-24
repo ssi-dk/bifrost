@@ -65,7 +65,7 @@ rule make_components_dir:
     input:
         component
     output:
-        folder = directory(component + "/components")
+        folder = directory("components")
     shell:
         "mkdir {output};"
 
