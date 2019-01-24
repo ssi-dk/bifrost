@@ -59,6 +59,7 @@ rule setup_rerun:
         rerun_folder = directory(component + "/delete_to_update")
     shell:
         "mkdir {output}"
+        "mkdir {output}/components"
 
 
 rule_name = "export_conda_env"

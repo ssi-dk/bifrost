@@ -7,12 +7,12 @@ import sys
 config = datahandling.load_config()
 
 
-def extract_tsv(datadump_dict, analyzer_folder, relative_path):
+def extract_tsv(datadump_dict, component_folder, relative_path):
     relative_path_key = relative_path.replace(".", "_")
-    if os.path.isfile(os.path.join(analyzer_folder, relative_path)):
+    if os.path.isfile(os.path.join(component_folder, relative_path)):
         datadump_dict["results"][relative_path_key] = {}
         try:
-            with open(os.path.join(analyzer_folder, relative_path), "r") as tsv_file:
+            with open(os.path.join(component_folder, relative_path), "r") as tsv_file:
                 values = []
                 headers = None
                 for line in tsv_file:
@@ -30,8 +30,8 @@ def extract_tsv(datadump_dict, analyzer_folder, relative_path):
     return datadump_dict
     
 
-def script__datadump_analyzer(analyzer_folder, sample):
-    analyzer_folder = str(analyzer_folder)
+def script__datadump_analyzer(component_folder, sample):
+    component_folder = str(component_folder)
     sample = str(sample)
 
     datadump_dict = datahandling.load_sample_component(sample)
@@ -39,10 +39,10 @@ def script__datadump_analyzer(analyzer_folder, sample):
     datadump_dict["results"] = datadump_dict.get("results", {})
 
     datadump_dict = extract_tsv(
-        datadump_dict, analyzer_folder, "abricate_on_plasmidfinder_from_ariba.tsv")
+        datadump_dict, component_folder, "abricate_on_plasmidfinder_from_ariba.tsv")
 
     datadump_dict = extract_tsv(
-        datadump_dict, analyzer_folder, "ariba_plasmidfinder/report.tsv")
+        datadump_dict, component_folder, "ariba_plasmidfinder/report.tsv")
 
     # Summary:
     try:
