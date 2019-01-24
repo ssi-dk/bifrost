@@ -501,8 +501,7 @@ def generate_sample_folder_div(n_generate_ts,
 def update_report(lasso_selected, data_store):
     if lasso_selected is not None and lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first'
-
-    elif len(data_store) != 0:
+    elif len(data_store) != 0 and data_store != '""':
         samples = pd.DataFrame.from_dict(data_store)["_id"]
     else:
         samples = {}
