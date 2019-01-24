@@ -501,7 +501,7 @@ rule add_components_to_samples:
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
                     for component_name in components:
-                        component_id = datahandling.load_component("../components/" + component + ".yaml").get("_id",)
+                        component_id = datahandling.load_component("components/" + component_name + ".yaml").get("_id",)
                         if component_id is not None:
                             insert_component = True
                             for sample_component in sample_db["components"]:
@@ -647,7 +647,7 @@ rule initialize_run:
 
             run_db["components"] = run_db.get("components", [])
             for component_name in components:
-                component_id = datahandling.load_component("../components/" + component + ".yaml").get("_id",)
+                component_id = datahandling.load_component("components/" + component_name + ".yaml").get("_id",)
                 if component_id is not None:
                     insert_component = True
                     for run_components in run_db["components"]:
