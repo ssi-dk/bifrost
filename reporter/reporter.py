@@ -353,6 +353,20 @@ def update_species_list(run_name):
 
 
 @app.callback(
+    Output("run-list", "options"),
+    [Input("placeholder0", "children")]
+)
+def update_run_options(none):
+    run_list = import_data.get_run_list()
+    return [
+        {
+            "label": "{} ({})".format(run["name"],
+                                      len(run["samples"])),
+            "value": run["name"]
+        } for run in run_list]
+
+
+@app.callback(
     Output("run-table", "children"),
     [Input("run-name", "children"),
         Input("url", "pathname")]

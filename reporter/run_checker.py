@@ -35,13 +35,6 @@ app.css.append_css(
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
-run_list = import_data.get_run_list()
-run_list_options = [
-    {
-        "label": "{} ({})".format(run["name"],
-                                  len(run["samples"])),
-        "value": run["name"]
-    } for run in run_list]
 
 
 app.layout = html.Div([
@@ -51,6 +44,7 @@ app.layout = html.Div([
             label="UP",
             className="button button-primary no-print"
         ),
+        html.Div(id='none', children=[], style={'display': 'none'}),
         html.H1("SerumQC Run Checker"),
         dcc.Interval(
             id='table-interval',
@@ -62,7 +56,7 @@ app.layout = html.Div([
                     html.Div(
                         dcc.Dropdown(
                             id="run-list",
-                            options=run_list_options,
+                            options=[],
                             placeholder="Sequencing run"
                         )
                     )
@@ -119,6 +113,19 @@ def update_run_name(pathname):
     else:
         return name + "/"
 
+
+@app.callback(
+    Output("run-list", "options"),
+    [Input("none", "children")]
+)
+def update_run_options(none):
+    run_list = import_data.get_run_list()
+    return [
+        {
+            "label": "{} ({})".format(run["name"],
+                                    len(run["samples"])),
+            "value": run["name"]
+        } for run in run_list]
 
 @app.callback(
     Output("run-name-title", "children"),

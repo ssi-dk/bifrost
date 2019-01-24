@@ -27,14 +27,6 @@ def html_div_summary():
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
 
-    run_list = list(import_data.get_run_list())
-    run_list_options = [
-        {
-            "label": "{} ({})".format(run["name"],
-                                        len(run["samples"])),
-            "value": run["name"]
-        } for run in run_list]
-
     return html.Div(
         [
             html.H5("Summary", className="box-title"),
@@ -49,7 +41,7 @@ def html_div_summary():
                                             html.Div(
                                                 dcc.Dropdown(
                                                     id="run-list",
-                                                    options=run_list_options,
+                                                    options=[],
                                                     placeholder="Sequencing run"
                                                 )
                                             )
