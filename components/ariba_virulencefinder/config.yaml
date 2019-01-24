@@ -22,5 +22,5 @@ ariba_virulencefinder_database: "/srv/data/DB/ariba/virulencefinder/"
 requirements:
   sample:
     properties:
-      provided_species: ['Clostridioides difficile']
+      provided_species: ['Escherichia coli']
 #---------------------------------------------------------------------------------------------------
