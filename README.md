@@ -1,8 +1,8 @@
 ## Running bifrost:
 
-Activate conda environment. `env_qcquickie` is the name of the environment in the SSI servers:
+Activate conda environment. `bifrost` is the name of the environment in the SSI servers:
 ```
-source activate env_qcquickie
+source activate bifrost
 ```
 
 Create output directory, and move into it 
