@@ -50,10 +50,7 @@ rule setup:
     output:
         folder = directory(component)
     shell:
-        """
-        mkdir {output};
-        mkdir {output}/components;
-        """
+        "mkdir {output};"
 
 rule setup_rerun:
     input:
@@ -61,62 +58,16 @@ rule setup_rerun:
     output:
         rerun_folder = directory(component + "/delete_to_update")
     shell:
-        """
-        mkdir {output};
-        mkdir {input}/components;
-        """
+        "mkdir {output};"
 
 
-rule_name = "export_conda_env"
-rule export_conda_env:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
-    benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
-    message:
-        "Running step: {rule}"
-    # Dynamic
+rule make_components_dir:
     input:
         component
     output:
-        touch(rerun_folder + "/export_conda_env"),
-        conda_yaml = component + "/conda_env.yaml",
+        folder = directory(component + "/components")
     shell:
-        "conda env export 1> {output.conda_yaml} 2> {log.err_file}"
-
-
-rule_name = "generate_git_hash"
-rule generate_git_hash:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = component + "/log/" + rule_name + ".out.log",
-        err_file = component + "/log/" + rule_name + ".err.log",
-    benchmark:
-        component + "/benchmarks/" + rule_name + ".benchmark"
-    message:
-        "Running step: {rule}"
-    # Dynamic
-    input:
-        component
-    output:
-        touch(rerun_folder + "/generate_git_hash"),
-        git_hash = component + "/git_hash.txt"
-    shell:
-        "git --git-dir {workflow.basedir}/.git rev-parse HEAD 1> {output.git_hash} 2> {log.err_file}"
+        "mkdir {output};"
 
 # TODO: temporarily shelved idea for anonymizing samples 
 # rule_name = "create_sample_folder"
@@ -214,6 +165,7 @@ rule initialize_components:
     # Dynamic
     input:
         component = component,
+        rules.make_components_dir.output.folder
     output:
         touch(rerun_folder + "/initialize_components"),
         touch(component + "/initialize_components_complete"),
