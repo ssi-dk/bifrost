@@ -182,7 +182,7 @@ rule initialize_components:
             datahandling.log(log_out, "Started {}\n".format(rule_name))
 
             for component_name in components:
-                component_file_name = os.path.join(components_dir, component + ".yaml")
+                component_file_name = os.path.join("../", components_dir, component_name + ".yaml")
                 if not os.path.isfile(component_file_name):
                     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "components", component, "config.yaml"), component_file_name)
                 db_component = datahandling.load_component(component_file_name)
@@ -500,7 +500,7 @@ rule add_components_to_samples:
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
                     for component_name in components:
-                        component_id = datahandling.load_component("components/" + component + ".yaml").get("_id",)
+                        component_id = datahandling.load_component("../components/" + component + ".yaml").get("_id",)
                         if component_id is not None:
                             insert_component = True
                             for sample_component in sample_db["components"]:
@@ -646,7 +646,7 @@ rule initialize_run:
 
             run_db["components"] = run_db.get("components", [])
             for component_name in components:
-                component_id = datahandling.load_component("components/" + component + ".yaml").get("_id",)
+                component_id = datahandling.load_component("../components/" + component + ".yaml").get("_id",)
                 if component_id is not None:
                     insert_component = True
                     for run_components in run_db["components"]:
