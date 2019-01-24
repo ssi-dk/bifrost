@@ -101,7 +101,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     params:
         db = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_database"])
     shell:
-        "kraken --threads {threads} -db {params.db} --fastq-input {input.reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "kraken --threads {threads} -db {params.db} {input.reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
 
 
 rule_name = "contaminant_check__determine_species_bracken_on_minikraken_results"
