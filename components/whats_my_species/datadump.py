@@ -8,16 +8,6 @@ import sys
 config = datahandling.load_config()
 
 
-def extract_bbuk_log(file_path, key, data_dict):
-    buffer = datahandling.read_buffer(file_path)
-    data_dict["results"][key]["input_reads_num"] = int(re.search("Input:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    data_dict["results"][key]["filtered_reads_num"] = int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    data_dict["results"][key]["input_reads_bases"] = int(re.search("Input:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
-    data_dict["results"][key]["filtered_reads_bases"] = int(re.search("Result:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
-    data_dict["summary"]["filtered_reads_num"] = int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    return data_dict
-
-
 def extract_bracken_txt(file_path, key, data_dict):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
@@ -33,8 +23,9 @@ def extract_bracken_txt(file_path, key, data_dict):
 def extract_kraken_report_bracken_txt(file_path, key, data_dict):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
-    if len(buffer) > 1:
+    if len(buffer) > 2:
         data_dict["results"][key]["unclassified_count"] = int(buffer[0].split("\t")[1])
+        data_dict["results"][key]["root"] = int(buffer[1].split("\t")[1])
     return data_dict
 
 
@@ -47,13 +38,13 @@ def extract_kraken_report_txt(file_path, key, data_dict):
     return data_dict
 
 
-def combine_bbduk_log_bracken_txt_kraken_report_bracken_txt(data_dict):
+def species_math(data_dict):
     try:
-        if "status" not in data_dict["results"]["log/setup__filter_reads_with_bbduk_err_log"] and "status" not in data_dict["results"]["kraken_report_bracken_txt"] and "status" not in data_dict["results"]["bracken_txt"] and "species_1_count" in data_dict["results"]["bracken_txt"] and "species_2_count" in data_dict["results"]["bracken_txt"]:
-            data_dict["summary"]["percent_unclassified"] = data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] / data_dict["summary"]["filtered_reads_num"]
-            data_dict["summary"]["percent_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_count"] / data_dict["summary"]["filtered_reads_num"]
+        if "status" not in data_dict["results"]["kraken_report_bracken_txt"] and "status" not in data_dict["results"]["bracken_txt"] and "species_1_count" in data_dict["results"]["bracken_txt"] and "species_2_count" in data_dict["results"]["bracken_txt"]:
+            data_dict["summary"]["percent_unclassified"] = data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
+            data_dict["summary"]["percent_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
             data_dict["summary"]["name_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_name"]
-            data_dict["summary"]["percent_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_count"] / data_dict["summary"]["filtered_reads_num"]
+            data_dict["summary"]["percent_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
             data_dict["summary"]["name_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_name"]
     except Exception as e:
         print(e)
@@ -67,11 +58,10 @@ def script__datadump_whats_my_species(folder, sample):
     data_dict["summary"] = data_dict.get("summary", {})
     data_dict["results"] = data_dict.get("results", {})
 
-    data_dict = datahandling.datadump_template(data_dict, folder, "log/setup__filter_reads_with_bbduk.err.log", extract_bbuk_log)
     data_dict = datahandling.datadump_template(data_dict, folder, "bracken.txt", extract_bracken_txt)
     data_dict = datahandling.datadump_template(data_dict, folder, "kraken_report_bracken.txt", extract_kraken_report_bracken_txt)
     data_dict = datahandling.datadump_template(data_dict, folder, "kraken_report.txt", extract_kraken_report_txt)
-    data_dict = combine_bbduk_log_bracken_txt_kraken_report_bracken_txt(data_dict)
+    data_dict = species_math(data_dict)
 
     datahandling.save_sample_component(data_dict, sample)
 
