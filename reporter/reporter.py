@@ -995,7 +995,7 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
                         customdata=species_df["_id"]
                     )
                 )
-    fig = tools.make_subplots(rows=7, cols=1)
+    fig = tools.make_subplots(rows=7, cols=1, print_grid=False)
     fig["layout"].update(
         hovermode="closest",
         title=selected_species,
@@ -1007,22 +1007,26 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
             t=50
         ),
     )
-    fig.append_trace(traces[0], 1, 1)
-    fig.append_trace(traces[1], 1, 1)
-    fig.append_trace(traces[2], 2, 1)
-    fig.append_trace(traces[3], 3, 1)
-    fig.append_trace(traces[4], 4, 1)
-    fig.append_trace(traces[5], 5, 1)
-    fig.append_trace(traces[6], 6, 1)
-    fig.append_trace(traces[7], 7, 1)
+    try:
+        fig.append_trace(traces[0], 1, 1)
+        fig.append_trace(traces[1], 1, 1)
+        fig.append_trace(traces[2], 2, 1)
+        fig.append_trace(traces[3], 3, 1)
+        fig.append_trace(traces[4], 4, 1)
+        fig.append_trace(traces[5], 5, 1)
+        fig.append_trace(traces[6], 6, 1)
+        fig.append_trace(traces[7], 7, 1)
+        
+        fig["layout"]["xaxis"].update(range=trace_ranges[0])
+        fig["layout"]["xaxis2"].update(range=trace_ranges[2])
+        fig["layout"]["xaxis3"].update(range=trace_ranges[3])
+        fig["layout"]["xaxis4"].update(range=trace_ranges[4])
+        fig["layout"]["xaxis5"].update(range=trace_ranges[5])
+        fig["layout"]["xaxis6"].update(range=trace_ranges[6])
+        fig["layout"]["xaxis7"].update(range=trace_ranges[7])
+    except IndexError:
+        pass # It won't draw al ranges/traces because they don't exist.
 
-    fig["layout"]["xaxis"].update(range=trace_ranges[0])
-    fig["layout"]["xaxis2"].update(range=trace_ranges[2])
-    fig["layout"]["xaxis3"].update(range=trace_ranges[3])
-    fig["layout"]["xaxis4"].update(range=trace_ranges[4])
-    fig["layout"]["xaxis5"].update(range=trace_ranges[5])
-    fig["layout"]["xaxis6"].update(range=trace_ranges[6])
-    fig["layout"]["xaxis7"].update(range=trace_ranges[7])
 
     fig["layout"]["yaxis"].update(domain=(0.78,1))
     fig["layout"]["yaxis2"].update(domain=(0.655, 0.75))
