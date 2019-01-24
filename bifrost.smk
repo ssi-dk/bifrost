@@ -19,7 +19,7 @@ configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 component = "bifrost"
 rerun_folder = component + "/delete_to_update"
 
-datahandling.save_yaml(config, "run_config.yaml")
+datahandling.save_yaml(config, "config.yaml")
 components = config["components"].split(",")
 # raw_data_folder = config["raw_data_folder"]
 # rename_samples = config["rename_samples"]
@@ -59,6 +59,7 @@ rule setup_rerun:
         rerun_folder = directory(component + "/delete_to_update")
     shell:
         "mkdir {output}"
+        "mkdir {output}/components"
 
 
 rule_name = "export_conda_env"
@@ -821,4 +822,3 @@ rule create_end_file:
             shell("bash {} && touch {}".format(bashcmd, output))
         else:
             shell("touch {}".format(output))
-        

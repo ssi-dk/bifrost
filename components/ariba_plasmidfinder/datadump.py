@@ -39,41 +39,16 @@ def script__datadump_analyzer(folder, sample):
     datadump_dict["results"] = datadump_dict.get("results", {})
 
     datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/report.tsv")
-
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/mlst_report.tsv")
-
-    datadump_dict = extract_tsv(
         datadump_dict, folder, "abricate_on_plasmidfinder_from_ariba.tsv")
 
     datadump_dict = extract_tsv(
         datadump_dict, folder, "ariba_plasmidfinder/report.tsv")
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_resfinder/report.tsv")
-
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "abricate_on_resfinder_from_ariba.tsv")
-    
-    ## Summary:
-    try:
-        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_resfinder_from_ariba_tsv"]["values"]
-    except KeyError as e:
-        datadump_dict["summary"]["ariba_resfinder"] = "KeyError: {}".format(e)
+    # Summary:
     try:
         datadump_dict["summary"]["ariba_plasmidfinder"] = datadump_dict["results"]["abricate_on_plasmidfinder_from_ariba_tsv"]["values"]
     except KeyError as e:
         datadump_dict["summary"]["ariba_plasmidfinder"] = "KeyError: {}".format(e)
-    try:
-        st_value = datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0]["ST"]
-        datadump_dict["summary"]["mlst_report"] = "ST:{},{}".format(st_value, ",".join(
-            ["{}:{}".format(key, val) for key, val in
-                datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0].items() if key != "ST"]))
-        
-    except KeyError as e:
-        datadump_dict["summary"]["mlst_report"] = "KeyError: {}".format(e)
-
 
     datahandling.save_sample_component(datadump_dict, sample)
     

@@ -1,0 +1,26 @@
+#-Information---------------------------------------------------------------------------------------
+name: ariba_virulencefinder
+version: 1.0
+target: sample
+type: pipeline
+recommendation: recommended
+description: >
+  This preforms read based mapping against the virulencefinder DB's.
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+# -None
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path
+abricate_virulencefinder_database: "/srv/data/DB/abricate/virulencefinder_db/" 
+ariba_virulencefinder_database: "/srv/data/DB/ariba/virulencefinder/"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  sample:
+    properties:
+      provided_species: ['Escherichia coli']
+#---------------------------------------------------------------------------------------------------

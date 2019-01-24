@@ -3,8 +3,11 @@ from bifrostlib import datahandling
 import pandas
 import os
 
-def script__initialization(requirements_file, sample, sample_component, output_file, log_out, log_err):
+
+def script__initialization(requirements_file, component, sample, sample_component, output_file, log_out, log_err):
     set_status_to_running(sample_component)
+    component_db = datahandling.load_component(component)
+    datahandling.save_component(component_db, component)
     if requirements_met(requirements_file, sample, log_out, log_err) == True:
         datahandling.log(log_out, "{}\n{}\n".format(os.getcwd(), output_file))
         with open(str(output_file), "w") as handle:
@@ -71,9 +74,15 @@ def requirements_met(requirements_file, sample, log_out, log_err):
             """
             actual_value = functools.reduce(dict.get, keys, db)
 
+            """
+            Check has been adjusted to check for a list to allow multiple potential options to match
+            """
+            if not isinstance(actual_value, list):
+                actual_value = [actual_value]
+
             if actual_value is not None:
                 if desired_value is not None:
-                    if desired_value == actual_value:
+                    if desired_value in actual_value:
                         datahandling.log(log_err, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(keys), db))
                     else:
                         datahandling.log(log_err, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(keys), db, desired_value))
@@ -90,6 +99,7 @@ def requirements_met(requirements_file, sample, log_out, log_err):
 
 script__initialization(
     snakemake.input.requirements_file,
+    snakemake.params.component,
     snakemake.params.sample,
     snakemake.params.sample_component,
     snakemake.output,

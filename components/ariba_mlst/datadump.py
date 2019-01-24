@@ -28,9 +28,9 @@ def extract_tsv(datadump_dict, folder, relative_path):
             datadump_dict["results"][relative_path_key]["status"] = "datadumper error"
         datadump_dict["results"][relative_path_key]["values"] = values
     return datadump_dict
-    
 
-def script__datadump_analyzer(folder, sample):
+
+def script__datadump_ariba_mlst(folder, sample):
     folder = str(folder)
     sample = str(sample)
 
@@ -44,39 +44,16 @@ def script__datadump_analyzer(folder, sample):
     datadump_dict = extract_tsv(
         datadump_dict, folder, "ariba_mlst/mlst_report.tsv")
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "abricate_on_plasmidfinder_from_ariba.tsv")
-
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_plasmidfinder/report.tsv")
-
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_resfinder/report.tsv")
-
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "abricate_on_resfinder_from_ariba.tsv")
-    
-    ## Summary:
+    # Summary:
     try:
-        datadump_dict["summary"]["ariba_resfinder"] = datadump_dict["results"]["abricate_on_resfinder_from_ariba_tsv"]["values"]
-    except KeyError as e:
-        datadump_dict["summary"]["ariba_resfinder"] = "KeyError: {}".format(e)
-    try:
-        datadump_dict["summary"]["ariba_plasmidfinder"] = datadump_dict["results"]["abricate_on_plasmidfinder_from_ariba_tsv"]["values"]
-    except KeyError as e:
-        datadump_dict["summary"]["ariba_plasmidfinder"] = "KeyError: {}".format(e)
-    try:
-        st_value = datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0]["ST"]
-        datadump_dict["summary"]["mlst_report"] = "ST:{},{}".format(st_value, ",".join(
+        datadump_dict["summary"]["mlst_report"] = ",".join(
             ["{}:{}".format(key, val) for key, val in
-                datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0].items() if key != "ST"]))
-        
+                datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0].items()])
     except KeyError as e:
         datadump_dict["summary"]["mlst_report"] = "KeyError: {}".format(e)
 
-
     datahandling.save_sample_component(datadump_dict, sample)
-    
+
     return 0
 
-script__datadump_analyzer(snakemake.params.folder, snakemake.params.sample)
+script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample)

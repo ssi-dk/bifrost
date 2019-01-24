@@ -1,12 +1,10 @@
 import os
 import sys
-import Bio.SeqIO
 import traceback
 import shutil
-import pandas
 from bifrostlib import datahandling
 
-component = "whats_my_species"  # Depends on component name, should be same as folder
+component = "ariba_virulencefinder"  # Depends on component name, should be same as folder
 
 configfile: "../config.yaml"  # Relative to run directory
 global_threads = config["threads"]
@@ -76,8 +74,8 @@ rule check_requirements:
         os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
 
 
-rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
-rule contaminant_check__classify_reads_kraken_minikraken_db:
+rule_name = "ariba_virulencefinder"
+rule ariba_virulencefinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -95,17 +93,18 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     # Dynamic
     input:
         rules.check_requirements.output.check_file,
+        folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        kraken_report = rules.setup.params.folder + "/kraken_report.txt"
+        folder = directory(rules.setup.params.folder + "/ariba_virulencefinder")
     params:
-        db = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_database"])
+        database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_virulencefinder_database"])
     shell:
-        "kraken --threads {threads} -db {params.db} {input.reads} 2> {log.err_file} | kraken-report -db {params.db} 1> {output.kraken_report}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
 
 
-rule_name = "contaminant_check__determine_species_bracken_on_minikraken_results"
-rule contaminant_check__determine_species_bracken_on_minikraken_results:
+rule_name = "abricate_on_ariba_virulencefinder"
+rule abricate_on_ariba_virulencefinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -122,20 +121,22 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        kraken_report = rules.contaminant_check__classify_reads_kraken_minikraken_db.output.kraken_report,
+        contigs = rules.ariba_virulencefinder.output.folder
     output:
-        bracken = rules.setup.params.folder + "/bracken.txt",
-        kraken_report_bracken = rules.setup.params.folder + "/kraken_report_bracken.txt"
+        report = rules.setup.params.folder + "/abricate_on_virulencefinder_from_ariba.tsv",
     params:
-        kmer_dist = os.path.join(os.path.dirname(workflow.snakefile), db_component["kraken_kmer_dist"])
+        database = os.path.join(os.path.dirname(workflow.snakefile), db_component["abricate_virulencefinder_database"])
     shell:
         """
-        est_abundance.py -i {input.kraken_report} -k {params.kmer_dist} -o {output.bracken} 1> {log.out_file} 2> {log.err_file}
-        sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
+        if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
+        then abricate --datadir {params.database} --db . {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
+        else touch {output.report};
+        fi;
         """
 
-rule_name = "species_check__set_species"
-rule species_check__set_species:
+
+rule_name = "datadump_ariba_virulencefinder"
+rule datadump_ariba_virulencefinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -150,55 +151,11 @@ rule species_check__set_species:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
-    output:
-        species = rules.setup.params.folder + "/species.txt",
-    params:
-        sample = sample,
-    run:
-        try:
-            log_out = str(log.out_file)
-            log_err = str(log.err_file)
-
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
-            sample_db = datahandling.load_sample(sample)
-            with open(output.species, "w") as species_file:
-                df = pandas.read_table(input.bracken)
-                # This try-except will avoid a crash when no species is found by bracken.
-                try:
-                    sample_db["properties"]["detected_species"] = df["name"].iloc[0]
-                except IndexError:
-                    sample_db["properties"]["detected_species"] = None
-                sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
-                if sample_db["properties"]["provided_species"] is not None:
-                    sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
-                else:
-                    sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
-            datahandling.save_sample(sample_db, sample)
-        except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
-
-rule_name = "datadump_whats_my_species"
-rule datadump_whats_my_species:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        species = rules.species_check__set_species.output.species,
+        rules.abricate_on_ariba_virulencefinder.output.report,
     output:
         summary = touch(rules.all.input)
     params:
+        folder = rules.setup.params.folder,
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
-        folder = rules.setup.params.folder
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
