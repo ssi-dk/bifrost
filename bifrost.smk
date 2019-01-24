@@ -11,6 +11,7 @@ import pandas
 import pkg_resources
 import hashlib
 import traceback
+import shutil
 sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 from bifrostlib import datahandling
 
