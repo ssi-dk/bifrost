@@ -289,6 +289,7 @@ rule initialize_samples_from_sample_folder:
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["name"] = sample_name
                     sample_db["reads"] = sample_db.get("reads", {})
+                    sample_db["path"] = os.path.realpath(sample_name)
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
@@ -418,6 +419,7 @@ rule set_samples_from_sample_info:
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
+                    ##NOTE Sample name can be changed to Unnamed_ following the logic below (no name in sample sheet) however the .yaml path uses the value in the sample sheet
                     if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
                         sample_db["sample_sheet"] = {}
@@ -436,6 +438,7 @@ rule set_samples_from_sample_info:
                                 # Increasing counter before so it starts with Unnamed_1
                                 unnamed_sample_count += 1
                                 sample_db["name"] = "Unnamed_" + unnamed_sample_count
+                        sample_db["path"] = os.path.realpath(sample_db["name"])
                         datahandling.save_sample(sample_db, sample_config)
             except pandas.io.common.EmptyDataError:
                 datahandling.log(log_err, ("No samplesheet data\n"))
@@ -669,6 +672,7 @@ rule initialize_run:
             run_db = datahandling.load_run(run_folder + "/run.yaml")
             run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
             run_db["type"] = config.get("type", "default")
+            run_db["path"] = os.path.realpath(run_folder)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
                     sample_name = folder
