@@ -165,7 +165,7 @@ rule initialize_components:
     # Dynamic
     input:
         component = component,
-        rules.make_components_dir.output.folder
+        components_dir = rules.make_components_dir.output.folder
     output:
         touch(rerun_folder + "/initialize_components"),
         touch(component + "/initialize_components_complete"),
