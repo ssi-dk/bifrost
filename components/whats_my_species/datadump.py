@@ -41,10 +41,10 @@ def extract_kraken_report_txt(file_path, key, data_dict):
 def species_math(data_dict):
     try:
         if "status" not in data_dict["results"]["kraken_report_bracken_txt"] and "status" not in data_dict["results"]["bracken_txt"] and "species_1_count" in data_dict["results"]["bracken_txt"] and "species_2_count" in data_dict["results"]["bracken_txt"]:
-            data_dict["summary"]["percent_unclassified"] = data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
-            data_dict["summary"]["percent_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
+            data_dict["summary"]["percent_unclassified"] = data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] / (data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"])
+            data_dict["summary"]["percent_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_count"] / (data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"])
             data_dict["summary"]["name_classified_species_1"] = data_dict["results"]["bracken_txt"]["species_1_name"]
-            data_dict["summary"]["percent_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_count"] / data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"]
+            data_dict["summary"]["percent_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_count"] / (data_dict["results"]["kraken_report_bracken_txt"]["unclassified_count"] + data_dict["results"]["kraken_report_bracken_txt"]["root"])
             data_dict["summary"]["name_classified_species_2"] = data_dict["results"]["bracken_txt"]["species_2_name"]
     except Exception as e:
         print(e)
