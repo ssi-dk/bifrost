@@ -77,12 +77,12 @@ def requirements_met(requirements_file, sample, log_out, log_err):
             """
             Check has been adjusted to check for a list to allow multiple potential options to match
             """
-            if not isinstance(actual_value, list):
-                actual_value = [actual_value]
+            if not isinstance(desired_value, list):
+                desired_value = [desired_value]
 
             if actual_value is not None:
                 if desired_value is not None:
-                    if desired_value in actual_value:
+                    if actual_value in desired_value:
                         datahandling.log(log_err, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(keys), db))
                     else:
                         datahandling.log(log_err, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(keys), db, desired_value))
