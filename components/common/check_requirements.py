@@ -80,8 +80,10 @@ def requirements_met(requirements_file, sample, log_out, log_err):
             if not isinstance(desired_value, list):
                 desired_value = [desired_value]
 
-            if actual_value is not None:
-                if desired_value is not None:
+            # As it should be a list because of the last line.
+            if actual_value is not [None]:
+                # Not sure why desired is [None] instead of None
+                if desired_value is not [None]:
                     if actual_value in desired_value:
                         datahandling.log(log_err, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(keys), db))
                     else:
