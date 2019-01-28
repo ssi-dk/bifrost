@@ -738,7 +738,7 @@ rule setup_sample_components_to_run:
                                     component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                     if os.path.isfile(component_file):
                                         command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-                                        command.write("snakemake --restart-times {} --cores {} -s {} --config Sample={};\n".format(config["restart_times"], config["threads"], component_file, "sample.yaml"))
+                                        command.write("snakemake {} --restart-times {} --cores {} -s {} --config Sample={};\n".format(tmp_dir, config["restart_times"], config["threads"], component_file, "sample.yaml"))
 
                                         sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                         sample_component_db["status"] = "queued to run"
