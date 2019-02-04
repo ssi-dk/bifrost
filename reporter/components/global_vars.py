@@ -127,10 +127,6 @@ COLUMNS = [
         "id": "analyzer_mlst_type"
     },
     {
-        "name": "mlst_alleles",
-        "id": "analyzer_mlst_alleles"
-    },
-    {
         "name": "Main_sp_plus_uncl",
         "id": "ssi_stamper.whats_my_species:minspecies_text"
     },
