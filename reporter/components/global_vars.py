@@ -191,3 +191,6 @@ plot_values = [
         "limits": [0, 0.25]
     }
 ]
+
+ROUND_COLUMNS = ["whats_my_species.percent_unclassified",
+                 "assemblatron.bin_coverage_at_1x"]
