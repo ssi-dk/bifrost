@@ -25,7 +25,13 @@ COMPONENTS = ['whats_my_species', 'qcquickie',
 app = dash.Dash()
 
 app.config["suppress_callback_exceptions"] = True
-app.title = "Serum QC Run Checker"
+app.title = "bifrost Run Checker"
+
+if hasattr(keys, "pass_protected") and keys.pass_protected:
+    dash_auth.BasicAuth(
+        app,
+        keys.USERNAME_PASSWORD
+    )
 
 # Temp css to make it look nice
 # Dash CSS
