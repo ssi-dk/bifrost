@@ -10,6 +10,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
+import dash_auth
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
@@ -55,6 +56,12 @@ def short_species(species):
 app = dash.Dash()
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
+
+if hasattr(keys, "pass_protected") and keys.pass_protected:
+    dash_auth.BasicAuth(
+        app,
+        keys.USERNAME_PASSWORD
+    )
 
 # Temp css to make it look nice
 # Dash CSS
