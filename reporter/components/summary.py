@@ -5,8 +5,6 @@ import components.import_data as import_data
 import components.admin as admin
 
 
-from components.global_vars import PLOTS, DEFAULT_PLOT
-
 filter_notice_div = html.Div([
     html.P(
         'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
@@ -21,8 +19,6 @@ def format_selected_samples(filtered_df):
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
 def html_div_summary():
-    plot_values_options = [{"label": plot, "value": plot}
-                           for plot, value in PLOTS.items()]
     qc_options = ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
