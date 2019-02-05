@@ -11,11 +11,12 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# -None
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
+mlst_database_path: "/srv/data/DB/ariba/mlst/"
 abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
 abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
 ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"

@@ -227,7 +227,9 @@ rule ariba_mlst:
             log_err = str(log.err_file)
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
-            mlst_species_DB = datahandling.get_mlst_species_DB(sample)
+            mlst_species_DB_name = datahandling.get_mlst_species_DB(sample)
+            mlst_species_DB = os.path.join(
+                db_component["mlst_database_path"], mlst_species_DB_name)
             datahandling.log(log_out, "mlst species: {}\n".format(mlst_species_DB))
             if mlst_species_DB is None:
                 shell("mkdir {}".format(output.folder))
