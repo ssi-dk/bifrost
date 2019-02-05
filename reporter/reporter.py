@@ -394,11 +394,15 @@ def update_run_table(run_name, pathname):
         run = run_name
         year = run[:2]
         run_path = keys.run_path + "20{}/{}".format(year, run_name)
+        run_link = "file:/" + run_path
+        if hasattr(keys, "path_platform_windows") and keys.path_platform_windows:
+            run_path = run_path.replace("/", "\\")
+        run_a = html.A(run_path, href=run_link)
         if len(path) > 2 and path[2] != "":
             group = path[2]
-            return html_table([["Run Name", run], ["Run Path", run_path], ["Supplying lab", group]])
+            return html_table([["Run Name", run], ["Run Path", run_a], ["Supplying lab", group]])
         else:
-            return html_table([["Run Name", run], ["Run Path", run_path]])
+            return html_table([["Run Name", run], ["Run Path", run_a]])
         return html_table([["Run Name", run]])
 
 @app.callback(
