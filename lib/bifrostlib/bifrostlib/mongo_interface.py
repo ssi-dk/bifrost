@@ -20,6 +20,14 @@ def get_connection():
     return pymongo.MongoClient(mongodb_url)
 
 
+def get_species_connection():
+    mongo_db_key_location = os.getenv("BIFROST_SPECIES_DB_KEY", None)
+    with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
+        mongodb_url = mongo_db_key_location_handle.readline().strip()
+    "Return mongodb connection"
+    return pymongo.MongoClient(mongodb_url)
+
+
 def dump_run_info(data_dict):
     """Insert sample dict into mongodb.
     Return the dict with an _id element"""
@@ -117,7 +125,7 @@ def query_mlst_species(ncbi_species_name):
         return None
     try:
         ncbi_species_name = re.compile(ncbi_species_name)
-        with get_connection() as connection:
+        with get_species_connection() as connection:
             db = connection.get_database()  # Database name is ngs_runs
             species_db = db.species  # Collection name is samples
             result = species_db.find_one({"ncbi_species": ncbi_species_name}, {"mlst_species": 1, "_id": 0})
@@ -135,7 +143,7 @@ def query_ncbi_species(species_entry):
         return None
     try:
         species_entry = re.compile(species_entry)
-        with get_connection() as connection:
+        with get_species_connection() as connection:
             db = connection.get_database()  # Database name is ngs_runs
             species_db = db.species  # Collection name is samples
             result = species_db.find_one({"organism": species_entry}, {"ncbi_species": 1, "_id": 0})
@@ -153,7 +161,7 @@ def query_ncbi_species(species_entry):
 
 def query_species(ncbi_species_name):
     try:
-        with get_connection() as connection:
+        with get_species_connection() as connection:
             db = connection.get_database()  # Database name is ngs_runs
             species_db = db.species
             if ncbi_species_name is not None and species_db.find({'ncbi_species': ncbi_species_name}).count() > 0:
