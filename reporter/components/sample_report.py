@@ -313,7 +313,7 @@ def html_sample_tables(sample_data, **kwargs):
                     pagination_mode=False
                 ), className="grey-border")
     if type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder):
-        plasmidfinder_div = html.P("No plasmids found")
+        plasmidfinder_div = html.P("No replicons found")
 
     return html.Div([
         html.Div([
