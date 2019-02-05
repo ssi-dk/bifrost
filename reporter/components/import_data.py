@@ -123,6 +123,8 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
         else:
             pass
             # print("Missing summary", item)
+        if "status" in item:
+            clean_result[item_id][component + ".status"] = item["status"]
         for func in global_vars.FUNCS:
             clean_result[item_id] = func(clean_result[item_id])
     return pd.DataFrame.from_dict(clean_result, orient="index")

@@ -277,7 +277,7 @@ def html_sample_tables(sample_data, **kwargs):
         ])
     ])
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
-    if type(resfinder) == list:
+    if type(resfinder) == list and len(resfinder):
         columns = []
         if len(resfinder):
             columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
@@ -293,11 +293,13 @@ def html_sample_tables(sample_data, **kwargs):
                     data=resfinder,
                     pagination_mode=False
                 ), className="grey-border")
-    if type(resfinder) == float or resfinder is None or not len(resfinder):
+    elif sample_data.get("analyzer.status", "") == "Success" and (type(resfinder) == float or resfinder is None or not len(resfinder)):
         resfinder_div = html.P("No antibiotic resistance genes found")
+    else:
+        resfinder_div = html.P("Resfinder not run")
     
     plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
-    if type(plasmidfinder) == list:
+    if type(plasmidfinder) == list and len(plasmidfinder):
         columns = []
         if len(plasmidfinder):
             columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
@@ -312,8 +314,11 @@ def html_sample_tables(sample_data, **kwargs):
                     data=plasmidfinder,
                     pagination_mode=False
                 ), className="grey-border")
-    if type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder):
+    elif sample_data.get("analyzer.status","") == "Success" and (type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder)):
         plasmidfinder_div = html.P("No replicons found")
+    else:
+        plasmidfinder_div = html.P("Plasmidfinder not run")
+
 
     return html.Div([
         html.Div([
