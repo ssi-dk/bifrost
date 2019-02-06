@@ -18,10 +18,6 @@ import components.mongo_interface
 import components.import_data as import_data
 
 
-#Globals
-COMPONENTS = ['whats_my_species', 'qcquickie',
-              'analyzer', 'assemblatron', 'ssi_stamper', 'sp_cdiff_fbi', 'sp_ecoli_fbi', 'sp_salm_fbi']
-
 app = dash.Dash()
 
 app.config["suppress_callback_exceptions"] = True
@@ -170,7 +166,7 @@ def update_run_button(run):
      Input("table-interval", "n_intervals")]
 )
 def update_run_report(run, n_intervals):
-    update_notice = html.P("The table will update every 30s automatically.")
+    update_notice = "The table will update every 30s automatically."
     split = run.split("/")
     run = split[0]
     report = "status"
@@ -182,25 +178,30 @@ def update_run_report(run, n_intervals):
 
         resequence_link = html.H4(html.A(
             "Resequence Report", href="/{}/resequence".format(run)))
-
+        components = list(map(lambda x: x["name"], import_data.get_run(run)["components"]))
         samples = import_data.get_sample_component_status(run)
-        header = html.Tr([html.Th(html.Strong("Sample"))] +
-                         list(map(lambda x: html.Th(html.Strong(x)), COMPONENTS)))
+        header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate rotate-short")] +
+                         list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
         rows = [header]
-
         for name, s_components in samples.items():
+            if name == "Undetermined":
+                continue
             row = []
             row.append(html.Td(name))
-            for component in COMPONENTS:
+            for component in components:
                 if component in s_components.keys():
                     s_c = s_components[component]
                     row.append(
-                        html.Td(s_c[1], className="status-{}".format(s_c[0])))
+                        html.Td(s_c[1], className="center status-{}".format(s_c[0])))
                 else:
-                    row.append(html.Td("None", className="status-0"))
+                    row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
         table = html.Table(rows)
-        return [resequence_link, update_notice, table]
+        update_notice += " Req.: Requirements not met. Init.: initialised."
+        return [
+            resequence_link,
+            html.P(update_notice),
+            table]
 
     if run != "" and report == "resequence":
 
@@ -244,10 +245,10 @@ def update_run_report(run, n_intervals):
                     # row.append(html.Td("None", className="status-0"))
             rows.append(html.Tr(row))
         table = html.Table(rows)
+        update_notice += " SL: Supplying Lab, CF: Core Facility, NR: Not Run. -: No data."
         return [
             run_checker_link,
-            update_notice,
-            html.P("SL: Supplying Lab, CF: Core Facility, NR: Not Run. - : No data."),
+            html.P(update_notice),
             table
         ]
 

@@ -173,3 +173,6 @@ def post_stamp(stamp, samples):
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
         mongo_interface.save_sample(sample_db)
+
+def get_run(run_name):
+    return mongo_interface.get_run(run_name)

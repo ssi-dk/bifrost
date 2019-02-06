@@ -1,8 +1,13 @@
 td, td:first-child, th, th:first-child {
   font-size: 14px;
-  padding: 1px 15px;
+  padding: 1px 5px;
   border: none;
 }
+
+th.center:last-child, td.center:last-child {
+  padding-right: 5px;
+}
+
 .data-colored {
   height: 24px;
 }
@@ -350,6 +355,11 @@ body, .appcontainer {
   background-color: #27ae60;
 }
 
+.status--2 {
+  background-color: #d3d3d3;
+  color: #525252;
+}
+
 .run_checker_report {
   margin-top: 15px;
 }
@@ -383,6 +393,11 @@ th.rotate {
   white-space: nowrap;
 }
 
+th.rotate.rotate-short {
+  /* Something you can count on */
+  height: 120px;
+}
+
 th.rotate > div {
   transform: 
     /* Magic Numbers */
@@ -391,6 +406,16 @@ th.rotate > div {
     rotate(315deg);
   width: 30px;
 }
+
+th.rotate.rotate-short > div {
+  transform: 
+    /* Magic Numbers */
+    translate(7px, 32px)
+    /* 45 is really 360 - 45 */
+    rotate(315deg);
+  width: 30px;
+}
+
 th.rotate > div > strong {
   border-bottom: 1px solid #ccc;
   padding: 5px 10px;

@@ -450,20 +450,27 @@ def get_sample_component_status(run_name):
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": samples_ids},
             "component.name": {"$in": components_names}
-        })
+        }, {"sample.name": 1, "status": 1, "component.name": 1})
         output = {}
         for s_c in s_c_list:
             sample = output.get(s_c["sample"]["name"], {})
             status = s_c["status"]
             if status == "Success":
+                status = "OK"
                 status_code = 2
             elif status == "Running":
                 status_code = 1
             elif status == "initialized":
+                status = "init."
                 status_code = 0
             elif status == "Failure":
+                status = "Fail"
                 status_code = -1
+            elif status == 'Requirements not met':
+                status = "Req."
+                status_code = -2
             elif status == 'queued to run':
+                status = "queue"
                 status_code = 0
             else:
                 status_code = float('nan')
@@ -542,3 +549,8 @@ def save_sample(data_dict):
                 upsert=True  # insert the document if it does not exist
             )
         return data_dict
+
+def get_run(run_name):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return db.runs.find_one({"name": run_name})
