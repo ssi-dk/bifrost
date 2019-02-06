@@ -34,12 +34,6 @@ def get_species_img(sample_data):
     return img
 
 def generate_sample_report(dataframe, sample, background):
-    plot = graph_sample_depth_plot(
-        sample,
-        dataframe[dataframe["species"]
-                == sample["species"]],
-        background
-    )
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -54,9 +48,7 @@ def generate_sample_report(dataframe, sample, background):
                     className="box-title"
                 ),
                 img_div,
-                html_sample_tables(sample, className="row"),
-                # plot,
-                html_test_tables(sample, className="row")
+                html_sample_tables(sample, className="row")
             ],
             className="border-box"
         )
@@ -276,23 +268,23 @@ def html_sample_tables(sample_data, **kwargs):
             ] 
         ])
     ])
+    resresults = False
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
-        columns = []
-        if len(resfinder):
-            columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
-            resfinder_div = html.Div(
-                dt.DataTable(
-                    style_table={
-                        'overflowX': 'scroll',
-                        'overflowY': 'scroll',
-                        'maxHeight': '480'
-                    },
+        resresults = True
+        columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
+        resfinder_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
 
-                    columns=columns,
-                    data=resfinder,
-                    pagination_mode=False
-                ), className="grey-border")
+                columns=columns,
+                data=resfinder,
+                pagination_mode=False
+            ), className="grey-border")
     elif sample_data.get("analyzer.status", "") == "Success" and (type(resfinder) == float or resfinder is None or not len(resfinder)):
         resfinder_div = html.P("No antibiotic resistance genes found")
     else:
@@ -300,24 +292,50 @@ def html_sample_tables(sample_data, **kwargs):
     
     plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
-        columns = []
-        if len(plasmidfinder):
-            columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
-            plasmidfinder_div = html.Div(
-                dt.DataTable(
-                    style_table={
-                        'overflowX': 'scroll',
-                        'overflowY': 'scroll',
-                        'maxHeight': '480'
-                    },
-                    columns=columns,
-                    data=plasmidfinder,
-                    pagination_mode=False
-                ), className="grey-border")
+        resresults = True
+        columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
+        plasmidfinder_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+                columns=columns,
+                data=plasmidfinder,
+                pagination_mode=False
+            ), className="grey-border")
     elif sample_data.get("analyzer.status","") == "Success" and (type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder)):
         plasmidfinder_div = html.P("No replicons found")
     else:
         plasmidfinder_div = html.P("Plasmidfinder not run")
+
+    # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
+    if sample_data.get("analyzer.status", "") == "Success": 
+        res_analysis_not_run = False
+    else:
+        res_analysis_not_run = True
+
+    if resresults:
+        res_div = html.Details([
+            html.Summary("Resfinder/Plasmidfinder (click to show)"),
+            html.Div([
+                html.Div([
+                    html.H6("Resfinder", className="table-header"),
+                    resfinder_div
+                ], className="six columns"),
+                html.Div([
+                    html.H6("Plasmidfinder", className="table-header"),
+                    plasmidfinder_div
+                ], className="six columns")
+            ], className="row")
+        ])
+    elif not resresults and not res_analysis_not_run:
+        res_div = html.Div(html.P("No antibiotic resistances or replicons found for this sample."))
+    else:
+        res_div = html.Div(
+            html.P("Resfinder and plasmidfinder were not run."))
+
 
 
     return html.Div([
@@ -335,92 +353,9 @@ def html_sample_tables(sample_data, **kwargs):
                 html_table([[sample_data.get("analyzer.mlst_report", "No results")]], className="mlst-table")
             ], className="six columns")
         ], className="row"),
-        html.Div([
-            html.Div([
-                html.H6("Resfinder", className="table-header"),
-                resfinder_div
-            ], className="six columns"),
-            html.Div([
-                html.H6("Plasmidfinder", className="table-header"),
-                plasmidfinder_div
-            ], className="six columns")
-        ], className="row")
+        html_test_tables(sample_data, className="row"),
+        res_div
     ], **kwargs)
-
-
-def graph_sample_depth_plot(sample, run_species, background):
-    # With real data, we should be getting sample data (where to put 1, 10
-    # and 25x annotation) and the info for the rest of that species box.
-    return dcc.Graph(
-        id="coverage-1-" + sample["_id"],
-        figure={
-            "data": [
-                go.Box(
-                    x=run_species.get("assemblatron.bin_length_at_1x"),
-                    text=run_species["name"],
-                    name="Current run",
-                    showlegend=False,
-                    boxpoints="all",
-                    pointpos=-1.8,
-                    jitter=0.3,
-                    marker=dict(
-                        size=4,
-                        color=get_species_color(
-                            sample.get("whats_my_species.name_classified_species_1"))
-                    )
-                ),
-                go.Box(
-                    x=background,
-                    boxpoints="all",
-                    showlegend=False,
-                    name="Prev. runs",
-                    jitter=0.3,
-                    pointpos=-1.8,
-                    marker=dict(
-                        color="black",
-                        size=4
-                    )
-                )
-            ],
-            "layout": go.Layout(
-                title="{}: Genome size 1x depth".format(sample["name"]),
-                hovermode="closest",
-                margin=go.layout.Margin(
-                    l=75,
-                    r=50,
-                    b=25,
-                    t=50
-                ),
-                annotations=[
-                    dict(
-                        x=sample.get("assemblatron.bin_length_at_1x", []),
-                        y=0,
-                        text="1x",
-                        showarrow=True,
-                        ax=35,
-                        ay=0
-                    ),
-                    dict(
-                        x=sample.get("assemblatron.bin_length_at_10x", []),
-                        y=0.0,
-                        text="10x",
-                        showarrow=True,
-                        ax=0,
-                        ay=35
-                    ),
-                    dict(
-                        x=sample.get("assemblatron.bin_length_at_25x", []),
-                        y=0,
-                        text="25x",
-                        showarrow=True,
-                        ax=-35,
-                        ay=0
-                    ),
-                ]
-            )
-        },
-        style={"height": "200px"}
-    )
 
 
 def children_sample_list_report(filtered_df, plot_data):
