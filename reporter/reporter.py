@@ -719,7 +719,8 @@ def update_test_table(data_store):
     
     # Round columns:
     for col in global_vars.ROUND_COLUMNS:
-        tests_df[col] = round(tests_df[col],3)
+        if col in tests_df.columns:
+            tests_df[col] = round(tests_df[col],3)
 
     tests_df = tests_df.apply(concatenate_failed, axis="columns")
 
