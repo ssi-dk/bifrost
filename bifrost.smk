@@ -737,10 +737,14 @@ rule setup_sample_components_to_run:
                                 for component_name in components:
                                     component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                     if os.path.isfile(component_file):
-                                        command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                         unlock = ""
                                         if config["unlock"]:
                                             unlock = "--unlock"
+                                        else:
+                                            # Only delete directory on non unlock mode
+                                            command.write(
+                                                "if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
+
                                         command.write("snakemake {} --restart-times {} --cores {} -s {} {} --config Sample={};\n".format(tmp_dir, config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
 
                                         sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
