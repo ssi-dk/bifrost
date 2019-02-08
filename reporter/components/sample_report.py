@@ -269,7 +269,6 @@ def html_sample_tables(sample_data, **kwargs):
         ])
     ])
     resresults = False
-    #print(sample_data)
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
@@ -311,31 +310,59 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         plasmidfinder_div = html.P("Plasmidfinder not run")
 
+    virulencefinder = sample_data.get('ariba_virulencefinder.ariba_virulencefinder', [])
+    if type(virulencefinder) == list and len(virulencefinder):
+        resresults = True
+        columns = [{"name": i, "id": i} for i in virulencefinder[0].keys()]
+        virulencefinder_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+                columns=columns,
+                data=virulencefinder,
+                pagination_mode=False
+            ), className="grey-border")
+    elif sample_data.get("analyzer.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
+        virulencefinder_div = html.P("No virulence markers found")
+    else:
+        virulencefinder_div = html.P("Virulencefinder not run")
+
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
-    if sample_data.get("analyzer.status", "") == "Success": 
+    if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
         res_analysis_not_run = False
     else:
         res_analysis_not_run = True
 
     if resresults:
         res_div = html.Details([
-            html.Summary("Resfinder/Plasmidfinder (click to show)"),
+            html.Summary("Resfinder/Plasmidfinder/Virulencefinder (click to show)"),
             html.Div([
                 html.Div([
-                    html.H6("Resfinder", className="table-header"),
-                    resfinder_div
-                ], className="six columns"),
+                    html.Div([
+                        html.H6("Resfinder", className="table-header"),
+                        resfinder_div
+                    ], className="six columns"),
+                    html.Div([
+                        html.H6("Plasmidfinder", className="table-header"),
+                        plasmidfinder_div
+                    ], className="six columns")
+                ], className="row"),
                 html.Div([
-                    html.H6("Plasmidfinder", className="table-header"),
-                    plasmidfinder_div
-                ], className="six columns")
-            ], className="row")
+                    html.Div([
+                        html.H6("Virulencefinder", className="table-header"),
+                        virulencefinder_div
+                    ], className="six columns"),
+                ], className="row")
+            ])
         ])
     elif not resresults and not res_analysis_not_run:
-        res_div = html.Div(html.P("No antibiotic resistances or replicons found for this sample."))
+        res_div = html.Div(html.P("No antibiotic resistances, replicons or virulence markers found for this sample."))
     else:
         res_div = html.Div(
-            html.P("Resfinder and plasmidfinder were not run."))
+            html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
 
 
 
