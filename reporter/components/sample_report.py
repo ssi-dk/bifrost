@@ -14,9 +14,9 @@ def check_test(test_name, sample):
     if test_path not in sample or pd.isnull(sample[test_path]):
         return "" # show nothing
         #return "test-missing"
-    if sample[test_path].startswith("pass"):
+    if sample.get(test_path, "").startswith("pass"):
         return "test-pass"
-    elif sample[test_path].startswith("fail"):
+    elif sample.get(test_path, "").startswith("fail"):
         return "test-fail"
     else:
         return "test-warning"
@@ -178,9 +178,9 @@ def html_sample_tables(sample_data, **kwargs):
         else:
             emails = ""
         sample_sheet_table = html_table([
-                    ["Supplied name", sample_data["sample_sheet.sample_name"]],
-                    ["User Comments", sample_data["sample_sheet.Comments"]],
-                    ["Supplying lab", sample_data["sample_sheet.group"]],
+                    ["Supplied name", sample_data.get("sample_sheet.sample_name","")],
+                    ["User Comments", sample_data.get("sample_sheet.Comments","")],
+                    ["Supplying lab", sample_data.get("sample_sheet.group", "")],
                     ["Submitter emails", emails],
                     {
                         "list": ["Provided species", html.I(
@@ -269,6 +269,7 @@ def html_sample_tables(sample_data, **kwargs):
         ])
     ])
     resresults = False
+    #print(sample_data)
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
