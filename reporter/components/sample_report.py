@@ -184,7 +184,7 @@ def html_sample_tables(sample_data, **kwargs):
                     ["Submitter emails", emails],
                     {
                         "list": ["Provided species", html.I(
-                            sample_data["sample_sheet.provided_species"])],
+                            sample_data.get("sample_sheet.provided_species"))],
                         "className": check_test("whats_my_species:detectedspeciesmismatch", sample_data)
                     },
                     {

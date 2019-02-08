@@ -2,7 +2,7 @@
 
 This is the basic folder structure with a sample run containing only one sample:
 
-```
+```bash
 ├── config
 │   ├── config.yaml
 │   └── keys.txt
