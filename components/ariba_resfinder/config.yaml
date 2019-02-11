@@ -15,7 +15,7 @@ description: >
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
 abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
-ariba_resfinder_database: "/srv/data/DB/ariba/resfinder/"
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder_db/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

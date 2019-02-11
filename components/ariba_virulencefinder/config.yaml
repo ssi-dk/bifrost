@@ -15,7 +15,7 @@ description: >
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
 abricate_virulencefinder_database: "/srv/data/DB/abricate/virulencefinder_db/" 
-ariba_virulencefinder_database: "/srv/data/DB/ariba/virulencefinder/"
+ariba_virulencefinder_database: "/srv/data/DB/ariba/virulencefinder_db/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
