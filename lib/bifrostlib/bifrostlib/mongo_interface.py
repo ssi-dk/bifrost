@@ -129,7 +129,7 @@ def query_mlst_species(ncbi_species_name):
             db = connection.get_database()  # Database name is ngs_runs
             species_db = db.species  # Collection name is samples
             result = species_db.find_one({"ncbi_species": ncbi_species_name}, {"mlst_species": 1, "_id": 0})
-            if result is not None:
+            if result is not None and "mlst_species" in result:
                 return result["mlst_species"]
             else:
                 return None
