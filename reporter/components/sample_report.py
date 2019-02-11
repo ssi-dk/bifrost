@@ -330,6 +330,31 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         virulencefinder_div = html.P("Virulencefinder not run")
 
+    mlst_data = sample_data.get(
+        'ariba_mlst.mlst_report', "")
+    if type(mlst_data) == str and len(mlst_data):
+        resresults = True
+        mlst_dict = {}
+        mlst_fields = mlst_data.split(",")
+        for field in mlst_fields:
+            key, value = field.split(":")
+            mlst_dict[key] = value
+
+        columns = [{"name": i, "id": i} for i in mlst_dict.keys()]
+        mlst_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+                columns=columns,
+                data=[mlst_dict],
+                pagination_mode=False
+            ), className="grey-border")
+    else:
+        mlst_div = html.P("MLST not run")
+
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
         res_analysis_not_run = False
@@ -338,7 +363,7 @@ def html_sample_tables(sample_data, **kwargs):
 
     if resresults:
         res_div = html.Details([
-            html.Summary("Resfinder/Plasmidfinder/Virulencefinder (click to show)"),
+            html.Summary("Resfinder/Plasmidfinder/Virulencefinder/MLST (click to show)"),
             html.Div([
                 html.Div([
                     html.Div([
@@ -355,6 +380,10 @@ def html_sample_tables(sample_data, **kwargs):
                         html.H6("Virulencefinder", className="table-header"),
                         virulencefinder_div
                     ], className="six columns"),
+                    html.Div([
+                        html.H6("MLST", className="table-header"),
+                        mlst_div
+                    ], className="six columns")
                 ], className="row")
             ])
         ])
@@ -364,6 +393,12 @@ def html_sample_tables(sample_data, **kwargs):
         res_div = html.Div(
             html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
 
+    mlst_type = "ND"
+    if "analyzer.mlst_report" in sample_data and sample_data["analyzer.mlst_report"] is not None:
+        mlst_report_string = sample_data["analyzer.mlst_report"]
+        if "," in mlst_report_string:
+            mlst_text_split = mlst_report_string.split(",", 1)
+            mlst_type = mlst_text_split[0].split(":",1)[1]
 
 
     return html.Div([
@@ -377,8 +412,7 @@ def html_sample_tables(sample_data, **kwargs):
             html.Div([
                 html.H6(title, className="table-header"),
                 table,
-                html.H6("MLST", className="table-header"),
-                html_table([[sample_data.get("analyzer.mlst_report", "No results")]], className="mlst-table")
+                html.H6("MLST type: {}".format(mlst_type), className="table-header"),
             ], className="six columns")
         ], className="row"),
         html_test_tables(sample_data, className="row"),
