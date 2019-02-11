@@ -16,8 +16,8 @@ description: >
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
 adapters_fasta: "../../resources/adapters.fasta"
-kraken_database: "/home/projects/ssi_10003/data/DB/kraken/minikraken_20171019_8GB/"
-kraken_kmer_dist: "/home/projects/ssi_10003/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+kraken_database: "/srv/data/DB/kraken/minikraken_20171019_8GB/"
+kraken_kmer_dist: "/srv/data/DB/kraken/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

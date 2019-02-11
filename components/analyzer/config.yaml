@@ -16,11 +16,11 @@ description: >
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-mlst_database_path: "/home/projects/ssi_10003/data/DB/ariba/mlst/"
-abricate_resfinder_database: "/home/projects/ssi_10003/data/DB/abricate/resfinder_db/" 
-abricate_plasmidfinder_database: "/home/projects/ssi_10003/data/DB/abricate/plasmidfinder_db/" 
-ariba_resfinder_database: "/home/projects/ssi_10003/data/DB/ariba/resfinder_db/"
-ariba_plasmidfinder_database: "/home/projects/ssi_10003/data/DB/ariba/plasmidfinder_db/"
+mlst_database_path: "/srv/data/DB/ariba/mlst/"
+abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
+abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
+ariba_resfinder_database: "/srv/data/DB/ariba/resfinder_db/"
+ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder_db/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
