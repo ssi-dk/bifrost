@@ -17,7 +17,7 @@ description: >
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-mlst_database_path: "/srv/data/DB/ariba/mlst/"
+mlst_database_path: "/home/projects/ssi_10003/data/DB/ariba/mlst/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
