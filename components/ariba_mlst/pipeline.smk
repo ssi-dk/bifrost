@@ -106,14 +106,19 @@ rule ariba_mlst:
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
             mlst_species_DB_name = datahandling.get_mlst_species_DB(sample)
-            mlst_species_DB = os.path.join(
-                db_component["mlst_database_path"], mlst_species_DB_name)
-            datahandling.log(log_out, "mlst species: {}\n".format(mlst_species_DB))
-            if mlst_species_DB is None:
+
+            if mlst_species_DB_name is None:
+                datahandling.log(
+                    log_out, "mlst species: {}\n".format(mlst_species_DB_name))
                 shell("mkdir {}".format(output.folder))
                 shell("touch {}/no_mlst_species_DB".format(output.folder))
             else:
-                shell("ariba run {} {} {} {} 1> {} 2> {}".format(mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
+                mlst_species_DB = os.path.join(
+                    db_component["mlst_database_path"], mlst_species_DB_name)
+                datahandling.log(
+                    log_out, "mlst species path: {}\n".format(mlst_species_DB))
+                shell("ariba run {} {} {} {} 1> {} 2> {}".format(
+                    mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
