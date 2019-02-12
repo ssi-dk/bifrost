@@ -28,7 +28,7 @@ db_sample_component = datahandling.load_sample_component(sample_component_file_n
 if "reads" in db_sample:
     reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
 else:
-    reads = R1, R2 = (None, None)
+    reads = R1, R2 = ("", "")
 
 onsuccess:
     print("Workflow complete")
