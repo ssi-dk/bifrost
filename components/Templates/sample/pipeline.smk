@@ -27,7 +27,7 @@ db_run = datahandling.load_run(run_file_name)
 if "reads" in db_sample:
     reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
 else:
-    reads = R1, R2 = ("", "")
+    reads = R1, R2 = ("/dev/null", "/dev/null")
 
 onsuccess:
     print("Workflow complete")
