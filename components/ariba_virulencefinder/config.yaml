@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: ariba_virulencefinder
-version: 1.0
+version: 1.1
 target: sample
 type: pipeline
 recommendation: recommended
