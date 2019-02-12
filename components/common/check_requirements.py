@@ -32,6 +32,8 @@ def set_status_to_running(sample_component):
 def requirements_met(requirements_file, sample, log_out, log_err):
     requirements_file = datahandling.load_yaml(requirements_file)
     sample_name = datahandling.load_yaml(sample)["name"]
+    if not passes_check_reads_pipeline(sample, requirements_file):
+        return False
     no_failures = True
     if requirements_file.get('requirements', None) is not None:
         df = pandas.io.json.json_normalize(requirements_file.get('requirements'))  # flattens json into key while maintaining values https://stackoverflow.com/a/41801708
@@ -98,6 +100,20 @@ def requirements_met(requirements_file, sample, log_out, log_err):
         return True
     else:
         return False
+
+def passes_check_reads_pipeline(sample, requirements_file):
+    """
+    Checks if the component is a pipeline. In that case it will require reads to be present
+    so the component can run.
+    """
+    sample_db = datahandling.load_yaml(sample)
+    if requirements_file["type"] == "pipeline":
+        if "reads" not in sample_db:
+            datahandling.log(
+                log_err, "Pipeline component can't run on a sample with no reads. db:{}".format(sample_db))
+            return False
+    return True
+
 
 script__initialization(
     snakemake.input.requirements_file,
