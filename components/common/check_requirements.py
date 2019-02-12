@@ -32,7 +32,7 @@ def set_status_to_running(sample_component):
 def requirements_met(requirements_file, sample, log_out, log_err):
     requirements_file = datahandling.load_yaml(requirements_file)
     sample_name = datahandling.load_yaml(sample)["name"]
-    if not passes_check_reads_pipeline(sample, requirements_file):
+    if not passes_check_reads_pipeline(sample, requirements_file, log_err):
         return False
     no_failures = True
     if requirements_file.get('requirements', None) is not None:
@@ -101,7 +101,7 @@ def requirements_met(requirements_file, sample, log_out, log_err):
     else:
         return False
 
-def passes_check_reads_pipeline(sample, requirements_file):
+def passes_check_reads_pipeline(sample, requirements_file, log_err):
     """
     Checks if the component is a pipeline. In that case it will require reads to be present
     so the component can run.
