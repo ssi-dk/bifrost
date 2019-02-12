@@ -24,7 +24,10 @@ db_sample_component = datahandling.load_sample_component(sample_component_file_n
 run_file_name = "bifrost/run.yaml"
 db_run = datahandling.load_run(run_file_name)
 
-reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
+if "reads" in db_sample:
+    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
+else:
+    reads = R1, R2 = (None, None)
 
 onsuccess:
     print("Workflow complete")
