@@ -462,30 +462,6 @@ def sample_report(page_n, lasso_selected, data_store):
     ]
 
 @app.callback(
-    Output("prevpage", "disabled"),
-    [Input("page-n", "children")]
-)
-def update_prevpage(page_n):
-    if int(page_n) == 0:
-        return True
-    else:
-        return False
-
-@app.callback(
-    Output("nextpage", "disabled"),
-    [Input("page-n", "children"),
-        Input("max-page", "children")]
-)
-def update_nextpage(page_n, max_page):
-    page_n = int(page_n)
-    max_page = int(max_page)
-    if page_n == max_page:
-        return True
-    else:
-        return False
-
-
-@app.callback(
     Output("sample-folder-div", "children"),
     [
         Input("generate-folder", "n_clicks_timestamp")],
