@@ -271,8 +271,8 @@ def display_selected_data(selected_data, rows, selected_rows):
 
 @app.callback(
     Output("group-div", "children"),
-    [Input("run-name", "children"),
-    Input("url", "pathname")]
+    [Input("run-name", "children")],
+    [State("url", "pathname")]
 )
 def update_group_list(run_name, pathname):
     if run_name == "Loading...":
