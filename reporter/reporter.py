@@ -208,16 +208,6 @@ def update_run_button(run):
         return "/"
 
 @app.callback(
-    Output("report-link", "children"),
-    [Input("run-name", "children")]
-)
-def update_run_name(run_name):
-    if run_name == "" or run_name == "Not found":
-        return None
-    else:
-        return html.H6(html.A("Run Checker", href="{}/{}".format(keys.run_checker_url, run_name)))
-
-@app.callback(
     Output("lasso-div", "children"),
     [Input("summary-plot", "selectedData"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
@@ -403,13 +393,24 @@ def update_run_table(run_name, pathname):
         run_link = "file:/" + run_path
         if hasattr(keys, "path_platform_windows") and keys.path_platform_windows:
             run_path = run_path.replace("/", "\\")
-        run_a = html.A(run_path, href=run_link)
+        run_a=html.A(run_path, href=run_link)
+        run_checker_url = "{}/{}".format(keys.run_checker_url, run_name)
+        run_checker_link = html.A(run_checker_url, href=run_checker_url)
         if len(path) > 2 and path[2] != "":
             group = path[2]
-            return html_table([["Run Name", run], ["Run Path", run_a], ["Supplying lab", group]])
+            return html_table([
+                ["Run Name", run],
+                ["Run Path", run_a],
+                ["Supplying lab", group],
+                ["Run Checker", run_checker_link]
+            ])
         else:
-            return html_table([["Run Name", run], ["Run Path", run_a]])
-        return html_table([["Run Name", run]])
+            return html_table([
+                ["Run Name", run],
+                ["Run Path", run_a],
+                ["Run Checker", run_checker_link]
+            ])
+    return html_table([["Run Name", run]])
 
 @app.callback(
     Output("page-n",
