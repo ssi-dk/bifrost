@@ -102,18 +102,6 @@ app.layout = html.Div([
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
-        dcc.ConfirmDialog(
-            id='qc-confirm-pass',
-            message='Are you sure you want to mark these as "OK"?',
-        ),
-        dcc.ConfirmDialog(
-            id='qc-confirm-sl',
-            message='Are you sure you want to mark these as "supplying lab"?',
-        ),
-        dcc.ConfirmDialog(
-            id='qc-confirm-cf',
-            message='Are you sure you want to mark these as "core facility"?',
-        ),
         html.Div(id="current-report"),
         html.Div(
             [
@@ -790,78 +778,6 @@ def update_test_table(data_store):
         html.Div(table)
         ]
 
-
-@app.callback(Output('qc-confirm-pass', 'displayed'),
-              [Input('qc-pass-button', 'n_clicks_timestamp')])
-def display_confirm_pass(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('qc-confirm-sl', 'displayed'),
-              [Input('qc-sl-button', 'n_clicks_timestamp')])
-def display_confirm_sl(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('qc-confirm-cf', 'displayed'),
-              [Input('qc-cf-button', 'n_clicks_timestamp')])
-def display_confirm_cf(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('placeholder0', 'children'),
-              [Input('qc-confirm-pass', 'submit_n_clicks')],
-              [State("lasso-sample-ids", "children")])
-def pass_samples(submit_n_clicks, lasso_selected):
-    if submit_n_clicks and (lasso_selected != "" and lasso_selected is not None):
-        sample_ids = lasso_selected.split(",")
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "pass:OK"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
-
-@app.callback(Output('placeholder1', 'children'),
-              [Input('qc-confirm-sl', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "fail:supplying lab"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
-
-@app.callback(Output('placeholder2', 'children'),
-              [Input('qc-confirm-cf', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def core_fac_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "fail:core facility"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
 
 @app.callback(
     Output("plot-species-div", "children"),
