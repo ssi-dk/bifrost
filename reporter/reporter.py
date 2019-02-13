@@ -821,8 +821,20 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
         value=selected_species
     )
 
+
 @app.callback(
-    Output("summary-plot-div", "children"),
+    Output("summary-plot", "selectedData"),
+    [Input("data-store", "data"),
+     Input("plot-species", "value"),
+     Input('datatable-ssi_stamper', 'derived_virtual_data'),
+     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
+)
+def reset_selection(sample_ids, plot_value, rows, selected_rows):
+    return {"points":[]}
+
+
+@app.callback(
+    Output("summary-plot", "figure"),
     [Input("plot-species", "value"),
      Input('datatable-ssi_stamper', 'derived_virtual_data'),
      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
@@ -830,7 +842,7 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
 )
 def update_coverage_figure(selected_species, rows, selected_rows, plot_species_source):
     if rows == [{}] or rows == [] or rows == None:
-        return dcc.Graph(id="summary-plot", figure={"data":[]}, selectedData={"points": []})
+        return {"data":[]}
     plot_values = global_vars.plot_values
     traces = []
     trace_ranges = []
@@ -1045,7 +1057,7 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     ]
 
     fig["layout"].update(annotations=annotations)
-    return dcc.Graph(id="summary-plot", figure=fig, selectedData={"points": []})
+    return fig
 
 
 server = app.server # Required for gunicorn
