@@ -219,7 +219,7 @@ def html_div_summary():
                     ],
                     className="row"
                 ),
-                dcc.Graph(id="summary-plot"),
+                html.Div(dcc.Graph(id="summary-plot"), id="summary-plot-div"),
                 html.Div(
                     [
                         html.Div(
