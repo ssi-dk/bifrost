@@ -92,6 +92,12 @@ app.layout = html.Div([
             html.Div(id="report-link", className="u-pull-left"),
             html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
         ], className="row"),
+        html.Details([
+            html.Summary("Latest changes..."),
+            html.Div([
+                html.P("2019-02-13: Filters default to empty (but behavior is the same), bring back apply button to reduce performance issues, add current run to run selector and other performance fixes. Add Latest changes section.")
+            ])
+        ]),
         dcc.Store(id="data-store", storage_type="memory"),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
