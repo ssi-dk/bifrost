@@ -448,7 +448,6 @@ def sample_report(page_n, lasso_selected, data_store):
         data = data[data._id.isin(lasso)]
     if len(data) == 0: return []
     samples = data["_id"]
-    #NOTE Could optimize this by not getting all sample's info from mongo before paginating
     data = data.sort_values(["species","name"])
     skips = PAGESIZE * (page_n)
     page = data[skips:skips+PAGESIZE]
@@ -513,82 +512,73 @@ def generate_sample_folder_div(n_generate_ts,
 
 @app.callback(
     Output("current-report", "children"),
-    [
-        Input("lasso-sample-ids", "children"),
-        Input("data-store", "data")]
+    [Input("lasso-sample-ids", "children")]
 )
 
-def update_report(lasso_selected, data_store):
-    if lasso_selected is not None and lasso_selected != "":
-        samples = lasso_selected.split(",")  # lasso first'
-    elif len(data_store) != 0 and data_store != '""':
-        samples = pd.DataFrame.from_dict(data_store)["_id"]
-    else:
-        samples = {}
-    if len(samples) == 0:
+def update_report(lasso_selected):
+    if lasso_selected is None or lasso_selected == "":
         return []
-    max_page = len(samples) // PAGESIZE
+    else:
+        sample_n = lasso_selected.count(",") + 1
+        return [
+            html.H3("Sample Report"),
+            html.Span("0", style={"display": "none"}, id="page-n"),
+            html.Span(sample_n // PAGESIZE,
+                    style={"display": "none"}, id="max-page"),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Button(
+                                "Previous page", id="prevpage", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "Next page", id="nextpage", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                ],
+                className="row"
+            ),
+            
+            html.Div(id="sample-report"),
 
-    title = "Assemblatron Report"
-    content = "assemblatron"
-    return [
-        html.H3(title),
-        html.Span("0", style={"display": "none"}, id="page-n"),
-        html.Span(max_page, style={"display": "none"}, id="max-page"),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Button(
-                            "Previous page", id="prevpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        html.Button(
-                            "Next page", id="nextpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-            ],
-            className="row"
-        ),
-        
-        html.Div(id="sample-report"),
-
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Button(
-                            "Previous page", id="prevpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        html.Button(
-                            "Next page", id="nextpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-            ],
-            className="row"
-        ),
-    ]
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Button(
+                                "Previous page", id="prevpage2", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "Next page", id="nextpage2", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                ],
+                className="row"
+            ),
+        ]
 
 
 @app.callback(
