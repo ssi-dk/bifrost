@@ -87,7 +87,7 @@ app.layout = html.Div([
             src="/assets/img/report.png",
             className="main-logo"
         ),
-        html.H2("Loading...", id="run-name"),
+        html.H2("Loading...", id="run-name", style={"display": "none"}),
         html.Div([
             html.Div(id="report-link", className="u-pull-left"),
             html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
@@ -149,9 +149,6 @@ app.layout = html.Div([
             className="border-box"
         ),
     ]),
-    dcc.Store(
-        id="last-filter-change", storage_type="memory", data={"timestamp": 0}
-    ),
     html.Footer([
         "Created with 🔬 at SSI. Bacteria icons from ",
         html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -181,7 +178,7 @@ def update_run_name(pathname):
         return "Not found"
 
 @app.callback(
-    Output("group-form", "className"),
+    Output("group-list", "value"),
     [Input("url", "pathname")]
 )
 def hide_group_if_in_url(pathname):
@@ -189,9 +186,9 @@ def hide_group_if_in_url(pathname):
         pathname = "/"
     path = pathname.split("/")
     if len(path) > 2 and path[2] != "":
-        return "hidden"
+        return [path[2]]
     else:
-        return ""
+        return []
 
 
 @app.callback(
@@ -312,7 +309,8 @@ def update_group_list(run_name, pathname):
         id="group-list",
         options=group_list_options,
         multi=True,
-        value=group_options
+        placeholder="All groups selected",
+        value=[]
     )
 
 @app.callback(
@@ -345,34 +343,36 @@ def update_species_list(run_name, form_species):
     return dcc.Dropdown(
         id="species-list",
         options=species_list_options,
+        placeholder="All species selected",
         multi=True,
-        value=species_options
+        value=[]
     )
 
 
 @app.callback(
-    Output("applybutton-div", "className"),
+    Output("run-list-div", "children"),
     [Input("run-name", "children")]
 )
-def update_species_list(run_name):
-    if run_name == "Loading..." or len(run_name) == 0:
-        return ""
-    else:
-        return "hidden"
-
-
-@app.callback(
-    Output("run-list", "options"),
-    [Input("placeholder0", "children")]
-)
-def update_run_options(none):
+def update_run_options(run_name):
     run_list = import_data.get_run_list()
-    return [
+    options = [
         {
             "label": "{} ({})".format(run["name"],
                                       len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
+    if run_name not in ["", "Loading...", "Not Found"]:
+        return dcc.Dropdown(
+            id="run-list",
+            options=options,
+            value=run_name
+        )
+    else:
+        return dcc.Dropdown(
+            id="run-list",
+            options=options,
+            placeholder="Sequencing run"
+        )
 
 
 @app.callback(
@@ -583,38 +583,37 @@ def update_report(lasso_selected, data_store):
         ),
     ]
 
+
 @app.callback(
-    Output("last-filter-change", "data"),
+    Output("apply-filter-button", "children"),
     [Input("species-list", "value"),
         Input("group-list", "value"),
         Input("qc-list", "value"),
-        Input("run-name", "children")]
+        Input("run-name", "children"),
+        Input("apply-filter-button", "n_clicks_timestamp")]
 )
-def update_filter_ts(species_list, group_list, qc_list, run_name):
-    d = datetime.datetime.now()
-    for_js = int(time.mktime(d.timetuple())) * 1000
-    return {"timestamp": for_js}
+def update_filter_ts(species_list, group_list, qc_list, run_name, button_timestamp):
+    button_ts = button_timestamp / 1000
+    server_ts = datetime.datetime.now().timestamp()
+    if button_ts == 0 or abs(button_ts - server_ts) < 1:
+        return "Apply filter"
+    return "Apply filter (click to reload)"
 
 @app.callback(
     Output("data-store", "data"),
     [Input("apply-filter-button", "n_clicks_timestamp"),
-     Input("last-filter-change", "data")],
+     Input("run-name", "children")],
     [State("species-list", "value"),
      State("form-species-source", "value"),
         State("group-list", "value"),
-        State("qc-list", "value"),
-        State("run-name", "children"),
-        ]
+        State("qc-list", "value")]
 )
-def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
+def update_selected_samples(apply_button_ts, run_name, species_list, species_source, group_list, qc_list):
+    print((species_list, group_list, qc_list, run_name))
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
-        filter_change_ts = filter_change["timestamp"]
-
-        if run_name == "" and filter_change_ts > apply_button_ts:
-            raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_dict()
@@ -1173,61 +1172,6 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     fig["layout"].update(annotations=annotations)
     return fig
 
-@app.callback(
-    Output("group-list", "value"),
-    [Input("group-all", "n_clicks"),
-     Input("url", "pathname")],
-    [State("run-name", "children")]
-)
-def all_groups(n_clicks, pathname, run_name):
-    if run_name == "Loading...":
-        return None
-    if pathname is None:
-        pathname = "/"
-    path = pathname.split("/")
-    if len(path) > 2 and path[2] != "":
-        return [path[2]]
-    if len(run_name) == 0:
-        group_list = import_data.get_group_list()
-    else:
-        group_list = import_data.get_group_list(run_name)
-    group_options = []
-    for item in group_list:
-        if item["_id"] == None:
-            group_options.append("Not defined")
-        else:
-            group_options.append(item["_id"])
-
-    return group_options
-
-@app.callback(
-    Output("species-list", "value"),
-    [Input("species-all", "n_clicks")],
-    [State("form-species-source", "value"), State("run-name", "children")]
-)
-def all_species(n_clicks, species_source, run_name):
-    if run_name == "Loading...":
-        return None
-    if len(run_name) == 0:
-        species_list = import_data.get_species_list(species_source)
-    else:
-        species_list = import_data.get_species_list(species_source, run_name)
-    species_options = []
-    for item in species_list:
-        if item["_id"] == None:
-            species_options.append("Not classified")
-        else:
-            species_options.append(item["_id"])
-
-    return species_options
-
-
-@app.callback(
-    Output("qc-list", "value"),
-    [Input("qc-all", "n_clicks")]
-)
-def all_QCs(n_clicks):
-    return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
 server = app.server # Required for gunicorn
 
