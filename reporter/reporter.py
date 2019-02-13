@@ -281,17 +281,14 @@ def update_group_list(run_name, pathname):
         group_list = import_data.get_group_list()
     else:
         group_list = import_data.get_group_list(run_name)
-    group_options = []
     group_list_options = []
     for item in group_list:
         if item["_id"] == None:
-            group_options.append("Not defined")
             group_list_options.append({
                 "label": "Not defined ({})".format(item["count"]),
                 "value": "Not defined"
             })
         else:
-            group_options.append(item["_id"])
             group_list_options.append({
                 "label": "{} ({})".format(item["_id"], item["count"]),
                 "value": item["_id"]
@@ -300,13 +297,15 @@ def update_group_list(run_name, pathname):
         pathname = "/"
     path = pathname.split("/")
     if len(path) > 2 and path[2] != "":
-        group_options = [path[2]]
+        value = [path[2]]
+    else:
+        value = []
     return dcc.Dropdown(
         id="group-list",
         options=group_list_options,
         multi=True,
         placeholder="All groups selected",
-        value=[]
+        value=value
     )
 
 @app.callback(
@@ -582,7 +581,6 @@ def update_filter_ts(species_list, group_list, qc_list, run_name, button_timesta
         State("qc-list", "value")]
 )
 def update_selected_samples(apply_button_ts, run_name, species_list, species_source, group_list, qc_list):
-    print((species_list, group_list, qc_list, run_name))
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
