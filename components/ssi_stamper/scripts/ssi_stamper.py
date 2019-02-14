@@ -42,9 +42,10 @@ def script__test_ssi_stamper(sample, sample_yaml, sample_component, log_out, log
         sample["stamps"] = stamp_dict
 
         datahandling.save_sample(sample, sample_yaml)
+        return 0
     except Exception as e:
         datahandling.log(log_err, str(traceback.format_exc()))
-    return 0
+        exit(1)
 
 script__test_ssi_stamper(snakemake.params.sample,
                         snakemake.params.sample_yaml,
