@@ -87,27 +87,21 @@ app.layout = html.Div([
             src="/assets/img/report.png",
             className="main-logo"
         ),
-        html.H2("Loading...", id="run-name"),
+        html.H2("Loading...", id="run-name", style={"display": "none"}),
         html.Div([
             html.Div(id="report-link", className="u-pull-left"),
             html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
         ], className="row"),
+        html.Details([
+            html.Summary("Latest changes..."),
+            html.Div([
+                html.P("2019-02-13: Filters default to empty (but behavior is the same), bring back apply button to reduce performance issues, add current run to run selector and other performance fixes. Add Latest changes section.")
+            ])
+        ]),
         dcc.Store(id="data-store", storage_type="memory"),
         dcc.Location(id="url", refresh=False),
         html.Div(html_table([["run_name", ""]]), id="run-table"),
         html_div_summary(),
-        dcc.ConfirmDialog(
-            id='qc-confirm-pass',
-            message='Are you sure you want to mark these as "OK"?',
-        ),
-        dcc.ConfirmDialog(
-            id='qc-confirm-sl',
-            message='Are you sure you want to mark these as "supplying lab"?',
-        ),
-        dcc.ConfirmDialog(
-            id='qc-confirm-cf',
-            message='Are you sure you want to mark these as "core facility"?',
-        ),
         html.Div(id="current-report"),
         html.Div(
             [
@@ -149,9 +143,6 @@ app.layout = html.Div([
             className="border-box"
         ),
     ]),
-    dcc.Store(
-        id="last-filter-change", storage_type="memory", data={"timestamp": 0}
-    ),
     html.Footer([
         "Created with 🔬 at SSI. Bacteria icons from ",
         html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -181,7 +172,7 @@ def update_run_name(pathname):
         return "Not found"
 
 @app.callback(
-    Output("group-form", "className"),
+    Output("group-list", "value"),
     [Input("url", "pathname")]
 )
 def hide_group_if_in_url(pathname):
@@ -189,9 +180,9 @@ def hide_group_if_in_url(pathname):
         pathname = "/"
     path = pathname.split("/")
     if len(path) > 2 and path[2] != "":
-        return "hidden"
+        return [path[2]]
     else:
-        return ""
+        return []
 
 
 @app.callback(
@@ -203,16 +194,6 @@ def update_run_button(run):
         return "/" + run
     else:
         return "/"
-
-@app.callback(
-    Output("report-link", "children"),
-    [Input("run-name", "children")]
-)
-def update_run_name(run_name):
-    if run_name == "" or run_name == "Not found":
-        return None
-    else:
-        return html.H6(html.A("Run Checker", href="{}/{}".format(keys.run_checker_url, run_name)))
 
 @app.callback(
     Output("lasso-div", "children"),
@@ -278,8 +259,8 @@ def display_selected_data(selected_data, rows, selected_rows):
 
 @app.callback(
     Output("group-div", "children"),
-    [Input("run-name", "children"),
-    Input("url", "pathname")]
+    [Input("run-name", "children")],
+    [State("url", "pathname")]
 )
 def update_group_list(run_name, pathname):
     if run_name == "Loading...":
@@ -288,17 +269,14 @@ def update_group_list(run_name, pathname):
         group_list = import_data.get_group_list()
     else:
         group_list = import_data.get_group_list(run_name)
-    group_options = []
     group_list_options = []
     for item in group_list:
         if item["_id"] == None:
-            group_options.append("Not defined")
             group_list_options.append({
                 "label": "Not defined ({})".format(item["count"]),
                 "value": "Not defined"
             })
         else:
-            group_options.append(item["_id"])
             group_list_options.append({
                 "label": "{} ({})".format(item["_id"], item["count"]),
                 "value": item["_id"]
@@ -307,12 +285,15 @@ def update_group_list(run_name, pathname):
         pathname = "/"
     path = pathname.split("/")
     if len(path) > 2 and path[2] != "":
-        group_options = [path[2]]
+        value = [path[2]]
+    else:
+        value = []
     return dcc.Dropdown(
         id="group-list",
         options=group_list_options,
         multi=True,
-        value=group_options
+        placeholder="All groups selected",
+        value=value
     )
 
 @app.callback(
@@ -345,34 +326,36 @@ def update_species_list(run_name, form_species):
     return dcc.Dropdown(
         id="species-list",
         options=species_list_options,
+        placeholder="All species selected",
         multi=True,
-        value=species_options
+        value=[]
     )
 
 
 @app.callback(
-    Output("applybutton-div", "className"),
+    Output("run-list-div", "children"),
     [Input("run-name", "children")]
 )
-def update_species_list(run_name):
-    if run_name == "Loading..." or len(run_name) == 0:
-        return ""
-    else:
-        return "hidden"
-
-
-@app.callback(
-    Output("run-list", "options"),
-    [Input("placeholder0", "children")]
-)
-def update_run_options(none):
+def update_run_options(run_name):
     run_list = import_data.get_run_list()
-    return [
+    options = [
         {
             "label": "{} ({})".format(run["name"],
                                       len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
+    if run_name not in ["", "Loading...", "Not Found"]:
+        return dcc.Dropdown(
+            id="run-list",
+            options=options,
+            value=run_name
+        )
+    else:
+        return dcc.Dropdown(
+            id="run-list",
+            options=options,
+            placeholder="Sequencing run"
+        )
 
 
 @app.callback(
@@ -397,13 +380,24 @@ def update_run_table(run_name, pathname):
         run_link = "file:/" + run_path
         if hasattr(keys, "path_platform_windows") and keys.path_platform_windows:
             run_path = run_path.replace("/", "\\")
-        run_a = html.A(run_path, href=run_link)
+        run_a=html.A(run_path, href=run_link)
+        run_checker_url = "{}/{}".format(keys.run_checker_url, run_name)
+        run_checker_link = html.A(run_checker_url, href=run_checker_url)
         if len(path) > 2 and path[2] != "":
             group = path[2]
-            return html_table([["Run Name", run], ["Run Path", run_a], ["Supplying lab", group]])
+            return html_table([
+                ["Run Name", run],
+                ["Run Path", run_a],
+                ["Supplying lab", group],
+                ["Run Checker", run_checker_link]
+            ])
         else:
-            return html_table([["Run Name", run], ["Run Path", run_a]])
-        return html_table([["Run Name", run]])
+            return html_table([
+                ["Run Name", run],
+                ["Run Path", run_a],
+                ["Run Checker", run_checker_link]
+            ])
+    return html_table([["Run Name", run]])
 
 @app.callback(
     Output("page-n",
@@ -441,7 +435,6 @@ def sample_report(page_n, lasso_selected, data_store):
         data = data[data._id.isin(lasso)]
     if len(data) == 0: return []
     samples = data["_id"]
-    #NOTE Could optimize this by not getting all sample's info from mongo before paginating
     data = data.sort_values(["species","name"])
     skips = PAGESIZE * (page_n)
     page = data[skips:skips+PAGESIZE]
@@ -454,30 +447,6 @@ def sample_report(page_n, lasso_selected, data_store):
         html.Div(children_sample_list_report(page, species_plot_data)),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
     ]
-
-@app.callback(
-    Output("prevpage", "disabled"),
-    [Input("page-n", "children")]
-)
-def update_prevpage(page_n):
-    if int(page_n) == 0:
-        return True
-    else:
-        return False
-
-@app.callback(
-    Output("nextpage", "disabled"),
-    [Input("page-n", "children"),
-        Input("max-page", "children")]
-)
-def update_nextpage(page_n, max_page):
-    page_n = int(page_n)
-    max_page = int(max_page)
-    if page_n == max_page:
-        return True
-    else:
-        return False
-
 
 @app.callback(
     Output("sample-folder-div", "children"),
@@ -506,115 +475,104 @@ def generate_sample_folder_div(n_generate_ts,
 
 @app.callback(
     Output("current-report", "children"),
-    [
-        Input("lasso-sample-ids", "children"),
-        Input("data-store", "data")]
+    [Input("lasso-sample-ids", "children")]
 )
 
-def update_report(lasso_selected, data_store):
-    if lasso_selected is not None and lasso_selected != "":
-        samples = lasso_selected.split(",")  # lasso first'
-    elif len(data_store) != 0 and data_store != '""':
-        samples = pd.DataFrame.from_dict(data_store)["_id"]
-    else:
-        samples = {}
-    if len(samples) == 0:
+def update_report(lasso_selected):
+    if lasso_selected is None or lasso_selected == "":
         return []
-    max_page = len(samples) // PAGESIZE
+    else:
+        sample_n = lasso_selected.count(",") + 1
+        return [
+            html.H3("Sample Report"),
+            html.Span("0", style={"display": "none"}, id="page-n"),
+            html.Span(sample_n // PAGESIZE,
+                    style={"display": "none"}, id="max-page"),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Button(
+                                "Previous page", id="prevpage", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "Next page", id="nextpage", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                ],
+                className="row"
+            ),
+            
+            html.Div(id="sample-report"),
 
-    title = "Assemblatron Report"
-    content = "assemblatron"
-    return [
-        html.H3(title),
-        html.Span("0", style={"display": "none"}, id="page-n"),
-        html.Span(max_page, style={"display": "none"}, id="max-page"),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Button(
-                            "Previous page", id="prevpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        html.Button(
-                            "Next page", id="nextpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-            ],
-            className="row"
-        ),
-        
-        html.Div(id="sample-report"),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Button(
+                                "Previous page", id="prevpage2", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+                        ],
+                        className="three columns"
+                    ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "Next page", id="nextpage2", n_clicks_timestamp=0),
+                        ],
+                        className="three columns"
+                    ),
+                ],
+                className="row"
+            ),
+        ]
 
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Button(
-                            "Previous page", id="prevpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
-                ),
-                html.Div(
-                    [
-                        html.Button(
-                            "Next page", id="nextpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
-                ),
-            ],
-            className="row"
-        ),
-    ]
 
 @app.callback(
-    Output("last-filter-change", "data"),
+    Output("apply-filter-button", "children"),
     [Input("species-list", "value"),
         Input("group-list", "value"),
         Input("qc-list", "value"),
-        Input("run-name", "children")]
+        Input("run-name", "children"),
+        Input("apply-filter-button", "n_clicks_timestamp")]
 )
-def update_filter_ts(species_list, group_list, qc_list, run_name):
-    d = datetime.datetime.now()
-    for_js = int(time.mktime(d.timetuple())) * 1000
-    return {"timestamp": for_js}
+def update_filter_ts(species_list, group_list, qc_list, run_name, button_timestamp):
+    button_ts = button_timestamp / 1000
+    server_ts = datetime.datetime.now().timestamp()
+    if button_ts == 0 or abs(button_ts - server_ts) < 1:
+        return "Apply filter"
+    return "Apply filter (click to reload)"
 
 @app.callback(
     Output("data-store", "data"),
     [Input("apply-filter-button", "n_clicks_timestamp"),
-     Input("last-filter-change", "data")],
+     Input("run-name", "children")],
     [State("species-list", "value"),
      State("form-species-source", "value"),
         State("group-list", "value"),
-        State("qc-list", "value"),
-        State("run-name", "children"),
-        ]
+        State("qc-list", "value")]
 )
-def update_selected_samples(apply_button_ts, filter_change, species_list, species_source, group_list, qc_list, run_name):
+def update_selected_samples(apply_button_ts, run_name, species_list, species_source, group_list, qc_list):
     if run_name == "Loading..." or \
         None in (species_list, group_list, qc_list, run_name):
         return '""'
     else:
-        filter_change_ts = filter_change["timestamp"]
-
-        if run_name == "" and filter_change_ts > apply_button_ts:
-            raise Exception("Avoiding sending response on purpose. Filter changed while not in run.")
         samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
     return samples.to_dict()
@@ -820,78 +778,6 @@ def update_test_table(data_store):
         html.Div(table)
         ]
 
-
-@app.callback(Output('qc-confirm-pass', 'displayed'),
-              [Input('qc-pass-button', 'n_clicks_timestamp')])
-def display_confirm_pass(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('qc-confirm-sl', 'displayed'),
-              [Input('qc-sl-button', 'n_clicks_timestamp')])
-def display_confirm_sl(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('qc-confirm-cf', 'displayed'),
-              [Input('qc-cf-button', 'n_clicks_timestamp')])
-def display_confirm_cf(button):
-    if button is not None:
-        return True
-    return False
-
-@app.callback(Output('placeholder0', 'children'),
-              [Input('qc-confirm-pass', 'submit_n_clicks')],
-              [State("lasso-sample-ids", "children")])
-def pass_samples(submit_n_clicks, lasso_selected):
-    if submit_n_clicks and (lasso_selected != "" and lasso_selected is not None):
-        sample_ids = lasso_selected.split(",")
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "pass:OK"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
-
-@app.callback(Output('placeholder1', 'children'),
-              [Input('qc-confirm-sl', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def supplying_lab_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "fail:supplying lab"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
-
-@app.callback(Output('placeholder2', 'children'),
-              [Input('qc-confirm-cf', 'submit_n_clicks')],
-              [State('datatable-ssi_stamper', 'derived_virtual_data'),
-               State('datatable-ssi_stamper', 'derived_virtual_selected_rows')])
-def core_fac_samples(submit_n_clicks, rows, selected_rows):
-    if submit_n_clicks and (selected_rows is not None and len(selected_rows) > 0):
-        dtdf = pd.DataFrame(rows)
-        dtdf = dtdf.iloc[selected_rows]
-        sample_ids = list(dtdf["_id"])
-        stamp = {
-            "name": "ssi_expert_check",
-            "user-ip": str(request.remote_addr),
-            "date": datetime.datetime.utcnow(),
-            "value": "fail:core facility"
-        }
-        import_data.post_stamp(stamp, sample_ids)
-        return None
 
 @app.callback(
     Output("plot-species-div", "children"),
@@ -1173,61 +1059,6 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     fig["layout"].update(annotations=annotations)
     return fig
 
-@app.callback(
-    Output("group-list", "value"),
-    [Input("group-all", "n_clicks"),
-     Input("url", "pathname")],
-    [State("run-name", "children")]
-)
-def all_groups(n_clicks, pathname, run_name):
-    if run_name == "Loading...":
-        return None
-    if pathname is None:
-        pathname = "/"
-    path = pathname.split("/")
-    if len(path) > 2 and path[2] != "":
-        return [path[2]]
-    if len(run_name) == 0:
-        group_list = import_data.get_group_list()
-    else:
-        group_list = import_data.get_group_list(run_name)
-    group_options = []
-    for item in group_list:
-        if item["_id"] == None:
-            group_options.append("Not defined")
-        else:
-            group_options.append(item["_id"])
-
-    return group_options
-
-@app.callback(
-    Output("species-list", "value"),
-    [Input("species-all", "n_clicks")],
-    [State("form-species-source", "value"), State("run-name", "children")]
-)
-def all_species(n_clicks, species_source, run_name):
-    if run_name == "Loading...":
-        return None
-    if len(run_name) == 0:
-        species_list = import_data.get_species_list(species_source)
-    else:
-        species_list = import_data.get_species_list(species_source, run_name)
-    species_options = []
-    for item in species_list:
-        if item["_id"] == None:
-            species_options.append("Not classified")
-        else:
-            species_options.append(item["_id"])
-
-    return species_options
-
-
-@app.callback(
-    Output("qc-list", "value"),
-    [Input("qc-all", "n_clicks")]
-)
-def all_QCs(n_clicks):
-    return ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
 
 server = app.server # Required for gunicorn
 
