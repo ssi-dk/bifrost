@@ -331,7 +331,7 @@ def html_sample_tables(sample_data, **kwargs):
         virulencefinder_div = html.P("Virulencefinder not run")
 
     mlst_data = sample_data.get(
-        'analyzer.mlst_report', "")
+        'ariba_mlst.mlst_report', "")
     if type(mlst_data) == str and len(mlst_data):
         resresults = True
         mlst_dict = {}
