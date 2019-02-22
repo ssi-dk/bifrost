@@ -371,14 +371,14 @@ def html_sample_tables(sample_data, **kwargs):
                         resfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("Plasmidfinder", className="table-header"),
-                        plasmidfinder_div
+                        html.H6("Virulencefinder", className="table-header"),
+                        virulencefinder_div
                     ], className="six columns")
                 ], className="row"),
                 html.Div([
                     html.Div([
-                        html.H6("Virulencefinder", className="table-header"),
-                        virulencefinder_div
+                        html.H6("Plasmidfinder", className="table-header"),
+                        plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
                         html.H6("MLST", className="table-header"),
