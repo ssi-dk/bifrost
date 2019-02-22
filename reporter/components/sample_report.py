@@ -363,21 +363,21 @@ def html_sample_tables(sample_data, **kwargs):
 
     if resresults:
         res_div = html.Details([
-            html.Summary("Resfinder/Plasmidfinder/Virulencefinder/MLST (click to show)"),
+            html.Summary("ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.H6("Resfinder", className="table-header"),
+                        html.H6("ResFinder", className="table-header"),
                         resfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("Virulencefinder", className="table-header"),
+                        html.H6("VirulenceFinder", className="table-header"),
                         virulencefinder_div
                     ], className="six columns")
                 ], className="row"),
                 html.Div([
                     html.Div([
-                        html.H6("Plasmidfinder", className="table-header"),
+                        html.H6("PlasmidFinder", className="table-header"),
                         plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
