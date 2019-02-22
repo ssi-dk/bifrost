@@ -4,6 +4,7 @@ import dash_table as dt
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 from components.import_data import get_read_paths
+import components.global_vars as global_vars
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -301,7 +302,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=plasmidfinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -321,7 +322,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=virulencefinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -348,7 +349,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=[mlst_dict],
                 pagination_mode=False
             ), className="grey-border")
