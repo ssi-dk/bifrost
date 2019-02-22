@@ -273,7 +273,6 @@ def html_sample_tables(sample_data, **kwargs):
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
         resfinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -282,7 +281,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'maxHeight': '480'
                 },
 
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=resfinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -294,7 +293,6 @@ def html_sample_tables(sample_data, **kwargs):
     plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
         plasmidfinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -314,7 +312,6 @@ def html_sample_tables(sample_data, **kwargs):
     virulencefinder = sample_data.get('ariba_virulencefinder.ariba_virulencefinder', [])
     if type(virulencefinder) == list and len(virulencefinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in virulencefinder[0].keys()]
         virulencefinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -349,7 +346,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=global_vars.finder_columns,
+                columns=columns,
                 data=[mlst_dict],
                 pagination_mode=False
             ), className="grey-border")
