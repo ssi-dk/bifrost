@@ -140,5 +140,44 @@ plot_values = [
     }
 ]
 
+finder_columns = [
+    {
+        "name": "GENE",
+        "id": "GENE"
+    },
+    {
+        "name": "%COVERAGE",
+        "id": "%COVERAGE"
+    },
+    {
+        "name": "%IDENTITY",
+        "id": "%IDENTITY"
+    },
+    {
+        "name": "SEQUENCE",
+        "id": "SEQUENCE"
+    },
+    {
+        "name": "START",
+        "id": "START"
+    },
+    {
+        "name": "END",
+        "id": "END"
+    },
+    {
+        "name": "DATABASE",
+        "id": "DATABASE"
+    },
+    {
+        "name": "COVERAGE",
+        "id": "COVERAGE"
+    },
+    {
+        "name": "ACCESSION",
+        "id": "ACCESSION"
+    }
+]
+
 ROUND_COLUMNS = ["whats_my_species.percent_unclassified",
                  "assemblatron.bin_coverage_at_1x"]

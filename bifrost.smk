@@ -489,11 +489,14 @@ rule add_components_to_samples:
             datahandling.log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
-            for file in sorted(os.listdir(sample_folder)):
-                result = re.search(config["read_pattern"], file)
-                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                    sample_name = result.group("sample_name")
-                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+
+            # I changed this to include all samples, even those with no data.
+            # So that they can run components. (only stamps for now)
+            for folder in sorted(os.listdir(".")):
+                if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
+                    sample_name = folder
+                    unique_sample_names[sample_name] = unique_sample_names.get(
+                        sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
                 if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
@@ -551,11 +554,13 @@ rule initialize_sample_components_for_each_sample:
             datahandling.log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
-            for file in sorted(os.listdir(sample_folder)):
-                result = re.search(config["read_pattern"], file)
-                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                    sample_name = result.group("sample_name")
-                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+            # I changed this to include all samples, even those with no data.
+            # So that they can run components. (only stamps for now)
+            for folder in sorted(os.listdir(".")):
+                if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
+                    sample_name = folder
+                    unique_sample_names[sample_name] = unique_sample_names.get(
+                        sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
                 if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
@@ -700,11 +705,13 @@ rule setup_sample_components_to_run:
             datahandling.log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
-            for file in sorted(os.listdir(sample_folder)):
-                result = re.search(config["read_pattern"], file)
-                if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                    sample_name = result.group("sample_name")
-                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
+            # I changed this to include all samples, even those with no data.
+            # So that they can run components. (only stamps for now)
+            for folder in sorted(os.listdir(".")):
+                if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
+                    sample_name = folder
+                    unique_sample_names[sample_name] = unique_sample_names.get(
+                        sample_name, 0) + 1
 
             with open(run_cmd, "w") as run_cmd_handle:
                 for sample_name in unique_sample_names:
@@ -733,7 +740,7 @@ rule setup_sample_components_to_run:
                             sample_db = datahandling.load_sample(sample_config)
                             if sample_name in config["samples_to_ignore"]:
                                 sample_component_db["status"] = "skipped"
-                            elif "R1" in sample_db["reads"] and "R2" in sample_db["reads"]:
+                            else:
                                 for component_name in components:
                                     component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                     if os.path.isfile(component_file):

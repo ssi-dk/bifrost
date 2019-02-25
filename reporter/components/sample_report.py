@@ -4,6 +4,7 @@ import dash_table as dt
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 from components.import_data import get_read_paths
+import components.global_vars as global_vars
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -272,7 +273,6 @@ def html_sample_tables(sample_data, **kwargs):
     resfinder = sample_data.get('analyzer.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in resfinder[0].keys()]
         resfinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -281,7 +281,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'maxHeight': '480'
                 },
 
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=resfinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -293,7 +293,6 @@ def html_sample_tables(sample_data, **kwargs):
     plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in plasmidfinder[0].keys()]
         plasmidfinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -301,7 +300,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=plasmidfinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -313,7 +312,6 @@ def html_sample_tables(sample_data, **kwargs):
     virulencefinder = sample_data.get('ariba_virulencefinder.ariba_virulencefinder', [])
     if type(virulencefinder) == list and len(virulencefinder):
         resresults = True
-        columns = [{"name": i, "id": i} for i in virulencefinder[0].keys()]
         virulencefinder_div = html.Div(
             dt.DataTable(
                 style_table={
@@ -321,7 +319,7 @@ def html_sample_tables(sample_data, **kwargs):
                     'overflowY': 'scroll',
                     'maxHeight': '480'
                 },
-                columns=columns,
+                columns=global_vars.finder_columns,
                 data=virulencefinder,
                 pagination_mode=False
             ), className="grey-border")
@@ -363,22 +361,22 @@ def html_sample_tables(sample_data, **kwargs):
 
     if resresults:
         res_div = html.Details([
-            html.Summary("Resfinder/Plasmidfinder/Virulencefinder/MLST (click to show)"),
+            html.Summary("ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.H6("Resfinder", className="table-header"),
+                        html.H6("ResFinder", className="table-header"),
                         resfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("Plasmidfinder", className="table-header"),
-                        plasmidfinder_div
+                        html.H6("VirulenceFinder", className="table-header"),
+                        virulencefinder_div
                     ], className="six columns")
                 ], className="row"),
                 html.Div([
                     html.Div([
-                        html.H6("Virulencefinder", className="table-header"),
-                        virulencefinder_div
+                        html.H6("PlasmidFinder", className="table-header"),
+                        plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
                         html.H6("MLST", className="table-header"),
