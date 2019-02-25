@@ -96,7 +96,24 @@ snakemake -s src/bifrost.smk --configfile /home/projects/KMA_project/data/bifros
 
 You can check the running status in your run checker.
 
-The output for each sample will be generated in output/year/run/samplename 
+The output for each sample will be generated in output/year/run/samplename
+
+## Maintenance
+
+### Removing a run
+
+There is a script in scripts/db_management/remove_run.py. Make sure to have the bifrost environment enabled and your correct key path in the BIFROST_DB_KEY variable. Then run the script:
+
+```bash
+python remove_run.py 5b894291104fd46ecabe6638
+```
+
+Where 5b894291104fd46ecabe6638 is the id for your run (without the "ObjectId()" part). You can find the id of the run in the run folder/bifrost/run.yaml or in the database directly. To connect to the database, you need the mongo client which you can find in computerome already by running:
+
+module load tools
+module load mongodb/3.4.4
+
+and then running mongo. You can use the credentials in your key file to log in and take a look.
 
 ## Debugging
 
