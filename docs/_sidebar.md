@@ -4,4 +4,4 @@
 
 - [KMA readme](KMA_README.md)
 
-- [Adding a new KMA](setting_up_KMA.md)
+- [Adding a new KMA](setting_up_kma.md)
