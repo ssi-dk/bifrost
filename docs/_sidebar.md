@@ -5,5 +5,3 @@
 - [KMA readme](KMA_README.md)
 
 - [Adding a new KMA](setting_up_KMA.md)
-
-- [Development](development.md)
