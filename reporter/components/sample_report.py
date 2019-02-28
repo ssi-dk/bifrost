@@ -353,6 +353,8 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         mlst_div = html.P("MLST not run")
 
+    mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
+
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
         res_analysis_not_run = False
@@ -379,7 +381,7 @@ def html_sample_tables(sample_data, **kwargs):
                         plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("MLST", className="table-header"),
+                        html.H6("MLST ({})".format(mlst_db), className="table-header"),
                         mlst_div
                     ], className="six columns")
                 ], className="row")
