@@ -438,7 +438,16 @@ def get_sample_runs(sample_ids):
 def get_read_paths(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
-        return list(db.samples.find({"_id": {"$in": list(map(lambda x:ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
+        return list(db.samples.find({"_id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
+
+
+def get_assemblies_paths(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return list(db.sample_components.find({
+            "sample._id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))},
+            "component.name": "assemblatron"
+        }, {"path": 1, "sample.name": 1}))
 
 # Run_checker.py
 def get_sample_component_status(run_name):
