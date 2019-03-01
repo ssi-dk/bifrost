@@ -59,4 +59,4 @@ def script__datadump_ariba_mlst(folder, sample, sample_yaml):
 
     return 0
 
-script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample, sample.params.sample_yaml)
+script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample, snakemake.params.sample_yaml)
