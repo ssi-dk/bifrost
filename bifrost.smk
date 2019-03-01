@@ -718,6 +718,13 @@ rule setup_sample_components_to_run:
                     if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
                         current_time = datetime.datetime.now()
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
+                            sample_config = sample_name + "/sample.yaml"
+                            sample_db = datahandling.load_sample(sample_config)
+                            partition = config["partition"]
+                            if "sample_sheet" in sample_db:
+                                if "priority" in sample_db["sample_sheet"]:
+                                    partition = sample_db["sample_sheet"]["priority"]
+
                             command.write("#!/bin/sh\n")
                             if config["grid"] == "torque":
                                 if "advres" in config and config["advres"]:
@@ -736,8 +743,6 @@ rule setup_sample_components_to_run:
                             else:
                                 tmp_dir = ""
 
-                            sample_config = sample_name + "/sample.yaml"
-                            sample_db = datahandling.load_sample(sample_config)
                             if sample_name in config["samples_to_ignore"]:
                                 sample_component_db["status"] = "skipped"
                             else:
