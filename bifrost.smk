@@ -720,10 +720,19 @@ rule setup_sample_components_to_run:
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                             sample_config = sample_name + "/sample.yaml"
                             sample_db = datahandling.load_sample(sample_config)
+
+                            # Default priority
                             partition = config["partition"]
+
+                            # Set sample priority to value from run_metadata.
                             if "sample_sheet" in sample_db:
                                 if "priority" in sample_db["sample_sheet"]:
                                     partition = sample_db["sample_sheet"]["priority"].lower()
+                            
+                            # Replace priorities with config values according to map.
+                            if "priority_mapping" in config:
+                                if partition in config["priority_mapping"]:
+                                    partition = config["priority_mapping"][partition]
 
                             command.write("#!/bin/sh\n")
                             if config["grid"] == "torque":

@@ -42,3 +42,7 @@ samplesheet_column_mapping:
   priority: "Priority"
   provided_species: "Organism" # a required name
   Comments: "Comments"
+
+priority_mapping:
+  high: "outbreak"
+  low: "daytime"
