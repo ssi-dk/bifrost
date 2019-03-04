@@ -5,7 +5,7 @@
 sample_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
 partition: "standard"
-#force_priority: "outbreak" # Force a slurm partition
+#force_partition: "outbreak" # Force a slurm partition
 #torque_node: # for use on specifying a torque node
 grid: "slurm" # slurm|torque|none
 walltime: "03:00:00"
