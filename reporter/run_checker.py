@@ -80,7 +80,8 @@ app.layout = html.Div([
         html.H2("", id="run-name-title"),
         html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
-        html.Div(id="run-report", className="run_checker_report")
+        html.Div(id="run-report", className="run_checker_report"),
+
 
     ]),
     html.Footer([
@@ -175,10 +176,14 @@ def update_run_report(run, n_intervals):
     data = []
     figure = {}
     if run != "" and report == "status":
-
+        run_data = import_data.get_run(run)
         resequence_link = html.H4(html.A(
             "Resequence Report", href="/{}/resequence".format(run)))
-        components = list(map(lambda x: x["name"], import_data.get_run(run)["components"]))
+        if "run_data" is not None:
+            components = list(
+                map(lambda x: x["name"], run_data["components"]))
+        else:
+            components = []
         samples = import_data.get_sample_component_status(run)
         header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate rotate-short")] +
                          list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
@@ -198,8 +203,43 @@ def update_run_report(run, n_intervals):
             rows.append(html.Tr(row))
         table = html.Table(rows)
         update_notice += " Req.: Requirements not met. Init.: initialised."
+
+        # samples_options = [{"value": s, "label": s} for s in samples.keys()]
+        # components_options = [{"value": c, "label": c} for c in components]
+
+        # rerun_comp = html.Div([
+        #     html.H6("Rerun components"),
+        #     html.Div([
+        #         html.Div([
+        #             dcc.Dropdown(
+        #                 id="rerun-samples",
+        #                 options=samples_options,
+        #                 placeholder="Samples",
+        #                 multi=True,
+        #             )
+        #         ],className="four columns"),
+        #         html.Div([
+        #             dcc.Dropdown(
+        #                 id="rerun-components",
+        #                 options=components_options,
+        #                 placeholder="Components",
+        #                 multi=True,
+        #             )
+        #         ], className="four columns"),
+        #         html.Div([
+        #             html.Button(
+        #                 "Send",
+        #                 id="rerun-components"
+        #             )
+        #         ], className="two columns")
+        #     ], className="row")
+        #     ,
+            
+        # ])
+        
         return [
             resequence_link,
+            # rerun_comp,
             html.P(update_notice),
             table]
 
@@ -251,7 +291,6 @@ def update_run_report(run, n_intervals):
             html.P(update_notice),
             table
         ]
-
     return []
 
 
