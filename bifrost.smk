@@ -723,7 +723,7 @@ rule setup_sample_components_to_run:
                             partition = config["partition"]
                             if "sample_sheet" in sample_db:
                                 if "priority" in sample_db["sample_sheet"]:
-                                    partition = sample_db["sample_sheet"]["priority"]
+                                    partition = sample_db["sample_sheet"]["priority"].lower()
 
                             command.write("#!/bin/sh\n")
                             if config["grid"] == "torque":
