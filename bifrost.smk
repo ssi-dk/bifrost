@@ -733,6 +733,10 @@ rule setup_sample_components_to_run:
                             if "priority_mapping" in config:
                                 if partition in config["priority_mapping"]:
                                     partition = config["priority_mapping"][partition]
+                            
+                            # Overrule run_metadata and default value
+                            if "force_priority" in config:
+                                partition = config["force_priority"]
 
                             command.write("#!/bin/sh\n")
                             if config["grid"] == "torque":
