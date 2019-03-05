@@ -82,6 +82,7 @@ app.layout = html.Div([
         html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
         html.Div(id="run-report", className="run_checker_report"),
+        html.Div(id="rerun-form"),
         dcc.ConfirmDialog(message="", displayed=False, id="rerun-output")
 
     ]),
@@ -180,7 +181,7 @@ def update_run_report(run, n_intervals):
         run_data = import_data.get_run(run)
         resequence_link = html.H4(html.A(
             "Resequence Report", href="/{}/resequence".format(run)))
-        if "run_data" is not None:
+        if run_data is not None:
             components = list(
                 map(lambda x: x["name"], run_data["components"]))
         else:
@@ -205,48 +206,10 @@ def update_run_report(run, n_intervals):
         table = html.Table(rows)
         update_notice += " Req.: Requirements not met. Init.: initialised."
 
-        samples_options = [{"value": s, "label": s} for s in samples.keys()]
-        components_options = [{"value": c, "label": c} for c in components]
-
-        rerun_comp = html.Div([
-            html.H6("Rerun components"),
-            html.Div([
-                html.Div([
-                    dcc.Dropdown(
-                        id="rerun-samples",
-                        options=samples_options,
-                        placeholder="Samples",
-                        multi=True,
-                        value=""
-                    )
-                ],className="four columns"),
-                html.Div([
-                    dcc.Dropdown(
-                        id="rerun-components",
-                        options=components_options,
-                        placeholder="Components",
-                        multi=True,
-                        value=""
-                    )
-                ], className="four columns"),
-                html.Div([
-                    html.Button(
-                        "Send",
-                        id="rerun-button",
-                        n_clicks=0
-                    )
-                ], className="two columns")
-            ], className="row"),
-        ])
-        
-        if hasattr(keys, "computerome") and keys.computerome:
-            rerun_comp = ""
-
         return [
             resequence_link,
             html.P(update_notice),
-            table,
-            rerun_comp]
+            table]
 
     if run != "" and report == "resequence":
 
@@ -298,6 +261,57 @@ def update_run_report(run, n_intervals):
         ]
     return []
 
+
+@app.callback(
+    Output("rerun-form", "children"),
+    [Input("run-name", "children")]
+)
+def update_rerun_form(run_name):
+    run_name = run_name.split("/")[0]
+    if run_name == "" or (hasattr(keys, "computerome") and keys.computerome):
+        return None
+
+    run_data = import_data.get_run(run_name)
+    if run_data is not None:
+        components = list(
+            map(lambda x: x["name"], run_data["components"]))
+    else:
+        components = []
+
+    samples = import_data.get_sample_component_status(run_name)
+    samples_options = [{"value": s, "label": s} for s in samples.keys()]
+    components_options = [{"value": c, "label": c} for c in components]
+
+    return html.Div([
+        html.H6("Rerun components"),
+        html.Div([
+            html.Div([
+                dcc.Dropdown(
+                    id="rerun-samples",
+                    options=samples_options,
+                    placeholder="Samples",
+                    multi=True,
+                    value=""
+                )
+            ], className="four columns"),
+            html.Div([
+                dcc.Dropdown(
+                    id="rerun-components",
+                    options=components_options,
+                    placeholder="Components",
+                    multi=True,
+                    value=""
+                )
+            ], className="four columns"),
+            html.Div([
+                html.Button(
+                    "Send",
+                    id="rerun-button",
+                    n_clicks=0
+                )
+            ], className="two columns")
+        ], className="row"),
+    ])
 
 @app.callback(
     Output("rerun-output", "message"),
