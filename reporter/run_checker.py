@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import subprocess
 
 import dash
 import dash_auth
@@ -81,7 +82,7 @@ app.layout = html.Div([
         html.Div(id="report-link"),
         dcc.Location(id="url", refresh=False),
         html.Div(id="run-report", className="run_checker_report"),
-
+        dcc.ConfirmDialog(message="", displayed=False, id="rerun-output")
 
     ]),
     html.Footer([
@@ -204,44 +205,45 @@ def update_run_report(run, n_intervals):
         table = html.Table(rows)
         update_notice += " Req.: Requirements not met. Init.: initialised."
 
-        # samples_options = [{"value": s, "label": s} for s in samples.keys()]
-        # components_options = [{"value": c, "label": c} for c in components]
+        samples_options = [{"value": s, "label": s} for s in samples.keys()]
+        components_options = [{"value": c, "label": c} for c in components]
 
-        # rerun_comp = html.Div([
-        #     html.H6("Rerun components"),
-        #     html.Div([
-        #         html.Div([
-        #             dcc.Dropdown(
-        #                 id="rerun-samples",
-        #                 options=samples_options,
-        #                 placeholder="Samples",
-        #                 multi=True,
-        #             )
-        #         ],className="four columns"),
-        #         html.Div([
-        #             dcc.Dropdown(
-        #                 id="rerun-components",
-        #                 options=components_options,
-        #                 placeholder="Components",
-        #                 multi=True,
-        #             )
-        #         ], className="four columns"),
-        #         html.Div([
-        #             html.Button(
-        #                 "Send",
-        #                 id="rerun-components"
-        #             )
-        #         ], className="two columns")
-        #     ], className="row")
-        #     ,
-            
-        # ])
+        rerun_comp = html.Div([
+            html.H6("Rerun components"),
+            html.Div([
+                html.Div([
+                    dcc.Dropdown(
+                        id="rerun-samples",
+                        options=samples_options,
+                        placeholder="Samples",
+                        multi=True,
+                        value=""
+                    )
+                ],className="four columns"),
+                html.Div([
+                    dcc.Dropdown(
+                        id="rerun-components",
+                        options=components_options,
+                        placeholder="Components",
+                        multi=True,
+                        value=""
+                    )
+                ], className="four columns"),
+                html.Div([
+                    html.Button(
+                        "Send",
+                        id="rerun-button",
+                        n_clicks=0
+                    )
+                ], className="two columns")
+            ], className="row"),
+        ])
         
         return [
             resequence_link,
-            # rerun_comp,
             html.P(update_notice),
-            table]
+            table,
+            rerun_comp]
 
     if run != "" and report == "resequence":
 
@@ -293,6 +295,47 @@ def update_run_report(run, n_intervals):
         ]
     return []
 
+
+@app.callback(
+    Output("rerun-output", "message"),
+    [Input("rerun-button", "n_clicks")],
+    [State("rerun-samples", "value"),
+     State("rerun-components", "value"),
+     State("run-name", "children")]
+)
+def update_run_report(button, samples, components, run_name):
+    if button == 0:
+        return ""
+    out = []
+    run_name = run_name.split("/")[0]
+    for sample in samples:
+        for component in components:
+            priority = "daytime" #Forcing priority for now
+            run_path = "/srv/data/BIG/bifrost/2019/{}/".format(run_name)
+            command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
+                component, component)
+            # unlock first
+            command += r"snakemake --shadow-prefix /scratch --restart-times 2 --cores 4 -s {}/src/components/{}/pipeline.smk --config Sample=sample.yaml --unlock; ".format(
+                run_path, component)
+            command += r"snakemake --shadow-prefix /scratch --restart-times 2 --cores 4 -s {}/src/components/{}/pipeline.smk --config Sample=sample.yaml".format(
+                run_path, component)
+            process = subprocess.Popen('sbatch --mem=10G -p {} -c 4 -t 03:00:00 -J "bifrost_{}" --wrap "{}"'.format(
+                priority, sample, command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
+            process_out, process_err = process.communicate()
+            out.append((sample, component, process_out, process_err))
+    message = "Jobs sent to the server:\n" + "\n".join(["{}, {}: out:  | err: ".format(*el) for el in out])
+    message += "\nClick OK or Cancel to close this notice."
+    return message
+
+
+@app.callback(
+    Output("rerun-output", "displayed"),
+    [Input("rerun-output", "message")],
+)
+def update_run_report(message):
+    if message != "":
+        return True
+    return False
 
 server = app.server  # Required for gunicorn
 
