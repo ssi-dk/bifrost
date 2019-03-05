@@ -326,7 +326,7 @@ def update_run_report(button, samples, components, run_name):
                 priority, sample, command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
             process_out, process_err = process.communicate()
             out.append((sample, component, process_out, process_err))
-    message = "Jobs sent to the server:\n" + "\n".join(["{}, {}: out:  | err: ".format(*el) for el in out])
+    message = "Jobs sent to the server:\n" + "\n".join(["{}, {}: out: {} | err: {}".format(*el) for el in out])
     message += "\nClick OK or Cancel to close this notice."
     return message
 
