@@ -239,6 +239,9 @@ def update_run_report(run, n_intervals):
             ], className="row"),
         ])
         
+        if hasattr(keys, "computerome") and keys.computerome:
+            rerun_comp = ""
+
         return [
             resequence_link,
             html.P(update_notice),
@@ -304,7 +307,7 @@ def update_run_report(run, n_intervals):
      State("run-name", "children")]
 )
 def update_run_report(button, samples, components, run_name):
-    if button == 0:
+    if button == 0 or (hasattr(keys, "computerome") and keys.computerome):
         return ""
     out = []
     run_name = run_name.split("/")[0]
