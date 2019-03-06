@@ -338,7 +338,7 @@ def update_run_report(button, samples, components, run_name):
                 run_path, component)
             if keys.rerun["grid"] == "slurm":
                 process = subprocess.Popen('sbatch --mem={memory}G -p {priority} -c {threads} -t {walltime} -J "bifrost_{sample_name}" --wrap "{command}"'.format(
-                    **keys.rerun, sample_name=sample, command=command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
+                    **keys.rerun, sample_name=sample, command=command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + "/" + sample)
                 process_out, process_err = process.communicate()
                 out.append((sample, component, process_out, process_err))
             elif keys.rerun["grid"] == "torque":
@@ -355,7 +355,8 @@ def update_run_report(button, samples, components, run_name):
                         **keys.rerun, sample_name=sample
                     )
                     script.write(command)
-                process = subprocess.Popen('qsub {}'.format(script_path), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
+                process = subprocess.Popen('qsub {}'.format(script_path), stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + "/" + sample)
                 process_out, process_err = process.communicate()
                 out.append((sample, component, process_out, process_err))
 
