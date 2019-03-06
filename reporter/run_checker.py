@@ -268,7 +268,7 @@ def update_run_report(run, n_intervals):
 )
 def update_rerun_form(run_name):
     run_name = run_name.split("/")[0]
-    if run_name == "" or (hasattr(keys, "computerome") and keys.computerome):
+    if run_name == "" or hasattr(keys, "rerun"):
         return None
 
     run_data = import_data.get_run(run_name)
@@ -321,14 +321,14 @@ def update_rerun_form(run_name):
      State("run-name", "children")]
 )
 def update_run_report(button, samples, components, run_name):
-    if button == 0 or (hasattr(keys, "computerome") and keys.computerome):
+    if button == 0 or not hasattr(keys, "rerun") or run_name == "\":
         return ""
     out = []
     run_name = run_name.split("/")[0]
+    run_path_bifrost = import_data.get_run(run_name).get("path", "") # ends in /bifrost
+    run_path = os.path.dirname(run_path_bifrost) # removes /bifrost
     for sample in samples:
         for component in components:
-            priority = "daytime" #Forcing priority for now
-            run_path = "/srv/data/BIG/bifrost/2019/{}/".format(run_name)
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
             # unlock first
@@ -336,10 +336,29 @@ def update_run_report(button, samples, components, run_name):
                 run_path, component)
             command += r"snakemake --shadow-prefix /scratch --restart-times 2 --cores 4 -s {}/src/components/{}/pipeline.smk --config Sample=sample.yaml".format(
                 run_path, component)
-            process = subprocess.Popen('sbatch --mem=10G -p {} -c 4 -t 03:00:00 -J "bifrost_{}" --wrap "{}"'.format(
-                priority, sample, command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
-            process_out, process_err = process.communicate()
-            out.append((sample, component, process_out, process_err))
+            if keys.rerun["grid"] == "slurm":
+                process = subprocess.Popen('sbatch --mem={memory}G -p {priority} -c {threads} -t {walltime} -J "bifrost_{sample_name}" --wrap "{command}"'.format(
+                    **keys.rerun, sample_name=sample, command=command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
+                process_out, process_err = process.communicate()
+                out.append((sample, component, process_out, process_err))
+            elif keys.rerun["grid"] == "torque":
+                
+                if "advres" in keys.rerun:
+                    advres = ",advres={}".format(
+                        keys.rerun["advres"])
+                else:
+                    advres = ''
+                torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
+                script_path = os.path.join(run_path, sample, "manual_rerun.sh")
+                with open(script_path, "w") as script:
+                    command += "#PBS -V -d . -w . -l mem={memory}gb,nodes=1:ppn={threads},walltime={walltime}{advres} -N 'bifrost_{sample_name}' -W group_list={group} -A {group} \n".format(
+                        **keys.rerun, sample_name=sample
+                    )
+                    script.write(command)
+                process = subprocess.Popen('qsub {}'.format(script_path), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + sample)
+                process_out, process_err = process.communicate()
+                out.append((sample, component, process_out, process_err))
+
     message = "Jobs sent to the server:\n" + "\n".join(["{}, {}: out: {} | err: {}".format(*el) for el in out])
     message += "\nClick OK or Cancel to close this notice."
     return message
