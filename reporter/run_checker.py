@@ -268,7 +268,7 @@ def update_run_report(run, n_intervals):
 )
 def update_rerun_form(run_name):
     run_name = run_name.split("/")[0]
-    if run_name == "" or hasattr(keys, "rerun"):
+    if run_name == "" or not hasattr(keys, "rerun"):
         return None
 
     run_data = import_data.get_run(run_name)
