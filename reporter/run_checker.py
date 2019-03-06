@@ -321,7 +321,7 @@ def update_rerun_form(run_name):
      State("run-name", "children")]
 )
 def update_run_report(button, samples, components, run_name):
-    if button == 0 or not hasattr(keys, "rerun") or run_name == "\":
+    if button == 0 or not hasattr(keys, "rerun") or run_name == "/":
         return ""
     out = []
     run_name = run_name.split("/")[0]
