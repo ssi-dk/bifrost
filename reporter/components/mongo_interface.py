@@ -459,10 +459,12 @@ def get_sample_component_status(run_name):
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": samples_ids},
             "component.name": {"$in": components_names}
-        }, {"sample.name": 1, "status": 1, "component.name": 1})
+        }, {"sample": 1, "status": 1, "component.name": 1})
         output = {}
         for s_c in s_c_list:
-            sample = output.get(s_c["sample"]["name"], {})
+            sample = output.get(s_c["sample"]["name"], {
+                "sample._id": s_c["sample"]["_id"]
+            })
             status = s_c["status"]
             if status == "Success":
                 status = "OK"
@@ -563,3 +565,8 @@ def get_run(run_name):
     with get_connection() as connection:
         db = connection.get_database()
         return db.runs.find_one({"name": run_name})
+
+def get_sample(sample_id):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return db.samples.find_one({"_id": sample_id})

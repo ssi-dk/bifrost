@@ -187,14 +187,42 @@ def update_run_report(run, n_intervals):
         else:
             components = []
         samples = import_data.get_sample_component_status(run)
-        header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate rotate-short")] +
-                         list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
+        header = html.Tr([
+            html.Th(html.Div(html.Strong("Sample")),
+                    className="rotate rotate-short"),
+            html.Th(html.Div(html.Strong("QC status")),
+                    className="rotate rotate-short"),
+            html.Th()
+            ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
         rows = [header]
         for name, s_components in samples.items():
             if name == "Undetermined":
                 continue
             row = []
             row.append(html.Td(name))
+            stamps = import_data.get_sample(
+                str(s_components["sample._id"])).get("stamps", {})
+            qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
+            qc_val = stamps.get("ssi_expert_check", {}).get(
+                "value", qc_val)
+
+            statusname = ""
+            if qc_val == "fail:supplying lab":
+                qc_val = "SL"
+                statusname = "status-1"
+            elif qc_val == "N/A":
+                statusname = "status--2"
+            elif qc_val == "fail:core facility":
+                statusname = "status--1"
+                qc_val = "CF"
+            elif qc_val == "pass:OK":
+                statusname = "status-2"
+                qc_val = "OK"
+
+            row.append(
+                html.Td(qc_val, className="center {}".format(statusname)))
+            row.append(html.Td())
+
             for component in components:
                 if component in s_components.keys():
                     s_c = s_components[component]
@@ -320,7 +348,7 @@ def update_rerun_form(run_name):
      State("rerun-components", "value"),
      State("run-name", "children")]
 )
-def update_run_report(button, samples, components, run_name):
+def rerun_form_button(button, samples, components, run_name):
     if button == 0 or not hasattr(keys, "rerun") or run_name == "/":
         return ""
     out = []
