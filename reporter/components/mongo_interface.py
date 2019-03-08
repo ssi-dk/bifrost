@@ -516,7 +516,7 @@ def get_sample_QC_status(run):
                         sample_id = r_sample["_id"]
                         break
                 old_sample = db.samples.find_one({"_id": sample_id})
-                if "stamps" in old_sample:
+                if "stamps" in old_sample and "ssi_stamper" in old_sample["stamps"]:
                     sample_dict[run["name"]] = old_sample["stamps"]["ssi_stamper"]["value"]
                 else:
                     sample_dict[run["name"]] = "undefined"

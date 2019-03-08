@@ -203,8 +203,11 @@ def update_run_report(run, n_intervals):
             stamps = import_data.get_sample(
                 str(s_components["sample._id"])).get("stamps", {})
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
-            qc_val = stamps.get("ssi_expert_check", {}).get(
-                "value", qc_val)
+
+            expert_check = False
+            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
+                qc_val = stamps["ssi_expert_check"]["value"]
+                expert_check = True
 
             statusname = ""
             if qc_val == "fail:supplying lab":
@@ -218,6 +221,10 @@ def update_run_report(run, n_intervals):
             elif qc_val == "pass:OK":
                 statusname = "status-2"
                 qc_val = "OK"
+            
+            if expert_check:
+                qc_val += "*"
+            
 
             row.append(
                 html.Td(qc_val, className="center {}".format(statusname)))
