@@ -238,7 +238,7 @@ def update_run_report(run, n_intervals):
                 else:
                     row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
-        table = html.Table(rows)
+        table = html.Table(rows, className="unset-width-table")
         update_notice += " Req.: Requirements not met. Init.: initialised."
 
         return [
@@ -251,43 +251,45 @@ def update_run_report(run, n_intervals):
         run_checker_link = html.H4(html.A(
             "Run Checker Report", href="/{}".format(run)))
 
-        last_runs = import_data.get_last_runs(run, 10)
+        last_runs = import_data.get_last_runs(run, 12)
+        last_runs_names = [run["name"] for run in last_runs]
         prev_runs_dict = import_data.get_sample_QC_status(last_runs)
         header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate")] +
-                         list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate"), last_runs)))
+                         list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate"), last_runs_names)))
         rows = [header]
-
         for name, p_runs in prev_runs_dict.items():
             if name == "Undetermined":
                 continue
             row = []
             row.append(html.Td(name))
+            
+            sample_all_OKs = True
+
             for index in range(len(last_runs)):
-                if last_runs[index] in p_runs:
+                if last_runs[index]["name"] in p_runs:
                     className = "0"
-                    text = "NR"
                     title = "Not Run"
-                    status = p_runs[last_runs[index]]
-                    if status.startswith("pass"):
+                    status = p_runs[last_runs[index]["name"]]
+                    if status.startswith("OK"):
                         className = "2"
-                        text = "OK"
                         title = "OK"
-                    elif status == "fail:supplying lab":
+                    elif status == "SL":
+                        sample_all_OKs = False
                         className = "1"
-                        text = "SL"
                         title = "Supplying Lab"
-                    elif status.startswith("fail"):  # Wont be triggered by supplying because its after.
+                    elif status.startswith("CF"):  # Wont be triggered by supplying because its after.
                         className = "-1"
-                        text = "CF"
+                        sample_all_OKs = False
                         title = "Core Facility"
-                    row.append(html.Td(text, className="center status-" + className, title=title))
+                    row.append(
+                        html.Td(status, className="center status-" + className ))
                 else:
-                    row.append(html.Td("-", className="center status-0", title="No Data"))
+                    row.append(html.Td("-", className="center status-0"))
 
 
-                    # row.append(html.Td("None", className="status-0"))
-            rows.append(html.Tr(row))
-        table = html.Table(rows)
+            if not sample_all_OKs:
+                rows.append(html.Tr(row))
+        table = html.Table(rows, className="unset-width-table")
         update_notice += " SL: Supplying Lab, CF: Core Facility, NR: Not Run. -: No data."
         return [
             run_checker_link,

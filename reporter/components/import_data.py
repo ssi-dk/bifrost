@@ -163,7 +163,7 @@ def get_sample_QC_status(run):
     return mongo_interface.get_sample_QC_status(run)
 
 def get_last_runs(run, n):
-    return list(map(lambda x:x["name"],mongo_interface.get_last_runs(run, n)))
+    return mongo_interface.get_last_runs(run, n)
 
 
 def post_stamp(stamp, samples):
