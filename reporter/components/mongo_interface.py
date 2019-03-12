@@ -526,7 +526,7 @@ def get_sample_QC_status(run):
 def get_last_runs(run, n):
     with get_connection() as connection:
         db = connection.get_database()
-        return list(db.runs.find({"name": {"$lt": run}, "type": "routine"}, {"name": 1, "_id": 0}).sort([("name", pymongo.DESCENDING)]).limit(n))
+        return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "_id": 0}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
 

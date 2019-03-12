@@ -251,8 +251,8 @@ def update_run_report(run, n_intervals):
         run_checker_link = html.H4(html.A(
             "Run Checker Report", href="/{}".format(run)))
 
-        prev_runs_dict = import_data.get_sample_QC_status(run)
-        last_runs = [run] + import_data.get_last_runs(run, 10)
+        last_runs = import_data.get_last_runs(run, 10)
+        prev_runs_dict = import_data.get_sample_QC_status(last_runs)
         header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate")] +
                          list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate"), last_runs)))
         rows = [header]
