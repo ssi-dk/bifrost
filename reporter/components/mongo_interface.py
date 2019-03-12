@@ -499,34 +499,49 @@ def get_species_QC_values(ncbi_species):
             return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
 
 
-def get_sample_QC_status(run):
+def get_sample_QC_status(last_runs):
     with get_connection() as connection:
         db = connection.get_database()
-        current_run = db.runs.find_one({"name": run})
-        samples = [s for s in current_run["samples"]]
-        sample_old_runs = {}
+        samples = [sample
+                   for run in last_runs
+                for sample in run["samples"]]
+
+        samples_runs_qc = {}
         for sample in samples:
             sample_dict = {}
-            runs = db.runs.find({"samples.name": sample["name"]}).sort(
-                [("name", pymongo.DESCENDING)])
-            for run in runs:
-                sample_id = None
-                for r_sample in run["samples"]:
-                    if r_sample["name"] == sample["name"]:
-                        sample_id = r_sample["_id"]
-                        break
-                old_sample = db.samples.find_one({"_id": sample_id})
-                if "stamps" in old_sample and "ssi_stamper" in old_sample["stamps"]:
-                    sample_dict[run["name"]] = old_sample["stamps"]["ssi_stamper"]["value"]
-                else:
-                    sample_dict[run["name"]] = "undefined"
-            sample_old_runs[sample["name"]] = sample_dict
-        return sample_old_runs
+
+            name = sample["name"]
+            for run in last_runs:
+                for run_sample in run["samples"]:
+                    if name == run_sample["name"]:
+                        stamps = db.samples.find_one(
+                            {"_id": run_sample["_id"]}, {"stamps": 1})
+                        if stamps is not None:
+                            stamps = stamps.get("stamps", {})
+                            qc_val = stamps.get(
+                                "ssi_stamper", {}).get("value", "N/A")
+                            expert_check = False
+                            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
+                                qc_val = stamps["ssi_expert_check"]["value"]
+                                expert_check = True
+
+                            if qc_val == "fail:supplying lab":
+                                qc_val = "SL"
+                            elif qc_val == "fail:core facility":
+                                qc_val = "CF"
+                            elif qc_val == "pass:OK":
+                                qc_val = "OK"
+
+                            if expert_check:
+                                qc_val += "*"
+                            sample_dict[run["name"]] = qc_val
+            samples_runs_qc[sample["name"]] = sample_dict
+        return samples_runs_qc
 
 def get_last_runs(run, n):
     with get_connection() as connection:
         db = connection.get_database()
-        return list(db.runs.find({"name": {"$lt": run}, "type": "routine"}, {"name": 1, "_id": 0}).sort([("name", pymongo.DESCENDING)]).limit(n))
+        return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
 
