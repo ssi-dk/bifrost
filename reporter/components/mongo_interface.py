@@ -438,7 +438,16 @@ def get_sample_runs(sample_ids):
 def get_read_paths(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
-        return list(db.samples.find({"_id": {"$in": list(map(lambda x:ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
+        return list(db.samples.find({"_id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
+
+
+def get_assemblies_paths(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return list(db.sample_components.find({
+            "sample._id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))},
+            "component.name": "assemblatron"
+        }, {"path": 1, "sample.name": 1}))
 
 # Run_checker.py
 def get_sample_component_status(run_name):
@@ -450,10 +459,12 @@ def get_sample_component_status(run_name):
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": samples_ids},
             "component.name": {"$in": components_names}
-        }, {"sample.name": 1, "status": 1, "component.name": 1})
+        }, {"sample": 1, "status": 1, "component.name": 1})
         output = {}
         for s_c in s_c_list:
-            sample = output.get(s_c["sample"]["name"], {})
+            sample = output.get(s_c["sample"]["name"], {
+                "sample._id": s_c["sample"]["_id"]
+            })
             status = s_c["status"]
             if status == "Success":
                 status = "OK"
@@ -505,7 +516,7 @@ def get_sample_QC_status(run):
                         sample_id = r_sample["_id"]
                         break
                 old_sample = db.samples.find_one({"_id": sample_id})
-                if "stamps" in old_sample:
+                if "stamps" in old_sample and "ssi_stamper" in old_sample["stamps"]:
                     sample_dict[run["name"]] = old_sample["stamps"]["ssi_stamper"]["value"]
                 else:
                     sample_dict[run["name"]] = "undefined"
@@ -554,3 +565,8 @@ def get_run(run_name):
     with get_connection() as connection:
         db = connection.get_database()
         return db.runs.find_one({"name": run_name})
+
+def get_sample(sample_id):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return db.samples.find_one({"_id": sample_id})

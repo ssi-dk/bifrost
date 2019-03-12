@@ -148,6 +148,9 @@ def add_sample_runs(sample_df):
 def get_read_paths(samples):
     return mongo_interface.get_read_paths(samples)
 
+def get_assemblies_paths(samples):
+    return mongo_interface.get_assemblies_paths(samples)
+
 # For run_checker
 def get_sample_component_status(run_name):
     return mongo_interface.get_sample_component_status(run_name)
@@ -176,3 +179,6 @@ def post_stamp(stamp, samples):
 
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
+
+def get_sample(sample_id):
+    return mongo_interface.get_sample(ObjectId(sample_id))

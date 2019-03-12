@@ -441,7 +441,11 @@ rule set_sample_species:
                         sample_db = datahandling.load_sample(sample_config)
 
                         sample_db["properties"] = sample_db.get("properties", {})
-                        sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(sample_db["sample_sheet"].get("provided_species"))
+                        provided_species = sample_db["sample_sheet"].get("provided_species")
+                        if pd.isna(provided_species):
+                            provided_species = None
+                        sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(
+                            provided_species)
                         datahandling.save_sample(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
@@ -575,7 +579,7 @@ rule initialize_sample_components_for_each_sample:
                             component_id = item.get("_id",)
                             sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
                             sample_component_folder_path = os.path.realpath(
-                                os.path.join(sample_folder, component_name))
+                                os.path.join(sample_name, component_name))
                             sample_component_db = datahandling.load_sample_component(sample_component_path)
                             sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
                             sample_component_db["component"] = {"name": component_name, "_id": component_id}
@@ -718,6 +722,26 @@ rule setup_sample_components_to_run:
                     if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
                         current_time = datetime.datetime.now()
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
+                            sample_config = sample_name + "/sample.yaml"
+                            sample_db = datahandling.load_sample(sample_config)
+
+                            # Default priority
+                            partition = config["partition"]
+
+                            # Set sample priority to value from run_metadata.
+                            if "sample_sheet" in sample_db:
+                                if "priority" in sample_db["sample_sheet"]:
+                                    partition = sample_db["sample_sheet"]["priority"].lower()
+                            
+                            # Replace priorities with config values according to map.
+                            if "priority_mapping" in config:
+                                if partition in config["priority_mapping"]:
+                                    partition = config["priority_mapping"][partition]
+                            
+                            # Overrule run_metadata and default value
+                            if "force_partition" in config:
+                                partition = config["force_partition"]
+
                             command.write("#!/bin/sh\n")
                             if config["grid"] == "torque":
                                 if "advres" in config and config["advres"]:
@@ -728,7 +752,8 @@ rule setup_sample_components_to_run:
 
                                 command.write("#PBS -V -d . -w . -l mem={}gb{},walltime={}{} -N '{}_{}' -W group_list={} -A {} \n".format(config["memory"], torque_node, config["walltime"], advres, component, sample_name, group, group))
                             elif config["grid"] == "slurm":
-                                command.write("#SBATCH --mem={}G -p {} -c {} -t {} -J '{}_{}'\n".format(config["memory"], config["partition"], config["threads"], config["walltime"], component, sample_name))
+                                command.write("#SBATCH --mem={}G -p {} -c {} -t {} -J '{}_{}'\n".format(
+                                    config["memory"], partition, config["threads"], config["walltime"], component, sample_name))
 
                             if "tmp_dir" in config:
                                 tmp_dir = " --shadow-prefix {}".format(
@@ -736,8 +761,6 @@ rule setup_sample_components_to_run:
                             else:
                                 tmp_dir = ""
 
-                            sample_config = sample_name + "/sample.yaml"
-                            sample_db = datahandling.load_sample(sample_config)
                             if sample_name in config["samples_to_ignore"]:
                                 sample_component_db["status"] = "skipped"
                             else:

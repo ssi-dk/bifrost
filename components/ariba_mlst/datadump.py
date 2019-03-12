@@ -30,13 +30,16 @@ def extract_tsv(datadump_dict, folder, relative_path):
     return datadump_dict
 
 
-def script__datadump_ariba_mlst(folder, sample):
+def script__datadump_ariba_mlst(folder, sample, sample_yaml):
     folder = str(folder)
     sample = str(sample)
 
     datadump_dict = datahandling.load_sample_component(sample)
     datadump_dict["summary"] = datadump_dict.get("summary", {})
     datadump_dict["results"] = datadump_dict.get("results", {})
+    mlst_database = datahandling.get_mlst_species_DB(sample_yaml)
+    datadump_dict["results"]["mlst_db"] = mlst_database
+    datadump_dict["summary"]["mlst_db"] = mlst_database
 
     datadump_dict = extract_tsv(
         datadump_dict, folder, "ariba_mlst/report.tsv")
@@ -56,4 +59,4 @@ def script__datadump_ariba_mlst(folder, sample):
 
     return 0
 
-script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample)
+script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample, snakemake.params.sample_yaml)

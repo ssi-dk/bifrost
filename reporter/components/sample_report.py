@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_table as dt
 from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
-from components.import_data import get_read_paths
+from components.import_data import get_read_paths, get_assemblies_paths
 import components.global_vars as global_vars
 import plotly.graph_objs as go
 import pandas as pd
@@ -353,6 +353,8 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         mlst_div = html.P("MLST not run")
 
+    mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
+
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
         res_analysis_not_run = False
@@ -379,7 +381,7 @@ def html_sample_tables(sample_data, **kwargs):
                         plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("MLST", className="table-header"),
+                        html.H6("MLST ({})".format(mlst_db), className="table-header"),
                         mlst_div
                     ], className="six columns")
                 ], className="row")
@@ -433,33 +435,64 @@ def children_sample_list_report(filtered_df, plot_data):
 def generate_sample_folder(samples):
     """Generates a script string """
     reads = get_read_paths(samples)
-    script = "mkdir samples\ncd samples\n"
-    errors = []
+    assemblies = get_assemblies_paths(samples)
+    reads_script = "mkdir samples\ncd samples\n"
+    assemblies_script = "mkdir assemblies\ncd assemblies\n"
+    reads_errors = []
+    assemblies_errors = []
+    for assembly in assemblies:
+        try:
+            assemblies_script += "#{}\nln -s {} {}\n".format(
+                assembly["sample"]["name"],
+                assembly["path"] + "/contigs.fasta",
+                assembly["sample"]["name"] + "_contigs.fasta")
+        except KeyError as e:
+            assemblies_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
+                assembly["sample"].get("name", "None"),
+                assembly["_id"],
+                assembly.get("path", "No data")
+            ))
+    
+    if len(assemblies_errors):
+        assemblies_html = [
+            html.H5(
+                "Use this script to generate a folder with all the assemblies linked in it."),
+            "A few errors occurred locating the contigs. If you need more info, " +
+            "please contact an admin.",
+            html.Pre("\n".join(assemblies_errors), className="error-pre"),
+            html.Pre(assemblies_script, className="folder-pre")
+        ]
+    else:
+        assemblies_html = [
+            html.H5(
+                "Use this script to generate a folder with all the assemblies linked in it."),
+            html.Pre(assemblies_script, className="folder-pre")
+        ]
+
     for sample in reads:
         try:
-            script += "#{}\nln -s {} .\nln -s {} .\n".format(
+            reads_script += "#{}\nln -s {} .\nln -s {} .\n".format(
                 sample["name"],
                 sample["reads"]["R1"],
                 sample["reads"]["R2"])
         except KeyError as e:
-            errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
+            reads_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
                 sample.get("name", "None"),
                 sample["_id"],
                 sample.get("reads", "No data")
                 ))
-    if len(errors):
-        return [
+    if len(reads_errors):
+        reads_html = [
             html.H5("Use this script to generate a folder with all the sample reads linked in it."),
             "A few errors occurred locating the read paths. If you need more info, " +
             "please contact an admin.",
-            html.Pre("\n".join(errors), className="error-pre"),
-            html.Pre(script, className="folder-pre")
+            html.Pre("\n".join(reads_errors), className="error-pre"),
+            html.Pre(reads_script, className="folder-pre")
         ]
     else:
-            
-        return [
+        reads_html = [
             html.H5("Use this script to generate a folder with all the sample reads linked in it."),
-            html.Pre(script, className="folder-pre")
+            html.Pre(reads_script, className="folder-pre")
             ]
-
+    return html.Div([html.Div(assemblies_html), html.Div(reads_html)])
 

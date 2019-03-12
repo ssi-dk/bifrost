@@ -148,5 +148,6 @@ rule datadump_ariba_mlst:
     params:
         folder = rules.setup.params.folder,
         sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        sample_yaml = sample
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

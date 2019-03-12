@@ -95,7 +95,11 @@ app.layout = html.Div([
         html.Details([
             html.Summary("Latest changes..."),
             html.Div([
-                html.P("2019-02-13: Filters default to empty (but behavior is the same), bring back apply button to reduce performance issues, add current run to run selector and other performance fixes. Add Latest changes section.")
+                html.P(
+                    "2019-03-07: Add QC values to Run checker."),
+                html.P(
+                    "2019-02-28: Add assemblatron links to sample folder generator. Only samples run from now on will have the right paths."),
+                html.P("2019-02-13: Filters default to empty (but behavior is the same), bring back apply button to reduce performance issues, add current run to run selector and other performance fixes. Add Latest changes section."),
             ])
         ]),
         dcc.Store(id="data-store", storage_type="memory"),
@@ -116,7 +120,7 @@ app.layout = html.Div([
                         html.Div(
                             [
                                 html.Button(
-                                    "Sample folder",
+                                    "Assembly/Sample folder",
                                     id="generate-folder",
                                     n_clicks_timestamp=0,
                                     className="button-primary u-full-width"

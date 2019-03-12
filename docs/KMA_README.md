@@ -100,6 +100,12 @@ The output for each sample will be generated in output/year/run/samplename
 
 ## Maintenance
 
+### Rerunning a component in a sample
+
+Go into the sample folder (the one you want to run), open cmd_bifrost.sh and copy the line that starts with snakemake and includes the source code of the component you wan to rerun. You can run that in the terminal directly and it will run in your node.
+
+You can also create a new batch file with the same header as cmd_bifrost.sh and submit it to the queue system.
+
 ### Removing a run
 
 There is a script in scripts/db_management/remove_run.py. Make sure to have the bifrost environment enabled and your correct key path in the BIFROST_DB_KEY variable. Then run the script:
