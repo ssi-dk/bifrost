@@ -32,6 +32,7 @@ from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
 import components.global_vars as global_vars
+import components.admin as admin
 
 #Globals
 #also defined in mongo_interface.py
@@ -446,10 +447,26 @@ def sample_report(page_n, lasso_selected, data_store):
     max_page = len(samples) // PAGESIZE
     page_species = page["species"].unique().tolist()
     species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
+    # We need to have fake radio buttons with the same ids to account for times 
+    # when not all PAGESIZE samples are shown and are not taking the ids required by the callback
+    html_fake_radio_buttons = html.Div([dcc.RadioItems(
+        options=[
+            {'label': '', 'value': 'nosample'}
+        ],
+        value='noaction',
+        id="sample-radio-{}".format(n_sample)
+    ) for n_sample in range(len(page), PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
         html.Div(children_sample_list_report(page, species_plot_data)),
-        html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+        html_fake_radio_buttons,
+        admin.html_qc_expert_form(),
+        html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+        html.Div(id="placeholder0", style={"display": "none"}),
+        dcc.ConfirmDialog(
+            id='qc-confirm',
+            message='Are you sure you want to send sample feedback?',
+        )
     ]
 
 @app.callback(
@@ -1062,6 +1079,50 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
 
     fig["layout"].update(annotations=annotations)
     return fig
+
+
+def create_stamp(value, user):
+    return {
+        "name": "supplying_lab_check",
+        "user-ip": str(request.remote_addr),
+        "user": user,
+        "date": datetime.datetime.utcnow(),
+        "value": value
+    }
+
+
+@app.callback(Output('qc-confirm', 'displayed'),
+              [Input('feedback-button', 'n_clicks_timestamp')])
+def display_confirm_feedback(button):
+    if button is not None:
+        return True
+    return False
+
+
+@app.callback(
+    Output("placeholder0", "children"),
+    [Input("qc-confirm", "submit_n_clicks")],
+    [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
+                                     for n in range(PAGESIZE)]
+)
+def print_radio(n_clicks_timestamp, user, *args):
+    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+        stamp_a = create_stamp("pass:accepted", user)
+        stamp_r = create_stamp("fail:resequence", user)
+        stamp_o = create_stamp("fail:other", user)
+        stamplist = []
+        for val in args:
+            if val != "noaction":
+                if val.startswith("A_"):
+                    stamplist.append((val[2:], stamp_a))
+                elif val.startswith("R_"):
+                    stamplist.append((val[2:], stamp_r))
+                elif val.startswith("O_"):
+                    stamplist.append((val[2:], stamp_o))
+        if len(stamplist) > 0:
+            import_data.email_stamps(stamplist)
+            import_data.post_stamps(stamplist)
+    return []
 
 
 server = app.server # Required for gunicorn

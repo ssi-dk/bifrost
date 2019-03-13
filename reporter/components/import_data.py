@@ -5,6 +5,7 @@ import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
 import components.global_vars as global_vars
+import keys
 
 pd.options.mode.chained_assignment = None
 
@@ -182,3 +183,54 @@ def get_run(run_name):
 
 def get_sample(sample_id):
     return mongo_interface.get_sample(ObjectId(sample_id))
+
+
+def email_stamps(stamplist):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    user = ""
+    sample_info = []
+    for stamp_pair in stamplist:
+        sample_id, stamp = stamp_pair
+        user = stamp["user"]
+        new_status = stamp["value"]
+        sample = mongo_interface.get_sample(ObjectId(sample_id))
+        if sample is not None:
+            sample_name = sample["name"]
+        else:
+            sample_name = "DBERROR, ID: {}".format(sample_id)
+        runs = mongo_interface.get_sample_runs([ObjectId(sample_id)])
+        run_names = [run["name"] for run in runs]
+        old_status = "none"
+        if "stamps" in sample:
+            if "ssi_expert_check" in sample["stamps"]:
+                old_status = sample["stamps"]["ssi_expert_check"]["value"]
+            elif "ssi_stamper" in sample["stamps"]:
+                old_status = sample["stamps"]["ssi_stamper"]["value"]
+
+        sample_info.append((sample_name, old_status, new_status, run_names))
+
+    short_samples = ",".join([pair[0] for pair in sample_info])[
+        :60]  # Trimmed to 60 chars
+    msg = MIMEMultipart("alternative")
+    msg["From"] = keys.email_from
+    msg['Subject'] = 'Sample status change: "{}"'.format(short_samples)
+    msg['To'] = keys.email_to
+
+    email_text = 'Automatic message:\nUser "{}" has changed the status of the following samples:\n\nSample name                Old status            New status            Run name\n'.format(
+        user)
+    email_html = '<html><body>Automatic message:\nUser "{}" has changed the status of the following samples:\n\n<pre>Sample name                Old status            New status            Run name\n'.format(
+        user)
+    table = ""
+    for pair in sample_info:
+        table += "{:27s}{:22s}{:22s}{}\n".format(
+            pair[0], pair[1], pair[2], ",".join(pair[3]))
+    email_text += table
+    email_html += table + "</pre></body></html>"
+    print(email_text)
+    msg.attach(MIMEText(email_text, 'plain'))
+    msg.attach(MIMEText(email_html, 'html'))
+    s = smtplib.SMTP('localhost')
+    s.sendmail(msg["From"], msg["To"], msg.as_string())

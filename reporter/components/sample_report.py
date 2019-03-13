@@ -5,6 +5,7 @@ from components.images import list_of_images, get_species_color
 from components.table import html_table, html_td_percentage
 from components.import_data import get_read_paths, get_assemblies_paths
 import components.global_vars as global_vars
+import components.admin as admin
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -34,7 +35,7 @@ def get_species_img(sample_data):
         img = None
     return img
 
-def generate_sample_report(dataframe, sample, background):
+def generate_sample_report(dataframe, sample, n_sample):
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -49,21 +50,23 @@ def generate_sample_report(dataframe, sample, background):
                     className="box-title"
                 ),
                 img_div,
-                html_sample_tables(sample, className="row")
+                html_sample_tables(sample, className="row"),
+                admin.sample_radio_feedback(sample, n_sample)
             ],
             className="border-box"
         )
     )
 
 
-def html_species_report(dataframe, species, species_plot_data, **kwargs):
+def html_species_report(dataframe, species, row_index, **kwargs):
     report = []
     for index, sample in \
-      dataframe.loc[dataframe["species"] == species].iterrows():
+            dataframe.loc[dataframe["species"] == species].iterrows():
         report.append(generate_sample_report(dataframe,
                                              sample,
-                                             species_plot_data))
-    return html.Div(report, **kwargs)
+                                             row_index))
+        row_index += 1
+    return (html.Div(report, **kwargs), row_index)
 
 
 def html_organisms_table(sample_data, **kwargs):
@@ -111,7 +114,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 def html_test_tables(sample_data, **kwargs):
-    stamps_to_check = ["ssi_stamper", "ssi_expert_check"]
+    stamps_to_check = ["ssi_stamper", "supplying_lab_check"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("ssi_stamper.whats_my_species") \
@@ -129,7 +132,7 @@ def html_test_tables(sample_data, **kwargs):
     stamp_rows = []
     for stamp in stamps_to_check:
         stamp_key = "stamp.{}.value".format(stamp)
-        if stamp_key in sample_data:
+        if stamp_key in sample_data and not pd.isnull(sample_data[stamp_key]):
             if str(sample_data[stamp_key]).startswith("pass"):
                 stamp_class = "test-pass"
             elif str(sample_data[stamp_key]).startswith("fail"):
@@ -422,13 +425,14 @@ def html_sample_tables(sample_data, **kwargs):
 
 def children_sample_list_report(filtered_df, plot_data):
     report = []
+    result_index = 0
     for species in filtered_df["species"].unique():
+        species_report_div, result_index = html_species_report(
+            filtered_df, species, result_index)
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species,[])
-            # html_species_report(filtered_df, species,
-                                # plot_data.get(species, []))
+            species_report_div
         ]))
     return report
 
