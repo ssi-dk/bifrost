@@ -178,7 +178,7 @@ def post_stamps(stamplist):
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
         mongo_interface.save_sample(sample_db)
-        
+
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
 
@@ -210,8 +210,11 @@ def email_stamps(stamplist):
                 old_status = sample["stamps"]["ssi_expert_check"]["value"]
             elif "ssi_stamper" in sample["stamps"]:
                 old_status = sample["stamps"]["ssi_stamper"]["value"]
-
-        sample_info.append((sample_name, old_status, new_status, run_names))
+        if "fail:resequence" in (old_status, new_status):
+            sample_info.append((sample_name, old_status, new_status, run_names))
+    
+    if len(sample_info) == 0:
+        return
 
     short_samples = ",".join([pair[0] for pair in sample_info])[
         :60]  # Trimmed to 60 chars
