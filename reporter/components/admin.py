@@ -29,8 +29,8 @@ def sample_radio_feedback(sample, n_sample):
                                             sample["_id"])},
                         {'label': 'Resequence', 'value': 'R_{}'.format(
                             sample["_id"])},
-                        {'label': 'Other', 'value': 'O_{}'.format(
-                            sample["_id"])},
+                        # {'label': 'Other', 'value': 'O_{}'.format(
+                        #     sample["_id"])},
                         {'label': 'No action', 'value': 'noaction'}
                     ],
                     value='noaction',
