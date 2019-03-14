@@ -442,7 +442,7 @@ rule set_sample_species:
 
                         sample_db["properties"] = sample_db.get("properties", {})
                         provided_species = sample_db["sample_sheet"].get("provided_species")
-                        if pd.isna(provided_species):
+                        if pandas.isna(provided_species):
                             provided_species = None
                         sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(
                             provided_species)
