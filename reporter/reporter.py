@@ -21,8 +21,6 @@ from flask import request # To get client IP for pass/fail stamp
 
 import dash_scroll_up
 
-import flask  #used for the image server
-
 import keys
 
 import components.mongo_interface
@@ -96,6 +94,8 @@ app.layout = html.Div([
         html.Details([
             html.Summary("Latest changes..."),
             html.Div([
+                html.P(
+                    "2019-03-14: Add Supplying lab feedback option."),
                 html.P(
                     "2019-03-07: Add QC values to Run checker."),
                 html.P(
