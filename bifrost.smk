@@ -305,6 +305,11 @@ rule check__provided_sample_info:
                 df = pandas.read_excel(sample_sheet)
             else:  # assume it's a tsv
                 df = pandas.read_table(sample_sheet)
+
+            # Dropping rows with no sample name.
+            noname_index = df[df["SampleID"].isna()].index
+            df.drop(noname_index, inplace=True)
+
             item_rename_dict = {}
             badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
             for item in badly_named_samples["SampleID"].tolist():
