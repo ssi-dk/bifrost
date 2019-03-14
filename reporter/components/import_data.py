@@ -167,8 +167,9 @@ def get_last_runs(run, n):
     return mongo_interface.get_last_runs(run, n)
 
 
-def post_stamp(stamp, samples):
-    for sample_id in samples:
+def post_stamps(stamplist):
+    for pair in stamplist:
+        sample_id, stamp = pair
         sample_db = mongo_interface.get_sample(ObjectId(sample_id))
         stamps = sample_db.get("stamps", {})
         stamp_list = stamps.get("stamp_list", [])
@@ -177,7 +178,7 @@ def post_stamp(stamp, samples):
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
         mongo_interface.save_sample(sample_db)
-
+        
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
 

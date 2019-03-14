@@ -25,10 +25,10 @@ COLUMNS = [
         "name": "Name",
         "id": "name"
     },
-    # {
-    #     "name": "Supplying_lab_feedback",
-    #     "id": "stamp.supplying_lab_check.value",
-    # },
+    {
+        "name": "Supplying_lab_feedback",
+        "id": "stamp.supplying_lab_check.value",
+    },
     {
         "name": "QC_action",
         "id": "stamp.ssi_stamper.value",
