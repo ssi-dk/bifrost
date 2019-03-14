@@ -25,12 +25,12 @@ def sample_radio_feedback(sample, n_sample):
             html.Div(
                 dcc.RadioItems(
                     options=[
-                        # {'label': 'Accept', 'value': 'A_{}'.format(
-                        #                     sample["_id"])},
+                        {'label': 'Accept', 'value': 'A_{}'.format(
+                                            sample["_id"])},
                         {'label': 'Resequence', 'value': 'R_{}'.format(
                             sample["_id"])},
-                        # {'label': 'Other', 'value': 'O_{}'.format(
-                        #     sample["_id"])},
+                        {'label': 'Other', 'value': 'O_{}'.format(
+                            sample["_id"])},
                         {'label': 'No action', 'value': 'noaction'}
                     ],
                     value='noaction',
