@@ -38,9 +38,6 @@ def get_run_list():
 def get_group_list(run_name=None):
     return mongo_interface.get_group_list(run_name)
 
-def get_qc_list(run_name=None):
-    return mongo_interface.get_qc_list(run_name)
-
 def get_species_list(species_source, run_name=None):
     return mongo_interface.get_species_list(species_source, run_name)
 
@@ -146,9 +143,6 @@ def add_sample_runs(sample_df):
     sample_df.loc[:, 'runs'] = sample_df["_id"].map(sample_runs)
     return sample_df
 
-def get_read_paths(samples):
-    return mongo_interface.get_read_paths(samples)
-
 def get_assemblies_paths(samples):
     return mongo_interface.get_assemblies_paths(samples)
 
@@ -170,7 +164,7 @@ def get_last_runs(run, n):
 def post_stamps(stamplist):
     for pair in stamplist:
         sample_id, stamp = pair
-        sample_db = mongo_interface.get_sample(ObjectId(sample_id))
+        sample_db = mongo_interface.get_samples([sample_id])[0]
         stamps = sample_db.get("stamps", {})
         stamp_list = stamps.get("stamp_list", [])
         stamp_list.append(stamp)
@@ -182,8 +176,8 @@ def post_stamps(stamplist):
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
 
-def get_sample(sample_id):
-    return mongo_interface.get_sample(ObjectId(sample_id))
+def get_samples(sample_ids):
+    return mongo_interface.get_samples(sample_ids)
 
 
 def email_stamps(stamplist):
@@ -197,7 +191,7 @@ def email_stamps(stamplist):
         sample_id, stamp = stamp_pair
         user = stamp["user"]
         new_status = stamp["value"]
-        sample = mongo_interface.get_sample(ObjectId(sample_id))
+        sample = mongo_interface.get_samples([sample_id])[0]
         if sample is not None:
             sample_name = sample["name"]
         else:

@@ -200,8 +200,8 @@ def update_run_report(run, n_intervals):
                 continue
             row = []
             row.append(html.Td(name))
-            stamps = import_data.get_sample(
-                str(s_components["sample._id"])).get("stamps", {})
+            stamps = import_data.get_samples(
+                [str(s_components["sample._id"]])[0]).get("stamps", {})
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False

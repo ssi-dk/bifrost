@@ -3,93 +3,9 @@ import keys  # .gitgnored file
 from bson.objectid import ObjectId
 
 
-PAGESIZE = 25
-
-def get_from_path(path_string, response):
-    fields = path_string.split(".")
-
-    for field in fields:
-        response = response.get(field, None)
-        if response is None:
-            return response
-    return response
-
-def flatten(l, path):
-    """Flattens a list of dicts into a list"""
-    return [get_from_path(path, el) for el in l]
-
-
 def get_connection():
     "Return mongodb connection"
     return pymongo.MongoClient(keys.mongodb_url)
-
-def get_species_colors(): 
-    """Get a dict with ncbi species name and color"""
-    with get_connection() as connection:
-        db = connection.get_database()
-        species_col = db.species
-        colors = {}
-        for species in species_col.find():
-            if "color" in species:
-                colors[species["organism"]] = species["color"]
-            else:
-                colors[species["organism"]] = None
-
-    return colors
-
-def get_species_plot_data(species_list, id_list, component="assemblatron"):
-    """Get plot data for many samples using a list of Ids"""
-    with get_connection() as connection:
-        db = connection.get_database()
-        samples = db.samples
-        plot_data = {}
-        id_list = list(map(lambda x: ObjectId(x), id_list))
-        runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
-        routine_ids = set()
-        for run in runs:
-            for sample in run["samples"]:
-                routine_ids.add(sample["_id"])
-        routine_list = list(routine_ids)
-        res = list(db.samples.aggregate([
-            {
-                "$match": {
-                    "_id": {"$in": routine_list, "$nin": id_list},
-                    "properties.species": {"$in": species_list},
-                    # NOTE change stamp structure from list to dict to keep only latest.
-                    "stamps.ssi_stamper" : "pass:OK"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "sample_components",
-                    "let": {"sample_id": "$_id"},
-                    "pipeline": [
-                        {"$match": {
-                            "component.name": component,
-                            "summary.bin_length_at_1x": {"$exists": True}
-                        }},
-                        {"$match": {
-                            "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
-                        }
-                        },
-                        {"$project": {"summary.bin_length_at_1x": 1}},
-                        {"$sort": {"_id": -1}},
-                        {"$limit": 1}
-                    ],
-                    "as": "sample_components"
-                }
-            },
-            {
-                "$unwind": "$sample_components"
-            },
-            {
-                "$group": {
-                    "_id": "$properties.species",
-                    "bin_coverage_at_1x": {"$push": "$sample_components.summary.bin_length_at_1x"}
-                }
-            }
-        ]))
-    return res
 
 def check_run_name(name):
     with get_connection() as connection:
@@ -109,6 +25,9 @@ def get_run_list():
     return runs
 
 def get_group_list(run_name=None):
+    """
+    Get group list but most importantly count of samples per group for a run.
+    """
     with get_connection() as connection:
         db = connection.get_database()
         if run_name is not None:
@@ -201,96 +120,6 @@ def get_species_list(species_source, run_name=None):
 
     return species
 
-
-def get_qc_list(run_name=None):
-    with get_connection() as connection:
-        db = connection.get_database()
-        if run_name is not None:
-            run = db.runs.find_one(
-                {"name": run_name},
-                {
-                    "_id": 0,
-                    "samples._id": 1
-                }
-            )
-            if run is None:
-                run_samples = []
-            else:
-                run_samples = run["samples"]
-            sample_ids = [s["_id"] for s in run_samples]
-            qcs = list(db.sample_components.aggregate([
-                {
-                    "$match": {
-                        "sample._id": {"$in": sample_ids},
-                        #"status": "Success",
-                        "component.name": "ssi_stamper"
-                    }
-                },
-                {"$sort": {"sample._id": 1, "_id": 1}},
-                {
-                    "$group": {
-                        "_id": "$sample._id",
-                        "action": {"$last": "$summary.assemblatron:action"}
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$action",
-                        "count": {"$sum": 1}
-                    }
-                },
-                {
-                    "$sort": {"_id": 1}
-                }
-            ]))
-        else:
-            runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
-            sample_ids = set()
-            for run in runs:
-                for sample in run["samples"]:
-                    sample_ids.add(sample["_id"])
-            sample_list = list(sample_ids)
-            qcs = list(db.samples.aggregate([
-                {
-                    "$match": {
-                        "_id": {"$in": sample_list}
-                    }
-                },
-                {
-                    "$lookup": {
-                        "from": "sample_components",
-                        "let": {"sample_id": "$_id"},
-                        "pipeline": [
-                            {"$match": {
-                                "component.name": "ssi_stamper",
-                                "summary.assemblatron:action" : {"$exists" : True}
-                                }},
-                            { "$match": {
-                                    "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
-                                }
-                            },
-                            {"$project": {"summary.assemblatron:action" : 1}},
-                            {"$sort": {"_id": -1}},
-                            {"$limit": 1}
-                        ],
-                        "as": "sample_components"
-                    }
-                },
-                {
-                    "$unwind": "$sample_components"
-                },
-                {
-                    "$group": {
-                        "_id": "$sample_components.summary.assemblatron:action",
-                        "count": {"$sum": 1}
-                    }
-                },
-                {
-                    "$sort": {"_id": 1}
-                }
-            ]))
-
-    return qcs
 
 def filter_qc(db, qc_list, query):
     qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
@@ -435,19 +264,13 @@ def get_sample_runs(sample_ids):
         return list(db.runs.find({"samples": {"$elemMatch": {"_id": {"$in": sample_ids}}}}))
 
 
-def get_read_paths(sample_ids):
-    with get_connection() as connection:
-        db = connection.get_database()
-        return list(db.samples.find({"_id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))}}, {"reads": 1, "name": 1}))
-
-
 def get_assemblies_paths(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
         return list(db.sample_components.find({
             "sample._id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))},
             "component.name": "assemblatron"
-        }, {"path": 1, "sample.name": 1}))
+        }, {"path": 1}))
 
 # Run_checker.py
 def get_sample_component_status(run_name):
@@ -538,18 +361,17 @@ def get_sample_QC_status(last_runs):
             samples_runs_qc[sample["name"]] = sample_dict
         return samples_runs_qc
 
-def get_last_runs(run, n):
+def get_last_runs(run, n): #merge with  get_run_list
     with get_connection() as connection:
         db = connection.get_database()
         return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
-
-
-def get_sample(sample_id):
+def get_samples(sample_ids):
+    sample_ids = list(map(lambda x:ObjectId(x), sample_ids))
     with get_connection() as connection:
         db = connection.get_database()
-        return db.samples.find_one({"_id": sample_id})
+        return list(db.samples.find({"_id": {"$in": sample_ids}}))
         
 
 def save_sample(data_dict):
@@ -576,12 +398,7 @@ def save_sample(data_dict):
             )
         return data_dict
 
-def get_run(run_name):
+def get_run(run_name): #to be merged with get_run_list
     with get_connection() as connection:
         db = connection.get_database()
         return db.runs.find_one({"name": run_name})
-
-def get_sample(sample_id):
-    with get_connection() as connection:
-        db = connection.get_database()
-        return db.samples.find_one({"_id": sample_id})

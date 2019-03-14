@@ -1,9 +1,9 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table as dt
-from components.images import list_of_images, get_species_color
+from components.images import list_of_images
 from components.table import html_table, html_td_percentage
-from components.import_data import get_read_paths, get_assemblies_paths
+import components.import_data as import_data
 import components.global_vars as global_vars
 import components.admin as admin
 import plotly.graph_objs as go
@@ -80,10 +80,6 @@ def html_organisms_table(sample_data, **kwargs):
     color_0 = "#b3ccc1"
     color_1 = "#b3ccc1" #Green
 
-    # color_1 = get_species_color(
-    #     sample_data.get("whats_my_species.name_classified_species_1"))  # Default
-#    color_2 = COLOR_DICT.get(
-#        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
 
 #   color_u = COLOR_DICT.get("", "#fee1cd")  # Default
@@ -423,7 +419,7 @@ def html_sample_tables(sample_data, **kwargs):
     ], **kwargs)
 
 
-def children_sample_list_report(filtered_df, plot_data):
+def children_sample_list_report(filtered_df):
     report = []
     result_index = 0
     for species in filtered_df["species"].unique():
@@ -436,23 +432,26 @@ def children_sample_list_report(filtered_df, plot_data):
         ]))
     return report
 
-def generate_sample_folder(samples):
+def generate_sample_folder(sample_ids):
     """Generates a script string """
-    reads = get_read_paths(samples)
-    assemblies = get_assemblies_paths(samples)
+    samples = import_data.get_samples(sample_ids)
+    # Access samples by their id
+    samples_by_ids = { str(s["_id"]) : s for s in samples }
+    assemblies = import_data.get_assemblies_paths(sample_ids)
     reads_script = "mkdir samples\ncd samples\n"
     assemblies_script = "mkdir assemblies\ncd assemblies\n"
     reads_errors = []
     assemblies_errors = []
     for assembly in assemblies:
+        sample = samples_by_ids[str(assembly["sample"]["_id"])]
         try:
             assemblies_script += "#{}\nln -s {} {}\n".format(
-                assembly["sample"]["name"],
+                sample["name"],
                 assembly["path"] + "/contigs.fasta",
-                assembly["sample"]["name"] + "_contigs.fasta")
+                sample["name"] + "_contigs.fasta")
         except KeyError as e:
             assemblies_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
-                assembly["sample"].get("name", "None"),
+                sample.get("name", "None"),
                 assembly["_id"],
                 assembly.get("path", "No data")
             ))
@@ -473,7 +472,7 @@ def generate_sample_folder(samples):
             html.Pre(assemblies_script, className="folder-pre")
         ]
 
-    for sample in reads:
+    for sample in samples:
         try:
             reads_script += "#{}\nln -s {} .\nln -s {} .\n".format(
                 sample["name"],
