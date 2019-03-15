@@ -18,6 +18,9 @@ import dash_scroll_up
 import components.mongo_interface
 import components.import_data as import_data
 
+import json
+from bson import json_util
+
 
 app = dash.Dash()
 
@@ -49,6 +52,7 @@ app.layout = html.Div([
         ),
         html.Div(id='none', children=[], style={'display': 'none'}),
         html.H1("SerumQC Run Checker"),
+        dcc.Store(id="sample-store", storage_type="memory"),
         dcc.Interval(
             id='table-interval',
             interval=30*1000,  # in milliseconds
@@ -164,33 +168,53 @@ def update_run_button(run):
 
 
 @app.callback(
+    Output("sample-store", "data"),
+    [Input("run-name", "children")]
+)
+def update_sample_store(run_name):
+    split = run_name.split("/")
+    run_name = split[0]
+    run = import_data.get_run(run_name)
+    if run is None:
+        return json_util.dumps({"run": None})
+    samples = import_data.get_samples(list(map(lambda x: str(x["_id"]), run["samples"])))
+
+    store = {
+        "run": run,
+        "samples_by_id": {str(s["_id"]): s for s in samples},
+        "report": "resequence" if len(split) > 1 and split[1] == "resequence" else "run_checker"
+    }
+
+    return json_util.dumps(store)
+
+
+@app.callback(
     Output("run-report", "children"),
-    [Input("run-name", "children"),
+    [Input("sample-store", "data"),
      Input("table-interval", "n_intervals")]
 )
-def update_run_report(run, n_intervals):
+def update_run_report(store, n_intervals):
     update_notice = "The table will update every 30s automatically."
-    split = run.split("/")
-    run = split[0]
-    report = "status"
-    if len(split) > 1 and split[1] == "resequence":
-        report = "resequence"
-    data = []
-    figure = {}
-    if run != "" and report == "status":
-        run_data = import_data.get_run(run)
-        resequence_link = html.H4(html.A(
-            "Resequence Report", href="/{}/resequence".format(run)))
-        sample_names = import_data.filter_name(run_name=run)
-        sample_ids = list(map(lambda x: str(x["_id"]), sample_names))
-        samples_by_ids = {str(s["_id"]): s for s in sample_names}
-        samples = import_data.get_sample_component_status(sample_ids)
-        if run_data is not None:
+    store = json_util.loads(store)
+    run = store["run"]
+    if run is None:
+        return None
+    samples_by_id = store["samples_by_id"]
+
+    if store["report"] == "run_checker":
+        run_data = import_data.get_run(run)  #NOTE: de;ete tjos
+        
+        resequence_link = html.H4(dcc.Link(
+            "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
+
+        s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
+
+        if "components" in run:
             components = list(
-                map(lambda x: x["name"], run_data["components"]))
+                map(lambda x: x["name"], run["components"]))
         else:
             components = []
-            for sample_id, s_c in samples.items():
+            for sample_id, s_c in s_c_status.items():
                 if s_c["component"]["name"] not in components:
                     components.append(s_c["component"]["name"])
         header = html.Tr([
@@ -201,14 +225,14 @@ def update_run_report(run, n_intervals):
             html.Th()
             ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
         rows = [header]
-        for sample_id, s_components in samples.items():
-            name = samples_by_ids[sample_id]["name"]
+        for sample_id, s_components in s_c_status.items():
+            sample = samples_by_id[sample_id]
+            name = sample["name"]
             if name == "Undetermined":
-                continue
+                continue #ignore this row
             row = []
             row.append(html.Td(name))
-            stamps = import_data.get_samples(
-                [str(s_components["sample._id"])])[0].get("stamps", {})
+            stamps = sample.get("stamps", {})
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False
@@ -253,12 +277,12 @@ def update_run_report(run, n_intervals):
             html.P(update_notice),
             table]
 
-    if run != "" and report == "resequence":
+    if store["report"] == "resequence":
 
         run_checker_link = html.H4(html.A(
             "Run Checker Report", href="/{}".format(run)))
 
-        last_runs = import_data.get_last_runs(run, 12)
+        last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
         last_runs_names = [run["name"] for run in last_runs]
         prev_runs_dict = import_data.get_sample_QC_status(last_runs)
         header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate")] +

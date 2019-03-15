@@ -325,15 +325,18 @@ def get_sample_QC_status(last_runs):
         samples = [sample
                    for run in last_runs
                 for sample in run["samples"]]
+        
+        samples_full = get_samples(list(map(lambda x: str(x["_id"]), samples)))
+        samples_by_ids = {str(s["_id"]): s for s in samples_full}
 
         samples_runs_qc = {}
         for sample in samples:
             sample_dict = {}
 
-            name = sample["name"]
+            name = samples_by_ids[str(sample["_id"])]["name"]
             for run in last_runs:
                 for run_sample in run["samples"]:
-                    if name == run_sample["name"]:
+                    if name == samples_by_ids[str(run_sample["_id"])]["name"]:
                         stamps = db.samples.find_one(
                             {"_id": run_sample["_id"]}, {"stamps": 1})
                         if stamps is not None:
@@ -355,13 +358,13 @@ def get_sample_QC_status(last_runs):
                             if expert_check:
                                 qc_val += "*"
                             sample_dict[run["name"]] = qc_val
-            samples_runs_qc[sample["name"]] = sample_dict
+            samples_runs_qc[name] = sample_dict
         return samples_runs_qc
 
 def get_last_runs(run, n): #merge with  get_run_list
     with get_connection() as connection:
         db = connection.get_database()
-        return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
+        return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples._id": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
 def get_samples(sample_ids, run_name=None):
