@@ -42,7 +42,7 @@ def get_species_list(species_source, run_name=None):
     return mongo_interface.get_species_list(species_source, run_name)
 
 def filter_name(species=None, group=None, qc_list=None, run_name=None):
-    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1, "flag": 1},
+    result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1},
                                     run_name, species, group, qc_list)
     return list(result)
 
@@ -147,8 +147,8 @@ def get_assemblies_paths(samples):
     return mongo_interface.get_assemblies_paths(samples)
 
 # For run_checker
-def get_sample_component_status(run_name):
-    return mongo_interface.get_sample_component_status(run_name)
+def get_sample_component_status(sample_ids):
+    return mongo_interface.get_sample_component_status(sample_ids)
 
 
 def get_species_QC_values(ncbi_species):

@@ -181,12 +181,18 @@ def update_run_report(run, n_intervals):
         run_data = import_data.get_run(run)
         resequence_link = html.H4(html.A(
             "Resequence Report", href="/{}/resequence".format(run)))
+        sample_names = import_data.filter_name(run_name=run)
+        sample_ids = list(map(lambda x: str(x["_id"]), sample_names))
+        samples_by_ids = {str(s["_id"]): s for s in sample_names}
+        samples = import_data.get_sample_component_status(sample_ids)
         if run_data is not None:
             components = list(
                 map(lambda x: x["name"], run_data["components"]))
         else:
             components = []
-        samples = import_data.get_sample_component_status(run)
+            for sample_id, s_c in samples.items():
+                if s_c["component"]["name"] not in components:
+                    components.append(s_c["component"]["name"])
         header = html.Tr([
             html.Th(html.Div(html.Strong("Sample")),
                     className="rotate rotate-short"),
@@ -195,13 +201,14 @@ def update_run_report(run, n_intervals):
             html.Th()
             ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
         rows = [header]
-        for name, s_components in samples.items():
+        for sample_id, s_components in samples.items():
+            name = samples_by_ids[sample_id]["name"]
             if name == "Undetermined":
                 continue
             row = []
             row.append(html.Td(name))
             stamps = import_data.get_samples(
-                [str(s_components["sample._id"]])[0]).get("stamps", {})
+                [str(s_components["sample._id"])])[0].get("stamps", {})
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False
@@ -315,8 +322,9 @@ def update_rerun_form(run_name):
     else:
         components = []
 
-    samples = import_data.get_sample_component_status(run_name)
-    samples_options = [{"value": s, "label": s} for s in samples.keys()]
+    samples = import_data.filter_name(run_name=run_name)
+    samples_options = [{"value": s["name"], "label": s["name"]}
+                       for s in samples]
     components_options = [{"value": c, "label": c} for c in components]
 
     return html.Div([

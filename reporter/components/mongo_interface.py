@@ -273,20 +273,17 @@ def get_assemblies_paths(sample_ids):
         }, {"path": 1, "sample._id": 1}))
 
 # Run_checker.py
-def get_sample_component_status(run_name):
+def get_sample_component_status(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
-        run = db.runs.find_one({"name": run_name})
-        samples_ids = list(map(lambda x:x["_id"], run["samples"]))
-        components_names = list(map(lambda x: x["name"], run["components"]))
+        sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
         s_c_list = db.sample_components.find({
-            "sample._id": {"$in": samples_ids},
-            "component.name": {"$in": components_names}
-        }, {"sample": 1, "status": 1, "component.name": 1})
+            "sample._id": {"$in": sample_ids},
+        }, {"sample._id": 1, "status": 1, "component.name": 1})
         output = {}
         for s_c in s_c_list:
-            sample = output.get(s_c["sample"]["name"], {
-                "sample._id": s_c["sample"]["_id"]
+            sample = output.get(str(s_c["sample"]["_id"]), {
+                "sample._id": str(s_c["sample"]["_id"])
             })
             status = s_c["status"]
             if status == "Success":
@@ -309,7 +306,7 @@ def get_sample_component_status(run_name):
             else:
                 status_code = float('nan')
             sample[s_c["component"]["name"]] = (status_code, status)
-            output[s_c["sample"]["name"]] = sample
+            output[str(s_c["sample"]["_id"])] = sample
         return output
 
 
@@ -367,7 +364,7 @@ def get_last_runs(run, n): #merge with  get_run_list
         return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
-def get_samples(sample_ids):
+def get_samples(sample_ids, run_name=None):
     sample_ids = list(map(lambda x:ObjectId(x), sample_ids))
     with get_connection() as connection:
         db = connection.get_database()
