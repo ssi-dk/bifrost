@@ -275,6 +275,9 @@ def delete_sample_component(s_c_id=None, sample_id=None,
             db = connection.get_database()
             result = db.sample_components.delete_many({"$and": query})
             return result.deleted_count
+    except Exception as e:
+        print(traceback.format_exc())
+        return None
 
 
 def delete_sample_from_runs(sample_id=None):
@@ -296,3 +299,6 @@ def delete_sample_from_runs(sample_id=None):
                 result = db.runs.update_one({"_id": run["_id"], run})
                 update_count += result.modified_count
         return update_count
+    except Exception as e:
+        print(traceback.format_exc())
+        return None
