@@ -302,3 +302,15 @@ def delete_sample_from_runs(sample_id=None):
     except Exception as e:
         print(traceback.format_exc())
         return None
+
+
+def delete_sample(sample_id):
+    try:
+        with get_connection() as connection:
+            db = connection.get_database()
+
+            result = db.samples.delete_one({"_id": sample_id})
+        return result.deleted_count
+    except Exception as e:
+        print(traceback.format_exc())
+        return None
