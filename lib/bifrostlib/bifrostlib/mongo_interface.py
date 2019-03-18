@@ -290,7 +290,7 @@ def delete_sample_from_runs(sample_id=None):
         with get_connection() as connection:
             db = connection.get_database()
 
-            runs = db.runs.find({"sample._id": sample_id})
+            runs = db.runs.find({"samples._id": sample_id})
             for run in runs:
                 new_samples = [sample
                                for sample in run["samples"]
