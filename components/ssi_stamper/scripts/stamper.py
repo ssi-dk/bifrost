@@ -23,9 +23,9 @@ def create_component(stamp_name):
     return {
         "name": stamp_name,
         "version": "1.0",
-        "target": "sample"
-        "type": "stamper"
-        "recommendation": "required"
+        "target": "sample",
+        "type": "stamper",
+        "recommendation": "required",
         "requires_db": True
     }
 
