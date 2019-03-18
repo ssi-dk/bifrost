@@ -21,7 +21,7 @@ jobs:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
 
-  - script: conda env create --file envs/bifrost_for_install.yml
+  - script: conda env create --file envs/bifrost_for_install.yaml
     displayName: Create Anaconda environment
 
   - script: source activate bifrost
