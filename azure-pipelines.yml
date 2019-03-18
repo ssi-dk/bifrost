@@ -18,6 +18,8 @@ jobs:
     maxParallel: 4
 
   steps:
+  - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
+    displayName: Add conda to PATH
 
   - script: |
       source activate myEnvironment
