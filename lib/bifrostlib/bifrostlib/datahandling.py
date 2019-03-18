@@ -1,7 +1,7 @@
 import pkg_resources
 import ruamel.yaml
 from bifrostlib import mongo_interface
-import bson.objectid.ObjectId as ObjectId
+from bson.objectid import ObjectId
 import os
 
 
