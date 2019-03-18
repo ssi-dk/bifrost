@@ -19,20 +19,14 @@ def run_test(sample_dict, stamp):
                             species, sample_dict)
 
 
-def get_git_hash():
-    head_path = os.path.join(os.path.dirname(__file__), "../.git/HEAD")
-    with open(head_path) as head:
-        head_line = head.readline().strip()
-        loc = head_line.split(" ")[1]
-    hash_path = os.path.join(os.path.dirname(__file__), "../.git/" + loc)
-    with open(hash_path) as g_hash_file:
-        return g_hash_file.readline().strip()
-
 def create_component(stamp_name):
     return {
         "name": stamp_name,
         "version": "1.0",
-        "git": get_git_hash()
+        "target": "sample"
+        "type": "stamper"
+        "recommendation": "required"
+        "requires_db": True
     }
 
 def create_sample_component(sample, component, results, summary):
