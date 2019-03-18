@@ -296,7 +296,7 @@ def delete_sample_from_runs(sample_id=None):
                                for sample in run["samples"]
                                if sample["_id"] != sample_id]
                 run["samples"] = new_samples
-                result = db.runs.update_one({"_id": run["_id"]}, run)
+                result = db.runs.replace_one({"_id": run["_id"]}, run)
                 update_count += result.modified_count
         return update_count
     except Exception as e:
