@@ -20,7 +20,7 @@ jobs:
   steps:
 
   - script: |
-      call activate myEnvironment
+      source activate myEnvironment
       conda install --yes --quiet --name myEnvironment scipy
     displayName: Install Anaconda packages. Testing
 
