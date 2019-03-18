@@ -210,6 +210,25 @@ def load_all_samples():
     return mongo_interface.load_all_samples()
 
 
+def delete_sample(sample_id):
+    """
+    Delete sample, sample_components and sample from runs.
+    Only from database.
+    """
+    delete_sample_component(sample_id=sample_id)
+    delete_sample_from_runs(sample_id=sample_id)
+    deleted = mongo_interface.delete_sample(sample_id=sample_id)
+    return deleted
+
+
+def delete_sample_component(s_c_id=None, sample_id=None):
+    return mongo_interface.delete_sample_component(s_c_id, sample_id)
+
+
+def delete_sample_from_runs(sample_id=None):
+    return mongo_interface.delete_sample_from_runs(sample_id)
+
+
 def test():
     print("Hello")
     return (u'This is the bifrost lib')

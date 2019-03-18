@@ -245,10 +245,54 @@ def load_all_samples():
             runs = list(db.runs.find({}, {"samples": 1}))
             sample_ids = set()
             for run in runs:
-                sample_ids.update(list(map(lambda x:x["_id"], run["samples"])))
+                sample_ids.update(list(map(lambda x: x["_id"],
+                                           run["samples"])))
 
         return list(sample_ids)
 
     except Exception as e:
         print(traceback.format_exc())
         return None
+
+
+def delete_sample_component(s_c_id=None, sample_id=None,
+                            s_c_id_list=None, sample_id_list=None):
+    """
+    DELETE sample component from database. Parameters are AND connected.
+    Returns number of deleted entries
+    """
+    query = []
+    if s_c_id is not None:
+        query.append({"_id": s_c_id})
+    if sample_id is not None:
+        query.append({"sample._id": sample_id})
+    if s_c_id_list is not None:
+        query.append({"_id": {"$in": s_c_id_list}})
+    if sample_id_list is not None:
+        query.append({"sample._id": {"$in": sample_id_list}})
+    try:
+        with get_connection() as connection:
+            db = connection.get_database()
+            result = db.sample_components.delete_many({"$and": query})
+            return result.deleted_count
+
+
+def delete_sample_from_runs(sample_id=None):
+    """
+    Delete sample from runs. Returns number of runs this sample was deleted
+    from.
+    """
+    update_count = 0
+    try:
+        with get_connection() as connection:
+            db = connection.get_database()
+
+            runs = db.runs.find({"sample._id": sample_id})
+            for run in runs:
+                new_samples = [sample
+                               for sample in run["samples"]
+                               if sample["_id"] != sample_id]
+                run["samples"] = new_samples
+                result = db.runs.update_one({"_id": run["_id"], run})
+                update_count += result.modified_count
+        return update_count
