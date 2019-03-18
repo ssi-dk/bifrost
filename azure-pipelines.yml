@@ -1,0 +1,32 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- master
+
+jobs:
+
+- job: 'Test'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+
+  - script: |
+      call activate myEnvironment
+      conda install --yes --quiet --name myEnvironment scipy
+    displayName: Install Anaconda packages. Testing
+
+  - script: conda env create --quiet --file envs/bifrost_for_install.yml
+    displayName: Create Anaconda environment
+
+
+
+
