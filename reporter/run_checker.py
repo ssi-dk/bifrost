@@ -225,7 +225,6 @@ def update_run_report(run, n_intervals):
             if expert_check:
                 qc_val += "*"
             
-
             row.append(
                 html.Td(qc_val, className="center {}".format(statusname)))
             row.append(html.Td())
@@ -234,7 +233,8 @@ def update_run_report(run, n_intervals):
                 if component in s_components.keys():
                     s_c = s_components[component]
                     row.append(
-                        html.Td(s_c[1], className="center status-{}".format(s_c[0])))
+                        html.Td(s_c[1],
+                                className="center status-{}".format(s_c[0])))
                 else:
                     row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
@@ -277,12 +277,17 @@ def update_run_report(run, n_intervals):
                         sample_all_OKs = False
                         className = "1"
                         title = "Supplying Lab"
-                    elif status.startswith("CF"):  # Wont be triggered by supplying because its after.
+                    elif status.startswith("CF"):
+                        # Wont be triggered by supplying because its after.
                         className = "-1"
                         sample_all_OKs = False
                         title = "Core Facility"
+                    else:
+                        #to account for libray fails
+                        sample_all_OKs = False
                     row.append(
-                        html.Td(status, className="center status-" + className ))
+                        html.Td(status,
+                                className="center status-" + className))
                 else:
                     row.append(html.Td("-", className="center status-0"))
 
@@ -290,7 +295,7 @@ def update_run_report(run, n_intervals):
             if not sample_all_OKs:
                 rows.append(html.Tr(row))
         table = html.Table(rows, className="unset-width-table")
-        update_notice += " SL: Supplying Lab, CF: Core Facility, NR: Not Run. -: No data."
+        update_notice += " SL: Supplying Lab, CF: Core Facility, CF(LF): Core Facility (Library Fail). -: No data."
         return [
             run_checker_link,
             html.P(update_notice),

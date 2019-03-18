@@ -519,7 +519,7 @@ def get_sample_QC_status(last_runs):
                         if stamps is not None:
                             stamps = stamps.get("stamps", {})
                             qc_val = stamps.get(
-                                "ssi_stamper", {}).get("value", "N/A")
+                                "ssi_stamper", {}).get("value", "CF(LF)")
                             expert_check = False
                             if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
                                 qc_val = stamps["ssi_expert_check"]["value"]
