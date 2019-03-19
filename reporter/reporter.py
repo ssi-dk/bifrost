@@ -17,7 +17,7 @@ import plotly.graph_objs as go
 from plotly import tools 
 from dash.dependencies import Input, Output, State
 
-from flask import request # To get client IP for pass/fail stamp
+from flask import request   # To get client IP for pass/fail stamp
 
 import dash_scroll_up
 
@@ -32,10 +32,11 @@ from components.images import list_of_images, static_image_route, COLOR_DICT, im
 import components.global_vars as global_vars
 import components.admin as admin
 
-#Globals
-#also defined in mongo_interface.py
+# Globals
+# also defined in mongo_interface.py
 PAGESIZE = 25
 ADMIN = False
+
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
@@ -94,6 +95,8 @@ app.layout = html.Div([
         html.Details([
             html.Summary("Latest changes..."),
             html.Div([
+                html.P(
+                    "2019-03-19: Add Priority to run checker."),
                 html.P(
                     "2019-03-14: Add Supplying lab feedback option."),
                 html.P(

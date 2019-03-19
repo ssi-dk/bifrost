@@ -188,6 +188,8 @@ def update_run_report(run, n_intervals):
             components = []
         samples = import_data.get_sample_component_status(run)
         header = html.Tr([
+            html.Th(html.Div(html.Strong("Priority")),
+                    className="rotate rotate-short"),
             html.Th(html.Div(html.Strong("Sample")),
                     className="rotate rotate-short"),
             html.Th(html.Div(html.Strong("QC status")),
@@ -199,13 +201,27 @@ def update_run_report(run, n_intervals):
             if name == "Undetermined":
                 continue
             row = []
+            sample = import_data.get_sample(
+                str(s_components["sample._id"]))
+            stamps = sample.get("stamps", {})
+            priority = sample.get("sample_sheet",
+                                  {}).get("priority", "").lower()
+            prio_display = " "
+            prio_title = priority
+            if priority == "high":
+                prio_display = "🚨"
+            else:
+                prio_display = ""
+            row.append(html.Td(prio_display,
+                               title=prio_title,
+                               className="center"))
+
             row.append(html.Td(name))
-            stamps = import_data.get_sample(
-                str(s_components["sample._id"])).get("stamps", {})
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False
-            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
+            if ("ssi_expert_check" in stamps and
+                "value" in stamps["ssi_expert_check"]):
                 qc_val = stamps["ssi_expert_check"]["value"]
                 expert_check = True
 
@@ -221,10 +237,10 @@ def update_run_report(run, n_intervals):
             elif qc_val == "pass:OK":
                 statusname = "status-2"
                 qc_val = "OK"
-            
+
             if expert_check:
                 qc_val += "*"
-            
+
             row.append(
                 html.Td(qc_val, className="center {}".format(statusname)))
             row.append(html.Td())
@@ -283,7 +299,7 @@ def update_run_report(run, n_intervals):
                         sample_all_OKs = False
                         title = "Core Facility"
                     else:
-                        #to account for libray fails
+                        # to account for libray fails
                         sample_all_OKs = False
                     row.append(
                         html.Td(status,
