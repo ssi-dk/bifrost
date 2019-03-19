@@ -28,9 +28,13 @@ jobs:
 #    displayName: Activate bifrost
 
   - script: |
+      pip install . --user
+    displayName: 'Install bifrostlib'
+    workingDirectory: lib/bifrostlib/
+
+  - script: |
       pip install pytest --user
       pip install pytest-cov --user
-      pwd
       python -m pytest bifrostlib/tests
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
