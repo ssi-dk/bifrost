@@ -7,7 +7,7 @@ trigger:
 - master
 
 variables:
-  bifrost_db_key: "resources/keys.txt"
+  bifrost_db_key: "../../resources/keys.txt"
 
 jobs:
 
