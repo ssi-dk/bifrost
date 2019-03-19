@@ -28,7 +28,7 @@ jobs:
 #    displayName: Activate bifrost
 
   - script: |
-      pip install .
+      pip install . --user
     displayName: 'Install bifrostlib'
     workingDirectory: lib/bifrostlib/
 
