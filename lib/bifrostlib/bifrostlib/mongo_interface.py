@@ -10,7 +10,10 @@ yaml.default_flow_style = False
 CONNECTION = None
 SPECIES_CONNECTION = None
 
+
 def close_connection():
+    global CONNECTION
+    global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
     if SPECIES_CONNECTION is not None:
@@ -18,7 +21,9 @@ def close_connection():
 
 atexit.register(close_connection)
 
+
 def get_connection():
+    global CONNECTION
     if CONNECTION is not None:
         return CONNECTION
     else:
@@ -31,6 +36,7 @@ def get_connection():
 
 
 def get_species_connection():
+    global SPECIES_CONNECTION
     if SPECIES_CONNECTION is not None:
         return SPECIES_CONNECTION
     else:
