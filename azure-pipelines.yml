@@ -28,8 +28,8 @@ jobs:
 #    displayName: Activate bifrost
 
   - script: |
-      pip install pytest
-      pip install pytest-cov
+      pip install pytest --user
+      pip install pytest-cov --user
       python -m pytest bifrostlib/tests
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
