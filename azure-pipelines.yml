@@ -21,10 +21,16 @@ jobs:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
 
-  - script: conda env create --file envs/bifrost_for_install.yaml
-    displayName: Create Anaconda environment
+#  - script: conda env create --file envs/bifrost_for_install.yaml
+#    displayName: Create Anaconda environment
 
-  - script: source activate bifrost
-    displayName: Activate bifrost
+#  - script: source activate bifrost
+#    displayName: Activate bifrost
 
-
+  - script: |
+      pip install pytest
+      pip install pytest-cov
+      python -m pytest bifrostlib/tests
+    # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+    displayName: 'Test with pytest'
+    workingDirectory: lib/bifrostlib/bifrostlib
