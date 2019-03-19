@@ -33,4 +33,4 @@ jobs:
       python -m pytest bifrostlib/tests
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
-    workingDirectory: lib/bifrostlib/bifrostlib
+    workingDirectory: lib/bifrostlib/
