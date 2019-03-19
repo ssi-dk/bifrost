@@ -6,6 +6,9 @@
 trigger:
 - master
 
+variables:
+  bifrost_db_key: "resources/keys.txt"
+
 jobs:
 
 - job: 'Test'
@@ -33,8 +36,13 @@ jobs:
     workingDirectory: lib/bifrostlib/
 
   - script: |
+      echo "mongodb://server.example.com:27017/serumqc_prod" > resources/keys.txt
+
+
+  - script: |
       pip install pytest mongomock --user
       pip install pytest-cov --user
+      pwd
       python -m pytest bifrostlib/tests
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
