@@ -78,7 +78,10 @@ def test_delete_sample():
     component_db = datahandling.save_component_to_db(component)
     s_c = {
         "sample": {"_id": sample_db["_id"]},
-        "component": {"_id": component_db["_id"]},
+        "component": {
+            "_id": component_db["_id"],
+            "name": component_db["name"]
+        },
         "results": {},
         "summary": {}
     }
