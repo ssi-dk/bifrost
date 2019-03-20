@@ -68,7 +68,7 @@ jobs:
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: 'cobertura' # Options: cobertura, jaCoCo
-      summaryFileLocation: $(System.DefaultWorkingDirectory)/lib/bifrostlib/**/coverage.xml
-      #reportDirectory: # Optional
+      summaryFileLocation: $(System.DefaultWorkingDirectory)/lib/bifrostlib/coverage.xml
+      reportDirectory: $(System.DefaultWorkingDirectory)/lib/bifrostlib/coverage.html
       #additionalCodeCoverageFiles: # Optional
       #failIfCoverageEmpty: false # Optional
