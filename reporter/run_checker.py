@@ -235,7 +235,8 @@ def update_run_report(run, n_intervals):
                 statusname = "status-1"
             elif qc_val == "N/A":
                 statusname = "status--2"
-            elif qc_val == "fail:core facility":
+            elif (qc_val == "fail:core facility" or
+                  qc_val == "fail:resequence"):
                 statusname = "status--1"
                 qc_val = "CF"
             elif qc_val == "pass:OK":
