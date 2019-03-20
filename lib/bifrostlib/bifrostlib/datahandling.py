@@ -17,10 +17,6 @@ yaml.default_flow_style = False
 yaml.register_class(ObjectId)
 
 
-def connect_or_initialize_and_connect(config):
-    mongo_interface.set_connection_key_location(config)
-
-
 def log(log_file, content):
     with open(log_file, "a+") as file_handle:
         file_handle.write(content)
