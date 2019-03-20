@@ -43,7 +43,7 @@ jobs:
       pip install pytest mongomock --user
       pip install pytest-cov --user
       pwd
-      python -m pytest bifrostlib/tests --doctest-modules --junitxml=junit/test-results.xml --cov=bifrostlib --cov-report=xml --cov-report=html
+      python -m pytest bifrostlib/tests --doctest-modules --junitxml=junit/test-results.xml --cov=bifrostlib --cov-report=xml --cov-report=html:cov_html
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
     workingDirectory: lib/bifrostlib/
@@ -69,6 +69,6 @@ jobs:
     inputs:
       codeCoverageTool: 'cobertura' # Options: cobertura, jaCoCo
       summaryFileLocation: $(System.DefaultWorkingDirectory)/lib/bifrostlib/coverage.xml
-      reportDirectory: $(System.DefaultWorkingDirectory)/lib/bifrostlib/coverage.html
+      reportDirectory: $(System.DefaultWorkingDirectory)/lib/bifrostlib/cov_html
       #additionalCodeCoverageFiles: # Optional
       #failIfCoverageEmpty: false # Optional
