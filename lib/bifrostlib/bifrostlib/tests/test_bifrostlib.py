@@ -45,7 +45,7 @@ def test_post_sample_component():
         "results": {},
         "summary": {}
     }
-    s_c_db = satahanding.save_sample_component_to_db(s_c)
+    s_c_db = datahandling.save_sample_component_to_db(s_c)
     s_c["_id"] = s_c_db["_id"]
     assert s_c == s_c_db
 
@@ -62,7 +62,7 @@ def test_load_last_sample_component():
         "results": {},
         "summary": {}
     }
-    s_c_db = satahanding.save_sample_component_to_db(s_c)
+    s_c_db = datahandling.save_sample_component_to_db(s_c)
 
     # Testing this.
     s_c_2 = datahandling.load_last_sample_component(sample_db["_id"],
@@ -82,7 +82,7 @@ def test_delete_sample():
         "results": {},
         "summary": {}
     }
-    s_c_db = satahanding.save_sample_component_to_db(s_c)
+    s_c_db = datahandling.save_sample_component_to_db(s_c)
 
     # Testing this
     deleted = datahandling.delete_sample(str(sample_db["_id"]))
