@@ -343,11 +343,14 @@ def update_rerun_form(run_name):
     if run_data is not None:
         components = list(
             map(lambda x: x["name"], run_data["components"]))
+        samples = run_data["samples"]
     else:
         components = []
+        samples = []
 
-    samples = import_data.get_sample_component_status(run_name)
-    samples_options = [{"value": s, "label": s} for s in samples.keys()]
+    samples_options = [
+        {"value": str(s["_id"]), "label": s["name"]}
+        for s in samples]
     components_options = [{"value": c, "label": c} for c in components]
 
     return html.Div([
