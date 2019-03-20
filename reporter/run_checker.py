@@ -224,9 +224,9 @@ def update_run_report(run, n_intervals):
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False
-            if ("ssi_expert_check" in stamps and
-                    "value" in stamps["ssi_expert_check"]):
-                qc_val = stamps["ssi_expert_check"]["value"]
+            if ("supplying_lab_check" in stamps and
+                    "value" in stamps["supplying_lab_check"]):
+                qc_val = stamps["supplying_lab_check"]["value"]
                 expert_check = True
 
             statusname = ""

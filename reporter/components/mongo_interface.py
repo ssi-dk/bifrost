@@ -504,7 +504,7 @@ def get_sample_QC_status(last_runs):
         db = connection.get_database()
         samples = [sample
                    for run in last_runs
-                for sample in run["samples"]]
+                   for sample in run["samples"]]
 
         samples_runs_qc = {}
         for sample in samples:
@@ -521,13 +521,15 @@ def get_sample_QC_status(last_runs):
                             qc_val = stamps.get(
                                 "ssi_stamper", {}).get("value", "CF(LF)")
                             expert_check = False
-                            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
-                                qc_val = stamps["ssi_expert_check"]["value"]
+                            if ("supplying_lab_check" in stamps and
+                                    "value" in stamps["supplying_lab_check"]):
+                                qc_val = stamps["supplying_lab_check"]["value"]
                                 expert_check = True
 
                             if qc_val == "fail:supplying lab":
                                 qc_val = "SL"
-                            elif qc_val == "fail:core facility":
+                            elif (qc_val == "fail:core facility" or
+                                  qc_val == "fail:resequence"):
                                 qc_val = "CF"
                             elif qc_val == "pass:OK":
                                 qc_val = "OK"

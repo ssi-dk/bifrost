@@ -206,13 +206,13 @@ def email_stamps(stamplist):
         run_names = [run["name"] for run in runs]
         old_status = "none"
         if "stamps" in sample:
-            if "ssi_expert_check" in sample["stamps"]:
-                old_status = sample["stamps"]["ssi_expert_check"]["value"]
+            if "supplying_lab_check" in sample["stamps"]:
+                old_status = sample["stamps"]["supplying_lab_check"]["value"]
             elif "ssi_stamper" in sample["stamps"]:
                 old_status = sample["stamps"]["ssi_stamper"]["value"]
         if "fail:resequence" in (old_status, new_status):
             sample_info.append((sample_name, old_status, new_status, run_names))
-    
+
     if len(sample_info) == 0:
         return
 
