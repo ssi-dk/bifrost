@@ -65,7 +65,7 @@ def test_load_last_sample_component():
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
     # Testing this.
-    s_c_2 = datahandling.load_last_sample_component(sample_db["_id"],
+    s_c_2 = datahandling.load_last_sample_component(str(sample_db["_id"]),
                                                     "assemblatron")
     assert s_c_2 == s_c_db
 
