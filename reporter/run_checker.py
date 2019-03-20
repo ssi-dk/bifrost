@@ -260,7 +260,8 @@ def update_run_report(run, n_intervals):
                     row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
         table = html.Table(rows, className="unset-width-table")
-        update_notice += " Req.: Requirements not met. Init.: initialised."
+        update_notice += (" Req.: requirements not met. Init.: initialised. "
+                          "*: user submitted")
 
         return [
             resequence_link,
@@ -319,7 +320,8 @@ def update_run_report(run, n_intervals):
                 rows.append(html.Tr(row))
         table = html.Table(rows, className="unset-width-table")
         update_notice += (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
-                          "Core Facility (Library Fail). -: No data.")
+                          "Core Facility (Library Fail). -: No data. "
+                          "*: user submitted")
         return [
             run_checker_link,
             html.P(update_notice),
