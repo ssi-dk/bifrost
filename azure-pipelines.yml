@@ -43,7 +43,7 @@ jobs:
       pip install pytest mongomock --user
       pip install pytest-cov --user
       pwd
-      python -m pytest bifrostlib/tests --doctest-modules --junitxml=junit/test-results.xml --cov=bifrostlib --cov-report=xml --cov-report=html:cov_html --self-contained-html
+      python -m pytest bifrostlib/tests --doctest-modules --junitxml=junit/test-results.xml --cov=bifrostlib --cov-report=xml --cov-report=html:cov_html
     # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html --self-contained-html
     displayName: 'Test with pytest'
     workingDirectory: lib/bifrostlib/
