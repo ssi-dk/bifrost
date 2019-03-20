@@ -54,7 +54,7 @@ jobs:
     inputs:
       testResultsFormat: 'JUnit' 
       # Options: JUnit, NUnit, VSTest, xUnit, cTest
-      testResultsFiles: '**/TEST-*.xml' 
+      testResultsFiles: '**/test-results.xml' 
       #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
       #mergeTestResults: false # Optional
       #failTaskOnFailedTests: false # Optional
