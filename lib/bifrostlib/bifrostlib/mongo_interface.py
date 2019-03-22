@@ -180,6 +180,7 @@ def query_ncbi_species(species_entry):
         print(traceback.format_exc())
         return None
 
+
 # Should be renamed to get_species
 def query_species(ncbi_species_name):
     try:
@@ -219,7 +220,7 @@ def get_runs(names=None, size=0):
         return None
 
 
-def get_samples(sample_ids=sample_ids, run_names=run_names):
+def get_samples(sample_ids=None, run_names=None):
     # Uses AND operand
 
     query = []
