@@ -235,13 +235,13 @@ def get_samples(sample_ids=None, run_names=None):
     try:
         connection = get_connection()
         db = connection.get_database()
-        return list(db.samples.find({"$AND": query}))
+        return list(db.samples.find({"$and": query}))
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
-def get_sample_components(sample_id=None,
+def get_sample_components(sample_ids=None,
                           component_names=None,
                           size=1):
     """Loads most recent sample component for a sample"""
