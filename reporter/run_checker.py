@@ -343,25 +343,18 @@ def update_rerun_form(run_name):
     if run_data is not None:
         components = list(
             map(lambda x: x["name"], run_data["components"]))
-        samples = run_data["samples"]
     else:
         components = []
-        samples = []
 
-    samples_options = [
-        {"value": str(s["_id"]), "label": s["name"]}
-        for s in samples]
     components_options = [{"value": c, "label": c} for c in components]
 
     return html.Div([
         html.H6("Rerun components"),
         html.Div([
             html.Div([
-                dcc.Dropdown(
+                dcc.Textarea(
                     id="rerun-samples",
-                    options=samples_options,
-                    placeholder="Samples",
-                    multi=True,
+                    placeholder="one sample per line",
                     value=""
                 )
             ], className="four columns"),
@@ -399,13 +392,10 @@ def rerun_form_button(button, samples, components, run_name):
     run_name = run_name.split("/")[0]
     # ends in /bifrost
     run_path_bifrost = import_data.get_run(run_name).get("path", "")
-    sample_data = import_data.get_samples(samples)
-    samples_by_id = {str(s["_id"]) : s for s in sample_data}
+    samples = samples.split("\n")
     # removes /bifrost
     run_path = os.path.dirname(run_path_bifrost)
-    for sample in samples:
-        sample_db = samples_by_id[sample]
-        sample_name = sample_db["name"]
+    for sample_name in samples:
         # Check sample priority here
         for component in components:
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
@@ -442,7 +432,7 @@ def rerun_form_button(button, samples, components, run_name):
                 else:
                     advres = ''
                 torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
-                script_path = os.path.join(run_path, sample, "manual_rerun.sh")
+                script_path = os.path.join(run_path, sample_name, "manual_rerun.sh")
                 with open(script_path, "w") as script:
                     command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
                                 "ppn={threads},walltime={walltime}{advres} -N "
