@@ -1,5 +1,6 @@
 import mongomock
 from bifrostlib import datahandling
+import datetime
 
 
 def test_bifrostlib():
@@ -63,7 +64,8 @@ def test_get_sample_components():
             "name": component_db["name"]
         },
         "results": {},
-        "summary": {}
+        "summary": {},
+        "setup_date": current_time = datetime.datetime.now()
     }
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
@@ -87,7 +89,8 @@ def test_delete_sample():
             "name": component_db["name"]
         },
         "results": {},
-        "summary": {}
+        "summary": {},
+        "setup_date": current_time = datetime.datetime.now()
     }
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
