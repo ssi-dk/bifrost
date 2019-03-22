@@ -248,15 +248,15 @@ def get_sample_components(sample_ids=None,
     size = min(1000, size)
     size = max(-1000, size)
 
-    query = {}
+    query = []
     if sample_ids is not None:
-        query["sample._id"] = {"$in": sample_ids}
+        query.append({"sample._id": {"$in": sample_ids}})
     if component_names is not None:
-        query["component.name"] = {"$in": component_names}
+        query.append({"component.name": {"$in": component_names}})
     try:
         connection = get_connection()
         db = connection.get_database()
-        result = list(db.sample_components.find(query)
+        result = list(db.sample_components.find({"$and": query})
                                           .sort([("setup_date", -1)])
                                           .limit(size))
 
