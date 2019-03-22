@@ -455,7 +455,8 @@ def rerun_form_button(button, samples, components, run_name):
                 out.append((sample, component, process_out, process_err))
 
     message = "Jobs sent to the server:\n"
-    + "\n".join(["{}, {}: out: {} | err: {}".format(*el) for el in out])
+    message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
+                         for el in out])
     message += "\nClick OK or Cancel to close this notice."
     return message
 
