@@ -226,7 +226,7 @@ def get_samples(sample_ids=None, run_names=None):
     query = []
     if sample_ids is not None:
         query.append({"_id": {"$in": sample_ids}})
-    if run_name is not None:
+    if run_names is not None:
         run = db.runs.find_one({"name": {"$in": run_names}}, {"samples._id": 1})
         if run is not None:
             run_sample_ids = [s["_id"] for s in run["samples"]]
