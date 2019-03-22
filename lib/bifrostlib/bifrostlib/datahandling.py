@@ -203,7 +203,7 @@ def save_component_to_db(component):
 
 
 # Should be smarter
-def get_sample_components(sample_id=None, component_names=None):
+def get_sample_components(sample_ids=None, component_names=None):
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
     return mongo_interface.get_sample_components(sample_ids,
