@@ -587,3 +587,9 @@ def get_sample(sample_id):
     with get_connection() as connection:
         db = connection.get_database()
         return db.samples.find_one({"_id": sample_id})
+
+
+def get_samples(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_database()
+        return list(db.samples.find({"_id": {"$in": sample_ids}}))

@@ -238,3 +238,8 @@ def email_stamps(stamplist):
     msg.attach(MIMEText(email_html, 'html'))
     s = smtplib.SMTP('localhost')
     s.sendmail(msg["From"], msg["To"], msg.as_string())
+
+
+def get_samples(sample_ids):
+    sample_ids = [ObjectId(id) for id in sample_ids]
+    return mongo_interface.get_samples(sample_ids)
