@@ -399,7 +399,7 @@ def rerun_form_button(button, samples, components, run_name):
     run_name = run_name.split("/")[0]
     # ends in /bifrost
     run_path_bifrost = import_data.get_run(run_name).get("path", "")
-    sample_data = import_data.load_samples_from_db(samples)
+    sample_data = import_data.get_samples(samples)
     samples_by_id = {str(s["_id"]) : s for s in sample_data}
     # removes /bifrost
     run_path = os.path.dirname(run_path_bifrost)
