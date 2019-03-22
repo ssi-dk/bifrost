@@ -254,6 +254,7 @@ def get_sample_components(sample_ids=None,
     if component_names is not None:
         query.append({"component.name": {"$in": component_names}})
     try:
+        print(query)
         connection = get_connection()
         db = connection.get_database()
         result = list(db.sample_components.find({"$and": query})
