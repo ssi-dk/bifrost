@@ -12,8 +12,9 @@ def run_test(sample_dict, stamp):
         component_names = ["whats_my_species", "qcquickie", "assemblatron"]
         comps = {}
         for component in component_names:
-            comps[component] = datahandling.load_last_sample_component(
-                str(sample_dict["_id"]), component)
+            comps[component] = datahandling.get_sample_component(
+                sample_ids=[str(sample_dict["_id"])],
+                component_names=[component])[0]
         species = datahandling.load_species(sample_dict["properties"].get("species", None))
         return ssi_stamp.test(comps["whats_my_species"], comps["qcquickie"], comps["assemblatron"],
                             species, sample_dict)

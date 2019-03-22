@@ -200,7 +200,7 @@ def load_run(**kwargs):
     get_runs(**kwargs)
 
 
-def get_runs(name=None, size=0):
+def get_runs(names=None, size=0):
 
     size = min(1000, size)
     size = max(-1000, size)
@@ -212,8 +212,8 @@ def get_runs(name=None, size=0):
         db = connection.get_database()
         if name is not None:
             query["name"] = name
-        return db.runs.find_one(
-            {"$query": query, "$orderby": {"_id": -1}}).limit(size)
+        return list(db.runs.find(
+            {"$query": query, "$orderby": {"_id": -1}}).limit(size))
     except Exception as e:
         print(traceback.format_exc())
         return None
@@ -240,17 +240,24 @@ def get_samples(sample_ids=sample_ids, run_names=run_names):
         return None
 
 
-# Should call get_sample_components
-def load_last_sample_component(sample_id, component_name):
+def get_sample_components(sample_id=None,
+                          component_names=None
+                          size=1):
     """Loads most recent sample component for a sample"""
+    size = min(1000, size)
+    size = max(-1000, size)
+
+    query = {}
+    if sample_ids is not None:
+        query["sample._id"] = {"$in": sample_ids}
+    if component_names is not None:
+        query["component.name"] = {"$in": component_names}
     try:
         connection = get_connection()
         db = connection.get_database()
-        result = list(db.sample_components.find({"sample._id": sample_id, "component.name": component_name}).sort([("setup_date", -1)]).limit(1))
-        if len(result) > 0:
-            return result[0]
-        else:
-            return None
+        result = list(db.sample_components.find(query)
+                                          .sort([("setup_date", -1)])
+                                          .limit(size))
 
     except Exception as e:
         print(traceback.format_exc())

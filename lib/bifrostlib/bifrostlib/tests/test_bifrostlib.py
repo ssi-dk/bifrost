@@ -51,7 +51,7 @@ def test_post_sample_component():
 
 
 @mongomock.patch(('mongodb://server.example.com:27017'))
-def test_load_last_sample_component():
+def test_get_sample_components():
     sample = {"name": "test_sample"}
     sample_db = datahandling.save_sample_to_db(sample)
     component = {"name": "assemblatron"}
@@ -68,8 +68,9 @@ def test_load_last_sample_component():
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
     # Testing this.
-    s_c_2 = datahandling.load_last_sample_component(str(sample_db["_id"]),
-                                                    "assemblatron")
+    s_c_2 = datahandling.get_sample_components(
+        sample_ids=[str(sample_db["_id"])],
+        component_names=["assemblatron"])[0]
     assert s_c_2 == s_c_db
 
 

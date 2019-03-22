@@ -174,15 +174,20 @@ def datadump_template(data_dict, component_folder,
         return data_dict
 
 
+# DEPRECATED use get_runs
 def load_run_from_db(name=None):
     return mongo_interface.load_run(name)
 
 
-def get_samples(sample_ids=sample_ids, run_name=run_name):
+def get_runs(names=None):
+    return mongo_interface.get_runs(names=names)
+
+
+def get_samples(sample_ids=None, run_names=None):
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
     return mongo_interface.get_samples(sample_ids=sample_ids,
-                                        run_name=run_name)
+                                       run_names=run_names)
 
 
 def save_sample_to_db(sample):
@@ -197,9 +202,12 @@ def save_component_to_db(component):
     return mongo_interface.dump_component_info(component)
 
 
-def load_last_sample_component(sample_id, component_name):
-    return mongo_interface.load_last_sample_component(ObjectId(sample_id),
-                                                      component_name)
+# Should be smarter
+def get_sample_components(sample_id=None, component_names=None):
+    if sample_ids is not None:
+        sample_ids = [ObjectId(id) for id in sample_ids]
+    return mongo_interface.get_sample_components(sample_ids,
+                                                 component_names)
 
 
 def load_samples_from_runs(run_ids=None, names=None):
