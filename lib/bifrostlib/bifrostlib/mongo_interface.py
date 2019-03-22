@@ -241,7 +241,7 @@ def get_samples(sample_ids=sample_ids, run_names=run_names):
 
 
 def get_sample_components(sample_id=None,
-                          component_names=None
+                          component_names=None,
                           size=1):
     """Loads most recent sample component for a sample"""
     size = min(1000, size)
