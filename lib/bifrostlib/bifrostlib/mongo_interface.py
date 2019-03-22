@@ -258,8 +258,8 @@ def get_sample_components(sample_ids=None,
         connection = get_connection()
         db = connection.get_database()
         result = list(db.sample_components.find({"$and": query})
-                                          .sort([("setup_date", -1)])
-                                          .limit(size))
+                                          .sort([("setup_date", -1)]))
+                                          #.limit(size))
 
     except Exception as e:
         print(traceback.format_exc())

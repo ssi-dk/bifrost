@@ -1,0 +1,1 @@
+mongodb://server.example.com:27017/serumqc_prod
