@@ -396,6 +396,7 @@ def rerun_form_button(button, samples, components, run_name):
     # removes /bifrost
     run_path = os.path.dirname(run_path_bifrost)
     for sample_name in samples:
+        sample_name = sample_name.strip()
         # Check sample priority here
         for component in components:
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
