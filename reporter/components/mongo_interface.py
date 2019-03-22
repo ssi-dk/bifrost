@@ -91,6 +91,8 @@ def get_species_plot_data(species_list, id_list, component="assemblatron"):
         ]))
     return res
 
+
+#  Should call get runs
 def check_run_name(name):
     with get_connection() as connection:
         db = connection.get_database()
@@ -98,15 +100,18 @@ def check_run_name(name):
         run = db.runs.find({"name": name}).limit(1).count(True)
     return run is not 0
 
+
+# Should call get runs
 def get_run_list():
     with get_connection() as connection:
         db = connection.get_database()
         # Fastest.
-        runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+        runs = list(db.runs.find({"type": "routine"},  # Leave in routine
                                  {"name": 1,
                                   "_id": 0,
                                   "samples": 1}).sort([['name', pymongo.DESCENDING]]))
     return runs
+
 
 def get_group_list(run_name=None):
     with get_connection() as connection:

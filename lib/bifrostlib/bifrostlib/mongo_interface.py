@@ -140,6 +140,7 @@ def dump_sample_component_info(data_dict):
     return data_dict
 
 
+# Should call get_species
 def query_mlst_species(ncbi_species_name):
     if ncbi_species_name is None:
         return None
@@ -158,6 +159,7 @@ def query_mlst_species(ncbi_species_name):
         return None
 
 
+# Should call get_species
 def query_ncbi_species(species_entry):
     if species_entry is None:
         return None
@@ -178,7 +180,7 @@ def query_ncbi_species(species_entry):
         print(traceback.format_exc())
         return None
 
-
+# Should be renamed to get_species
 def query_species(ncbi_species_name):
     try:
         connection = get_species_connection()
@@ -193,40 +195,52 @@ def query_species(ncbi_species_name):
         return None
 
 
-def load_run(name=None):
+# DEPRECATED
+def load_run(**kwargs):
+    get_runs(**kwargs)
+
+
+def get_runs(name=None, size=0):
+
+    size = min(1000, size)
+    size = max(-1000, size)
+
+    query = {"type": "routine"}
+
     try:
         connection = get_connection()
         db = connection.get_database()
         if name is not None:
-            return db.runs.find_one({"name": name, "type": "routine"})
-        else:
-            return db.runs.find_one(
-                {"$query": {"type": "routine"}, "$orderby": {"_id": -1}})
+            query["name"] = name
+        return db.runs.find_one(
+            {"$query": query, "$orderby": {"_id": -1}}).limit(size)
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
-def load_sample(sample_id):
+def get_samples(sample_ids=sample_ids, run_names=run_names):
+    # Uses AND operand
+
+    query = []
+    if sample_ids is not None:
+        query.append({"_id": {"$in": sample_ids}})
+    if run_name is not None:
+        run = db.runs.find_one("name": {"$in": run_names}, {"samples._id"})
+        if run is not None:
+            run_sample_ids = [s["_id"] for s in run["samples"]]
+        query.append({"_id": {"$in": run_sample_ids}})
+
     try:
         connection = get_connection()
         db = connection.get_database()
-        return db.samples.find_one({"_id": sample_id})
+        return list(db.samples.find({"$AND": query}))
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
-def load_samples(sample_ids):
-    try:
-        connection = get_connection()
-        db = connection.get_database()
-        return list(db.samples.find({"_id": {"$in": sample_ids}}))
-    except Exception as e:
-        print(traceback.format_exc())
-        return None
-
-
+# Should call get_sample_components
 def load_last_sample_component(sample_id, component_name):
     """Loads most recent sample component for a sample"""
     try:
@@ -243,6 +257,7 @@ def load_last_sample_component(sample_id, component_name):
         return None
 
 
+# Should call get_runs
 def load_samples_from_runs(run_ids=None, names=None):
     try:
         connection = get_connection()
@@ -258,6 +273,7 @@ def load_samples_from_runs(run_ids=None, names=None):
         return None
 
 
+# Should call get_samples
 def load_all_samples():
     try:
         connection = get_connection()

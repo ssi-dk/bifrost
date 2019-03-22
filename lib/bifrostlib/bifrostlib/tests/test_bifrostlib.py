@@ -19,7 +19,7 @@ def test_get_sample():
     sample = {"name": "test_sample"}
     sample_db = datahandling.save_sample_to_db(sample)
     sample["_id"] = sample_db["_id"]
-    sample_received = datahandling.load_sample_from_db(str(sample["_id"]))
+    sample_received = datahandling.get_samples([str(sample["_id"])])
     assert sample_received == sample
 
 

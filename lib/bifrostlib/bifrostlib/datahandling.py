@@ -178,13 +178,11 @@ def load_run_from_db(name=None):
     return mongo_interface.load_run(name)
 
 
-def load_sample_from_db(sample_id):
-    return mongo_interface.load_sample(ObjectId(sample_id))
-
-
-def load_samples_from_db(sample_ids):
-    sample_ids = [ObjectId(id) for id in sample_ids]
-    return mongo_interface.load_samples(sample_ids)
+def get_samples(sample_ids=sample_ids, run_name=run_name):
+    if sample_ids is not None:
+        sample_ids = [ObjectId(id) for id in sample_ids]
+    return mongo_interface.get_samples(sample_ids=sample_ids,
+                                        run_name=run_name)
 
 
 def save_sample_to_db(sample):
