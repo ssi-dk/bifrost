@@ -399,9 +399,14 @@ def rerun_form_button(button, samples, components, run_name):
     run_name = run_name.split("/")[0]
     # ends in /bifrost
     run_path_bifrost = import_data.get_run(run_name).get("path", "")
+    sample_data = import_data.load_samples_from_db(samples)
+    samples_by_id = {str(s["_id"]) : s for s in sample_data}
     # removes /bifrost
     run_path = os.path.dirname(run_path_bifrost)
     for sample in samples:
+        sample_db = samples_by_id[sample]
+        sample_name = sample_db["name"]
+        # Check sample priority here
         for component in components:
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
@@ -420,15 +425,15 @@ def rerun_form_button(button, samples, components, run_name):
                      '-t {walltime} -J "bifrost_{sample_name}" --wrap'
                      ' "{command}"').format(
                                             **keys.rerun,
-                                            sample_name=sample,
+                        sample_name=sample_name,
                                             command=command),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     shell=True,
                     env=os.environ,
-                    cwd=run_path + "/" + sample)
+                    cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
             elif keys.rerun["grid"] == "torque":
 
                 if "advres" in keys.rerun:
@@ -443,16 +448,16 @@ def rerun_form_button(button, samples, components, run_name):
                                 "ppn={threads},walltime={walltime}{advres} -N "
                                 "'bifrost_{sample_name}' -W group_list={group}"
                                 " -A {group} \n").format(**keys.rerun,
-                                                         sample_name=sample)
+                                                         sample_name=sample_name)
                     script.write(command)
                 process = subprocess.Popen('qsub {}'.format(script_path),
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.STDOUT,
                                            shell=True,
                                            env=os.environ,
-                                           cwd=run_path + "/" + sample)
+                                           cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
 
     message = "Jobs sent to the server:\n"
     message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
