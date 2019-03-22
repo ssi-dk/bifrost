@@ -65,7 +65,7 @@ def test_get_sample_components():
         },
         "results": {},
         "summary": {},
-        "setup_date": current_time = datetime.datetime.now()
+        "setup_date": datetime.datetime.now()
     }
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
@@ -90,7 +90,7 @@ def test_delete_sample():
         },
         "results": {},
         "summary": {},
-        "setup_date": current_time = datetime.datetime.now()
+        "setup_date": datetime.datetime.now()
     }
     s_c_db = datahandling.save_sample_component_to_db(s_c)
 
