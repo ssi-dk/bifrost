@@ -68,12 +68,12 @@ def test_get_sample_components():
         "setup_date": datetime.datetime.now()
     }
     s_c_db = datahandling.save_sample_component_to_db(s_c)
-
+    print(s_c_db)
     # Testing this.
     s_c_2 = datahandling.get_sample_components(
         sample_ids=[str(sample_db["_id"])],
-        component_names=["assemblatron"])[0]
-    assert s_c_2 == s_c_db
+        component_names=["assemblatron"])
+    assert s_c_2[0] == s_c_db
 
 
 @mongomock.patch(('mongodb://server.example.com:27017'))
