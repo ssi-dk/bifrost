@@ -235,7 +235,10 @@ def get_samples(sample_ids=None, run_names=None):
     try:
         connection = get_connection()
         db = connection.get_database()
-        return list(db.samples.find({"$and": query}))
+        if len(query) == 0:
+            return list(db.samples.find({}))
+        else:
+            return list(db.samples.find({"$and": query}))
     except Exception as e:
         print(traceback.format_exc())
         return None
@@ -276,24 +279,6 @@ def load_samples_from_runs(run_ids=None, names=None):
             return list(db.runs.find({"name": {"$in": names}}, {"samples": 1}))
         else:
             return [db.runs.find_one({"$query": {"type": "routine"}, "$orderby": {"_id": -1}})]
-    except Exception as e:
-        print(traceback.format_exc())
-        return None
-
-
-# Should call get_samples
-def load_all_samples():
-    try:
-        connection = get_connection()
-        db = connection.get_database()
-        runs = list(db.runs.find({}, {"samples": 1}))
-        sample_ids = set()
-        for run in runs:
-            sample_ids.update(list(map(lambda x: x["_id"],
-                                        run["samples"])))
-
-        return list(sample_ids)
-
     except Exception as e:
         print(traceback.format_exc())
         return None

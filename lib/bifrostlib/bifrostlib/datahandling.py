@@ -144,21 +144,6 @@ def read_buffer(file_path):
     return buffer
 
 
-def get_mlst_species_DB(file_yaml):
-    with open(file_yaml, "r") as file_handle:
-        sample = yaml.load(file_handle)
-        species = sample["properties"].get("species", None)
-        return mongo_interface.query_mlst_species(species)
-
-
-def load_species(ncbi_species):
-    return mongo_interface.query_species(ncbi_species)
-
-
-def get_ncbi_species(species_entry):
-    return mongo_interface.query_ncbi_species(species_entry)
-
-
 def datadump_template(data_dict, component_folder,
                       file_path, extraction_callback):
     file_path_key = file_path.replace(".", "_")
@@ -174,13 +159,12 @@ def datadump_template(data_dict, component_folder,
         return data_dict
 
 
-# DEPRECATED use get_runs
-def load_run_from_db(name=None):
-    return mongo_interface.load_run(name)
-
+# /runs
 
 def get_runs(names=None):
     return mongo_interface.get_runs(names=names)
+
+# /samples
 
 
 def get_samples(sample_ids=None, run_names=None):
@@ -190,40 +174,8 @@ def get_samples(sample_ids=None, run_names=None):
                                        run_names=run_names)
 
 
-def save_sample_to_db(sample):
+def post_sample(sample):
     return mongo_interface.dump_sample_info(sample)
-
-
-def save_sample_component_to_db(sample_component):
-    return mongo_interface.dump_sample_component_info(sample_component)
-
-
-def save_component_to_db(component):
-    return mongo_interface.dump_component_info(component)
-
-
-# Should be smarter
-def get_sample_components(sample_ids=None, component_names=None):
-    if sample_ids is not None:
-        sample_ids = [ObjectId(id) for id in sample_ids]
-    return mongo_interface.get_sample_components(sample_ids,
-                                                 component_names)
-
-
-def load_samples_from_runs(run_ids=None, names=None):
-    if run_ids is not None:
-        if type(run_ids) == str:
-            run_ids = [run_ids]
-        run_ids = [ObjectId(id) for id in run_ids]
-    res = mongo_interface.load_samples_from_runs(run_ids, names)
-    sample_ids = set()  # avoid dupes
-    for run in res:
-        sample_ids.update(list(map(lambda x: x["_id"], run["samples"])))
-    return list(sample_ids)
-
-
-def load_all_samples():
-    return mongo_interface.load_all_samples()
 
 
 def delete_sample(sample_id):
@@ -237,12 +189,64 @@ def delete_sample(sample_id):
     return deleted
 
 
+#  /sample/{id}/sample_components
+
+
+def get_sample_components(sample_ids=None, component_names=None):
+    # Should be smarter
+    if sample_ids is not None:
+        sample_ids = [ObjectId(id) for id in sample_ids]
+    return mongo_interface.get_sample_components(sample_ids,
+                                                 component_names)
+
+
+def save_sample_component_to_db(sample_component):
+    return mongo_interface.dump_sample_component_info(sample_component)
+
+
 def delete_sample_component(s_c_id=None, sample_id=None):
     if s_c_id is not None:
         s_c_id = ObjectId(s_c_id)
     if sample_id is not None:
         sample_id = ObjectId(sample_id)
     return mongo_interface.delete_sample_component(s_c_id, sample_id)
+
+
+# /component
+
+
+def save_component_to_db(component):
+    return mongo_interface.dump_component_info(component)
+
+
+# /species
+def get_mlst_species_DB(file_yaml):
+    with open(file_yaml, "r") as file_handle:
+        sample = yaml.load(file_handle)
+        species = sample["properties"].get("species", None)
+        return mongo_interface.query_mlst_species(species)
+
+
+def load_species(ncbi_species):
+    return mongo_interface.query_species(ncbi_species)
+
+
+def get_ncbi_species(species_entry):
+    return mongo_interface.query_ncbi_species(species_entry)
+
+# Refactor this
+
+
+def load_samples_from_runs(run_ids=None, names=None):
+    if run_ids is not None:
+        if type(run_ids) == str:
+            run_ids = [run_ids]
+        run_ids = [ObjectId(id) for id in run_ids]
+    res = mongo_interface.load_samples_from_runs(run_ids, names)
+    sample_ids = set()  # avoid dupes
+    for run in res:
+        sample_ids.update(list(map(lambda x: x["_id"], run["samples"])))
+    return list(sample_ids)
 
 
 def delete_sample_from_runs(sample_id=None):
