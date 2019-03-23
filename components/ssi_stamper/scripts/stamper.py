@@ -67,7 +67,7 @@ def main(argv):
         more_than_one_arg += 1
         print("This will apply the stamp on all the samples.")
         if input("Are you sure? ") == "y":
-            sample_ids = list(map(str, datahandling.load_all_samples()))
+            sample_ids = list(map(str, datahandling.get_samples()))
         else:
             exit()
     if args.samples:
@@ -114,7 +114,7 @@ def main(argv):
         stamp_dict[stamp["name"]] = stamp
         sample_db["stamps"] = stamp_dict
 
-        datahandling.save_sample_to_db(sample_db)
+        datahandling.post_sample(sample_db)
 
 if __name__ == "__main__":
     main(sys.argv)
