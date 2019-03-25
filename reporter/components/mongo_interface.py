@@ -23,7 +23,7 @@ def get_connection():
     "Return mongodb connection"
     return pymongo.MongoClient(keys.mongodb_url)
 
-def get_species_colors(): 
+def get_species_colors():
     """Get a dict with ncbi species name and color"""
     with get_connection() as connection:
         db = connection.get_database()

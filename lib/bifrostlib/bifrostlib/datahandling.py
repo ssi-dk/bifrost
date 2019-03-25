@@ -161,17 +161,38 @@ def datadump_template(data_dict, component_folder,
 
 # /runs
 
-def get_runs(names=None):
-    return mongo_interface.get_runs(names=names)
+def get_runs(names=None,sample_id=None):
+    return mongo_interface.get_runs(names=names,
+                                    sample_id=ObjectId(sample_id))
+
+def delete_run(name=None):
+    run_db = get_runs(names=[name])[0]
+
+    single_parent_samples = []
+
+    for sample in run_db["samples"]:
+        sample_runs = get_runs(sample_id=sample["_id"])
+        if len(sample_runs) == 1:
+            delete_sample(sample["_id"])
+    
+    for component in run_db["components"]:
+        samples_with_components = get_samples(
+            component_ids=[component["_id"]])
+
+
 
 # /samples
 
 
-def get_samples(sample_ids=None, run_names=None):
+def get_samples(sample_ids=None, run_names=None,
+                component_ids=None):
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
+    if component_ids is not None:
+        component_ids = [ObjectId(id) for id in component_ids]
     return mongo_interface.get_samples(sample_ids=sample_ids,
-                                       run_names=run_names)
+                                       run_names=run_names,
+                                       component_ids=component_ids)
 
 
 def post_sample(sample):

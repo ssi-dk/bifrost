@@ -220,21 +220,26 @@ def get_runs(names=None, size=0):
         return None
 
 
-def get_samples(sample_ids=None, run_names=None):
+def get_samples(sample_ids=None, run_names=None, component_ids=None):
     # Uses AND operand
 
     query = []
-    if sample_ids is not None:
-        query.append({"_id": {"$in": sample_ids}})
-    if run_names is not None:
-        run = db.runs.find_one({"name": {"$in": run_names}}, {"samples._id": 1})
-        if run is not None:
-            run_sample_ids = [s["_id"] for s in run["samples"]]
-        query.append({"_id": {"$in": run_sample_ids}})
 
     try:
         connection = get_connection()
         db = connection.get_database()
+
+        if sample_ids is not None:
+            query.append({"_id": {"$in": sample_ids}})
+        if run_names is not None:
+            run = db.runs.find_one({"name": {"$in": run_names}}, {"samples._id": 1})
+            if run is not None:
+                run_sample_ids = [s["_id"] for s in run["samples"]]
+            query.append({"_id": {"$in": run_sample_ids}})
+        
+        if component_ids is not None:
+            query.append({"components._id": {"$in": component_ids}})
+
         if len(query) == 0:
             return list(db.samples.find({}))
         else:
