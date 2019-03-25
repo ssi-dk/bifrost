@@ -125,7 +125,7 @@ def dump_component_info(data_dict):
 def delete_component(component_id):
     connection = get_connection()
     db = connection.get_database()
-    deleted = db.components.delete_one({"_id": component_id)})
+    deleted = db.components.delete_one({"_id": component_id})
     return deleted.deleted_count
 
 
