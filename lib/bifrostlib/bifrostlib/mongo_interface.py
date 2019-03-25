@@ -73,7 +73,7 @@ def dump_run_info(data_dict):
 def delete_run(run_id):
     connection = get_connection()
     db = connection.get_database()
-    deleted = db.runs.delete_one({"_id": run_id)})
+    deleted = db.runs.delete_one({"_id": run_id})
     return deleted.deleted_count
 
 
