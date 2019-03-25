@@ -70,6 +70,12 @@ def dump_run_info(data_dict):
         )
     return data_dict
 
+def delete_run(run_id):
+    connection = get_connection()
+    db = connection.get_database()
+    deleted = db.runs.delete_one({"_id": run_id)})
+    return deleted.deleted_count
+
 
 def dump_sample_info(data_dict):
     """Insert sample dict into mongodb.
@@ -115,6 +121,12 @@ def dump_component_info(data_dict):
             upsert=True  # insert the document if it does not exist
         )
     return data_dict
+
+def delete_component(component_id):
+    connection = get_connection()
+    db = connection.get_database()
+    deleted = db.components.delete_one({"_id": component_id)})
+    return deleted.deleted_count
 
 
 def dump_sample_component_info(data_dict):
@@ -236,7 +248,7 @@ def get_samples(sample_ids=None, run_names=None, component_ids=None):
             if run is not None:
                 run_sample_ids = [s["_id"] for s in run["samples"]]
             query.append({"_id": {"$in": run_sample_ids}})
-        
+
         if component_ids is not None:
             query.append({"components._id": {"$in": component_ids}})
 
