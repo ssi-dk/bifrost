@@ -146,10 +146,10 @@ def test_post_run():
     run = {
         "name": "test_run",
         "samples": [
-            "_id": sample_db["_id"]
-        ]
+            {"_id": sample_db["_id"]}
+        ],
         "components": [
-            "_id": component_db["_id"]
+            {"_id": component_db["_id"]}
             # Missing name
         ]
     }
@@ -181,10 +181,10 @@ def test_get_run():
     run = {
         "name": "test_run",
         "samples": [
-            "_id": sample_db["_id"]
+            {"_id": sample_db["_id"]}
         ]
         "components": [
-            "_id": component_db["_id"]
+            {"_id": component_db["_id"]}
             # Missing name
         ]
     }
@@ -216,10 +216,10 @@ def test_delete_run():
     run = {
         "name": "test_run",
         "samples": [
-            "_id": sample_db["_id"]
+            {"_id": sample_db["_id"]}
         ]
         "components": [
-            "_id": component_db["_id"]
+            {"_id": component_db["_id"]}
             # Missing name
         ]
     }
