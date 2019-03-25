@@ -10,7 +10,7 @@ def test_bifrostlib():
 @mongomock.patch(('mongodb://server.example.com:27017'))
 def test_post_sample():
     sample = {"name": "test_sample"}
-    sample_db = datahandling.save_sample_to_db(sample)
+    sample_db = datahandling.post_sample(sample)
     sample["_id"] = sample_db["_id"]
     assert sample == sample_db
 
@@ -18,7 +18,7 @@ def test_post_sample():
 @mongomock.patch(('mongodb://server.example.com:27017'))
 def test_get_sample():
     sample = {"name": "test_sample"}
-    sample_db = datahandling.save_sample_to_db(sample)
+    sample_db = datahandling.post_sample(sample)
     sample["_id"] = sample_db["_id"]
     sample_received = datahandling.get_samples([str(sample["_id"])])[0]
     assert sample_received == sample
@@ -37,7 +37,7 @@ def test_post_component():
 @mongomock.patch(('mongodb://server.example.com:27017'))
 def test_post_sample_component():
     sample = {"name": "test_sample"}
-    sample_db = datahandling.save_sample_to_db(sample)
+    sample_db = datahandling.post_sample(sample)
     component = {"name": "assemblatron"}
     component_db = datahandling.save_component_to_db(component)
     s_c = {
@@ -54,7 +54,7 @@ def test_post_sample_component():
 @mongomock.patch(('mongodb://server.example.com:27017'))
 def test_get_sample_components():
     sample = {"name": "test_sample"}
-    sample_db = datahandling.save_sample_to_db(sample)
+    sample_db = datahandling.post_sample(sample)
     component = {"name": "assemblatron"}
     component_db = datahandling.save_component_to_db(component)
     s_c = {
@@ -78,7 +78,7 @@ def test_get_sample_components():
 @mongomock.patch(('mongodb://server.example.com:27017'))
 def test_delete_sample():
     sample = {"name": "test_sample"}
-    sample_db = datahandling.save_sample_to_db(sample)
+    sample_db = datahandling.post_sample(sample)
     component = {"name": "assemblatron"}
     component_db = datahandling.save_component_to_db(component)
     s_c = {
