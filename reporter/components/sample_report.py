@@ -1,7 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table as dt
-from components.images import list_of_images, get_species_color
+from components.images import list_of_images
 from components.table import html_table, html_td_percentage
 from components.import_data import get_read_paths, get_assemblies_paths
 import components.global_vars as global_vars

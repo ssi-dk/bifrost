@@ -28,7 +28,7 @@ import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
-from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
+from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
 
