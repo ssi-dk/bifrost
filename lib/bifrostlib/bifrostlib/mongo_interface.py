@@ -213,20 +213,31 @@ def load_run(**kwargs):
     get_runs(**kwargs)
 
 
-def get_runs(names=None, size=0):
+def get_runs(run_id=None,
+             sample_id=None,
+             names=None,
+             size=0):
 
     size = min(1000, size)
     size = max(-1000, size)
 
-    query = {"type": "routine"}
+    query = []
 
     try:
         connection = get_connection()
         db = connection.get_database()
-        if name is not None:
-            query["name"] = name
+        if names is not None:
+            query.append({"name": {"$in": names}})
+        if run_id is not None:
+            query.append({"_id": run_id})
+        if sample_id is not None:
+            query.append({"sample._id": sample_id})
+        if len(query) == 0:
+            query = {}
+        else:
+            query = {"$and": query}
         return list(db.runs.find(
-            {"$query": query, "$orderby": {"_id": -1}}).limit(size))
+            query).sort([("_id", pymongo.DESCENDING)]).limit(size))
     except Exception as e:
         print(traceback.format_exc())
         return None

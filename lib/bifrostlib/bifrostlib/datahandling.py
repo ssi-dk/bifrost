@@ -161,12 +161,26 @@ def datadump_template(data_dict, component_folder,
 
 # /runs
 
-def get_runs(names=None,sample_id=None):
-    return mongo_interface.get_runs(names=names,
-                                    sample_id=ObjectId(sample_id))
+def post_run(run):
+    # Used only by test suite for now. 
+    # NOTE: dump_run_info acts like a PUT
+    return mongo_interface.dump_run_info(run)
 
-def delete_run(name=None):
-    run_db = get_runs(names=[name])[0]
+def get_runs(run_id=None,
+             names=None, sample_id=None):
+    if run_id is not None:
+        run_id = ObjectId(run_id)
+    if sample_id is not None:
+        sample_id = ObjectId(sample_id)
+    return mongo_interface.get_runs(names=names,
+                                    sample_id=sample_id,
+                                    run_id=run_id)
+
+def delete_run(name=None, run_id=None):
+    if run_id is not None:
+        run_db = get_runs(run_id=run_id)[0]
+    elif name is not None:
+        run_db = get_runs(names=[name])[0]
 
     for sample in run_db["samples"]:
         sample_runs = get_runs(sample_id=str(sample["_id"]))

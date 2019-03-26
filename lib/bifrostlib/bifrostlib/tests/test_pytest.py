@@ -38,7 +38,7 @@ def test_get_sample_using_component_id():
     sample_db = datahandling.post_sample(sample)
     sample["_id"] = sample_db["_id"]
     sample_received = datahandling.get_samples(
-        [str(component_db["_id"])])[0]
+        component_ids=[str(component_db["_id"])])[0]
     assert sample_received == sample
 
 
@@ -155,7 +155,7 @@ def test_post_run():
     }
     run_db = datahandling.post_run(run)
 
-    run["_id"] == run_db["_id"]
+    run["_id"] = run_db["_id"]
     
     assert run == run_db
 
@@ -190,7 +190,7 @@ def test_get_run():
     }
     run_db = datahandling.post_run(run)
 
-    run_get = datahandling.get_runs(run_id=run_db["_id"])[0]
+    run_get = datahandling.get_runs(run_id=str(run_db["_id"]))[0]
 
     assert run_get == run_db
 
@@ -225,6 +225,6 @@ def test_delete_run():
     }
     run_db = datahandling.post_run(run)
 
-    deleted = datahandling.delete_run(run_id=run_db["_id"])[0]
+    deleted = datahandling.delete_run(run_id=str(run_db["_id"]))
 
     assert deleted == 1
