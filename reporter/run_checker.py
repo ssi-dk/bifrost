@@ -42,7 +42,6 @@ app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
 
-
 app.layout = html.Div([
     html.Div(className="container", children=[
         dash_scroll_up.DashScrollUp(
@@ -132,9 +131,10 @@ def update_run_options(none):
     return [
         {
             "label": "{} ({})".format(run["name"],
-                                    len(run["samples"])),
+                                      len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
+
 
 @app.callback(
     Output("run-name-title", "children"),
@@ -153,7 +153,9 @@ def update_run_name(run_name):
     if run_name == "" or run_name == "Not found":
         return None
     else:
-        return html.H3(html.A("QC Report", href="{}/{}".format(keys.qc_report_url, run_name)))
+        return html.H3(html.A("QC Report",
+                              href="{}/{}".format(keys.qc_report_url,
+                                                  run_name)))
 
 
 @app.callback(
@@ -218,12 +220,16 @@ def update_run_report(store, n_intervals):
                 if s_c["component"]["name"] not in components:
                     components.append(s_c["component"]["name"])
         header = html.Tr([
+            html.Th(html.Div(html.Strong("Priority")),
+                    className="rotate rotate-short"),
             html.Th(html.Div(html.Strong("Sample")),
                     className="rotate rotate-short"),
             html.Th(html.Div(html.Strong("QC status")),
                     className="rotate rotate-short"),
             html.Th()
-            ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate rotate-short"), components)))
+            ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+                                           className="rotate rotate-short"),
+                         components)))
         rows = [header]
         for sample_id, s_components in s_c_status.items():
             sample = samples_by_id[sample_id]
@@ -231,13 +237,28 @@ def update_run_report(store, n_intervals):
             if name == "Undetermined":
                 continue #ignore this row
             row = []
-            row.append(html.Td(name))
+            sample = import_data.get_sample(
+                str(s_components["sample._id"]))
             stamps = sample.get("stamps", {})
+            priority = sample.get("sample_sheet",
+                                  {}).get("priority", "").lower()
+            prio_display = " "
+            prio_title = priority
+            if priority == "high":
+                prio_display = "🚨"
+            else:
+                prio_display = ""
+            row.append(html.Td(prio_display,
+                               title=prio_title,
+                               className="center"))
+
+            row.append(html.Td(name))
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
             expert_check = False
-            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
-                qc_val = stamps["ssi_expert_check"]["value"]
+            if ("supplying_lab_check" in stamps and
+                    "value" in stamps["supplying_lab_check"]):
+                qc_val = stamps["supplying_lab_check"]["value"]
                 expert_check = True
 
             statusname = ""
@@ -246,16 +267,16 @@ def update_run_report(store, n_intervals):
                 statusname = "status-1"
             elif qc_val == "N/A":
                 statusname = "status--2"
-            elif qc_val == "fail:core facility":
+            elif (qc_val == "fail:core facility" or
+                  qc_val == "fail:resequence"):
                 statusname = "status--1"
                 qc_val = "CF"
             elif qc_val == "pass:OK":
                 statusname = "status-2"
                 qc_val = "OK"
-            
+
             if expert_check:
                 qc_val += "*"
-            
 
             row.append(
                 html.Td(qc_val, className="center {}".format(statusname)))
@@ -265,12 +286,14 @@ def update_run_report(store, n_intervals):
                 if component in s_components.keys():
                     s_c = s_components[component]
                     row.append(
-                        html.Td(s_c[1], className="center status-{}".format(s_c[0])))
+                        html.Td(s_c[1],
+                                className="center status-{}".format(s_c[0])))
                 else:
                     row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
         table = html.Table(rows, className="unset-width-table")
-        update_notice += " Req.: Requirements not met. Init.: initialised."
+        update_notice += (" Req.: requirements not met. Init.: initialised. "
+                          "*: user submitted")
 
         return [
             resequence_link,
@@ -285,15 +308,18 @@ def update_run_report(store, n_intervals):
         last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
         last_runs_names = [run["name"] for run in last_runs]
         prev_runs_dict = import_data.get_sample_QC_status(last_runs)
-        header = html.Tr([html.Th(html.Div(html.Strong("Sample")), className="rotate")] +
-                         list(map(lambda x: html.Th(html.Div(html.Strong(x)), className="rotate"), last_runs_names)))
+        header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
+                                  className="rotate")] +
+                         list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+                                                    className="rotate"),
+                                  last_runs_names)))
         rows = [header]
         for name, p_runs in prev_runs_dict.items():
             if name == "Undetermined":
                 continue
             row = []
             row.append(html.Td(name))
-            
+
             sample_all_OKs = True
 
             for index in range(len(last_runs)):
@@ -308,20 +334,26 @@ def update_run_report(store, n_intervals):
                         sample_all_OKs = False
                         className = "1"
                         title = "Supplying Lab"
-                    elif status.startswith("CF"):  # Wont be triggered by supplying because its after.
+                    elif status.startswith("CF"):
+                        # Wont be triggered by supplying because its after.
                         className = "-1"
                         sample_all_OKs = False
                         title = "Core Facility"
+                    else:
+                        # to account for libray fails
+                        sample_all_OKs = False
                     row.append(
-                        html.Td(status, className="center status-" + className ))
+                        html.Td(status,
+                                className="center status-" + className))
                 else:
                     row.append(html.Td("-", className="center status-0"))
-
 
             if not sample_all_OKs:
                 rows.append(html.Tr(row))
         table = html.Table(rows, className="unset-width-table")
-        update_notice += " SL: Supplying Lab, CF: Core Facility, NR: Not Run. -: No data."
+        update_notice += (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
+                          "Core Facility (Library Fail). -: No data. "
+                          "*: user submitted")
         return [
             run_checker_link,
             html.P(update_notice),
@@ -346,20 +378,15 @@ def update_rerun_form(run_name):
     else:
         components = []
 
-    samples = import_data.filter_name(run_name=run_name)
-    samples_options = [{"value": s["name"], "label": s["name"]}
-                       for s in samples]
     components_options = [{"value": c, "label": c} for c in components]
 
     return html.Div([
         html.H6("Rerun components"),
         html.Div([
             html.Div([
-                dcc.Dropdown(
+                dcc.Textarea(
                     id="rerun-samples",
-                    options=samples_options,
-                    placeholder="Samples",
-                    multi=True,
+                    placeholder="one sample per line",
                     value=""
                 )
             ], className="four columns"),
@@ -382,6 +409,7 @@ def update_rerun_form(run_name):
         ], className="row"),
     ])
 
+
 @app.callback(
     Output("rerun-output", "message"),
     [Input("rerun-button", "n_clicks")],
@@ -394,42 +422,69 @@ def rerun_form_button(button, samples, components, run_name):
         return ""
     out = []
     run_name = run_name.split("/")[0]
-    run_path_bifrost = import_data.get_run(run_name).get("path", "") # ends in /bifrost
-    run_path = os.path.dirname(run_path_bifrost) # removes /bifrost
-    for sample in samples:
+    # ends in /bifrost
+    run_path_bifrost = import_data.get_run(run_name).get("path", "")
+    samples = samples.split("\n")
+    # removes /bifrost
+    run_path = os.path.dirname(run_path_bifrost)
+    for sample_name in samples:
+        sample_name = sample_name.strip()
+        # Check sample priority here
         for component in components:
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
             # unlock first
-            command += r"snakemake --shadow-prefix /scratch --restart-times 2 --cores 4 -s {}/src/components/{}/pipeline.smk --config Sample=sample.yaml --unlock; ".format(
+            command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
+                        r" --cores 4 -s {}/src/components/{}/pipeline.smk "
+                        r"--config Sample=sample.yaml --unlock; ").format(
                 run_path, component)
-            command += r"snakemake --shadow-prefix /scratch --restart-times 2 --cores 4 -s {}/src/components/{}/pipeline.smk --config Sample=sample.yaml".format(
-                run_path, component)
+            command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
+                        r" --cores 4 -s {}/src/components/{}/pipeline.smk "
+                        r"--config Sample=sample.yaml").format(run_path,
+                                                               component)
             if keys.rerun["grid"] == "slurm":
-                process = subprocess.Popen('sbatch --mem={memory}G -p {priority} -c {threads} -t {walltime} -J "bifrost_{sample_name}" --wrap "{command}"'.format(
-                    **keys.rerun, sample_name=sample, command=command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + "/" + sample)
+                process = subprocess.Popen(
+                    ('sbatch --mem={memory}G -p {priority} -c {threads} '
+                     '-t {walltime} -J "bifrost_{sample_name}" --wrap'
+                     ' "{command}"').format(
+                                            **keys.rerun,
+                        sample_name=sample_name,
+                                            command=command),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    shell=True,
+                    env=os.environ,
+                    cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
             elif keys.rerun["grid"] == "torque":
-                
+
                 if "advres" in keys.rerun:
                     advres = ",advres={}".format(
                         keys.rerun["advres"])
                 else:
                     advres = ''
                 torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
-                script_path = os.path.join(run_path, sample, "manual_rerun.sh")
+                script_path = os.path.join(run_path, sample_name, "manual_rerun.sh")
                 with open(script_path, "w") as script:
-                    command += "#PBS -V -d . -w . -l mem={memory}gb,nodes=1:ppn={threads},walltime={walltime}{advres} -N 'bifrost_{sample_name}' -W group_list={group} -A {group} \n".format(
-                        **keys.rerun, sample_name=sample
-                    )
+                    command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
+                                "ppn={threads},walltime={walltime}{advres} -N "
+                                "'bifrost_{sample_name}' -W group_list={group}"
+                                " -A {group} \n").format(**keys.rerun,
+                                                         sample_name=sample_name)
                     script.write(command)
-                process = subprocess.Popen('qsub {}'.format(script_path), stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT, shell=True, env=os.environ, cwd=run_path + "/" + sample)
+                process = subprocess.Popen('qsub {}'.format(script_path),
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT,
+                                           shell=True,
+                                           env=os.environ,
+                                           cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
 
-    message = "Jobs sent to the server:\n" + "\n".join(["{}, {}: out: {} | err: {}".format(*el) for el in out])
+    message = "Jobs sent to the server:\n"
+    message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
+                         for el in out])
     message += "\nClick OK or Cancel to close this notice."
     return message
 
@@ -445,7 +500,7 @@ def update_run_report(message):
 
 server = app.server  # Required for gunicorn
 
-#app.run_server(debug=True, host="0.0.0.0")
+# app.run_server(debug=True, host="0.0.0.0")
 if __name__ == '__main__':
     # 0.0.0.0 exposes the app to the network.
     app.run_server(debug=True, host="0.0.0.0",

@@ -7,8 +7,9 @@ def get_components(sample_dict):
     component_names = ["whats_my_species", "qcquickie", "assemblatron"]
     comps = {}
     for component in component_names:
-        comps[component] = datahandling.load_last_sample_component(
-            str(sample_dict["_id"]), component)
+        comps[component] = datahandling.get_sample_components(
+            sample_ids=[str(sample_dict["_id"])],
+            component_names=[component])[0]
     return comps
 
 

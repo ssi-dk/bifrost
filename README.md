@@ -1,3 +1,7 @@
+# bifrost
+
+[![Build Status](https://dev.azure.com/SSI-MPV/bifrost-private/_apis/build/status/ssi-dk.bifrost-private?branchName=master)](https://dev.azure.com/SSI-MPV/bifrost-private/_build/latest?definitionId=1&branchName=master)
+
 ## Installing bifrost
 
 ### Requirements

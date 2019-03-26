@@ -1,0 +1,75 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- master
+- reorganize_mongointerface
+
+variables:
+  bifrost_db_key: "../../resources/keys.txt"
+
+jobs:
+
+- job: 'Test'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
+    displayName: Add conda to PATH
+
+#  - script: conda env create --file envs/bifrost_for_install.yaml
+#    displayName: Create Anaconda environment
+
+#  - script: source activate bifrost
+#    displayName: Activate bifrost
+
+  - script: |
+      pip install . --user
+    displayName: 'Install bifrostlib'
+    workingDirectory: lib/bifrostlib/
+
+  - script: |
+      echo "mongodb://server.example.com:27017/serumqc_prod" > resources/keys.txt
+
+
+  - script: |
+      pip install pytest mongomock --user
+      pip install pytest-cov --user
+      pwd
+      python -m pytest bifrostlib/tests --doctest-modules --junitxml=junit/test-results.xml --cov=bifrostlib --cov-report=xml --cov-report=html:cov_html
+    # pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html --self-contained-html
+    displayName: 'Test with pytest'
+    workingDirectory: lib/bifrostlib/
+
+  # Publish Test Results
+  # Publish Test Results to Azure Pipelines/TFS
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit' 
+      # Options: JUnit, NUnit, VSTest, xUnit, cTest
+      testResultsFiles: 'lib/bifrostlib/**/test-results.xml' 
+      #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+      #mergeTestResults: false # Optional
+      #failTaskOnFailedTests: false # Optional
+      #testRunTitle: # Optional
+      #buildPlatform: # Optional
+      #buildConfiguration: # Optional
+      #publishRunAttachments: true # Optional
+    
+  # Publish Code Coverage Results
+  # Publish Cobertura or JaCoCo code coverage results from a build
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'cobertura' # Options: cobertura, jaCoCo
+      summaryFileLocation: $(System.DefaultWorkingDirectory)/lib/bifrostlib/coverage.xml
+      reportDirectory: $(System.DefaultWorkingDirectory)/lib/bifrostlib/cov_html
+      #additionalCodeCoverageFiles: # Optional
+      #failIfCoverageEmpty: false # Optional

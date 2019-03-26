@@ -12,27 +12,22 @@ def run_test(sample_dict, stamp):
         component_names = ["whats_my_species", "qcquickie", "assemblatron"]
         comps = {}
         for component in component_names:
-            comps[component] = datahandling.load_last_sample_component(
-                str(sample_dict["_id"]), component)
+            comps[component] = datahandling.get_sample_component(
+                sample_ids=[str(sample_dict["_id"])],
+                component_names=[component])[0]
         species = datahandling.load_species(sample_dict["properties"].get("species", None))
         return ssi_stamp.test(comps["whats_my_species"], comps["qcquickie"], comps["assemblatron"],
                             species, sample_dict)
 
 
-def get_git_hash():
-    head_path = os.path.join(os.path.dirname(__file__), "../.git/HEAD")
-    with open(head_path) as head:
-        head_line = head.readline().strip()
-        loc = head_line.split(" ")[1]
-    hash_path = os.path.join(os.path.dirname(__file__), "../.git/" + loc)
-    with open(hash_path) as g_hash_file:
-        return g_hash_file.readline().strip()
-
 def create_component(stamp_name):
     return {
         "name": stamp_name,
         "version": "1.0",
-        "git": get_git_hash()
+        "target": "sample",
+        "type": "stamper",
+        "recommendation": "required",
+        "requires_db": True
     }
 
 def create_sample_component(sample, component, results, summary):
@@ -72,7 +67,7 @@ def main(argv):
         more_than_one_arg += 1
         print("This will apply the stamp on all the samples.")
         if input("Are you sure? ") == "y":
-            sample_ids = list(map(str, datahandling.load_all_samples()))
+            sample_ids = list(map(str, datahandling.get_samples()))
         else:
             exit()
     if args.samples:
@@ -97,7 +92,7 @@ def main(argv):
 
     for sample_id in sample_ids:
         print("Testing sample: " + sample_id)
-        sample_db = datahandling.load_sample_from_db(sample_id)
+        sample_db = datahandling.get_samples(sample_ids=[sample_id])
         results, summary, stamp = run_test(sample_db, stamp_name)
 
         print("Tested sample {}.\n{}\n\n".format(sample_id, stamp))
@@ -119,7 +114,7 @@ def main(argv):
         stamp_dict[stamp["name"]] = stamp
         sample_db["stamps"] = stamp_dict
 
-        datahandling.save_sample_to_db(sample_db)
+        datahandling.post_sample(sample_db)
 
 if __name__ == "__main__":
     main(sys.argv)
