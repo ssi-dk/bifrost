@@ -343,25 +343,18 @@ def update_rerun_form(run_name):
     if run_data is not None:
         components = list(
             map(lambda x: x["name"], run_data["components"]))
-        samples = run_data["samples"]
     else:
         components = []
-        samples = []
 
-    samples_options = [
-        {"value": str(s["_id"]), "label": s["name"]}
-        for s in samples]
     components_options = [{"value": c, "label": c} for c in components]
 
     return html.Div([
         html.H6("Rerun components"),
         html.Div([
             html.Div([
-                dcc.Dropdown(
+                dcc.Textarea(
                     id="rerun-samples",
-                    options=samples_options,
-                    placeholder="Samples",
-                    multi=True,
+                    placeholder="one sample per line",
                     value=""
                 )
             ], className="four columns"),
@@ -399,9 +392,12 @@ def rerun_form_button(button, samples, components, run_name):
     run_name = run_name.split("/")[0]
     # ends in /bifrost
     run_path_bifrost = import_data.get_run(run_name).get("path", "")
+    samples = samples.split("\n")
     # removes /bifrost
     run_path = os.path.dirname(run_path_bifrost)
-    for sample in samples:
+    for sample_name in samples:
+        sample_name = sample_name.strip()
+        # Check sample priority here
         for component in components:
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
@@ -420,15 +416,15 @@ def rerun_form_button(button, samples, components, run_name):
                      '-t {walltime} -J "bifrost_{sample_name}" --wrap'
                      ' "{command}"').format(
                                             **keys.rerun,
-                                            sample_name=sample,
+                        sample_name=sample_name,
                                             command=command),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     shell=True,
                     env=os.environ,
-                    cwd=run_path + "/" + sample)
+                    cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
             elif keys.rerun["grid"] == "torque":
 
                 if "advres" in keys.rerun:
@@ -437,25 +433,26 @@ def rerun_form_button(button, samples, components, run_name):
                 else:
                     advres = ''
                 torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
-                script_path = os.path.join(run_path, sample, "manual_rerun.sh")
+                script_path = os.path.join(run_path, sample_name, "manual_rerun.sh")
                 with open(script_path, "w") as script:
                     command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
                                 "ppn={threads},walltime={walltime}{advres} -N "
                                 "'bifrost_{sample_name}' -W group_list={group}"
                                 " -A {group} \n").format(**keys.rerun,
-                                                         sample_name=sample)
+                                                         sample_name=sample_name)
                     script.write(command)
                 process = subprocess.Popen('qsub {}'.format(script_path),
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.STDOUT,
                                            shell=True,
                                            env=os.environ,
-                                           cwd=run_path + "/" + sample)
+                                           cwd=run_path + "/" + sample_name)
                 process_out, process_err = process.communicate()
-                out.append((sample, component, process_out, process_err))
+                out.append((sample_name, component, process_out, process_err))
 
     message = "Jobs sent to the server:\n"
-    + "\n".join(["{}, {}: out: {} | err: {}".format(*el) for el in out])
+    message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
+                         for el in out])
     message += "\nClick OK or Cancel to close this notice."
     return message
 
