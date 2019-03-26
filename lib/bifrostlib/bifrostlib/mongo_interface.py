@@ -70,6 +70,12 @@ def dump_run_info(data_dict):
         )
     return data_dict
 
+def delete_run(run_id):
+    connection = get_connection()
+    db = connection.get_database()
+    deleted = db.runs.delete_one({"_id": run_id})
+    return deleted.deleted_count
+
 
 def dump_sample_info(data_dict):
     """Insert sample dict into mongodb.
@@ -116,6 +122,12 @@ def dump_component_info(data_dict):
         )
     return data_dict
 
+def delete_component(component_id):
+    connection = get_connection()
+    db = connection.get_database()
+    deleted = db.components.delete_one({"_id": component_id})
+    return deleted.deleted_count
+
 
 def dump_sample_component_info(data_dict):
     """Insert sample dict into mongodb.
@@ -140,6 +152,7 @@ def dump_sample_component_info(data_dict):
     return data_dict
 
 
+# Should call get_species
 def query_mlst_species(ncbi_species_name):
     if ncbi_species_name is None:
         return None
@@ -158,6 +171,7 @@ def query_mlst_species(ncbi_species_name):
         return None
 
 
+# Should call get_species
 def query_ncbi_species(species_entry):
     if species_entry is None:
         return None
@@ -179,6 +193,7 @@ def query_ncbi_species(species_entry):
         return None
 
 
+# Should be renamed to get_species
 def query_species(ncbi_species_name):
     try:
         connection = get_species_connection()
@@ -193,56 +208,95 @@ def query_species(ncbi_species_name):
         return None
 
 
-def load_run(name=None):
+# DEPRECATED
+def load_run(**kwargs):
+    get_runs(**kwargs)
+
+
+def get_runs(run_id=None,
+             sample_id=None,
+             names=None,
+             size=0):
+
+    size = min(1000, size)
+    size = max(-1000, size)
+
+    query = []
+
     try:
         connection = get_connection()
         db = connection.get_database()
-        if name is not None:
-            return db.runs.find_one({"name": name, "type": "routine"})
+        if names is not None:
+            query.append({"name": {"$in": names}})
+        if run_id is not None:
+            query.append({"_id": run_id})
+        if sample_id is not None:
+            query.append({"sample._id": sample_id})
+        if len(query) == 0:
+            query = {}
         else:
-            return db.runs.find_one(
-                {"$query": {"type": "routine"}, "$orderby": {"_id": -1}})
+            query = {"$and": query}
+        return list(db.runs.find(
+            query).sort([("_id", pymongo.DESCENDING)]).limit(size))
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
-def load_sample(sample_id):
+def get_samples(sample_ids=None, run_names=None, component_ids=None):
+    # Uses AND operand
+
+    query = []
+
     try:
         connection = get_connection()
         db = connection.get_database()
-        return db.samples.find_one({"_id": sample_id})
+
+        if sample_ids is not None:
+            query.append({"_id": {"$in": sample_ids}})
+        if run_names is not None:
+            run = db.runs.find_one({"name": {"$in": run_names}}, {"samples._id": 1})
+            if run is not None:
+                run_sample_ids = [s["_id"] for s in run["samples"]]
+            query.append({"_id": {"$in": run_sample_ids}})
+
+        if component_ids is not None:
+            query.append({"components._id": {"$in": component_ids}})
+
+        if len(query) == 0:
+            return list(db.samples.find({}))
+        else:
+            return list(db.samples.find({"$and": query}))
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
-def load_samples(sample_ids):
-    try:
-        connection = get_connection()
-        db = connection.get_database()
-        return list(db.samples.find({"_id": {"$in": sample_ids}}))
-    except Exception as e:
-        print(traceback.format_exc())
-        return None
-
-
-def load_last_sample_component(sample_id, component_name):
+def get_sample_components(sample_ids=None,
+                          component_names=None,
+                          size=1):
     """Loads most recent sample component for a sample"""
+    size = min(1000, size)
+    size = max(-1000, size)
+
+    query = []
+    if sample_ids is not None:
+        query.append({"sample._id": {"$in": sample_ids}})
+    if component_names is not None:
+        query.append({"component.name": {"$in": component_names}})
     try:
         connection = get_connection()
         db = connection.get_database()
-        result = list(db.sample_components.find({"sample._id": sample_id, "component.name": component_name}).sort([("setup_date", -1)]).limit(1))
-        if len(result) > 0:
-            return result[0]
-        else:
-            return None
+        return list(db.sample_components.find({"$and": query})
+                                        .sort([("setup_date", -1)])
+                                        .limit(size))
 
     except Exception as e:
         print(traceback.format_exc())
         return None
 
 
+# Should call get_runs
 def load_samples_from_runs(run_ids=None, names=None):
     try:
         connection = get_connection()
@@ -253,23 +307,6 @@ def load_samples_from_runs(run_ids=None, names=None):
             return list(db.runs.find({"name": {"$in": names}}, {"samples": 1}))
         else:
             return [db.runs.find_one({"$query": {"type": "routine"}, "$orderby": {"_id": -1}})]
-    except Exception as e:
-        print(traceback.format_exc())
-        return None
-
-
-def load_all_samples():
-    try:
-        connection = get_connection()
-        db = connection.get_database()
-        runs = list(db.runs.find({}, {"samples": 1}))
-        sample_ids = set()
-        for run in runs:
-            sample_ids.update(list(map(lambda x: x["_id"],
-                                        run["samples"])))
-
-        return list(sample_ids)
-
     except Exception as e:
         print(traceback.format_exc())
         return None
