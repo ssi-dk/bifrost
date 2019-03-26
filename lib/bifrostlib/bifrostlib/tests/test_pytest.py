@@ -228,3 +228,76 @@ def test_delete_run():
     deleted = datahandling.delete_run(run_id=str(run_db["_id"]))
 
     assert deleted == 1
+
+
+@mongomock.patch(('mongodb://server.example.com:27017'))
+def test_export_run():
+    component = {"name": "assemblatron"}
+    component_db = datahandling.save_component_to_db(component)
+    component_2 = {"name": "whats_my_species"}
+    component_db_2 = datahandling.save_component_to_db(component_2)
+    sample = {
+        "name": "test_sample",
+        "components": [
+            {"_id": component_db["_id"]},
+            {"_id": component_db_2["_id"]}
+        ]
+    }
+    sample_db = datahandling.post_sample(sample)
+    s_c = {
+        "sample": {"_id": sample_db["_id"]},
+        "component": {
+            "_id": component_db["_id"],
+            "name": component_db["name"]
+        },
+        "results": {},
+        "summary": {},
+        "setup_date": datetime.datetime.now()
+    }
+    s_c_db = datahandling.save_sample_component_to_db(s_c)
+
+    s_c_2 = {
+        "sample": {"_id": sample_db["_id"]},
+        "component": {
+            "_id": component_db_2["_id"],
+            "name": component_db_2["name"]
+        },
+        "results": {},
+        "summary": {},
+        "setup_date": datetime.datetime.now()
+    }
+    s_c_db_2 = datahandling.save_sample_component_to_db(s_c_2)
+
+    run = {
+        "name": "test_run",
+        "samples": [
+            {"_id": sample_db["_id"]}
+        ],
+        "components": [
+            {"_id": component_db["_id"]},
+            {"_id": component_db_2["_id"]}
+            # Missing name
+        ]
+    }
+    run_db = datahandling.post_run(run)
+
+    run_export = datahandling.get_run_export(run_ids=[str(run_db["_id"])])
+
+    run_id = str(run_db["_id"])
+
+    run_expected = {
+        run_id: {
+            "components": [
+                component_db,
+                component_db_2
+                ],
+            "samples": [sample_db],
+            "sample_components": [
+                s_c_db,
+                s_c_db_2
+            ],
+            "runs": [run_db]
+        }
+    }
+
+    assert run_export == run_expected

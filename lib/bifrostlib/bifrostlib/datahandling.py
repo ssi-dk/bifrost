@@ -165,6 +165,7 @@ def post_run(run):
     # NOTE: dump_run_info acts like a PUT
     return mongo_interface.dump_run_info(run)
 
+
 def get_runs(run_id=None,
              names=None, sample_id=None):
     if run_id is not None:
@@ -174,6 +175,7 @@ def get_runs(run_id=None,
     return mongo_interface.get_runs(names=names,
                                     sample_id=sample_id,
                                     run_id=run_id)
+
 
 def delete_run(name=None, run_id=None):
     if run_id is not None:
@@ -195,6 +197,32 @@ def delete_run(name=None, run_id=None):
     deleted = mongo_interface.delete_run(run_db["_id"])
     return deleted
 
+
+def get_run_export(run_ids=None):
+    """
+    Export runs
+    """
+    run_dicts = {}
+    for run_id in run_ids:
+        run_db = get_runs(run_id=run_id)[0]
+        component_ids = set()
+        if "components" in run_db:
+            for comp in run_db["components"]:
+                component_ids.add(comp["_id"])
+        sample_ids = [str(s["_id"]) for s in run_db["samples"]]
+        samples = get_samples(sample_ids=sample_ids)
+        for sample in samples:
+            for comp in sample["components"]:
+                component_ids.add(comp["_id"])
+        components = get_components(component_ids=list(component_ids))
+        sample_components = get_sample_components(sample_ids=sample_ids)
+        run_dicts[run_id] = {
+            "components": components,
+            "samples": samples,
+            "sample_components": sample_components,
+            "runs": [run_db]
+        }
+    return run_dicts
 
 
 # /samples
@@ -250,6 +278,14 @@ def delete_sample_component(s_c_id=None, sample_id=None):
 
 
 # /component
+
+def get_components(component_ids=None):
+    """
+    Get components from db
+    """
+    if component_ids is not None:
+        component_ids = list(map(ObjectId, component_ids))
+    return mongo_interface.get_components(component_ids=component_ids)
 
 
 def save_component_to_db(component):

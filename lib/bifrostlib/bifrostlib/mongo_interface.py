@@ -99,6 +99,21 @@ def dump_sample_info(data_dict):
         )
     return data_dict
 
+def get_components(component_ids=None):
+    """
+    Return components based on query
+    """
+    query = []
+    if component_ids is not None:
+        query.append({"_id": {"$in": component_ids}})
+    connection = get_connection()
+    db = connection.get_database()
+    if len(query) == 0:
+        query = {}
+    else:
+        query = {"$and": query}
+    return list(db.components.find(query).sort([("_id", pymongo.ASCENDING)]))
+
 
 def dump_component_info(data_dict):
     """Insert sample dict into mongodb.
@@ -274,7 +289,7 @@ def get_samples(sample_ids=None, run_names=None, component_ids=None):
 
 def get_sample_components(sample_ids=None,
                           component_names=None,
-                          size=1):
+                          size=0):
     """Loads most recent sample component for a sample"""
     size = min(1000, size)
     size = max(-1000, size)
