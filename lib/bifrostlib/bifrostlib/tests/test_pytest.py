@@ -290,7 +290,7 @@ def test_export_run():
         run_id: {
             "components": [
                 component_db,
-                component_db_2
+                component_db_2,
                 ],
             "samples": [sample_db],
             "sample_components": [

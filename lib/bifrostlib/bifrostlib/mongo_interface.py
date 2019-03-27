@@ -112,7 +112,7 @@ def get_components(component_ids=None):
         query = {}
     else:
         query = {"$and": query}
-    return list(db.components.find(query).sort([("_id", pymongo.DESCENDING)]))
+    return list(db.components.find(query).sort([("_id", pymongo.ASCENDING)]))
 
 
 def dump_component_info(data_dict):
