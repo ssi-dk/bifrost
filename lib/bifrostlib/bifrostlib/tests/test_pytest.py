@@ -2,6 +2,7 @@ import mongomock
 import pymongo
 from bifrostlib import datahandling
 import datetime
+import time
 
 
 def test_bifrostlib():
@@ -256,7 +257,9 @@ def test_export_run():
         "setup_date": datetime.datetime.now()
     }
     s_c_db = datahandling.post_sample_component(s_c)
-
+    time.sleep(0.2)
+    # we need to wait otherwise they share the same setup_date and
+    # it screws up the order
     s_c_2 = {
         "sample": {"_id": sample_db["_id"]},
         "component": {
@@ -289,13 +292,13 @@ def test_export_run():
     run_expected = {
         run_id: {
             "components": [
-                component_db,
                 component_db_2,
+                component_db
                 ],
             "samples": [sample_db],
             "sample_components": [
-                s_c_db,
-                s_c_db_2
+                s_c_db_2,
+                s_c_db
             ],
             "runs": [run_db]
         }
@@ -333,6 +336,10 @@ def test_inport_run():
     }
     s_c_db = datahandling.post_sample_component(s_c)
 
+    time.sleep(0.2)
+    # we need to wait otherwise they share the same setup_date and
+    # it screws up the order
+    
     s_c_2 = {
         "sample": {"_id": sample_db["_id"]},
         "component": {
