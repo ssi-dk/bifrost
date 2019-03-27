@@ -287,7 +287,8 @@ def get_samples(sample_ids=None, run_names=None, component_ids=None):
         return None
 
 
-def get_sample_components(sample_ids=None,
+def get_sample_components(sample_component_ids=None,
+                          sample_ids=None,
                           component_names=None,
                           size=0):
     """Loads most recent sample component for a sample"""
@@ -295,6 +296,8 @@ def get_sample_components(sample_ids=None,
     size = max(-1000, size)
 
     query = []
+    if sample_component_ids is not None:
+        query.append({"_id": {"$in": sample_component_ids}})
     if sample_ids is not None:
         query.append({"sample._id": {"$in": sample_ids}})
     if component_names is not None:

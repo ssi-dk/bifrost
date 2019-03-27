@@ -161,7 +161,7 @@ def datadump_template(data_dict, component_folder,
 # /runs
 
 def post_run(run):
-    # Used only by test suite for now. 
+    # Used only by test suite for now.
     # NOTE: dump_run_info acts like a PUT
     return mongo_interface.dump_run_info(run)
 
@@ -225,6 +225,36 @@ def get_run_export(run_ids=None):
     return run_dicts
 
 
+def post_run_export(import_dict):
+    """
+    Import runs
+    """
+    imported = 0
+
+    for import_run in import_dict.values():
+
+        for c in import_run["components"]:
+            get_c = post_component(c)
+            if get_c is not None:
+                imported += 1
+
+        for s in import_run["samples"]:
+            get_s = post_sample(s)
+            if get_s is not None:
+                imported += 1
+
+        for s_c in import_run["sample_components"]:
+            get_s_c = post_sample_component(s_c)
+            if get_s_c is not None:
+                imported += 1
+
+        for r in import_run["runs"]:
+            get_r = post_run(r)
+            if get_r is not None:
+                imported += 1
+
+        return imported
+
 # /samples
 
 
@@ -257,15 +287,20 @@ def delete_sample(sample_id):
 #  /sample/{id}/sample_components
 
 
-def get_sample_components(sample_ids=None, component_names=None):
+def get_sample_components(sample_component_ids=None,
+                          sample_ids=None, component_names=None):
     # Should be smarter
+    if sample_component_ids is not None:
+        sample_component_ids = [ObjectId(id) for id in sample_component_ids]
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
-    return mongo_interface.get_sample_components(sample_ids,
-                                                 component_names)
+    return mongo_interface.get_sample_components(
+        sample_component_ids=sample_component_ids,
+        sample_ids=sample_ids,
+        component_names=component_names)
 
 
-def save_sample_component_to_db(sample_component):
+def post_sample_component(sample_component):
     return mongo_interface.dump_sample_component_info(sample_component)
 
 
@@ -288,7 +323,7 @@ def get_components(component_ids=None):
     return mongo_interface.get_components(component_ids=component_ids)
 
 
-def save_component_to_db(component):
+def post_component(component):
     return mongo_interface.dump_component_info(component)
 
 

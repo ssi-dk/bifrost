@@ -87,7 +87,7 @@ def main(argv):
     if len(sample_ids) == 0:
         exit()
     
-    component_db = datahandling.save_component_to_db(
+    component_db = datahandling.post_component(
         create_component(stamp_name))
 
     for sample_id in sample_ids:
@@ -99,7 +99,7 @@ def main(argv):
         # Saving stuff
         
         s_c = create_sample_component(sample_db, component_db, results, summary)
-        s_c_db = datahandling.save_sample_component_to_db(s_c)
+        s_c_db = datahandling.post_sample_component(s_c)
 
         if "components" in sample_db:
             sample_db["components"].append({"name": component_db["name"], "_id": component_db["_id"]})
