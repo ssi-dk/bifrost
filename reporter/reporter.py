@@ -14,7 +14,8 @@ import dash_auth
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
-from plotly import tools 
+import dash_bootstrap_components as dbc
+from plotly import tools
 from dash.dependencies import Input, Output, State
 
 from flask import request   # To get client IP for pass/fail stamp
@@ -53,7 +54,7 @@ def short_species(species):
     return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
 
-app = dash.Dash()
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
@@ -65,14 +66,26 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
 
 # Temp css to make it look nice
 # Dash CSS
-app.css.append_css(
-    {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+# app.css.append_css(
+    # {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 # Lato font
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
-app.layout = html.Div([
-    html.Div(className="container", children=[
+app.layout = dbc.Container([
+    html.Div(className="row", children=[
+        html.Div(
+            html.Div([
+                dbc.Nav([
+                    dbc.NavItem(dbc.NavLink("Active", active=True, href="#")),
+                    dbc.NavItem(dbc.NavLink("A link", href="#")),
+                    dbc.NavItem(dbc.NavLink("Another link", href="#")),
+                    dbc.NavItem(dbc.NavLink(
+                        "Disabled", disabled=True, href="#")),
+                ], vertical=True)
+            ], className="sidebar-sticky")
+        , className="col-md-2 d-none d-md-block bg-light sidebar"),
+
         html.Div(id="placeholder0", style={"display": "none"}),
         html.Div(id="placeholder1", style={"display": "none"}),
         html.Div(id="placeholder2", style={"display": "none"}),
@@ -91,7 +104,7 @@ app.layout = html.Div([
         html.Div([
             html.Div(id="report-link", className="u-pull-left"),
             html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
-        ], className="row"),
+        ], className=""),
         html.Details([
             html.Summary("Latest changes..."),
             html.Div([
@@ -155,7 +168,7 @@ app.layout = html.Div([
         "Created with 🔬 at SSI. Bacteria icons from ",
         html.A("Flaticon", href="https://www.flaticon.com/"),
         "."], className="footer container")
-], className="appcontainer")
+], className="appcontainer", fluid=True)
 
 
 # Callbacks
