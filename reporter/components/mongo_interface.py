@@ -370,11 +370,16 @@ def filter(projection=None, run_name=None,
         else:
             query.append({"sample_sheet.group": {"$in": group}})
 
+    if len(query) == 0:
+        query = {}
+    else:
+        query = {"$and": query}
+
     if qc_list is not None and run_name is not None and len(qc_list) != 0:
         #pass
         query_result = filter_qc(db, qc_list, query)
     else:
-        query_result = list(db.samples.find({"$and": query}, projection)
+        query_result = list(db.samples.find(query, projection)
                             .sort([(spe_field, pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
     return query_result
 
