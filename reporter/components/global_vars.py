@@ -1,4 +1,3 @@
-import collections
 import math
 
 def assemblatron_diff(res):

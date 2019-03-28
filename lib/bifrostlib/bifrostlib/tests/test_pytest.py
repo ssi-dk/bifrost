@@ -334,7 +334,7 @@ def test_inport_run():
         "summary": {},
         "setup_date": datetime.datetime.now()
     }
-    s_c_db = datahandling.post_sample_component(s_c)
+    datahandling.post_sample_component(s_c)
 
     time.sleep(0.2)
     # we need to wait otherwise they share the same setup_date and
@@ -350,7 +350,7 @@ def test_inport_run():
         "summary": {},
         "setup_date": datetime.datetime.now()
     }
-    s_c_db_2 = datahandling.post_sample_component(s_c_2)
+    datahandling.post_sample_component(s_c_2)
 
     run = {
         "name": "test_run",
@@ -372,7 +372,7 @@ def test_inport_run():
     conn.drop_database("serumqc_prod")
     conn.close()
 
-    imported = datahandling.post_run_export(run_export)
+    datahandling.post_run_export(run_export)
 
     get_items = {
         "samples": [],

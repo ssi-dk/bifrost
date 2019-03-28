@@ -35,7 +35,7 @@ def get_species_img(sample_data):
         img = None
     return img
 
-def generate_sample_report(dataframe, sample, n_sample):
+def generate_sample_report(sample, n_sample):
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -62,8 +62,7 @@ def html_species_report(dataframe, species, row_index, **kwargs):
     report = []
     for index, sample in \
             dataframe.loc[dataframe["species"] == species].iterrows():
-        report.append(generate_sample_report(dataframe,
-                                             sample,
+        report.append(generate_sample_report(sample,
                                              row_index))
         row_index += 1
     return (html.Div(report, **kwargs), row_index)
