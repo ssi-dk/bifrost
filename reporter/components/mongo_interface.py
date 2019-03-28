@@ -465,41 +465,41 @@ def get_sample_QC_status(last_runs):
                 for run in last_runs
                 for sample in run["samples"]]
         
-        samples_full = get_samples(list(map(lambda x: str(x["_id"]), samples)))
-        samples_by_ids = {str(s["_id"]): s for s in samples_full}
+    samples_full = get_samples(list(map(lambda x: str(x["_id"]), samples)))
+    samples_by_ids = {str(s["_id"]): s for s in samples_full}
 
     samples_runs_qc = {}
     for sample in samples:
         sample_dict = {}
 
-            name = samples_by_ids[str(sample["_id"])]["name"]
-            for run in last_runs:
-                for run_sample in run["samples"]:
-                    if name == samples_by_ids[str(run_sample["_id"])]["name"]:
-                        stamps = db.samples.find_one(
-                            {"_id": run_sample["_id"]}, {"stamps": 1})
-                        if stamps is not None:
-                            stamps = stamps.get("stamps", {})
-                            qc_val = stamps.get(
-                                "ssi_stamper", {}).get("value", "N/A")
-                            expert_check = False
-                            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
-                                qc_val = stamps["ssi_expert_check"]["value"]
-                                expert_check = True
+        name = samples_by_ids[str(sample["_id"])]["name"]
+        for run in last_runs:
+            for run_sample in run["samples"]:
+                if name == samples_by_ids[str(run_sample["_id"])]["name"]:
+                    stamps = db.samples.find_one(
+                        {"_id": run_sample["_id"]}, {"stamps": 1})
+                    if stamps is not None:
+                        stamps = stamps.get("stamps", {})
+                        qc_val = stamps.get(
+                            "ssi_stamper", {}).get("value", "N/A")
+                        expert_check = False
+                        if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
+                            qc_val = stamps["ssi_expert_check"]["value"]
+                            expert_check = True
 
-                        if qc_val == "fail:supplying lab":
-                            qc_val = "SL"
-                        elif (qc_val == "fail:core facility" or
-                                qc_val == "fail:resequence"):
-                            qc_val = "CF"
-                        elif qc_val == "pass:OK":
-                            qc_val = "OK"
+                    if qc_val == "fail:supplying lab":
+                        qc_val = "SL"
+                    elif (qc_val == "fail:core facility" or
+                            qc_val == "fail:resequence"):
+                        qc_val = "CF"
+                    elif qc_val == "pass:OK":
+                        qc_val = "OK"
 
-                            if expert_check:
-                                qc_val += "*"
-                            sample_dict[run["name"]] = qc_val
-            samples_runs_qc[name] = sample_dict
-        return samples_runs_qc
+                        if expert_check:
+                            qc_val += "*"
+                        sample_dict[run["name"]] = qc_val
+        samples_runs_qc[name] = sample_dict
+    return samples_runs_qc
 
 
 def get_last_runs(run, n):
