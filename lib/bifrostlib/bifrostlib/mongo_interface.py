@@ -30,7 +30,7 @@ def get_connection():
         mongo_db_key_location = os.getenv("BIFROST_DB_KEY", None)
         with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
             mongodb_url = mongo_db_key_location_handle.readline().strip()
-        "Return mongodb connection"
+        # Return mongodb connection
         CONNECTION = pymongo.MongoClient(mongodb_url)
         return CONNECTION
 
@@ -43,7 +43,7 @@ def get_species_connection():
         mongo_db_key_location = os.getenv("BIFROST_SPECIES_DB_KEY", None)
         with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
             mongodb_url = mongo_db_key_location_handle.readline().strip()
-        "Return mongodb connection"
+        # Return mongodb connection
         SPECIES_CONNECTION = pymongo.MongoClient(mongodb_url)
         return SPECIES_CONNECTION
 
@@ -98,6 +98,21 @@ def dump_sample_info(data_dict):
             upsert=True  # insert the document if it does not exist
         )
     return data_dict
+
+def get_components(component_ids=None):
+    """
+    Return components based on query
+    """
+    query = []
+    if component_ids is not None:
+        query.append({"_id": {"$in": component_ids}})
+    connection = get_connection()
+    db = connection.get_database()
+    if len(query) == 0:
+        query = {}
+    else:
+        query = {"$and": query}
+    return list(db.components.find(query).sort([("_id", pymongo.DESCENDING)]))
 
 
 def dump_component_info(data_dict):
@@ -166,7 +181,7 @@ def query_mlst_species(ncbi_species_name):
             return result["mlst_species"]
         else:
             return None
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -188,7 +203,7 @@ def query_ncbi_species(species_entry):
             return group_result["ncbi_species"]
         else:
             return None
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -203,7 +218,7 @@ def query_species(ncbi_species_name):
             return species_db.find_one({"ncbi_species": ncbi_species_name})
         else:
             return species_db.find_one({"organism": "default"})
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -238,7 +253,7 @@ def get_runs(run_id=None,
             query = {"$and": query}
         return list(db.runs.find(
             query).sort([("_id", pymongo.DESCENDING)]).limit(size))
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -267,19 +282,22 @@ def get_samples(sample_ids=None, run_names=None, component_ids=None):
             return list(db.samples.find({}))
         else:
             return list(db.samples.find({"$and": query}))
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
 
-def get_sample_components(sample_ids=None,
+def get_sample_components(sample_component_ids=None,
+                          sample_ids=None,
                           component_names=None,
-                          size=1):
+                          size=0):
     """Loads most recent sample component for a sample"""
     size = min(1000, size)
     size = max(-1000, size)
 
     query = []
+    if sample_component_ids is not None:
+        query.append({"_id": {"$in": sample_component_ids}})
     if sample_ids is not None:
         query.append({"sample._id": {"$in": sample_ids}})
     if component_names is not None:
@@ -291,7 +309,7 @@ def get_sample_components(sample_ids=None,
                                         .sort([("setup_date", -1)])
                                         .limit(size))
 
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -307,7 +325,7 @@ def load_samples_from_runs(run_ids=None, names=None):
             return list(db.runs.find({"name": {"$in": names}}, {"samples": 1}))
         else:
             return [db.runs.find_one({"$query": {"type": "routine"}, "$orderby": {"_id": -1}})]
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -332,7 +350,7 @@ def delete_sample_component(s_c_id=None, sample_id=None,
         db = connection.get_database()
         result = db.sample_components.delete_many({"$and": query})
         return result.deleted_count
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -356,7 +374,7 @@ def delete_sample_from_runs(sample_id=None):
             result = db.runs.replace_one({"_id": run["_id"]}, run)
             update_count += result.modified_count
         return update_count
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None
 
@@ -368,6 +386,6 @@ def delete_sample(sample_id):
 
         result = db.samples.delete_one({"_id": sample_id})
         return result.deleted_count
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
         return None

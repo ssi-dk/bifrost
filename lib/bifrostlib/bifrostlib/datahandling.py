@@ -161,9 +161,10 @@ def datadump_template(data_dict, component_folder,
 # /runs
 
 def post_run(run):
-    # Used only by test suite for now. 
+    # Used only by test suite for now.
     # NOTE: dump_run_info acts like a PUT
     return mongo_interface.dump_run_info(run)
+
 
 def get_runs(run_id=None,
              names=None, sample_id=None):
@@ -174,6 +175,7 @@ def get_runs(run_id=None,
     return mongo_interface.get_runs(names=names,
                                     sample_id=sample_id,
                                     run_id=run_id)
+
 
 def delete_run(name=None, run_id=None):
     if run_id is not None:
@@ -196,6 +198,62 @@ def delete_run(name=None, run_id=None):
     return deleted
 
 
+def get_run_export(run_ids=None):
+    """
+    Export runs
+    """
+    run_dicts = {}
+    for run_id in run_ids:
+        run_db = get_runs(run_id=run_id)[0]
+        component_ids = set()
+        if "components" in run_db:
+            for comp in run_db["components"]:
+                component_ids.add(comp["_id"])
+        sample_ids = [str(s["_id"]) for s in run_db["samples"]]
+        samples = get_samples(sample_ids=sample_ids)
+        for sample in samples:
+            for comp in sample["components"]:
+                component_ids.add(comp["_id"])
+        components = get_components(component_ids=list(component_ids))
+        sample_components = get_sample_components(sample_ids=sample_ids)
+        run_dicts[run_id] = {
+            "components": components,
+            "samples": samples,
+            "sample_components": sample_components,
+            "runs": [run_db]
+        }
+    return run_dicts
+
+
+def post_run_export(import_dict):
+    """
+    Import runs
+    """
+    imported = 0
+
+    for import_run in import_dict.values():
+
+        for c in import_run["components"]:
+            get_c = post_component(c)
+            if get_c is not None:
+                imported += 1
+
+        for s in import_run["samples"]:
+            get_s = post_sample(s)
+            if get_s is not None:
+                imported += 1
+
+        for s_c in import_run["sample_components"]:
+            get_s_c = post_sample_component(s_c)
+            if get_s_c is not None:
+                imported += 1
+
+        for r in import_run["runs"]:
+            get_r = post_run(r)
+            if get_r is not None:
+                imported += 1
+
+        return imported
 
 # /samples
 
@@ -229,15 +287,20 @@ def delete_sample(sample_id):
 #  /sample/{id}/sample_components
 
 
-def get_sample_components(sample_ids=None, component_names=None):
+def get_sample_components(sample_component_ids=None,
+                          sample_ids=None, component_names=None):
     # Should be smarter
+    if sample_component_ids is not None:
+        sample_component_ids = [ObjectId(id) for id in sample_component_ids]
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
-    return mongo_interface.get_sample_components(sample_ids,
-                                                 component_names)
+    return mongo_interface.get_sample_components(
+        sample_component_ids=sample_component_ids,
+        sample_ids=sample_ids,
+        component_names=component_names)
 
 
-def save_sample_component_to_db(sample_component):
+def post_sample_component(sample_component):
     return mongo_interface.dump_sample_component_info(sample_component)
 
 
@@ -251,8 +314,16 @@ def delete_sample_component(s_c_id=None, sample_id=None):
 
 # /component
 
+def get_components(component_ids=None):
+    """
+    Get components from db
+    """
+    if component_ids is not None:
+        component_ids = list(map(ObjectId, component_ids))
+    return mongo_interface.get_components(component_ids=component_ids)
 
-def save_component_to_db(component):
+
+def post_component(component):
     return mongo_interface.dump_component_info(component)
 
 

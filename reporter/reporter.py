@@ -674,16 +674,16 @@ def update_test_table(data_store):
             tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
-    if "analyzer.mlst_report" in columns:
-        first_split = tests_df["analyzer.mlst_report"].str.split(
+    if "ariba_mlst.mlst_report" in columns:
+        first_split = tests_df["ariba_mlst.mlst_report"].str.split(
             ",", n=1, expand=True)
         if len(first_split.columns) == 2:
             second_split = first_split[0].str.split(":", n=1, expand=True)
             if len(second_split.columns) == 2:
                 keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
                 second_split.loc[keyerrormask, 1] = np.nan
-                tests_df["analyzer_mlst_type"] = second_split[1]
-                tests_df["analyzer_mlst_alleles"] = first_split[1]
+                tests_df["ariba_mlst_type"] = second_split[1]
+                tests_df["ariba_mlst_alleles"] = first_split[1]
 
     test_cols = [col for col in columns if (col.startswith(
         "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
