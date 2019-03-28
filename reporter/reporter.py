@@ -449,7 +449,6 @@ def sample_report(page_n, lasso_selected, data_store):
     page = import_data.add_sample_runs(page)
     max_page = len(samples) // PAGESIZE
     page_species = page["species"].unique().tolist()
-    species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
     # We need to have fake radio buttons with the same ids to account for times 
     # when not all PAGESIZE samples are shown and are not taking the ids required by the callback
     html_fake_radio_buttons = html.Div([dcc.RadioItems(
@@ -461,7 +460,7 @@ def sample_report(page_n, lasso_selected, data_store):
     ) for n_sample in range(len(page), PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page, species_plot_data)),
+        html.Div(children_sample_list_report(page)),
         html_fake_radio_buttons,
         admin.html_qc_expert_form(),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),

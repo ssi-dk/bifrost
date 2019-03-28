@@ -49,74 +49,6 @@ def get_species_connection():
         return SPECIES_CONNECTION
         
 
-def get_from_path(path_string, response):
-    fields = path_string.split(".")
-
-    for field in fields:
-        response = response.get(field, None)
-        if response is None:
-            return response
-    return response
-
-
-def flatten(l, path):
-    """Flattens a list of dicts into a list"""
-    return [get_from_path(path, el) for el in l]
-
-
-def get_species_plot_data(species_list, id_list, component="assemblatron"):
-    """Get plot data for many samples using a list of Ids"""
-    connection = get_connection()
-    db = connection.get_database()
-    samples = db.samples
-    plot_data = {}
-    id_list = list(map(lambda x: ObjectId(x), id_list))
-    runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
-    routine_ids = set()
-    for run in runs:
-        for sample in run["samples"]:
-            routine_ids.add(sample["_id"])
-    routine_list = list(routine_ids)
-    res = list(db.samples.aggregate([
-        {
-            "$match": {
-                "_id": {"$in": routine_list, "$nin": id_list},
-                "properties.species": {"$in": species_list},
-                # NOTE change stamp structure from list to dict to keep only latest.
-                "stamps.ssi_stamper" : "pass:OK"
-            }
-        },
-        {
-            "$lookup": {
-                "from": "sample_components",
-                "let": {"sample_id": "$_id"},
-                "pipeline": [
-                    {"$match": {
-                        "component.name": component,
-                        "summary.bin_length_at_1x": {"$exists": True}
-                    }},
-                    {"$match": {
-                        "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
-                    }
-                    },
-                    {"$project": {"summary.bin_length_at_1x": 1}},
-                    {"$sort": {"_id": -1}},
-                    {"$limit": 1}
-                ],
-                "as": "sample_components"
-            }
-        },
-        {
-            "$unwind": "$sample_components"
-        },
-        {
-            "$group": {
-                "_id": "$properties.species",
-                "bin_coverage_at_1x": {"$push": "$sample_components.summary.bin_length_at_1x"}
-            }
-        }
-    ]))
-    return res
 
 
 def check_run_name(name):
@@ -480,44 +412,41 @@ def get_assemblies_paths(sample_ids):
 
 
 # Run_checker.py
-def get_sample_component_status(run_name):
-    connection = get_connection()
-    db = connection.get_database()
-    run = db.runs.find_one({"name": run_name})
-    samples_ids = list(map(lambda x: x["_id"], run["samples"]))
-    components_names = list(map(lambda x: x["name"], run["components"]))
-    s_c_list = db.sample_components.find({
-        "sample._id": {"$in": samples_ids},
-        "component.name": {"$in": components_names}
-    }, {"sample": 1, "status": 1, "component.name": 1})
-    output = {}
-    for s_c in s_c_list:
-        sample = output.get(s_c["sample"]["name"], {
-            "sample._id": s_c["sample"]["_id"]
-        })
-        status = s_c["status"]
-        if status == "Success":
-            status = "OK"
-            status_code = 2
-        elif status == "Running":
-            status_code = 1
-        elif status == "initialized":
-            status = "init."
-            status_code = 0
-        elif status == "Failure":
-            status = "Fail"
-            status_code = -1
-        elif status == 'Requirements not met':
-            status = "Req."
-            status_code = -2
-        elif status == 'queued to run':
-            status = "queue"
-            status_code = 0
-        else:
-            status_code = float('nan')
-        sample[s_c["component"]["name"]] = (status_code, status)
-        output[s_c["sample"]["name"]] = sample
-    return output
+def get_sample_component_status(sample_ids):
+    with get_connection() as connection:
+        db = connection.get_database()
+        sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
+        s_c_list = db.sample_components.find({
+            "sample._id": {"$in": sample_ids},
+        }, {"sample._id": 1, "status": 1, "component.name": 1})
+        output = {}
+        for s_c in s_c_list:
+            sample = output.get(str(s_c["sample"]["_id"]), {
+                "sample._id": str(s_c["sample"]["_id"])
+            })
+            status = s_c["status"]
+            if status == "Success":
+                status = "OK"
+                status_code = 2
+            elif status == "Running":
+                status_code = 1
+            elif status == "initialized":
+                status = "init."
+                status_code = 0
+            elif status == "Failure":
+                status = "Fail"
+                status_code = -1
+            elif status == 'Requirements not met':
+                status = "Req."
+                status_code = -2
+            elif status == 'queued to run':
+                status = "queue"
+                status_code = 0
+            else:
+                status_code = float('nan')
+            sample[s_c["component"]["name"]] = (status_code, status)
+            output[str(s_c["sample"]["_id"])] = sample
+        return output
 
 
 def get_species_QC_values(ncbi_species):
@@ -535,26 +464,28 @@ def get_sample_QC_status(last_runs):
     samples = [sample
                 for run in last_runs
                 for sample in run["samples"]]
+        
+        samples_full = get_samples(list(map(lambda x: str(x["_id"]), samples)))
+        samples_by_ids = {str(s["_id"]): s for s in samples_full}
 
     samples_runs_qc = {}
     for sample in samples:
         sample_dict = {}
 
-        name = sample["name"]
-        for run in last_runs:
-            for run_sample in run["samples"]:
-                if name == run_sample["name"]:
-                    stamps = db.samples.find_one(
-                        {"_id": run_sample["_id"]}, {"stamps": 1})
-                    if stamps is not None:
-                        stamps = stamps.get("stamps", {})
-                        qc_val = stamps.get(
-                            "ssi_stamper", {}).get("value", "CF(LF)")
-                        expert_check = False
-                        if ("supplying_lab_check" in stamps and
-                                "value" in stamps["supplying_lab_check"]):
-                            qc_val = stamps["supplying_lab_check"]["value"]
-                            expert_check = True
+            name = samples_by_ids[str(sample["_id"])]["name"]
+            for run in last_runs:
+                for run_sample in run["samples"]:
+                    if name == samples_by_ids[str(run_sample["_id"])]["name"]:
+                        stamps = db.samples.find_one(
+                            {"_id": run_sample["_id"]}, {"stamps": 1})
+                        if stamps is not None:
+                            stamps = stamps.get("stamps", {})
+                            qc_val = stamps.get(
+                                "ssi_stamper", {}).get("value", "N/A")
+                            expert_check = False
+                            if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
+                                qc_val = stamps["ssi_expert_check"]["value"]
+                                expert_check = True
 
                         if qc_val == "fail:supplying lab":
                             qc_val = "SL"
@@ -564,11 +495,11 @@ def get_sample_QC_status(last_runs):
                         elif qc_val == "pass:OK":
                             qc_val = "OK"
 
-                        if expert_check:
-                            qc_val += "*"
-                        sample_dict[run["name"]] = qc_val
-        samples_runs_qc[sample["name"]] = sample_dict
-    return samples_runs_qc
+                            if expert_check:
+                                qc_val += "*"
+                            sample_dict[run["name"]] = qc_val
+            samples_runs_qc[name] = sample_dict
+        return samples_runs_qc
 
 
 def get_last_runs(run, n):
