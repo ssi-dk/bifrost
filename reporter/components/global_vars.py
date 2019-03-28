@@ -80,7 +80,7 @@ COLUMNS = [
     },
     {
         "name": "mlst_type",
-        "id": "analyzer_mlst_type"
+        "id": "ariba_mlst_type"
     },
     {
         "name": "Main_sp_plus_uncl",

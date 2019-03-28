@@ -1,8 +1,8 @@
-import mongomock
-import pymongo
-from bifrostlib import datahandling
 import datetime
 import time
+import pymongo
+import mongomock
+from bifrostlib import datahandling
 
 
 def test_bifrostlib():

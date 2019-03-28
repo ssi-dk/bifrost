@@ -273,7 +273,7 @@ def html_sample_tables(sample_data, **kwargs):
         ])
     ])
     resresults = False
-    resfinder = sample_data.get('analyzer.ariba_resfinder', [])
+    resfinder = sample_data.get('ariba_resfinder.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
         resfinder_div = html.Div(
@@ -288,12 +288,13 @@ def html_sample_tables(sample_data, **kwargs):
                 data=resfinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status", "") == "Success" and (type(resfinder) == float or resfinder is None or not len(resfinder)):
+    elif (sample_data.get("ariba_resfinder.status", "") == "Success" and
+         (type(resfinder) == float or resfinder is None or not len(resfinder))):
         resfinder_div = html.P("No antibiotic resistance genes found")
     else:
         resfinder_div = html.P("Resfinder not run")
     
-    plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
+    plasmidfinder = sample_data.get('ariba_plasmidfinder.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
         resresults = True
         plasmidfinder_div = html.Div(
@@ -307,7 +308,10 @@ def html_sample_tables(sample_data, **kwargs):
                 data=plasmidfinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status","") == "Success" and (type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder)):
+    elif (sample_data.get("ariba_plasmidfinder.status", "") == "Success" and
+         (type(plasmidfinder) == float or
+          plasmidfinder is None or
+          not len(plasmidfinder))):
         plasmidfinder_div = html.P("No replicons found")
     else:
         plasmidfinder_div = html.P("Plasmidfinder not run")
@@ -326,7 +330,7 @@ def html_sample_tables(sample_data, **kwargs):
                 data=virulencefinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
+    elif sample_data.get("ariba_virulencefinder.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
         virulencefinder_div = html.P("No virulence markers found")
     else:
         virulencefinder_div = html.P("Virulencefinder not run")
@@ -359,7 +363,10 @@ def html_sample_tables(sample_data, **kwargs):
     mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
 
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
-    if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
+    if (sample_data.get("ariba_resfinder.status", "") == "Success" or
+        sample_data.get("ariba_plasmidfinder.status", "") == "Success" or
+        sample_data.get("ariba_mlst.status", "") == "Success" or
+        sample_data.get("ariba_virulencefinder.status", "") == "Success"):
         res_analysis_not_run = False
     else:
         res_analysis_not_run = True
@@ -397,8 +404,8 @@ def html_sample_tables(sample_data, **kwargs):
             html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
 
     mlst_type = "ND"
-    if "analyzer.mlst_report" in sample_data and sample_data["analyzer.mlst_report"] is not None:
-        mlst_report_string = sample_data["analyzer.mlst_report"]
+    if "ariba_mlst.mlst_report" in sample_data and sample_data["ariba_mlst.mlst_report"] is not None:
+        mlst_report_string = sample_data["ariba_mlst.mlst_report"]
         if "," in mlst_report_string:
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type = mlst_text_split[0].split(":",1)[1]
