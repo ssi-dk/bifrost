@@ -445,7 +445,7 @@ def rerun_form_button(button, samples, components, run_name):
             if keys.rerun["grid"] == "slurm":
                 process = subprocess.Popen(
                     ('sbatch --mem={memory}G -p {priority} -c {threads} '
-                     '-t {walltime} -J "bifrost_{sample_name}" --wrap'
+                     '-t {walltime} -J "bifrost_{sample_name}_web" --wrap'
                      ' "{command}"').format(
                                             **keys.rerun,
                         sample_name=sample_name,
@@ -469,7 +469,7 @@ def rerun_form_button(button, samples, components, run_name):
                 with open(script_path, "w") as script:
                     command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
                                 "ppn={threads},walltime={walltime}{advres} -N "
-                                "'bifrost_{sample_name}' -W group_list={group}"
+                                "'bifrost_{sample_name}_web' -W group_list={group}"
                                 " -A {group} \n").format(**keys.rerun,
                                                          sample_name=sample_name)
                     script.write(command)
