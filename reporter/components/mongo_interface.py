@@ -350,11 +350,12 @@ def filter(projection=None, run_names=None,
     else:
         query = {"$and": query}
 
-    print('query', query)
-
     if pagination is not None:
         p_limit = pagination['page_size']
-        p_skip = pagination['page_size']*pagination['current_page']
+        p_skip = pagination['page_size'] * pagination['current_page']
+    else:
+        p_limit = 1000
+        p_skip = 0
 
     if qc_list is not None and run_names is not None and len(qc_list) != 0:
         #pass

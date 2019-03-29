@@ -1,6 +1,8 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
+import pandas as pd
+import numpy as np
 import components.import_data as import_data
 import components.admin as admin
 import dash_bootstrap_components as dbc
@@ -148,28 +150,18 @@ def html_div_summary():
                            color="primary",
                            n_clicks=0,
                            className="mr-1"),
-                dbc.Button("Generate download link",
+                dbc.Button("Generate download link (1000 samples max.)",
+                           id="generate-download-button",
                            color="secondary",
+                           n_clicks=0,
                            className="mr-1"),
+                html.Div(id="tsv-download")
             ]
         ),
         html.Div(
             [
                 html.Div([
                     html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-                    html.Div([
-                        html.Div([
-                            "Download Table ",
-                            html.A("(tsv, US format)",
-                                id="ustsv-download",
-                                download='report.tsv'),
-                            " - ",
-                            html.A("(csv, EUR Excel format)",
-                                id="eurtsv-download",
-                                download='report.csv')
-                        ], className="six columns"),
-                        
-                    ], className="row"),
                     dash_table.DataTable(
 
                         data=[{}],
@@ -258,3 +250,117 @@ def html_div_summary():
             ], className="border-box"
         )
     ])
+
+
+def generate_table(tests_df):
+    #     if data_store == '""':
+    #         return empty_table
+    #     ##json_data = StringIO(data_store)
+
+    qc_action = "ssi_stamper.assemblatron:action"
+    qc_action = "stamp.ssi_stamper.value"
+    if qc_action not in tests_df:
+        tests_df[qc_action] = np.nan
+    else:
+        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[
+            1]
+
+    if "R1" not in tests_df:
+        tests_df["R1"] = np.nan
+
+    values = {"R1": ""}
+    tests_df = tests_df.fillna(value=values)
+    no_reads_mask = tests_df["R1"] == ""
+    tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
+    mask = pd.isnull(tests_df[qc_action])
+    tests_df.loc[mask, qc_action] = "not tested"
+    slmask = tests_df[qc_action] == "supplying lab"
+    tests_df.loc[slmask, qc_action] = "warning: supplying lab"
+
+    user_stamp_col = "stamp.supplying_lab_check.value"
+    # Overload user stamp to ssi_stamper
+    if user_stamp_col in tests_df.columns:
+        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
+        tests_df.loc[user_OK_mask, qc_action] = "*OK"
+        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
+        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
+        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
+        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
+
+    # Split test columns
+    columns = tests_df.columns
+    split_columns = [
+        "ssi_stamper.assemblatron:1x10xsizediff",
+        "ssi_stamper.whats_my_species:minspecies",
+        "ssi_stamper.whats_my_species:nosubmitted",
+        "ssi_stamper.whats_my_species:detectedspeciesmismatch"
+    ]
+    i = 0
+    for column in columns:
+        if column in split_columns:
+            new = tests_df[column].str.split(":", expand=True)
+            loc = tests_df.columns.get_loc(column)
+            #tests_df.drop(columns = [column], inplace=True)
+            tests_df.insert(loc, column + "_QC", new[0])
+            tests_df.insert(loc + 1, column + "_text", new[2])
+        i += 1
+
+    if "ariba_mlst.mlst_report" in columns:
+        first_split = tests_df["ariba_mlst.mlst_report"].str.split(
+            ",", n=1, expand=True)
+        if len(first_split.columns) == 2:
+            second_split = first_split[0].str.split(":", n=1, expand=True)
+            if len(second_split.columns) == 2:
+                keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
+                second_split.loc[keyerrormask, 1] = np.nan
+                tests_df["ariba_mlst_type"] = second_split[1]
+                tests_df["ariba_mlst_alleles"] = first_split[1]
+
+    test_cols = [col for col in columns if (col.startswith(
+        "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
+
+    def concatenate_failed(row):
+        res = []
+        for col in test_cols:
+            test_name = col.split(":")[-1]
+            if type(row[col]) == str:
+                fields = row[col].split(":")
+                if fields[0] in ["fail", "undefined"]:
+                    res.append("Test {}: {}, {}".format(
+                        test_name, fields[0], fields[1]))
+        row["ssi_stamper_failed_tests"] = ". ".join(res)
+        return row
+
+    # Round columns:
+    for col in global_vars.ROUND_COLUMNS:
+        if col in tests_df.columns:
+            tests_df[col] = round(tests_df[col], 3)
+
+    tests_df = tests_df.apply(concatenate_failed, axis="columns")
+
+    COLUMNS = global_vars.COLUMNS
+
+    # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
+    # Delete as soon as filter works with column ids
+
+    def simplify_name(name):
+        return name.replace(":", "_").replace(".", "_").replace("=", "_")
+
+    tests_df.columns = list(map(simplify_name, tests_df.columns))
+
+    # END OF HORRIBLE HACK
+
+    # Generate conditional formatting:
+    style_data_conditional = []
+    conditional_columns = [
+        col for col in tests_df.columns if col.startswith("QC_")]
+
+    for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
+        style_data_conditional += list(map(lambda x: {"if": {
+            "column_id": x, "filter": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
+
+    for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
+        style_data_conditional += [{"if": {
+            "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+
+    return tests_df

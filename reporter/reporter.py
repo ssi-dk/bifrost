@@ -27,7 +27,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_summary
+from components.filter import html_div_summary, generate_table
 from components.sample_report import children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
@@ -37,7 +37,15 @@ import components.admin as admin
 # also defined in mongo_interface.py
 
 SAMPLE_PAGESIZE = 25
-ADMIN = False
+
+
+def simplify_name(name):
+    return name.replace(":", "_").replace(".", "_").replace("=", "_")
+
+COLUMNS = []
+for column in global_vars.COLUMNS:
+    column["id"] = simplify_name(column["id"])
+    COLUMNS.append(column)
 
 
 def hex_to_rgb(value):
@@ -435,45 +443,6 @@ def display_selected_data(selected_data, rows, selected_rows):
     ]
 
 
-# @app.callback(
-#     Output("group-div", "children"),
-#     [Input("run-name", "children")],
-#     [State("url", "pathname")]
-# )
-# def update_group_list(run_name, pathname):
-#     if run_name == "Loading...":
-#         return None
-#     if len(run_name) == 0:
-#         group_list = import_data.get_group_list()
-#     else:
-#         group_list = import_data.get_group_list(run_name)
-#     group_list_options = []
-#     for item in group_list:
-#         if item["_id"] == None:
-#             group_list_options.append({
-#                 "label": "Not defined ({})".format(item["count"]),
-#                 "value": "Not defined"
-#             })
-#         else:
-#             group_list_options.append({
-#                 "label": "{} ({})".format(item["_id"], item["count"]),
-#                 "value": item["_id"]
-#             })
-#     if pathname is None:
-#         pathname = "/"
-#     path = pathname.split("/")
-#     if len(path) > 2 and path[2] != "":
-#         value = [path[2]]
-#     else:
-#         value = []
-#     return dcc.Dropdown(
-#         id="group-list",
-#         options=group_list_options,
-#         multi=True,
-#         placeholder="All groups selected",
-#         value=value
-#     )
-
 @app.callback(
     Output("species-div", "children"),
     [Input("param-store", "data"),
@@ -753,184 +722,76 @@ def update_selected_samples(apply_button, pagination_settings,
                                           sample_names=sample_names,
                                           pagination=pagination_settings)
     # return samples.to_dict()
-
-#     if data_store == '""':
-#         return empty_table
-#     ##json_data = StringIO(data_store)
     if query_count == 0:
         return empty_table
-    qc_action = "ssi_stamper.assemblatron:action"
-    qc_action = "stamp.ssi_stamper.value"
-    if qc_action not in tests_df:
-        tests_df[qc_action] = np.nan
-    else:
-        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
- 
-    if "R1" not in tests_df:
-        tests_df["R1"] = np.nan
 
-    no_reads_mask = tests_df["R1"] == ""
-    tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
-    mask = pd.isnull(tests_df[qc_action])
-    tests_df.loc[mask, qc_action] = "not tested"
-    slmask = tests_df[qc_action] == "supplying lab"
-    tests_df.loc[slmask, qc_action] = "warning: supplying lab"
-    
-    user_stamp_col = "stamp.supplying_lab_check.value"
-    # Overload user stamp to ssi_stamper
-    if user_stamp_col in tests_df.columns:
-        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
-        tests_df.loc[user_OK_mask, qc_action] = "*OK"
-        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
-        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
-        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
-        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
+    tests_df = generate_table(tests_df)
 
-    # Split test columns
-    columns = tests_df.columns
-    split_columns = [
-        "ssi_stamper.assemblatron:1x10xsizediff",
-        "ssi_stamper.whats_my_species:minspecies",
-        "ssi_stamper.whats_my_species:nosubmitted",
-        "ssi_stamper.whats_my_species:detectedspeciesmismatch"
-    ]
-    i = 0
-    for column in columns:
-        if column in split_columns:
-            new = tests_df[column].str.split(":", expand=True)
-            loc = tests_df.columns.get_loc(column)
-            #tests_df.drop(columns = [column], inplace=True)
-            tests_df.insert(loc, column + "_QC", new[0])
-            tests_df.insert(loc + 1, column + "_text", new[2])
-        i += 1
-
-    if "ariba_mlst.mlst_report" in columns:
-        first_split = tests_df["ariba_mlst.mlst_report"].str.split(
-            ",", n=1, expand=True)
-        if len(first_split.columns) == 2:
-            second_split = first_split[0].str.split(":", n=1, expand=True)
-            if len(second_split.columns) == 2:
-                keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
-                second_split.loc[keyerrormask, 1] = np.nan
-                tests_df["ariba_mlst_type"] = second_split[1]
-                tests_df["ariba_mlst_alleles"] = first_split[1]
-
-    test_cols = [col for col in columns if (col.startswith(
-        "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
-    def concatenate_failed(row):
-        res = []
-        for col in test_cols:
-            test_name = col.split(":")[-1]
-            if type(row[col]) == str:
-                fields = row[col].split(":")
-                if fields[0] in ["fail", "undefined"]:
-                    res.append("Test {}: {}, {}".format(test_name, fields[0], fields[1]))
-        row["ssi_stamper_failed_tests"] = ". ".join(res)
-        return row
-    
-    # Round columns:
-    for col in global_vars.ROUND_COLUMNS:
-        if col in tests_df.columns:
-            tests_df[col] = round(tests_df[col],3)
-
-    tests_df = tests_df.apply(concatenate_failed, axis="columns")
-
-
-    COLUMNS = global_vars.COLUMNS
-
-    # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
-    # Delete as soon as filter works with column ids
-
-    def simplify_name(name):
-        return name.replace(":", "_").replace(".", "_").replace("=", "_")
-        
-    tests_df.columns = list(map(simplify_name, tests_df.columns))
-    
-
-    # END OF HORRIBLE HACK
-
-    # Generate conditional formatting:
-    style_data_conditional = []
-    conditional_columns = [ col for col in tests_df.columns if col.startswith("QC_") ]
-    
-    for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
-        style_data_conditional += list(map(lambda x: {"if": {
-            "column_id": x, "filter": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
-    
-    for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
-        style_data_conditional += [{"if": {
-            "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
-    
     return tests_df.to_dict("rows")
-    table = dash_table.DataTable(
 
-        data=tests_df.to_dict("rows"),
-        style_table={
-            'overflowX': 'scroll',
-            'overflowY': 'scroll',
-            'maxHeight': '480'
-        },
-        columns=COLUMNS,
-        # n_fixed_columns=1,
-        style_cell={
-            'width': '200px',
-            'padding': '0 15px'
-        },
-        style_cell_conditional=[
-            {
-                "if": {"column_id": "ssi_stamper_failed_tests"},
-                "textAlign": "left"
-            }
-        ],
-        n_fixed_rows=1,
-        row_deletable=True,
-        filtering=True, #Front end filtering
-        sorting=True,
-        selected_rows=[],
-        style_data_conditional=style_data_conditional,
-        pagination_settings={
-            'current_page': 0,
-            'page_size': TABLE_PAGESIZE
-        },
-        pagination_mode='be',
-        id="datatable-ssi_stamper"
-    )
 
-    rename_dict = {item["id"]:item["name"] for item in COLUMNS}
+@app.callback(
+    Output("tsv-download", "children"),
+    [Input("generate-download-button", "n_clicks")],
+    [State("run-list", "value"),
+     State("species-list", "value"),
+     State("form-species-source", "value"),
+     State("group-list", "value"),
+     State("qc-list", "value"),
+     State("samples-form", "value")]
+)
+def generate_download_button(download_button,
+                            run_names, species_list,
+                            species_source, group_list, qc_list,
+                            sample_names):
+    if download_button == 0:
+        return None
+    else:
+        if sample_names is not None and sample_names != "":
+            sample_names = sample_names.split("\n")
 
-    renamed = tests_df.rename(rename_dict, axis='columns')#[
+        tests_df, query_count = import_data.filter_all(species=species_list, species_source=species_source,
+                                                       group=group_list, qc_list=qc_list,
+                                                       run_names=run_names,
+                                                       sample_names=sample_names,
+                                                       pagination=None)
+    # return samples.to_dict()
+    if query_count == 0:
+        return None
 
-    missing_columns = [a for a in list(rename_dict.values()) if not a in list(renamed.columns)]
+    tests_df = generate_table(tests_df)
+
+    rename_dict = {item["id"]: item["name"] for item in COLUMNS}
+
+    renamed = tests_df.rename(rename_dict, axis='columns')  # [
+
+    missing_columns = [a for a in list(
+        rename_dict.values()) if not a in list(renamed.columns)]
 
     # add missing columns
     for column in missing_columns:
         renamed[column] = np.nan
-    
+
     # reorder columns
     renamed = renamed[list(rename_dict.values())]
 
-    csv_string_eur = renamed.to_csv(index=False, encoding="utf-8", sep=";", decimal=",")
+    csv_string_eur = renamed.to_csv(
+        index=False, encoding="utf-8", sep=";", decimal=",")
     tsv_string_us = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
     full_csv_string_eur = 'data:text/csv;charset=utf-8,' + \
         urllib.parse.quote(csv_string_eur)
     full_tsv_string_us = 'data:text/tab-separated-values;charset=utf-8,' + \
         urllib.parse.quote(tsv_string_us)
     return [
-        html.H6("Filtered samples ({}):".format(len(tests_df["_id"]))),
-        html.Div([
-            html.Div([
-                "Download Table ",
-                html.A("(tsv, US format)",
-                       href=full_tsv_string_us,
-                       download='report.tsv'),
-                " - ",
-                html.A("(csv, EUR Excel format)",
-                       href=full_csv_string_eur,
-                       download='report.csv')
-            ], className="six columns"),
-        ], className="row"),
-        html.Div(table)
-        ]
+        html.A("(tsv, US format)",
+                href=full_tsv_string_us,
+                download='report.tsv'),
+        " - ",
+        html.A("(csv, EUR Excel format)",
+                href=full_csv_string_eur,
+                download='report.csv')
+    ]
+
 
 
 @app.callback(
