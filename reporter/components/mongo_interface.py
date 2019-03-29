@@ -223,7 +223,8 @@ def get_qc_list(run_name=None):
 
     return qcs
 
-def filter_qc(db, qc_list, query):
+
+def filter_qc(db, qc_list, query, p_skip, p_limit):
     qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
     if "Not checked" in qc_list:
         qc_query += [
@@ -276,12 +277,14 @@ def filter_qc(db, qc_list, query):
             "$match": {"$or": qc_query}
             
         }
-    ])
-    return list(result)
+    ]).skip(p_skip).limit(p_limit)
+    return result
 
 
-def filter(projection=None, run_name=None,
-           species=None, species_source="species", group=None, qc_list=None, samples=None):
+def filter(projection=None, run_names=None,
+           species=None, species_source="species", group=None,
+           qc_list=None, samples=None, pagination=None,
+           sample_names=None):
     if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
         qc_list = None
     if species_source == "provided":
@@ -294,21 +297,23 @@ def filter(projection=None, run_name=None,
     db = connection.get_database()
     query = []
     sample_set = set()
-    if samples is not None:
+    if sample_names is not None and len(sample_names) != 0:
+        query.append({"name": {"$in": sample_names}})
+    if samples is not None and len(samples) != 0:
         sample_set = {ObjectId(id) for id in samples}
         query.append({"_id": {"$in": list(sample_set)}})
-    if run_name is not None and run_name != "":
-        run = db.runs.find_one(
-            {"name": run_name},
+    if run_names is not None and len(run_names) != 0:
+        runs = list(db.runs.find(
+            {"name": {"$in": run_names}},
             {
                 "_id": 0,
                 "samples._id": 1
             }
-        )
-        if run is None:
+        ))
+        if runs is None:
             run_sample_set = set()
         else:
-            run_sample_set = {s["_id"] for s in run['samples']}
+            run_sample_set = {s["_id"] for run in runs for s in run['samples']}
     
         if len(sample_set):
             inter = run_sample_set.intersect(sample_set)
@@ -345,13 +350,22 @@ def filter(projection=None, run_name=None,
     else:
         query = {"$and": query}
 
-    if qc_list is not None and run_name is not None and len(qc_list) != 0:
+    print('query', query)
+
+    if pagination is not None:
+        p_limit = pagination['page_size']
+        p_skip = pagination['page_size']*pagination['current_page']
+
+    if qc_list is not None and run_names is not None and len(qc_list) != 0:
         #pass
-        query_result = filter_qc(db, qc_list, query)
+        query_result = filter_qc(db, qc_list, query, p_skip, p_limit)
     else:
-        query_result = list(db.samples.find(query, projection)
-                            .sort([(spe_field, pymongo.ASCENDING), ("name", pymongo.ASCENDING)]))
-    return query_result
+        query_result = db.samples.find(query, projection).sort(
+            [(spe_field, pymongo.ASCENDING),
+             ("name", pymongo.ASCENDING)]).skip(p_skip).limit(p_limit)
+    query_count = query_result.count()  # Count ignores limit
+    query_result = list(query_result)
+    return (query_result, query_count)
 
 
 def get_results(sample_ids):
@@ -361,7 +375,7 @@ def get_results(sample_ids):
         "sample._id": {"$in": sample_ids},
         "summary": {"$exists": True},
         "status": "Success",
-        "component.name": {"$ne": "qcquickie"} #Saving transfers
+        "component.name": {"$nin": ["qcquickie", "testomatic"]} #Saving transfers
     }, {"summary": 1, "sample._id": 1, "component.name" : 1, "setup_date": 1, "status": 1}).sort([("setup_date", 1)]))
 
 

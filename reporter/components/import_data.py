@@ -47,10 +47,13 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
     return list(result)
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
-def filter_all(species=None, species_source=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
+def filter_all(species=None, species_source=None, group=None,
+               qc_list=None, run_names=None, func=None, sample_ids=None,
+               sample_names=None,
+               pagination=None):
 
     if sample_ids is None:
-        query_result =  mongo_interface.filter(
+        query_result, query_count = mongo_interface.filter(
             {
                 "name" : 1,
                 "properties": 1,
@@ -58,9 +61,11 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "reads": 1,
                 "stamps": 1
             },
-            run_name, species, species_source, group, qc_list=qc_list)
+            run_names, species, species_source, group, qc_list=qc_list,
+            sample_names=sample_names,
+            pagination=pagination)
     else:
-        query_result = mongo_interface.filter(
+        query_result, query_count = mongo_interface.filter(
             {
                 "name": 1,
                 "properties": 1,
@@ -68,7 +73,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "reads": 1,
                 "stamps": 1
             },
-            samples=sample_ids)
+            samples=sample_ids, pagination=pagination)
 
     clean_result = {}
     sample_ids = []
@@ -125,7 +130,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
             clean_result[item_id][component + ".status"] = item["status"]
         for func in global_vars.FUNCS:
             clean_result[item_id] = func(clean_result[item_id])
-    return pd.DataFrame.from_dict(clean_result, orient="index")
+    return pd.DataFrame.from_dict(clean_result, orient="index"), query_count
 
 def add_sample_runs(sample_df):
     """Returns the runs each sample belongs to"""

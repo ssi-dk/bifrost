@@ -21,6 +21,10 @@ FUNCS = [assemblatron_diff, assemblatron_contig_diff]
 
 COLUMNS = [
     {
+        "name": "Run",
+        "id": "sample_sheet.run_name"
+    },
+    {
         "name": "Name",
         "id": "name"
     },

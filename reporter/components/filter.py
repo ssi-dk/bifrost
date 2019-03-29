@@ -4,15 +4,18 @@ import dash_table
 import components.import_data as import_data
 import components.admin as admin
 import dash_bootstrap_components as dbc
+import components.global_vars as global_vars
+
+TABLE_PAGESIZE = 100
 
 
-filter_notice_div = html.Div([
-    html.P(
-        'To filter on a string type eq, space and exact text in double quotes: eq "FBI"'),
-    html.P(
-        'To filter on a number type eq, < or >, space and num(<number here>): > num(500)'),
-    html.P('* on QC: manually curated')
-])
+def simplify_name(name):
+    return name.replace(":", "_").replace(".", "_").replace("=", "_")
+
+COLUMNS = []
+for column in global_vars.COLUMNS:
+    column["id"] = simplify_name(column["id"])
+    COLUMNS.append(column)
 
 
 def format_selected_samples(filtered_df):
@@ -28,195 +31,230 @@ def html_div_summary():
         html.Div(
             [
                 dcc.Store(id="param-store", storage_type="memory", data={}),
-                html.H1("Filter", className="h2 mt-3"),
+                html.H1("Filter", className="mt-3"),
 
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.FormGroup(
-                                [
-                                    dbc.Label(
-                                        "Run", html_for="run-list"),
-                                    dcc.Dropdown(
-                                        id="run-list",
-                                        multi=True,
-                                        value=[]
-                                    ),
-                                ]
-                            ),
-                            width=6,
-                        ),
-                        dbc.Col(
-                            dbc.FormGroup(
-                                [
-                                    dbc.Label(
-                                        "Group", html_for="group-list"),
-                                    dcc.Dropdown(
-                                        id="group-list",
-                                        multi=True,
-                                        value=[]
-                                    ),
-                                ]
-                            ),
-                            width=6,
-                        ),
-                    ],
-                    form=True,
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.FormGroup(
-                                [
-                                    html.Label(
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dbc.FormGroup(
                                         [
-                                            "Species: "
-                                        ],
-                                        htmlFor="species-list",
-                                        style={"display": "inline-block"}
+                                            dbc.Label(
+                                                "Run", html_for="run-list"),
+                                            dcc.Dropdown(
+                                                id="run-list",
+                                                multi=True,
+                                                value=[],
+                                                placeholder="All runs selected",
+                                            ),
+                                        ]
                                     ),
-                                    dcc.RadioItems(
-                                        options=[
-                                            {"label": "Provided",
-                                             "value": "provided"},
-                                            {"label": "Detected",
-                                             "value": "detected"},
-                                        ],
-                                        value="provided",
-                                        labelStyle={
-                                            'display': 'inline-block'},
-                                        id="form-species-source",
-                                        style={
-                                            "display": "inline-block"}
+                                    width=6,
+                                ),
+                                dbc.Col(
+                                    dbc.FormGroup(
+                                        [
+                                            dbc.Label(
+                                                "Group", html_for="group-list"),
+                                            dcc.Dropdown(
+                                                id="group-list",
+                                                multi=True,
+                                                value=[],
+                                                placeholder="All groups selected",
+                                            ),
+                                        ]
+                                    ),
+                                    width=6,
+                                ),
+                            ],
+                            form=True,
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dbc.FormGroup(
+                                        [
+                                            html.Label(
+                                                [
+                                                    "Species: "
+                                                ],
+                                                htmlFor="species-list",
+                                                style={
+                                                    "display": "inline-block"}
+                                            ),
+                                            dcc.RadioItems(
+                                                options=[
+                                                    {"label": "Provided",
+                                                     "value": "provided"},
+                                                    {"label": "Detected",
+                                                     "value": "detected"},
+                                                ],
+                                                value="provided",
+                                                labelStyle={
+                                                    'display': 'inline-block'},
+                                                id="form-species-source",
+                                                style={
+                                                    "display": "inline-block"}
 
+                                            ),
+                                            html.Div(
+                                                dcc.Dropdown(
+                                                    id="species-list",
+                                                    multi=True,
+                                                    value=[],
+                                                    placeholder="All species selected",
+                                                ),
+                                                id="species-div"
+                                            )
+                                        ]
                                     ),
-                                    html.Div(
-                                        dcc.Dropdown(
-                                            id="species-list",
-                                            multi=True,
-                                            value=[]
-                                        ),
-                                        id="species-div"
-                                    )
-                                ]
-                            ),
-                            width=6,
-                        ),
-                        dbc.Col(
-                            dbc.FormGroup(
-                                [
-                                    dbc.Label(
-                                        "SSI QC", html_for="qc-list"),
-                                    dcc.Dropdown(
-                                        id="qc-list",
-                                        multi=True,
-                                        options=qc_list_options,
-                                        placeholder="All values selected",
-                                        value=[]
+                                    width=6,
+                                ),
+                                dbc.Col(
+                                    dbc.FormGroup(
+                                        [
+                                            dbc.Label(
+                                                "SSI QC", html_for="qc-list"),
+                                            dcc.Dropdown(
+                                                id="qc-list",
+                                                multi=True,
+                                                options=qc_list_options,
+                                                placeholder="All values selected",
+                                                value=[]
+                                            ),
+                                        ]
                                     ),
-                                ]
-                            ),
-                            width=6,
+                                    width=6,
+                                ),
+                            ],
+                            form=True,
                         ),
-                    ],
-                    form=True,
-                ),
+                    ], width=9),
+                    dbc.Col([
+                        dbc.Row(dbc.Col([
+                            dbc.Label("Sample names", html_for="samples-form"),
+                            dcc.Textarea(
+                                id="samples-form",
+                                placeholder="one sample per line",
+                                value="",
+                                rows=6
+                            )
+                        ], width=12))
+                    ], width=3),
+                ]),
                 dbc.Button("Search samples",
                            id="apply-filter-button",
                            color="primary",
+                           n_clicks=0,
                            className="mr-1"),
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Div(
-                                    # html.Button(
-                                    #     "Apply Filter",
-                                    #     id="apply-filter-button",
-                                    #     n_clicks=0,
-                                    #     n_clicks_timestamp=0,
-                                    #     className="button-primary u-full-width"
-                                    # ), id="applybutton-div"
-                                )
-                            ],
-                            className="twelve columns"
-                        ),
-                    ],
-                    className="row mt-1"
-                ),
-            ], className="border-box"
+                dbc.Button("Generate download link",
+                           color="secondary",
+                           className="mr-1"),
+            ]
         ),
         html.Div(
             [
-                html.H5("Summary", className="box-title"),
                 html.Div([
                     html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
-                    filter_notice_div,
                     html.Div([
                         html.Div([
                             "Download Table ",
                             html.A("(tsv, US format)",
+                                id="ustsv-download",
                                 download='report.tsv'),
                             " - ",
                             html.A("(csv, EUR Excel format)",
+                                id="eurtsv-download",
                                 download='report.csv')
                         ], className="six columns"),
                         
                     ], className="row"),
-                    html.Div(dash_table.DataTable(id="datatable-ssi_stamper", data=[{}]), style={"display": "none"})
+                    dash_table.DataTable(
+
+                        data=[{}],
+                        style_table={
+                            'overflowX': 'scroll',
+                            'overflowY': 'scroll',
+                            'maxHeight': '480'
+                        },
+                        columns=COLUMNS,
+                        style_cell={
+                            'width': '200px',
+                            'padding': '0 15px'
+                        },
+                        style_cell_conditional=[
+                            {
+                                "if": {"column_id": "ssi_stamper_failed_tests"},
+                                "textAlign": "left"
+                            }
+                        ],
+                        n_fixed_rows=1,
+                        row_deletable=True,
+                        # filtering=True,  # Front end filtering
+                        # sorting=True,
+                        selected_rows=[],
+                        # style_data_conditional=style_data_conditional,
+                        pagination_settings={
+                            'current_page': 0,
+                            'page_size': TABLE_PAGESIZE
+                        },
+                        pagination_mode='be',
+                        id="datatable-ssi_stamper"
+                    )
                 ], id="ssi_stamper-report", className="bigtable"),
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Label("Plot species",
-                                        htmlFor="plot-species"),
-                                dcc.RadioItems(
-                                    options=[
-                                        {"label": "Provided",
-                                        "value": "provided"},
-                                        {"label": "Detected",
-                                        "value": "detected"},
-                                    ],
-                                    value="provided",
-                                    labelStyle={
-                                        'display': 'inline-block'},
-                                    id="plot-species-source"
-                                ),
-                                html.Div(dcc.Dropdown(
-                                    id="plot-species"
-                                ),id="plot-species-div")
+                # html.Div(
+                #     [
+                #         html.Div(
+                #             [
+                #                 html.Label("Plot species",
+                #                         htmlFor="plot-species"),
+                #                 dcc.RadioItems(
+                #                     options=[
+                #                         {"label": "Provided",
+                #                         "value": "provided"},
+                #                         {"label": "Detected",
+                #                         "value": "detected"},
+                #                     ],
+                #                     value="provided",
+                #                     labelStyle={
+                #                         'display': 'inline-block'},
+                #                     id="plot-species-source"
+                #                 ),
+                #                 html.Div(dcc.Dropdown(
+                #                     id="plot-species"
+                #                 ),id="plot-species-div")
                                 
-                            ],
-                            className="twelve columns"
-                        )
-                    ],
-                    className="row"
-                ),
-                dcc.Graph(id="summary-plot"),
-                html.Div(
-                    [
-                        html.Div(
-                            [
-                                html.Div(
-                                    [
-                                        html.Div(
-                                            [
-                                                html.Div("",
-                                                        style={"display": "none"},
-                                                        id="lasso-sample-ids")
-                                            ],
-                                            className="twelve columns",
-                                            id="lasso-div"
-                                        )
-                                    ],
-                                    className="row"
-                                )
-                            ],
-                            className="twelve columns"
-                        )
-                    ]
-                    , className="row"),
+                #             ],
+                #             className="twelve columns"
+                #         )
+                #     ],
+                #     className="row"
+                # ),
+                # dcc.Graph(id="summary-plot"),
+                # html.Div(
+                #     [
+                #         html.Div(
+                #             [
+                #                 html.Div(
+                #                     [
+                #                         html.Div(
+                #                             [
+                #                                 html.Div("",
+                #                                         style={"display": "none"},
+                #                                         id="lasso-sample-ids")
+                #                             ],
+                #                             className="twelve columns",
+                #                             id="lasso-div"
+                #                         )
+                #                     ],
+                #                     className="row"
+                #                 )
+                #             ],
+                #             className="twelve columns"
+                #         )
+                #     ]
+                #     , className="row"),
             ], className="border-box"
         )
     ])

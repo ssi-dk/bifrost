@@ -432,11 +432,11 @@ td.center {
   width: 120px;
 }
 
-/* BEGIN BOOTSTRAP DASHBOARD */
-
-body {
-  font-size: .875rem;
+#samples-form {
+  height: unset;
 }
+
+/* BEGIN BOOTSTRAP DASHBOARD */
 
 .feather {
   width: 16px;
