@@ -10,6 +10,77 @@ PAGESIZE = 25
 CONNECTION = None
 SPECIES_CONNECTION = None
 
+TABLE_QUERY = [
+    {
+        '$lookup': {
+            'from': 'sample_components',
+            'let': {
+                'sample_id': '$_id'
+            },
+            'pipeline': [
+                {
+                    '$match': {
+                        'status': 'Success',
+                        'name': {
+                            '$nin': [
+                                'qcquickie', 'analyzer'
+                            ]
+                        },
+                        '$expr': {
+                            '$eq': [
+                                '$sample._id', '$$sample_id'
+                            ]
+                        }
+                    }
+                }, {
+                    '$project': {
+                        'component.name': 1,
+                        'setup_date': 1,
+                        'summary': 1,
+                        'status': 1,
+                        '_id': 0
+                    }
+                }, {
+                    '$sort': {
+                        'component.name': 1,
+                        'setup_date': -1
+                    }
+                }, {
+                    '$group': {
+                        '_id': '$component.name',
+                        's_c_g': {
+                            '$push': '$$ROOT'
+                        }
+                    }
+                }, {
+                    '$project': {
+                        '_id': 0,
+                        'v': {
+                            '$arrayElemAt': [
+                                '$s_c_g', 0
+                            ]
+                        },
+                        'k': '$_id'
+                    }
+                }
+            ],
+            'as': 'sample_components'
+        }
+    }, {
+        '$project': {
+            'name': 1,
+            '_id': 1,
+            'component.name': 1,
+            'sample_sheet': 1,
+            'stamps': 1,
+            'properties': 1,
+            'sample_components': {
+                '$arrayToObject': '$sample_components'
+            }
+        }
+    }
+]
+
 
 def close_connection():
     global CONNECTION
@@ -224,61 +295,25 @@ def get_qc_list(run_name=None):
     return qcs
 
 
-def filter_qc(db, qc_list, query, p_skip, p_limit):
-    qc_query = [{"sample_components.summary.assemblatron:action": {"$in": qc_list}} ]
-    if "Not checked" in qc_list:
-        qc_query += [
-            {"$and": [
+def filter_qc(qc_list):
+    if qc_list is None or len(qc_list) == 0:
+        return None
+    qc_query = []
+    for elem in qc_list:
+        if elem == "Not checked":
+            qc_query.append({"$and": [
                 {"reads.R1": {"$exists": True}},
-                {"$or": [
-                    {"sample_components": {"$size": 0}}
-                    # Should probably uncomment after Undetermined check is finished
-                    # {"sample_components.status": {"$ne": "Success"}}
-                ]}
-            ]}
-        ]
-    if "skipped" in qc_list:
-        qc_query += [
-            {"sample_components.status": "initialized"}
-        ]
-        # Uncomment when we implement skipped for Undetermined
-        # qc_query += [
-        #     {"sample_components.status": "skipped"}
-        # ]
-    if "core facility" in qc_list:
-        qc_query += [
-            {"reads.R1": {"$exists": False}}
-        ]
-
-    result = db.samples.aggregate([
-        {
-            "$match": {"$and" :query},
-        },
-        {
-            "$lookup": {
-                "from": "sample_components",
-                "let": {"sample_id": "$_id"},
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    { "$eq" : ["$component.name", "ssi_stamper"]},
-                                    {"$eq": ["$sample._id", "$$sample_id"]}
-                                ]
-                            }
-                        }
-                    }
-                ],
-                "as": "sample_components"
-            }
-        },
-        {
-            "$match": {"$or": qc_query}
-            
-        }
-    ]).skip(p_skip).limit(p_limit)
-    return result
+                {"stamps.ssi_stamper": {"$exists": False}}
+            ]})
+        elif elem == "fail:core facility":
+            qc_query.append({"$or": [
+                        {"reads.R1": {"$exists": False}},
+                        {"stamps.ssi_stamper.value": "fail:core facility"}
+                    ]
+                })
+        else:
+            qc_query.append({"stamps.ssi_stamper.value": elem})
+    return {"$match": {"$and": qc_query}}
 
 
 def filter(projection=None, run_names=None,
@@ -345,10 +380,7 @@ def filter(projection=None, run_names=None,
         else:
             query.append({"sample_sheet.group": {"$in": group}})
 
-    if len(query) == 0:
-        query = {}
-    else:
-        query = {"$and": query}
+    sort_step = {"$sort": {"name": 1}}
 
     if pagination is not None:
         p_limit = pagination['page_size']
@@ -357,14 +389,28 @@ def filter(projection=None, run_names=None,
         p_limit = 1000
         p_skip = 0
 
-    if qc_list is not None and run_names is not None and len(qc_list) != 0:
-        #pass
-        query_result = filter_qc(db, qc_list, query, p_skip, p_limit)
+    skip_limit_steps = [{"$skip": p_skip}, {"$limit": p_limit}]
+
+    qc_query = filter_qc(qc_list)
+
+    if len(query) == 0:
+        if qc_query is None:
+            final_query = [sort_step] + TABLE_QUERY + skip_limit_steps
+        else:
+            final_query = TABLE_QUERY + [qc_query, sort_step] + skip_limit_steps
     else:
-        query_result = db.samples.find(query, projection).sort(
-            [(spe_field, pymongo.ASCENDING),
-             ("name", pymongo.ASCENDING)]).skip(p_skip).limit(p_limit)
-    query_count = query_result.count()  # Count ignores limit
+        if qc_query is None:
+            final_query = [{"$match": {"$and": query}}] + \
+                TABLE_QUERY + [sort_step] + skip_limit_steps
+        else:
+            final_query = [{"$match": {"$and": query}}] + \
+                TABLE_QUERY + [qc_query, sort_step] + skip_limit_steps
+
+
+
+    query_result = db.samples.aggregate(final_query)
+    #query_count = query_result.count()  # Count ignores limit
+    query_count = 100
     query_result = list(query_result)
     return (query_result, query_count)
 

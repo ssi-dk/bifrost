@@ -6,6 +6,7 @@ from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
 import components.global_vars as global_vars
 import keys
+from bson.json_util import dumps, loads
 
 pd.options.mode.chained_assignment = None
 
@@ -74,6 +75,7 @@ def filter_all(species=None, species_source=None, group=None,
                 "stamps": 1
             },
             samples=sample_ids, pagination=pagination)
+    return pd.io.json.json_normalize(query_result), query_count
 
     clean_result = {}
     sample_ids = []
@@ -131,22 +133,6 @@ def filter_all(species=None, species_source=None, group=None,
         for func in global_vars.FUNCS:
             clean_result[item_id] = func(clean_result[item_id])
     return pd.DataFrame.from_dict(clean_result, orient="index"), query_count
-
-def add_sample_runs(sample_df):
-    """Returns the runs each sample belongs to"""
-    sample_ids = sample_df["_id"].tolist()
-    sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
-    runs = mongo_interface.get_sample_runs(sample_ids)
-    sample_runs = {}
-    # Weekend challenge: turn this into a double nested dictionary comprehension
-    for run in runs:
-        for sample in run["samples"]:
-            if sample["_id"] in sample_ids:
-                s = sample_runs.get(str(sample["_id"]), [])
-                s.append(run["name"])
-                sample_runs[str(sample["_id"])] = s
-    sample_df.loc[:, 'runs'] = sample_df["_id"].map(sample_runs)
-    return sample_df
 
 def get_assemblies_paths(samples):
     return mongo_interface.get_assemblies_paths(samples)

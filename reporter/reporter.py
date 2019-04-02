@@ -13,6 +13,7 @@ import dash_table
 import dash_auth
 import pandas as pd
 import numpy as np
+from bson import json_util
 import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
 from plotly import tools
@@ -37,15 +38,6 @@ import components.admin as admin
 # also defined in mongo_interface.py
 
 SAMPLE_PAGESIZE = 25
-
-
-def simplify_name(name):
-    return name.replace(":", "_").replace(".", "_").replace("=", "_")
-
-COLUMNS = []
-for column in global_vars.COLUMNS:
-    column["id"] = simplify_name(column["id"])
-    COLUMNS.append(column)
 
 
 def hex_to_rgb(value):
@@ -695,7 +687,8 @@ def update_report(lasso_selected):
 #     return "Apply filter (click to reload)"
 
 @app.callback(
-    Output("datatable-ssi_stamper", "data"),
+    [Output("filter-sample-count", "children"),
+     Output("datatable-ssi_stamper", "data")],
     [Input("apply-filter-button", "n_clicks"),
      Input('datatable-ssi_stamper', 'pagination_settings')],
     [State("run-list", "value"),
@@ -710,8 +703,9 @@ def update_selected_samples(apply_button, pagination_settings,
                             species_source, group_list, qc_list,
                             sample_names):
     empty_table = [{}]
+    empty_count = "0 samples loaded."
     if apply_button == 0:
-        return empty_table
+        return [empty_count, empty_table]
     else:
         if sample_names is not None and sample_names != "":
             sample_names = sample_names.split("\n")
@@ -723,11 +717,13 @@ def update_selected_samples(apply_button, pagination_settings,
                                           pagination=pagination_settings)
     # return samples.to_dict()
     if query_count == 0:
-        return empty_table
+        return [empty_count, empty_table]
 
     tests_df = generate_table(tests_df)
+    print(tests_df)
+    sample_count = "{} samples loaded.".format(query_count)
 
-    return tests_df.to_dict("rows")
+    return [sample_count, tests_df.to_dict("rows")]
 
 
 @app.callback(
@@ -760,10 +756,6 @@ def generate_download_button(download_button,
         return None
 
     tests_df = generate_table(tests_df)
-
-    rename_dict = {item["id"]: item["name"] for item in COLUMNS}
-
-    renamed = tests_df.rename(rename_dict, axis='columns')  # [
 
     missing_columns = [a for a in list(
         rename_dict.values()) if not a in list(renamed.columns)]

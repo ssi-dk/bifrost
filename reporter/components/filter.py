@@ -11,21 +11,12 @@ import components.global_vars as global_vars
 TABLE_PAGESIZE = 100
 
 
-def simplify_name(name):
-    return name.replace(":", "_").replace(".", "_").replace("=", "_")
-
-COLUMNS = []
-for column in global_vars.COLUMNS:
-    column["id"] = simplify_name(column["id"])
-    COLUMNS.append(column)
-
-
 def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
 def html_div_summary():
-    qc_options = ["OK", "core facility", "supplying lab", "skipped", "Not checked"]
+    qc_options = ["OK", "core facility", "supplying lab", "Not checked"]
     qc_list_options = [{"label":o, "value":o} for o in qc_options]
     
 
@@ -161,7 +152,7 @@ def html_div_summary():
         html.Div(
             [
                 html.Div([
-                    html.H6('No samples loaded. Click "Apply Filter" to load samples.'),
+                    html.H6('0 samples loaded.', id="filter-sample-count"),
                     dash_table.DataTable(
 
                         data=[{}],
@@ -170,7 +161,7 @@ def html_div_summary():
                             'overflowY': 'scroll',
                             'maxHeight': '480'
                         },
-                        columns=COLUMNS,
+                        columns=global_vars.COLUMNS,
                         style_cell={
                             'width': '200px',
                             'padding': '0 15px'
@@ -340,16 +331,6 @@ def generate_table(tests_df):
 
     COLUMNS = global_vars.COLUMNS
 
-    # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
-    # Delete as soon as filter works with column ids
-
-    def simplify_name(name):
-        return name.replace(":", "_").replace(".", "_").replace("=", "_")
-
-    tests_df.columns = list(map(simplify_name, tests_df.columns))
-
-    # END OF HORRIBLE HACK
-
     # Generate conditional formatting:
     style_data_conditional = []
     conditional_columns = [
@@ -362,5 +343,10 @@ def generate_table(tests_df):
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
             "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+
+    tests_df["_id"] = str(tests_df["_id"])
+    print(list(tests_df.columns))
+    print([c["id"] for c in COLUMNS])
+    tests_df = tests_df.filter([ c["id"] for c in COLUMNS])
 
     return tests_df

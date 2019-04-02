@@ -30,11 +30,11 @@ COLUMNS = [
     },
     {
         "name": "Supplying_lab_feedback",
-        "id": "stamp.supplying_lab_check.value",
+        "id": "stamps.supplying_lab_check.value",
     },
     {
         "name": "QC_action",
-        "id": "stamp.ssi_stamper.value",
+        "id": "stamps.ssi_stamper.value",
         # "id": "ssi_stamper.assemblatron:action"
     },
     {
@@ -55,11 +55,11 @@ COLUMNS = [
     },
     {
         "name": "Genome_size_1x",
-        "id": "assemblatron.bin_length_at_1x"
+        "id": "sample_components.assemblatron.summary.bin_length_at_1x"
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_10x"
+        "id": "sample_components.assemblatron.summary.bin_length_at_10x"
     },
     {
         "name": "G_size_diff_1x_10",
@@ -67,19 +67,19 @@ COLUMNS = [
     },
     {
         "name": "Avg_coverage",
-        "id": "assemblatron.bin_coverage_at_1x"
+        "id": "sample_components.assemblatron.summary.bin_coverage_at_1x"
     },
     {
         "name": "Num_contigs",
-        "id": "assemblatron.bin_contigs_at_1x"
+        "id": "sample_components.assemblatron.summary.bin_contigs_at_1x"
     },
     {
         "name": "Ambiguous_sites",
-        "id": "assemblatron.snp_filter_10x_10%"
+        "id": "sample_components.assemblatron.summary.snp_filter_10x_10%"
     },
     {
         "name": "Num_reads",
-        "id": "assemblatron.filtered_reads_num"
+        "id": "sample_components.assemblatron.summary.filtered_reads_num"
     },
     {
         "name": "mlst_type",
@@ -91,7 +91,7 @@ COLUMNS = [
     },
     {
         "name": "Unclassified_reads",
-        "id": "whats_my_species.percent_unclassified"
+        "id": "sample_components.whats_my_species.summary.percent_unclassified"
     },
     {
         "name": "DB_ID",
