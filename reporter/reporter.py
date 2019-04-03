@@ -76,6 +76,7 @@ app.css.append_css(
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     # To store url param values
+    dcc.Store(id="app-store", storage_type="memory"),
     dbc.Navbar(
         [
             dbc.Col(
@@ -107,115 +108,17 @@ app.layout = html.Div([
                         dbc.NavItem(dbc.NavLink(
                             "Pipeline Status", disabled=True, href="#")),
                     ], vertical=True),
-                    html.H6(
-                        "Selected samples",
-                        className=("sidebar-heading d-flex "
-                                   "justify-content-between align-items-center"
-                                   " px-3 mt-4 mb-1 text-muted")),
-                    dbc.Table([
-                        html.Tbody([
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                            html.Tr(html.Td("sample1")),
-                        ])
-                    ], size="sm"),
-                ], className="sidebar-sticky"),
+                    html.Div([
+                        html.H6(
+                            "Selected samples",
+                            className=("sidebar-heading d-flex "
+                                       "justify-content-between align-items-center"
+                                       " px-3 mt-4 mb-1 text-muted")),
+                        html.Div(
+                            dbc.Table(size="sm", id="selected-samples")
+                            , className="selected-samples-table"),
+                    ], className="selected-samples-nav"),
+                ], className="sidebar-sticky position-relative"),
             ], className="col-md-2 d-none d-md-block bg-light sidebar"),
             html.Main([
                 html.Div(id="selected-view"),
@@ -703,7 +606,7 @@ def update_selected_samples(apply_button, pagination_settings,
                             species_source, group_list, qc_list,
                             sample_names):
     empty_table = [{}]
-    empty_count = "0 samples loaded."
+    empty_count = "0"
     if apply_button == 0:
         return [empty_count, empty_table]
     else:
@@ -787,6 +690,45 @@ def generate_download_button(download_button,
                 href=full_csv_string_eur,
                 download='report.csv')
     ]
+
+@app.callback(
+    Output("app-store", "data"),
+    [Input("save-samples-button", "n_clicks")],
+    [State("app-store", "data"),
+     State("run-list", "value"),
+     State("species-list", "value"),
+     State("form-species-source", "value"),
+     State("group-list", "value"),
+     State("qc-list", "value"),
+     State("samples-form", "value")]
+)
+def select_samples(n_clicks, data, run_names, species_list,
+                   species_source, group_list, qc_list,
+                   sample_names):
+    if n_clicks == 0:
+        return {}
+    else:
+        tests_df, query_count = import_data.filter_all(species=species_list, species_source=species_source,
+                                                       group=group_list, qc_list=qc_list,
+                                                       run_names=run_names,
+                                                       sample_names=sample_names,
+                                                       pagination=None,
+                                                       projection={"name": 1})
+    tests_df["_id"] = tests_df["_id"].astype(str)
+    data["selected_samples"] = tests_df.to_dict('records')
+    return data
+
+
+@app.callback(
+    Output("selected-samples", "children"),
+    [Input("app-store", "data")]
+)
+def store_update(data):
+    rows = []
+    if "selected_samples" in data:
+        for sample in data["selected_samples"]:
+            rows.append(html.Tr(html.Td(sample["name"])))
+    return html.Tbody(rows)
 
 
 

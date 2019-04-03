@@ -16,8 +16,12 @@ def format_selected_samples(filtered_df):
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
 def html_div_summary():
-    qc_options = ["OK", "core facility", "supplying lab", "Not checked"]
-    qc_list_options = [{"label":o, "value":o} for o in qc_options]
+    qc_list_options = [
+        {"label": "OK", "value": "pass:OK"},
+        {"label": "Core Facility", "value": "fail:core facility"},
+        {"label": "Supplying Lab", "value": "fail:supplying lab"},
+        {"label": "Not checked", "value": "Not checked"}
+    ]
     
 
     return html.Div([
@@ -136,23 +140,34 @@ def html_div_summary():
                         ], width=12))
                     ], width=3),
                 ]),
-                dbc.Button("Search samples",
-                           id="apply-filter-button",
-                           color="primary",
-                           n_clicks=0,
-                           className="mr-1"),
-                dbc.Button("Generate download link (1000 samples max.)",
-                           id="generate-download-button",
-                           color="secondary",
-                           n_clicks=0,
-                           className="mr-1"),
+                dbc.ButtonGroup([
+                    dbc.Button("Search samples",
+                            id="apply-filter-button",
+                            color="primary",
+                            n_clicks=0),
+                    dbc.Button("Generate download link (1000 samples max.)",
+                            id="generate-download-button",
+                            color="secondary",
+                            n_clicks=0),
+                    dbc.Button("Save result as selected",
+                               id="save-samples-button",
+                               color="primary",
+                               n_clicks=0)
+                ]),
                 html.Div(id="tsv-download")
             ]
         ),
         html.Div(
             [
                 html.Div([
-                    html.H6('0 samples loaded.', id="filter-sample-count"),
+                    html.H5('Search Results'),
+                    html.Div([
+                        html.H6([
+                            html.Span("0", id="filter-sample-count"),
+                            ' samples loaded.'
+                        ]),
+                        
+                    ]),
                     dash_table.DataTable(
 
                         data=[{}],
@@ -173,7 +188,7 @@ def html_div_summary():
                             }
                         ],
                         n_fixed_rows=1,
-                        row_deletable=True,
+                        # row_deletable=True,
                         # filtering=True,  # Front end filtering
                         # sorting=True,
                         selected_rows=[],
@@ -244,10 +259,6 @@ def html_div_summary():
 
 
 def generate_table(tests_df):
-    #     if data_store == '""':
-    #         return empty_table
-    #     ##json_data = StringIO(data_store)
-
     qc_action = "stamps.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
@@ -345,8 +356,6 @@ def generate_table(tests_df):
             "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
     tests_df["_id"] = tests_df["_id"].astype(str)
-    print(list(tests_df.columns))
-    print([c["id"] for c in COLUMNS])
     tests_df = tests_df.filter([ c["id"] for c in COLUMNS])
 
     return tests_df

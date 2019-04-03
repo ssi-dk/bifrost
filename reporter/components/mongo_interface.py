@@ -4,7 +4,6 @@ import keys  # .gitgnored file
 from bson.objectid import ObjectId
 import atexit
 
-
 PAGESIZE = 25
 
 CONNECTION = None
@@ -205,97 +204,6 @@ def get_species_list(species_source):
     return species
 
 
-def get_qc_list(run_name=None):
-    connection = get_connection()
-    db = connection.get_database()
-    if run_name is not None:
-        run = db.runs.find_one(
-            {"name": run_name},
-            {
-                "_id": 0,
-                "samples._id": 1
-            }
-        )
-        if run is None:
-            run_samples = []
-        else:
-            run_samples = run["samples"]
-        sample_ids = [s["_id"] for s in run_samples]
-        qcs = list(db.sample_components.aggregate([
-            {
-                "$match": {
-                    "sample._id": {"$in": sample_ids},
-                    #"status": "Success",
-                    "component.name": "ssi_stamper"
-                }
-            },
-            {"$sort": {"sample._id": 1, "_id": 1}},
-            {
-                "$group": {
-                    "_id": "$sample._id",
-                    "action": {"$last": "$summary.assemblatron:action"}
-                }
-            },
-            {
-                "$group": {
-                    "_id": "$action",
-                    "count": {"$sum": 1}
-                }
-            },
-            {
-                "$sort": {"_id": 1}
-            }
-        ]))
-    else:
-        runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
-        sample_ids = set()
-        for run in runs:
-            for sample in run["samples"]:
-                sample_ids.add(sample["_id"])
-        sample_list = list(sample_ids)
-        qcs = list(db.samples.aggregate([
-            {
-                "$match": {
-                    "_id": {"$in": sample_list}
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "sample_components",
-                    "let": {"sample_id": "$_id"},
-                    "pipeline": [
-                        {"$match": {
-                            "component.name": "ssi_stamper",
-                            "summary.assemblatron:action" : {"$exists" : True}
-                            }},
-                        { "$match": {
-                                "$expr": {"$eq": ["$sample._id", "$$sample_id"]}
-                            }
-                        },
-                        {"$project": {"summary.assemblatron:action" : 1}},
-                        {"$sort": {"_id": -1}},
-                        {"$limit": 1}
-                    ],
-                    "as": "sample_components"
-                }
-            },
-            {
-                "$unwind": "$sample_components"
-            },
-            {
-                "$group": {
-                    "_id": "$sample_components.summary.assemblatron:action",
-                    "count": {"$sum": 1}
-                }
-            },
-            {
-                "$sort": {"_id": 1}
-            }
-        ]))
-
-    return qcs
-
-
 def filter_qc(qc_list):
     if qc_list is None or len(qc_list) == 0:
         return None
@@ -320,7 +228,8 @@ def filter_qc(qc_list):
 def filter(projection=None, run_names=None,
            species=None, species_source="species", group=None,
            qc_list=None, samples=None, pagination=None,
-           sample_names=None):
+           sample_names=None,
+           id_only=False):
     if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
         qc_list = None
     if species_source == "provided":
@@ -390,30 +299,37 @@ def filter(projection=None, run_names=None,
         p_limit = 1000
         p_skip = 0
 
-    skip_limit_steps = [{"$skip": p_skip}, {"$limit": p_limit}]
+    skip_limit_steps = [
+        {"$skip": p_skip}, {"$limit": p_limit}
+    ]
 
     qc_query = filter_qc(qc_list)
 
     if len(query) == 0:
         if qc_query is None:
+            match_query = {}
             final_query = [sort_step] + TABLE_QUERY + skip_limit_steps
         else:
-            final_query = TABLE_QUERY + [qc_query, sort_step] + skip_limit_steps
+            match_query = qc_query["$match"]
+            final_query = [{"$match": match_query}] + \
+                TABLE_QUERY + skip_limit_steps
     else:
         if qc_query is None:
-            final_query = [{"$match": {"$and": query}}] + \
-                TABLE_QUERY + [sort_step] + skip_limit_steps
+            match_query = {"$and": query}
+            final_query = [{"$match": match_query}] + \
+                TABLE_QUERY + skip_limit_steps
         else:
-            final_query = [{"$match": {"$and": query}}] + \
-                TABLE_QUERY + [qc_query, sort_step] + skip_limit_steps
-
-
-
-    query_result = db.samples.aggregate(final_query)
-    #query_count = query_result.count()  # Count ignores limit
-    query_count = 100
-    query_result = list(query_result)
-    return (query_result, query_count)
+            match_query = {"$and": query + qc_query["$match"]["$and"]}
+            final_query = [{"$match": match_query}] + \
+                TABLE_QUERY + skip_limit_steps
+    if projection is not None:
+        query_result = db.samples.find(match_query, projection)
+    else:
+        query_result = db.samples.aggregate(final_query)
+    result = []
+    count_result = db.samples.find(match_query).count()
+    result = list(query_result)
+    return (result, count_result)
 
 
 def get_results(sample_ids):

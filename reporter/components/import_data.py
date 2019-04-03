@@ -49,90 +49,25 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
 
 ##NOTE SPLIT/SHORTEN THIS FUNCTION
 def filter_all(species=None, species_source=None, group=None,
-               qc_list=None, run_names=None, func=None, sample_ids=None,
+               qc_list=None, run_names=None, sample_ids=None,
                sample_names=None,
-               pagination=None):
+               pagination=None,
+               id_only=False,
+               projection=None):
 
     if sample_ids is None:
         query_result, query_count = mongo_interface.filter(
-            {
-                "name" : 1,
-                "properties": 1,
-                "sample_sheet": 1,
-                "reads": 1,
-                "stamps": 1
-            },
-            run_names, species, species_source, group, qc_list=qc_list,
+            run_names=run_names, species=species,
+            species_source=species_source, group=group,
+            qc_list=qc_list,
             sample_names=sample_names,
-            pagination=pagination)
+            pagination=pagination, projection=projection)
     else:
         query_result, query_count = mongo_interface.filter(
-            {
-                "name": 1,
-                "properties": 1,
-                "sample_sheet": 1,
-                "reads": 1,
-                "stamps": 1
-            },
-            samples=sample_ids, pagination=pagination)
+            samples=sample_ids, pagination=pagination, id_only=id_only,
+            projection=projection)
     return pd.io.json.json_normalize(query_result), query_count
 
-    clean_result = {}
-    sample_ids = []
-    unnamed_count = 0
-    for item in query_result:
-        sample_ids.append(item["_id"])
-        sample_sheet_name = ""
-        if "name" not in item:
-            if "sample_sheet" in item:
-                sample_sheet_name = item["sample_sheet"]["sample_name"]
-            else:
-                print("No sample sheet here: ", item)
-                sample_sheet_name = "UNNAMED_" + str(unnamed_count)
-                unnamed_count += 1
-        try:
-            clean_result[str(item["_id"])] = {
-                "_id": str(item["_id"]),
-                "name": item.get("name", sample_sheet_name),
-                "species": item.get("properties", {}).get("species", "Not classified"),
-                "R1": str(item.get("reads", {}).get("R1", ""))
-            }
-            if "properties" in item:
-                for summary_key, summary_value in item["properties"].items():
-                    clean_result[str(item["_id"])]["properties." +
-                                        summary_key] = summary_value
-            if "stamps" in item:
-                for key, stamp in item["stamps"].items():
-                    if key == "stamp_list":
-                        continue
-                    else:
-                        clean_result[str(item["_id"])]["stamp." +
-                                                       key + ".value"] = stamp["value"]
-
-
-        except KeyError as e:
-            # we'll just ignore this for now
-            sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
-        if "sample_sheet" in item:
-            for key, value in item["sample_sheet"].items():
-                clean_result[str(item["_id"])]["sample_sheet." + key] = value
-        
-    component_result = mongo_interface.get_results(sample_ids)
-    for item in component_result:
-        item_id = str(item["sample"]["_id"])
-        component = item["component"]["name"]
-        if "summary" in item:
-            for summary_key, summary_value in item["summary"].items():
-                clean_result[item_id][component + "." +
-                                      summary_key] = summary_value
-        else:
-            pass
-            # print("Missing summary", item)
-        if "status" in item:
-            clean_result[item_id][component + ".status"] = item["status"]
-        for func in global_vars.FUNCS:
-            clean_result[item_id] = func(clean_result[item_id])
-    return pd.DataFrame.from_dict(clean_result, orient="index"), query_count
 
 def get_assemblies_paths(samples):
     return mongo_interface.get_assemblies_paths(samples)
