@@ -720,8 +720,7 @@ def update_selected_samples(apply_button, pagination_settings,
         return [empty_count, empty_table]
 
     tests_df = generate_table(tests_df)
-    print(tests_df)
-    sample_count = "{} samples loaded.".format(query_count)
+    sample_count = str(query_count)
 
     return [sample_count, tests_df.to_dict("rows")]
 
@@ -756,6 +755,11 @@ def generate_download_button(download_button,
         return None
 
     tests_df = generate_table(tests_df)
+
+    rename_dict = {item["id"]: item["name"]
+        for item in global_vars.COLUMNS}
+
+    renamed = tests_df.rename(rename_dict, axis='columns')
 
     missing_columns = [a for a in list(
         rename_dict.values()) if not a in list(renamed.columns)]
