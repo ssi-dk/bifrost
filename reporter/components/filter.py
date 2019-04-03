@@ -248,20 +248,19 @@ def generate_table(tests_df):
     #         return empty_table
     #     ##json_data = StringIO(data_store)
 
-    qc_action = "ssi_stamper.assemblatron:action"
-    qc_action = "stamp.ssi_stamper.value"
+    qc_action = "stamps.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
     else:
         tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[
             1]
 
-    if "R1" not in tests_df:
-        tests_df["R1"] = np.nan
+    if "reads.R1" not in tests_df:
+        tests_df["reads.R1"] = np.nan
 
-    values = {"R1": ""}
+    values = {"reads.R1": ""}
     tests_df = tests_df.fillna(value=values)
-    no_reads_mask = tests_df["R1"] == ""
+    no_reads_mask = tests_df["reads.R1"] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
@@ -281,10 +280,10 @@ def generate_table(tests_df):
     # Split test columns
     columns = tests_df.columns
     split_columns = [
-        "ssi_stamper.assemblatron:1x10xsizediff",
-        "ssi_stamper.whats_my_species:minspecies",
-        "ssi_stamper.whats_my_species:nosubmitted",
-        "ssi_stamper.whats_my_species:detectedspeciesmismatch"
+        "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff",
+        "sample_components.ssi_stamper.summary.whats_my_species:minspecies",
+        "sample_components.ssi_stamper.summary.whats_my_species:nosubmitted",
+        "sample_components.ssi_stamper.summary.whats_my_species:detectedspeciesmismatch"
     ]
     i = 0
     for column in columns:
@@ -296,8 +295,8 @@ def generate_table(tests_df):
             tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
-    if "ariba_mlst.mlst_report" in columns:
-        first_split = tests_df["ariba_mlst.mlst_report"].str.split(
+    if "sample_components.ariba_mlst.summary.mlst_report" in columns:
+        first_split = tests_df["sample_components.ariba_mlst.summary.mlst_report"].str.split(
             ",", n=1, expand=True)
         if len(first_split.columns) == 2:
             second_split = first_split[0].str.split(":", n=1, expand=True)
@@ -308,7 +307,8 @@ def generate_table(tests_df):
                 tests_df["ariba_mlst_alleles"] = first_split[1]
 
     test_cols = [col for col in columns if (col.startswith(
-        "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
+        "sample_components.ssi_stamper.summary") and
+        not col.startswith("sample_components.ssi_stamper.summary.qcquickie"))]
 
     def concatenate_failed(row):
         res = []
@@ -344,7 +344,7 @@ def generate_table(tests_df):
         style_data_conditional += [{"if": {
             "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
-    tests_df["_id"] = str(tests_df["_id"])
+    tests_df["_id"] = tests_df["_id"].astype(str)
     print(list(tests_df.columns))
     print([c["id"] for c in COLUMNS])
     tests_df = tests_df.filter([ c["id"] for c in COLUMNS])

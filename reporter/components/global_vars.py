@@ -63,7 +63,7 @@ COLUMNS = [
     },
     {
         "name": "G_size_diff_1x_10",
-        "id": "ssi_stamper.assemblatron:1x10xsizediff_text"
+        "id": "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff_text"
     },
     {
         "name": "Avg_coverage",
@@ -87,7 +87,7 @@ COLUMNS = [
     },
     {
         "name": "Main_sp_plus_uncl",
-        "id": "ssi_stamper.whats_my_species:minspecies_text"
+        "id": "sample_components.ssi_stamper.summary.whats_my_species:minspecies_text"
     },
     {
         "name": "Unclassified_reads",

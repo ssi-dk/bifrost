@@ -74,6 +74,7 @@ TABLE_QUERY = [
             'sample_sheet': 1,
             'stamps': 1,
             'properties': 1,
+            'reads': 1,
             'sample_components': {
                 '$arrayToObject': '$sample_components'
             }
