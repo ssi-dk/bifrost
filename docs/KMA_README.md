@@ -8,25 +8,39 @@ This is the basic folder structure with a sample run containing only one sample:
 │   └── keys.txt
 ├── input
 │   └── 2019
-│       └── sample_run
-│           ├── SAMPLE1_S2_L001_R1_001.fastq.gz
-│           └── SAMPLE1_S2_L001_R2_001.fastq.gz
-├── output
+│       └── example_run_01
+│           ├── Sample1_S1_L001_R1_001.fastq.gz
+│           ├── Sample1_S1_L001_R2_001.fastq.gz
+│           ├── Sample2_S2_L001_R1_001.fastq.gz
+│           ├── Sample2_S2_L001_R2_001.fastq.gz
+│           ├── Sample3_S3_L001_R1_001.fastq.gz
+│           ├── Sample3_S3_L001_R2_001.fastq.gz
+│           ├── Sample4_S4_L001_R1_001.fastq.gz
+│           ├── Sample4_S4_L001_R2_001.fastq.gz
+│           ├── Sample5_S5_L001_R1_001.fastq.gz
+│           └── Sample5_S5_L001_R2_001.fastq.gz
+├── output 
 │   └── 2019
-│       └── sample_run
+│       └── example_run_01 
+│           │   # (before bifrost is run)
+│           ├── samples -> ../../../input/2019/example_run01/
+│           ├── sample_sheet.tsv
+│           │── src
+│           │   # (additional files after software is run)
 │           ├── bifrost
+│           ├── bifrost_successfully_initialized_on_(DATETIME)
 │           ├── components
 │           ├── config.yaml
-│           ├── SAMPLE1
-│           ├── run_cmd_bifrost.sh
-│           ├── samples
-│           └── src
-├── sample_sheet.tsv
+│           ├── Sample1
+│           ├── Sample2
+│           ├── Sample3
+│           ├── Sample4
+│           ├── Sample5
+│           └── run_cmd_bifrost.sh
 └── README.md <-- this file
 ```
 
-`config` contains `config.yaml` which includes KMA specific config values to run the pipeline such as the group name for the torque queue and which components to run.
-The sample_sheet.tsv is a template you can use when setting up a run (see below) to add metadata to the sample.
+`config` contains `config.yaml` which includes KMA specific config values to run the pipeline such as the group name for the torque queue and which components to run. This is also pointed to by the Webserver for access to the bifrost web interface.
 
 ## Before starting
 
@@ -43,20 +57,20 @@ pkgs_dirs:
 ## Basic workflow
 
 The basic workflow starts when the user adds a new directory (considered a 'run') to the input/year directory.
-This run directory should contain the read pairs with names matching the regex specified in the config file. The default name from illumina MySeq machines works.
+This run directory should contain the read pairs with names matching the regex specified in the config file. The default name from illumina MySeq or NextSeq machines works. An example_run_01 is included to help you get started.
 
 The next step is either triggered by the user or, when implemented, executed by a chron job.
 
 ## Setting up the run
-
+(All of the following steps have already been done for you for example_run_01)
 - Create a directory in output/year (we'll call it output/year/run, an example could be output/2019/RUN2019001) with the same name as the one created in input/year (input/year/run)
 - Symlink input/year/run into output/year/run/samples
 - Copy recursively the source code located in /home/projects/ssi_10003/apps/bifrost-private as output/year/run/src
-- If you have a sample sheet with sample metadata, add it as output/year/run/sample_sheet.xlsx (or sample_sheet.tsv, but you need to set config to sample_sheet=sample_sheet.tsv)
+- If you have a sample sheet with sample metadata, add it as output/year/run/sample_sheet.tsv (or sample_sheet.xslx, but you need to set config to sample_sheet=sample_sheet.xlsx)
 
 ### Sample sheet
 
-You can use /sample_sheet.tsv as an example. It should have a header and the order is not important as it is being read by pandas. The fields are:
+You can use /output/2019/example_run_01/sample_sheet.tsv as an example. It should have a header and the order is not important as it is being read by pandas. The fields are:
 
 **SampleID:** Mandatory. This name is mapped in the database to sample_name, but our code currently depends on that name instead of the mapped one as an oversight. I'll add that to the task list so in the future it will be sample_name (or whatever field you configure in config.yaml).
 
@@ -66,11 +80,9 @@ You can use /sample_sheet.tsv as an example. It should have a header and the ord
 
 **Comments:** Optional. This value is shown in the reporter, so don't store anything here that you don't want anyone with access to the web reporter to see. In our case, it is empty in most samples but we use it for library preparation failures and misc information. As with SampleID, we will change the name to comments to have a consistent naming scheme.
 
-**emails:** Optional. Shown as well in the reporter, we use it to show a contact person for the sample. An email string or a comma separated list of emails is the expected value.
-
 You can add any extra values to the sample sheet and they will not be shown in the reporter, but will be stored in the database (in the sample object, under sample_sheet).
 
-Also note, to make it work with the tsv you need to change the default config.yaml value for sample_sheet to `sample_sheet=sample_sheet.tsv`.
+Also note, to make it work with the xlsx you need to change the default config.yaml value for sample_sheet to `sample_sheet=sample_sheet.xlsx`.
 
 ## Running bifrost
 
@@ -106,7 +118,7 @@ Go into the sample folder (the one you want to run), open cmd_bifrost.sh and cop
 
 You can also create a new batch file with the same header as cmd_bifrost.sh and submit it to the queue system.
 
-### Removing a run
+### Removing a run (update)
 
 There is a script in scripts/db_management/remove_run.py. Make sure to have the bifrost environment enabled and your correct key path in the BIFROST_DB_KEY variable. Then run the script:
 
