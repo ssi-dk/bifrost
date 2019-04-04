@@ -231,7 +231,6 @@ def update_run_report(store, n_intervals):
                                            className="rotate rotate-short"),
                          components)))
         rows = [header]
-
         for sample_id, s_components in s_c_status.items():
             sample = samples_by_id[sample_id]
             name = sample["name"]
@@ -314,6 +313,7 @@ def update_run_report(store, n_intervals):
                                   last_runs_names)))
         rows = [header]
         for name, p_runs in prev_runs_dict.items():
+            print(name, p_runs)
             if name == "Undetermined":
                 continue
             row = []

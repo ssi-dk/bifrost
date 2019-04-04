@@ -470,7 +470,7 @@ def get_sample_QC_status(last_runs):
                 for run in last_runs
                 for sample in run["samples"]]
         
-    samples_full = get_samples(list(map(lambda x: str(x["_id"]), samples)))
+    samples_full = get_samples(list(map(lambda x: x["_id"], samples)))
     samples_by_ids = {str(s["_id"]): s for s in samples_full}
 
     samples_runs_qc = {}
@@ -486,7 +486,7 @@ def get_sample_QC_status(last_runs):
                     if stamps is not None:
                         stamps = stamps.get("stamps", {})
                         qc_val = stamps.get(
-                            "ssi_stamper", {}).get("value", "N/A")
+                            "ssi_stamper", {}).get("value", "CF(LF)")
                         expert_check = False
                         if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
                             qc_val = stamps["ssi_expert_check"]["value"]
@@ -500,9 +500,9 @@ def get_sample_QC_status(last_runs):
                     elif qc_val == "pass:OK":
                         qc_val = "OK"
 
-                        if expert_check:
-                            qc_val += "*"
-                        sample_dict[run["name"]] = qc_val
+                    if expert_check:
+                        qc_val += "*"
+                    sample_dict[run["name"]] = qc_val
         samples_runs_qc[name] = sample_dict
     return samples_runs_qc
 
