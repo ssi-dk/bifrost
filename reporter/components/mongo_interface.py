@@ -8,16 +8,12 @@ import atexit
 PAGESIZE = 25
 
 CONNECTION = None
-SPECIES_CONNECTION = None
 
 
 def close_connection():
     global CONNECTION
-    global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
-    if SPECIES_CONNECTION is not None:
-        SPECIES_CONNECTION.close()
 
 
 atexit.register(close_connection)
@@ -34,20 +30,6 @@ def get_connection():
         "Return mongodb connection"
         CONNECTION = pymongo.MongoClient(mongodb_url)
         return CONNECTION
-
-
-def get_species_connection():
-    global SPECIES_CONNECTION
-    if SPECIES_CONNECTION is not None:
-        return SPECIES_CONNECTION
-    else:
-        mongo_db_key_location = os.getenv("BIFROST_SPECIES_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        "Return mongodb connection"
-        SPECIES_CONNECTION = pymongo.MongoClient(mongodb_url)
-        return SPECIES_CONNECTION
-        
 
 
 
@@ -455,8 +437,8 @@ def get_sample_component_status(sample_ids):
 
 
 def get_species_QC_values(ncbi_species):
-    connection = get_species_connection()
-    db = connection.get_database()
+    connection = get_connection()
+    db = connection.get_database("bifrost_species")
     if ncbi_species != "default":
         return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
     else:
