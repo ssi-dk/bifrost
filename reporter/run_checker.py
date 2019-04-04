@@ -301,7 +301,7 @@ def update_run_report(store, n_intervals):
     if store["report"] == "resequence":
 
         run_checker_link = html.H4(html.A(
-            "Run Checker Report", href="/{}".format(run)))
+            "Run Checker Report", href="/{}".format(run["name"])))
 
         last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
         last_runs_names = [run["name"] for run in last_runs]
