@@ -331,7 +331,7 @@ def update_run_report(store, n_intervals):
                         className = "2"
                         title = "OK"
                     elif status == "SL":
-                        sample_all_OKs = False
+                        #sample_all_OKs = False #Disabled
                         className = "1"
                         title = "Supplying Lab"
                     elif status.startswith("CF"):
