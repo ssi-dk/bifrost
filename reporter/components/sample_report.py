@@ -1,10 +1,11 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table as dt
-from components.images import list_of_images, get_species_color
+from components.images import list_of_images
 from components.table import html_table, html_td_percentage
-from components.import_data import get_read_paths, get_assemblies_paths
+import components.import_data as import_data
 import components.global_vars as global_vars
+import components.admin as admin
 import plotly.graph_objs as go
 import pandas as pd
 import math
@@ -34,7 +35,7 @@ def get_species_img(sample_data):
         img = None
     return img
 
-def generate_sample_report(dataframe, sample, background):
+def generate_sample_report(sample, n_sample):
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -49,21 +50,22 @@ def generate_sample_report(dataframe, sample, background):
                     className="box-title"
                 ),
                 img_div,
-                html_sample_tables(sample, className="row")
+                html_sample_tables(sample, className="row"),
+                admin.sample_radio_feedback(sample, n_sample)
             ],
             className="border-box"
         )
     )
 
 
-def html_species_report(dataframe, species, species_plot_data, **kwargs):
+def html_species_report(dataframe, species, row_index, **kwargs):
     report = []
     for index, sample in \
-      dataframe.loc[dataframe["species"] == species].iterrows():
-        report.append(generate_sample_report(dataframe,
-                                             sample,
-                                             species_plot_data))
-    return html.Div(report, **kwargs)
+            dataframe.loc[dataframe["species"] == species].iterrows():
+        report.append(generate_sample_report(sample,
+                                             row_index))
+        row_index += 1
+    return (html.Div(report, **kwargs), row_index)
 
 
 def html_organisms_table(sample_data, **kwargs):
@@ -77,10 +79,6 @@ def html_organisms_table(sample_data, **kwargs):
     color_0 = "#b3ccc1"
     color_1 = "#b3ccc1" #Green
 
-    # color_1 = get_species_color(
-    #     sample_data.get("whats_my_species.name_classified_species_1"))  # Default
-#    color_2 = COLOR_DICT.get(
-#        sample_data["name_classified_species_2"], "#f3bbd3")  # Default
     color_2 = "#f3bbd3"  # Default
 
 #   color_u = COLOR_DICT.get("", "#fee1cd")  # Default
@@ -111,7 +109,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 def html_test_tables(sample_data, **kwargs):
-    stamps_to_check = ["ssi_stamper", "ssi_expert_check"]
+    stamps_to_check = ["ssi_stamper", "supplying_lab_check"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("ssi_stamper.whats_my_species") \
@@ -129,7 +127,7 @@ def html_test_tables(sample_data, **kwargs):
     stamp_rows = []
     for stamp in stamps_to_check:
         stamp_key = "stamp.{}.value".format(stamp)
-        if stamp_key in sample_data:
+        if stamp_key in sample_data and not pd.isnull(sample_data[stamp_key]):
             if str(sample_data[stamp_key]).startswith("pass"):
                 stamp_class = "test-pass"
             elif str(sample_data[stamp_key]).startswith("fail"):
@@ -270,7 +268,7 @@ def html_sample_tables(sample_data, **kwargs):
         ])
     ])
     resresults = False
-    resfinder = sample_data.get('analyzer.ariba_resfinder', [])
+    resfinder = sample_data.get('ariba_resfinder.ariba_resfinder', [])
     if type(resfinder) == list and len(resfinder):
         resresults = True
         resfinder_div = html.Div(
@@ -285,12 +283,13 @@ def html_sample_tables(sample_data, **kwargs):
                 data=resfinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status", "") == "Success" and (type(resfinder) == float or resfinder is None or not len(resfinder)):
+    elif (sample_data.get("ariba_resfinder.status", "") == "Success" and
+         (type(resfinder) == float or resfinder is None or not len(resfinder))):
         resfinder_div = html.P("No antibiotic resistance genes found")
     else:
         resfinder_div = html.P("Resfinder not run")
     
-    plasmidfinder = sample_data.get('analyzer.ariba_plasmidfinder', [])
+    plasmidfinder = sample_data.get('ariba_plasmidfinder.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
         resresults = True
         plasmidfinder_div = html.Div(
@@ -304,7 +303,10 @@ def html_sample_tables(sample_data, **kwargs):
                 data=plasmidfinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status","") == "Success" and (type(plasmidfinder) == float or plasmidfinder is None or not len(plasmidfinder)):
+    elif (sample_data.get("ariba_plasmidfinder.status", "") == "Success" and
+         (type(plasmidfinder) == float or
+          plasmidfinder is None or
+          not len(plasmidfinder))):
         plasmidfinder_div = html.P("No replicons found")
     else:
         plasmidfinder_div = html.P("Plasmidfinder not run")
@@ -323,7 +325,7 @@ def html_sample_tables(sample_data, **kwargs):
                 data=virulencefinder,
                 pagination_mode=False
             ), className="grey-border")
-    elif sample_data.get("analyzer.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
+    elif sample_data.get("ariba_virulencefinder.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
         virulencefinder_div = html.P("No virulence markers found")
     else:
         virulencefinder_div = html.P("Virulencefinder not run")
@@ -356,7 +358,10 @@ def html_sample_tables(sample_data, **kwargs):
     mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
 
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
-    if sample_data.get("analyzer.status", "") == "Success" or sample_data.get("ariba_virulencefinder.status", "") == "Success": 
+    if (sample_data.get("ariba_resfinder.status", "") == "Success" or
+        sample_data.get("ariba_plasmidfinder.status", "") == "Success" or
+        sample_data.get("ariba_mlst.status", "") == "Success" or
+        sample_data.get("ariba_virulencefinder.status", "") == "Success"):
         res_analysis_not_run = False
     else:
         res_analysis_not_run = True
@@ -394,8 +399,8 @@ def html_sample_tables(sample_data, **kwargs):
             html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
 
     mlst_type = "ND"
-    if "analyzer.mlst_report" in sample_data and sample_data["analyzer.mlst_report"] is not None:
-        mlst_report_string = sample_data["analyzer.mlst_report"]
+    if "ariba_mlst.mlst_report" in sample_data and sample_data["ariba_mlst.mlst_report"] is not None:
+        mlst_report_string = sample_data["ariba_mlst.mlst_report"]
         if "," in mlst_report_string:
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type = mlst_text_split[0].split(":",1)[1]
@@ -420,35 +425,39 @@ def html_sample_tables(sample_data, **kwargs):
     ], **kwargs)
 
 
-def children_sample_list_report(filtered_df, plot_data):
+def children_sample_list_report(filtered_df):
     report = []
+    result_index = 0
     for species in filtered_df["species"].unique():
+        species_report_div, result_index = html_species_report(
+            filtered_df, species, result_index)
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
-            html_species_report(filtered_df, species,[])
-            # html_species_report(filtered_df, species,
-                                # plot_data.get(species, []))
+            species_report_div
         ]))
     return report
 
-def generate_sample_folder(samples):
+def generate_sample_folder(sample_ids):
     """Generates a script string """
-    reads = get_read_paths(samples)
-    assemblies = get_assemblies_paths(samples)
+    samples = import_data.get_samples(sample_ids)
+    # Access samples by their id
+    samples_by_ids = { str(s["_id"]) : s for s in samples }
+    assemblies = import_data.get_assemblies_paths(sample_ids)
     reads_script = "mkdir samples\ncd samples\n"
     assemblies_script = "mkdir assemblies\ncd assemblies\n"
     reads_errors = []
     assemblies_errors = []
     for assembly in assemblies:
+        sample = samples_by_ids[str(assembly["sample"]["_id"])]
         try:
             assemblies_script += "#{}\nln -s {} {}\n".format(
-                assembly["sample"]["name"],
+                sample["name"],
                 assembly["path"] + "/contigs.fasta",
-                assembly["sample"]["name"] + "_contigs.fasta")
+                sample["name"] + "_contigs.fasta")
         except KeyError as e:
             assemblies_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
-                assembly["sample"].get("name", "None"),
+                sample.get("name", "None"),
                 assembly["_id"],
                 assembly.get("path", "No data")
             ))
@@ -469,7 +478,7 @@ def generate_sample_folder(samples):
             html.Pre(assemblies_script, className="folder-pre")
         ]
 
-    for sample in reads:
+    for sample in samples:
         try:
             reads_script += "#{}\nln -s {} .\nln -s {} .\n".format(
                 sample["name"],

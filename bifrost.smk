@@ -305,6 +305,11 @@ rule check__provided_sample_info:
                 df = pandas.read_excel(sample_sheet)
             else:  # assume it's a tsv
                 df = pandas.read_table(sample_sheet)
+
+            # Dropping rows with no sample name.
+            noname_index = df[df["SampleID"].isna()].index
+            df.drop(noname_index, inplace=True)
+
             item_rename_dict = {}
             badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
             for item in badly_named_samples["SampleID"].tolist():
@@ -442,7 +447,7 @@ rule set_sample_species:
 
                         sample_db["properties"] = sample_db.get("properties", {})
                         provided_species = sample_db["sample_sheet"].get("provided_species")
-                        if pd.isna(provided_species):
+                        if pandas.isna(provided_species):
                             provided_species = None
                         sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(
                             provided_species)

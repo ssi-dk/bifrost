@@ -7,12 +7,13 @@ def get_components(sample_dict):
     component_names = ["whats_my_species", "qcquickie", "assemblatron"]
     comps = {}
     for component in component_names:
-        comps[component] = datahandling.load_last_sample_component(
-            str(sample_dict["_id"]), component)
+        comps[component] = datahandling.get_sample_components(
+            sample_ids=[str(sample_dict["_id"])],
+            component_names=[component])[0]
     return comps
 
 
-def script__test_ssi_stamper(sample, sample_yaml, sample_component, log_out, log_err):
+def script__test_ssi_stamper(sample, sample_yaml, sample_component, log_err):
     # Genering error handling to redirect output to stderr file
     try:
         comps = get_components(sample)
@@ -43,12 +44,11 @@ def script__test_ssi_stamper(sample, sample_yaml, sample_component, log_out, log
 
         datahandling.save_sample(sample, sample_yaml)
         return 0
-    except Exception as e:
+    except Exception:
         datahandling.log(log_err, str(traceback.format_exc()))
         exit(1)
 
 script__test_ssi_stamper(snakemake.params.sample,
                         snakemake.params.sample_yaml,
                         snakemake.params.sample_component,
-                        snakemake.log.out_file,
                         snakemake.log.err_file)

@@ -243,7 +243,6 @@ def html_div_summary():
                         )
                     ]
                     , className="row"),
-                html.Div(admin.selected_samples_div(),className="row")
             ], className="border-box"
         )
     ])

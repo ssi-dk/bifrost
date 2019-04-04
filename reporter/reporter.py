@@ -17,11 +17,9 @@ import plotly.graph_objs as go
 from plotly import tools 
 from dash.dependencies import Input, Output, State
 
-from flask import request # To get client IP for pass/fail stamp
+from flask import request   # To get client IP for pass/fail stamp
 
 import dash_scroll_up
-
-import flask  #used for the image server
 
 import keys
 
@@ -30,13 +28,15 @@ import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.summary import html_div_summary, filter_notice_div
 from components.sample_report import children_sample_list_report, generate_sample_folder
-from components.images import list_of_images, static_image_route, COLOR_DICT, image_directory
+from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
+import components.admin as admin
 
-#Globals
-#also defined in mongo_interface.py
+# Globals
+# also defined in mongo_interface.py
 PAGESIZE = 25
 ADMIN = False
+
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
@@ -95,6 +95,10 @@ app.layout = html.Div([
         html.Details([
             html.Summary("Latest changes..."),
             html.Div([
+                html.P(
+                    "2019-03-19: Add Priority to run checker."),
+                html.P(
+                    "2019-03-14: Add Supplying lab feedback option."),
                 html.P(
                     "2019-03-07: Add QC values to Run checker."),
                 html.P(
@@ -445,11 +449,26 @@ def sample_report(page_n, lasso_selected, data_store):
     page = import_data.add_sample_runs(page)
     max_page = len(samples) // PAGESIZE
     page_species = page["species"].unique().tolist()
-    species_plot_data = import_data.get_species_plot_data(page_species, page["_id"].tolist())
+    # We need to have fake radio buttons with the same ids to account for times 
+    # when not all PAGESIZE samples are shown and are not taking the ids required by the callback
+    html_fake_radio_buttons = html.Div([dcc.RadioItems(
+        options=[
+            {'label': '', 'value': 'nosample'}
+        ],
+        value='noaction',
+        id="sample-radio-{}".format(n_sample)
+    ) for n_sample in range(len(page), PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page, species_plot_data)),
-        html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
+        html.Div(children_sample_list_report(page)),
+        html_fake_radio_buttons,
+        admin.html_qc_expert_form(),
+        html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+        html.Div(id="placeholder0", style={"display": "none"}),
+        dcc.ConfirmDialog(
+            id='qc-confirm',
+            message='Are you sure you want to send sample feedback?',
+        )
     ]
 
 @app.callback(
@@ -627,7 +646,7 @@ def update_test_table(data_store):
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
-    user_stamp_col = "stamp.ssi_expert_check.value"
+    user_stamp_col = "stamp.supplying_lab_check.value"
     # Overload user stamp to ssi_stamper
     if user_stamp_col in tests_df.columns:
         user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
@@ -655,16 +674,16 @@ def update_test_table(data_store):
             tests_df.insert(loc + 1, column + "_text", new[2])
         i += 1
 
-    if "analyzer.mlst_report" in columns:
-        first_split = tests_df["analyzer.mlst_report"].str.split(
+    if "ariba_mlst.mlst_report" in columns:
+        first_split = tests_df["ariba_mlst.mlst_report"].str.split(
             ",", n=1, expand=True)
         if len(first_split.columns) == 2:
             second_split = first_split[0].str.split(":", n=1, expand=True)
             if len(second_split.columns) == 2:
                 keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
                 second_split.loc[keyerrormask, 1] = np.nan
-                tests_df["analyzer_mlst_type"] = second_split[1]
-                tests_df["analyzer_mlst_alleles"] = first_split[1]
+                tests_df["ariba_mlst_type"] = second_split[1]
+                tests_df["ariba_mlst_alleles"] = first_split[1]
 
     test_cols = [col for col in columns if (col.startswith(
         "ssi_stamper") and not col.startswith("ssi_stamper.qcquickie"))]
@@ -1062,6 +1081,50 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
 
     fig["layout"].update(annotations=annotations)
     return fig
+
+
+def create_stamp(value, user):
+    return {
+        "name": "supplying_lab_check",
+        "user-ip": str(request.remote_addr),
+        "user": user,
+        "date": datetime.datetime.utcnow(),
+        "value": value
+    }
+
+
+@app.callback(Output('qc-confirm', 'displayed'),
+              [Input('feedback-button', 'n_clicks_timestamp')])
+def display_confirm_feedback(button):
+    if button is not None:
+        return True
+    return False
+
+
+@app.callback(
+    Output("placeholder0", "children"),
+    [Input("qc-confirm", "submit_n_clicks")],
+    [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
+                                     for n in range(PAGESIZE)]
+)
+def print_radio(n_clicks_timestamp, user, *args):
+    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+        stamp_a = create_stamp("pass:accepted", user)
+        stamp_r = create_stamp("fail:resequence", user)
+        stamp_o = create_stamp("fail:other", user)
+        stamplist = []
+        for val in args:
+            if val != "noaction":
+                if val.startswith("A_"):
+                    stamplist.append((val[2:], stamp_a))
+                elif val.startswith("R_"):
+                    stamplist.append((val[2:], stamp_r))
+                elif val.startswith("O_"):
+                    stamplist.append((val[2:], stamp_o))
+        if len(stamplist) > 0:
+            import_data.email_stamps(stamplist)
+            import_data.post_stamps(stamplist)
+    return []
 
 
 server = app.server # Required for gunicorn

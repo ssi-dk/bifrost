@@ -23,7 +23,8 @@
 ### 3.1. Create mongodb database and user account
 
 ```javascript
-db.createUser({ "user": "bifrost_KMA", "pwd": "random", "roles": [{role:"readWrite", db: "bifrost_KMA"}], mechanisms:["SCRAM-SHA-1"]})
+db.createUser({"user": "bifrost_SSI", "pwd": "", roles: [
+              {role: "readWrite", db: "bifrost_SSI"}, {role: "read", db: "bifrost_species"}], mechanisms: ["SCRAM-SHA-256"]})
 ```
 
 ### 3.2. Add setup_date index (check which others to create)

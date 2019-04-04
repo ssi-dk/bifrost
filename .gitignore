@@ -8,3 +8,6 @@ start.sh
 *.pyc
 reporter/keys.py
 docs/build
+*\.pytest_cache
+*/*.egg-info
+.pylintrc
