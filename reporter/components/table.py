@@ -10,7 +10,7 @@ def html_table(data, **kwargs):
         else:
             rows.append(html.Tr([html.Td(data_cell, className="cell") for data_cell in data_row["list"]],
                                className=data_row["className"] + " trow"))
-    return html.Table(rows, **kwargs)
+    return html.Table(rows, className="bifrost-table", **kwargs)
 
 
 def html_td_percentage(value, color):

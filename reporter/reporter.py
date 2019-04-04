@@ -28,16 +28,14 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_summary, generate_table
-from components.sample_report import children_sample_list_report, generate_sample_folder
+from components.filter import html_div_filter, generate_table
+from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, generate_sample_folder
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
 
 # Globals
 # also defined in mongo_interface.py
-
-SAMPLE_PAGESIZE = 25
 
 
 def hex_to_rgb(value):
@@ -66,9 +64,6 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
     )
 
 # Temp css to make it look nice
-# Dash CSS
-app.css.append_css(
-    {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 # Lato font
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
@@ -76,7 +71,7 @@ app.css.append_css(
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     # To store url param values
-    dcc.Store(id="app-store", storage_type="memory"),
+    dcc.Store(id="app-store", storage_type="session", data={}),
     dbc.Navbar(
         [
             dbc.Col(
@@ -102,11 +97,18 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     dbc.Nav([
-                        dbc.NavItem(dbc.NavLink("Filter", active=True, href="#")),
-                        dbc.NavItem(dbc.NavLink("Aggregate Data", href="#")),
-                        dbc.NavItem(dbc.NavLink("Per Sample Data", href="#")),
-                        dbc.NavItem(dbc.NavLink(
-                            "Pipeline Status", disabled=True, href="#")),
+                        dbc.NavItem(dcc.Link("Filter",
+                                             href="/",
+                                             className="nav-link active")),
+                        dbc.NavItem(dcc.Link("Aggregate Data",
+                                             className="nav-link active",
+                                             href="/aggregate")),
+                        dbc.NavItem(dcc.Link("Per Sample Data",
+                                             className="nav-link active",
+                                             href="/sample-report")),
+                        dbc.NavItem(dcc.Link("Pipeline Status",
+                                             className="nav-link active",
+                                             href="pipeline-report")),
                     ], vertical=True),
                     html.Div([
                         html.H6(
@@ -218,15 +220,17 @@ app.layout = html.Div([
 
 @app.callback(
     Output("selected-view", "children"),
-    [Input("url", "pathname")]
+    [Input("url", "pathname")],
+    [State("app-store", "data")]
 )
-def update_run_name(pathname):
-    default = "filter"
+def update_run_name(pathname, data):
     if pathname is None or pathname == "/":
-        pathname = "/" + default
+        pathname = "/"
     path = pathname.split("/")
-    if path[1] == "filter":
-        return html_div_summary()
+    if path[1] == "":
+        return html_div_filter()
+    elif path[1] == "sample-report":
+        return sample_report(data)
     else:
         return "Not found"
 
@@ -435,48 +439,47 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
         return 0
 
 
-# @app.callback(
-#     Output("sample-report", "children"),
-#     [Input("page-n", "children")],
-#     [State("lasso-sample-ids", "children"),
-#         State("data-store", "data")]
-#         )
-# def sample_report(page_n, lasso_selected, data_store):
-#     page_n = int(page_n)
-#     #json_data = StringIO(data_store)
-#     data = pd.DataFrame.from_dict(data_store)
-#     if lasso_selected != "" and lasso_selected is not None:
-#         lasso = lasso_selected.split(",")  # lasso first
-#         data = data[data._id.isin(lasso)]
-#     if len(data) == 0: return []
-#     samples = data["_id"]
-#     data = data.sort_values(["species","name"])
-#     skips = SAMPLE_PAGESIZE * (page_n)
-#     page = data[skips:skips+SAMPLE_PAGESIZE]
-#     page = import_data.add_sample_runs(page)
-#     max_page = len(samples) // SAMPLE_PAGESIZE
-#     page_species = page["species"].unique().tolist()
-#     # We need to have fake radio buttons with the same ids to account for times 
-#     # when not all SAMPLE_PAGESIZE samples are shown and are not taking the ids required by the callback
-#     html_fake_radio_buttons = html.Div([dcc.RadioItems(
-#         options=[
-#             {'label': '', 'value': 'nosample'}
-#         ],
-#         value='noaction',
-#         id="sample-radio-{}".format(n_sample)
-#     ) for n_sample in range(len(page), SAMPLE_PAGESIZE)], style={"display": "none"})
-#     return [
-#         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-#         html.Div(children_sample_list_report(page)),
-#         html_fake_radio_buttons,
-#         admin.html_qc_expert_form(),
-#         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-#         html.Div(id="placeholder0", style={"display": "none"}),
-#         dcc.ConfirmDialog(
-#             id='qc-confirm',
-#             message='Are you sure you want to send sample feedback?',
-#         )
-#     ]
+@app.callback(
+    Output("sample-report", "children"),
+    [Input("page-n", "children"),
+    Input("app-store", "data")]
+        )
+def fill_sample_report(page_n, data):
+    page_n = int(page_n)
+    if "selected_samples" in data:
+        sample_ids = list(map(lambda x: x["_id"], data["selected_samples"]))
+    else:
+        return None
+    
+    data_table, total_count = import_data.filter_all(sample_ids=sample_ids)
+    print(data_table)
+    samples = data_table["_id"]
+    data_table = data_table.sort_values(["properties.species", "name"])
+    skips = SAMPLE_PAGESIZE * (page_n)
+    page = data_table[skips:skips+SAMPLE_PAGESIZE]
+    max_page = len(samples) // SAMPLE_PAGESIZE
+    page_species = page["properties.species"].unique().tolist()
+    # We need to have fake radio buttons with the same ids to account for times 
+    # when not all SAMPLE_PAGESIZE samples are shown and are not taking the ids required by the callback
+    html_fake_radio_buttons = html.Div([dcc.RadioItems(
+        options=[
+            {'label': '', 'value': 'nosample'}
+        ],
+        value='noaction',
+        id="sample-radio-{}".format(n_sample)
+    ) for n_sample in range(len(page), SAMPLE_PAGESIZE)], style={"display": "none"})
+    return [
+        html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+        html.Div(children_sample_list_report(page)),
+        html_fake_radio_buttons,
+        # admin.html_qc_expert_form(),
+        html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
+        html.Div(id="placeholder0", style={"display": "none"}),
+        dcc.ConfirmDialog(
+            id='qc-confirm',
+            message='Are you sure you want to send sample feedback?',
+        )
+    ]
 
 # @app.callback(
 #     Output("sample-folder-div", "children"),
@@ -513,65 +516,7 @@ def update_report(lasso_selected):
         return []
     else:
         sample_n = lasso_selected.count(",") + 1
-        return [
-            html.H3("Sample Report"),
-            html.Span("0", style={"display": "none"}, id="page-n"),
-            html.Span(sample_n // SAMPLE_PAGESIZE,
-                    style={"display": "none"}, id="max-page"),
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.Button(
-                                "Previous page", id="prevpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Button(
-                                "Next page", id="nextpage", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                ],
-                className="row"
-            ),
-            
-            html.Div(id="sample-report"),
-
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.Button(
-                                "Previous page", id="prevpage2", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                        ],
-                        className="three columns"
-                    ),
-                    html.Div(
-                        [
-                            html.Button(
-                                "Next page", id="nextpage2", n_clicks_timestamp=0),
-                        ],
-                        className="three columns"
-                    ),
-                ],
-                className="row"
-            ),
-        ]
+        
 
 
 # @app.callback(

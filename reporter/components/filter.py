@@ -15,7 +15,7 @@ def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
-def html_div_summary():
+def html_div_filter():
     qc_list_options = [
         {"label": "OK", "value": "pass:OK"},
         {"label": "Core Facility", "value": "fail:core facility"},
