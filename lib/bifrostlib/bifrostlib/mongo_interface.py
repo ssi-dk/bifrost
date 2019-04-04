@@ -8,7 +8,6 @@ yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
 CONNECTION = None
-SPECIES_CONNECTION = None
 
 
 def close_connection():
@@ -16,8 +15,6 @@ def close_connection():
     global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
-    if SPECIES_CONNECTION is not None:
-        SPECIES_CONNECTION.close()
 
 atexit.register(close_connection)
 
@@ -34,18 +31,6 @@ def get_connection():
         CONNECTION = pymongo.MongoClient(mongodb_url)
         return CONNECTION
 
-
-def get_species_connection():
-    global SPECIES_CONNECTION
-    if SPECIES_CONNECTION is not None:
-        return SPECIES_CONNECTION
-    else:
-        mongo_db_key_location = os.getenv("BIFROST_SPECIES_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        # Return mongodb connection
-        SPECIES_CONNECTION = pymongo.MongoClient(mongodb_url)
-        return SPECIES_CONNECTION
 
 
 def dump_run_info(data_dict):
@@ -173,8 +158,8 @@ def query_mlst_species(ncbi_species_name):
         return None
     try:
         ncbi_species_name = re.compile(ncbi_species_name)
-        connection = get_species_connection()
-        db = connection.get_database()  # Database name is ngs_runs
+        connection = get_connection()
+        db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
         result = species_db.find_one({"ncbi_species": ncbi_species_name}, {"mlst_species": 1, "_id": 0})
         if result is not None and "mlst_species" in result:
@@ -192,8 +177,8 @@ def query_ncbi_species(species_entry):
         return None
     try:
         species_entry = re.compile(species_entry)
-        connection = get_species_connection()
-        db = connection.get_database()  # Database name is ngs_runs
+        connection = get_connection()
+        db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
         result = species_db.find_one({"organism": species_entry}, {"ncbi_species": 1, "_id": 0})
         group_result = species_db.find_one({"group": species_entry}, {"ncbi_species": 1, "_id": 0})
@@ -211,8 +196,8 @@ def query_ncbi_species(species_entry):
 # Should be renamed to get_species
 def query_species(ncbi_species_name):
     try:
-        connection = get_species_connection()
-        db = connection.get_database()  # Database name is ngs_runs
+        connection = get_connection()
+        db = connection.get_database('bifrost_species')
         species_db = db.species
         if ncbi_species_name is not None and species_db.find({'ncbi_species': ncbi_species_name}).count() > 0:
             return species_db.find_one({"ncbi_species": ncbi_species_name})
