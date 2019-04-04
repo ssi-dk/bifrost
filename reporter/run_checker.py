@@ -313,7 +313,6 @@ def update_run_report(store, n_intervals):
                                   last_runs_names)))
         rows = [header]
         for name, p_runs in prev_runs_dict.items():
-            print(name, p_runs)
             if name == "Undetermined":
                 continue
             row = []
