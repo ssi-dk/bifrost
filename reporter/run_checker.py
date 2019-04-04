@@ -231,14 +231,13 @@ def update_run_report(store, n_intervals):
                                            className="rotate rotate-short"),
                          components)))
         rows = [header]
+
         for sample_id, s_components in s_c_status.items():
             sample = samples_by_id[sample_id]
             name = sample["name"]
             if name == "Undetermined":
                 continue #ignore this row
             row = []
-            sample = import_data.get_sample(
-                str(s_components["sample._id"]))
             stamps = sample.get("stamps", {})
             priority = sample.get("sample_sheet",
                                   {}).get("priority", "").lower()
