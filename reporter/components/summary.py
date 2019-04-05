@@ -19,12 +19,9 @@ def format_selected_samples(filtered_df):
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
 def html_div_summary():
-    qc_list_options = [
-        {"label": "OK", "value": "pass:OK"},
-        {"label": "Core Facility", "value": "fail:core facility"},
-        {"label": "Supplying Lab", "value": "fail:supplying lab"},
-        {"label": "Not checked", "value": "Not checked"}
-    ]
+    qc_options = ["OK", "core facility",
+                  "supplying lab", "skipped", "Not checked"]
+    qc_list_options = [{"label": o, "value": o} for o in qc_options]
     
 
     return html.Div([

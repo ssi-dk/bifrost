@@ -279,9 +279,15 @@ def filter_qc(db, qc_list, query):
             {"reads.R1": {"$exists": False}}
         ]
 
+    if len(qc_query) > 1:
+        qc_query = {"$or": qc_query}
+    else:
+        qc_query = qc_query[0]
+
+
     result = db.samples.aggregate([
         {
-            "$match": {"$and" :query},
+            "$match": query,
         },
         {
             "$lookup": {
@@ -292,7 +298,7 @@ def filter_qc(db, qc_list, query):
                         "$match": {
                             "$expr": {
                                 "$and": [
-                                    { "$eq" : ["$component.name", "ssi_stamper"]},
+                                    {"$eq" : ["$component.name", "ssi_stamper"]},
                                     {"$eq": ["$sample._id", "$$sample_id"]}
                                 ]
                             }
@@ -303,7 +309,7 @@ def filter_qc(db, qc_list, query):
             }
         },
         {
-            "$match": {"$or": qc_query}
+            "$match": qc_query
             
         }
     ])
