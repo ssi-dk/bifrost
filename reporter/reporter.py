@@ -64,9 +64,7 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
     )
 
 # Temp css to make it look nice
-# Dash CSS
-app.css.append_css(
-    {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+
 # Lato font
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
