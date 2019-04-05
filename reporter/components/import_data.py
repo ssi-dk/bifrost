@@ -51,22 +51,23 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
 def filter_all(species=None, species_source=None, group=None,
                qc_list=None, run_names=None, sample_ids=None,
                sample_names=None,
-               pagination=None,
-               id_only=False,
-               projection=None):
+               pagination=None):
 
     if sample_ids is None:
-        query_result, query_count = mongo_interface.filter(
+        query_result, samples = mongo_interface.filter(
             run_names=run_names, species=species,
             species_source=species_source, group=group,
             qc_list=qc_list,
             sample_names=sample_names,
-            pagination=pagination, projection=projection)
+            pagination=pagination)
     else:
-        query_result, query_count = mongo_interface.filter(
-            samples=sample_ids, pagination=pagination, id_only=id_only,
-            projection=projection)
-    return pd.io.json.json_normalize(query_result), query_count
+        query_result, samples = mongo_interface.filter(
+            samples=sample_ids, pagination=pagination)
+    samples = pd.io.json.json_normalize(samples)
+    samples["_id"] = samples["_id"].astype(str)
+    samples = samples.to_dict('records')
+
+    return pd.io.json.json_normalize(query_result), samples
 
 
 def get_assemblies_paths(samples):
@@ -153,7 +154,6 @@ def email_stamps(stamplist):
             pair[0], pair[1], pair[2], ",".join(pair[3]))
     email_text += table
     email_html += table + "</pre></body></html>"
-    print(email_text)
     msg.attach(MIMEText(email_text, 'plain'))
     msg.attach(MIMEText(email_html, 'html'))
     s = smtplib.SMTP('localhost')

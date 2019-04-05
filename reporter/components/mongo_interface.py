@@ -225,11 +225,10 @@ def filter_qc(qc_list):
     return {"$match": {"$and": qc_query}}
 
 
-def filter(projection=None, run_names=None,
+def filter(run_names=None,
            species=None, species_source="species", group=None,
            qc_list=None, samples=None, pagination=None,
-           sample_names=None,
-           id_only=False):
+           sample_names=None):
     if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
         qc_list = None
     if species_source == "provided":
@@ -322,14 +321,12 @@ def filter(projection=None, run_names=None,
             match_query = {"$and": query + qc_query["$match"]["$and"]}
             final_query = [{"$match": match_query}] + \
                 TABLE_QUERY + skip_limit_steps
-    if projection is not None:
-        query_result = db.samples.find(match_query, projection)
-    else:
-        query_result = db.samples.aggregate(final_query)
+
+    query_result = db.samples.aggregate(final_query)
     result = []
-    count_result = db.samples.find(match_query).count()
+    samples = list(db.samples.find(match_query, {"name": 1}))
     result = list(query_result)
-    return (result, count_result)
+    return (result, samples)
 
 
 def get_results(sample_ids):

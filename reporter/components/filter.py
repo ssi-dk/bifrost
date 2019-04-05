@@ -148,11 +148,7 @@ def html_div_filter():
                     dbc.Button("Generate download link (1000 samples max.)",
                             id="generate-download-button",
                             color="secondary",
-                            n_clicks=0),
-                    dbc.Button("Save result as selected",
-                               id="save-samples-button",
-                               color="primary",
-                               n_clicks=0)
+                            n_clicks=0)
                 ]),
                 html.Div(id="tsv-download")
             ]
@@ -253,7 +249,7 @@ def html_div_filter():
                 #         )
                 #     ]
                 #     , className="row"),
-            ], className="border-box"
+            ]
         )
     ])
 

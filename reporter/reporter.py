@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import urllib
+import urllib.parse as urlparse
 import datetime
-import time
 from io import StringIO
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table
 import dash_auth
 import pandas as pd
 import numpy as np
@@ -71,7 +69,8 @@ app.css.append_css(
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     # To store url param values
-    dcc.Store(id="app-store", storage_type="session", data={}),
+    dcc.Store(id="sample-store", storage_type="session", data={}),
+    dcc.Store(id="view-store", data={}),
     dbc.Navbar(
         [
             dbc.Col(
@@ -221,16 +220,20 @@ app.layout = html.Div([
 @app.callback(
     Output("selected-view", "children"),
     [Input("url", "pathname")],
-    [State("app-store", "data")]
+    [State("url", "search"),
+     State("sample-store", "data")]
 )
-def update_run_name(pathname, data):
+def update_run_name(pathname, params, sample_store):
+    pparams = urlparse.urlparse(params)
+    print(urlparse.parse_qs(pparams.query))
+
     if pathname is None or pathname == "/":
         pathname = "/"
     path = pathname.split("/")
     if path[1] == "":
         return html_div_filter()
     elif path[1] == "sample-report":
-        return sample_report(data)
+        return sample_report(sample_store)
     else:
         return "Not found"
 
@@ -442,17 +445,16 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
 @app.callback(
     Output("sample-report", "children"),
     [Input("page-n", "children"),
-    Input("app-store", "data")]
+     Input("sample-store", "data")]
         )
-def fill_sample_report(page_n, data):
+def fill_sample_report(page_n, sample_store):
     page_n = int(page_n)
-    if "selected_samples" in data:
-        sample_ids = list(map(lambda x: x["_id"], data["selected_samples"]))
-    else:
+    sample_ids = list(
+        map(lambda x: x["_id"], sample_store))
+    if len(sample_ids) == 0:
         return None
     
     data_table, total_count = import_data.filter_all(sample_ids=sample_ids)
-    print(data_table)
     samples = data_table["_id"]
     data_table = data_table.sort_values(["properties.species", "name"])
     skips = SAMPLE_PAGESIZE * (page_n)
@@ -519,24 +521,10 @@ def update_report(lasso_selected):
         
 
 
-# @app.callback(
-#     Output("apply-filter-button", "children"),
-#     [Input("species-list", "value"),
-#         Input("group-list", "value"),
-#         Input("qc-list", "value"),
-#         Input("run-name", "children"),
-#         Input("apply-filter-button", "n_clicks_timestamp")]
-# )
-# def update_filter_ts(species_list, group_list, qc_list, run_name, button_timestamp):
-#     button_ts = button_timestamp / 1000
-#     server_ts = datetime.datetime.now().timestamp()
-#     if button_ts == 0 or abs(button_ts - server_ts) < 1:
-#         return "Apply filter"
-#     return "Apply filter (click to reload)"
-
 @app.callback(
     [Output("filter-sample-count", "children"),
-     Output("datatable-ssi_stamper", "data")],
+     Output("datatable-ssi_stamper", "data"),
+     Output("sample-store", "data")],
     [Input("apply-filter-button", "n_clicks"),
      Input('datatable-ssi_stamper', 'pagination_settings')],
     [State("run-list", "value"),
@@ -546,31 +534,32 @@ def update_report(lasso_selected):
      State("qc-list", "value"),
      State("samples-form", "value")]
 )
-def update_selected_samples(apply_button, pagination_settings,
+def update_selected_samples(n_clicks, pagination_settings,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names):
+    if n_clicks == 0:
+        raise InterruptedError
     empty_table = [{}]
     empty_count = "0"
-    if apply_button == 0:
-        return [empty_count, empty_table]
-    else:
-        if sample_names is not None and sample_names != "":
-            sample_names = sample_names.split("\n")
 
-        tests_df, query_count = import_data.filter_all(species=species_list, species_source=species_source,
-                                          group=group_list, qc_list=qc_list,
-                                          run_names=run_names,
-                                          sample_names=sample_names,
-                                          pagination=pagination_settings)
+    if sample_names is not None and sample_names != "":
+        sample_names = sample_names.split("\n")
+
+    tests_df, samples = import_data.filter_all(
+        species=species_list, species_source=species_source,
+        group=group_list, qc_list=qc_list,
+        run_names=run_names,
+        sample_names=sample_names,
+        pagination=pagination_settings)
     # return samples.to_dict()
-    if query_count == 0:
-        return [empty_count, empty_table]
+    sample_count = str(len(samples))
+    if sample_count == 0:
+        return [sample_count, empty_table, samples]
 
     tests_df = generate_table(tests_df)
-    sample_count = str(query_count)
 
-    return [sample_count, tests_df.to_dict("rows")]
+    return [sample_count, tests_df.to_dict("rows"), samples]
 
 
 @app.callback(
@@ -623,9 +612,9 @@ def generate_download_button(download_button,
         index=False, encoding="utf-8", sep=";", decimal=",")
     tsv_string_us = renamed.to_csv(index=False, encoding="utf-8", sep="\t")
     full_csv_string_eur = 'data:text/csv;charset=utf-8,' + \
-        urllib.parse.quote(csv_string_eur)
+        urlparse.quote(csv_string_eur)
     full_tsv_string_us = 'data:text/tab-separated-values;charset=utf-8,' + \
-        urllib.parse.quote(tsv_string_us)
+        urlparse.quote(tsv_string_us)
     return [
         html.A("(tsv, US format)",
                 href=full_tsv_string_us,
@@ -636,43 +625,43 @@ def generate_download_button(download_button,
                 download='report.csv')
     ]
 
-@app.callback(
-    Output("app-store", "data"),
-    [Input("save-samples-button", "n_clicks")],
-    [State("app-store", "data"),
-     State("run-list", "value"),
-     State("species-list", "value"),
-     State("form-species-source", "value"),
-     State("group-list", "value"),
-     State("qc-list", "value"),
-     State("samples-form", "value")]
-)
-def select_samples(n_clicks, data, run_names, species_list,
-                   species_source, group_list, qc_list,
-                   sample_names):
-    if n_clicks == 0:
-        return {}
-    else:
-        tests_df, query_count = import_data.filter_all(species=species_list, species_source=species_source,
-                                                       group=group_list, qc_list=qc_list,
-                                                       run_names=run_names,
-                                                       sample_names=sample_names,
-                                                       pagination=None,
-                                                       projection={"name": 1})
-    tests_df["_id"] = tests_df["_id"].astype(str)
-    data["selected_samples"] = tests_df.to_dict('records')
-    return data
+# @app.callback(
+#     Output("sample-store", "data"),
+#     [Input("save-samples-button", "n_clicks")],
+#     [State("sample-store", "data"),
+#      State("run-list", "value"),
+#      State("species-list", "value"),
+#      State("form-species-source", "value"),
+#      State("group-list", "value"),
+#      State("qc-list", "value"),
+#      State("samples-form", "value")]
+# )
+# def select_samples(n_clicks, sample_store, run_names, species_list,
+#                    species_source, group_list, qc_list,
+#                    sample_names):
+    
+#     else:
+#         tests_df, query_count = import_data.filter_all(species=species_list,
+#             species_source=species_source,
+#             group=group_list,
+#             qc_list=qc_list,
+#             run_names=run_names,
+#             sample_names=sample_names,
+#             pagination=None,
+#             projection={"name": 1})
+#     tests_df["_id"] = tests_df["_id"].astype(str)
+#     sample_store["selected_samples"] = tests_df.to_dict('records')
+#     return sample_store
 
 
 @app.callback(
     Output("selected-samples", "children"),
-    [Input("app-store", "data")]
+    [Input("sample-store", "data")]
 )
-def store_update(data):
+def store_update(sample_store):
     rows = []
-    if "selected_samples" in data:
-        for sample in data["selected_samples"]:
-            rows.append(html.Tr(html.Td(sample["name"])))
+    for sample in sample_store:
+        rows.append(html.Tr(html.Td(sample["name"])))
     return html.Tbody(rows)
 
 
