@@ -874,6 +874,10 @@ td.center {
   height: unset;
 }
 
+#selected-samples td {
+  padding: 0 15px;
+}
+
 /* BEGIN BOOTSTRAP DASHBOARD */
 
 .feather {

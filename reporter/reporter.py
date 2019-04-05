@@ -68,9 +68,10 @@ app.css.append_css(
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
+    html.Div(id="placeholder0", style={"display": "none"}),
     # To store url param values
-    dcc.Store(id="sample-store", storage_type="session", data={}),
-    dcc.Store(id="view-store", data={}),
+    dcc.Store(id="sample-store", storage_type="session", data=[]),
+    dcc.Store(id="param-store", data={}),
     dbc.Navbar(
         [
             dbc.Col(
@@ -123,7 +124,7 @@ app.layout = html.Div([
             ], className="col-md-2 d-none d-md-block bg-light sidebar"),
             html.Main([
                 html.Div(id="selected-view"),
-                    # html.Div(id="placeholder0", style={"display": "none"}),
+                    # 
                     # html.Div(id="placeholder1", style={"display": "none"}),
                     # html.Div(id="placeholder2", style={"display": "none"}),
                     # dash_scroll_up.DashScrollUp(
@@ -218,70 +219,91 @@ app.layout = html.Div([
 
 
 @app.callback(
-    Output("selected-view", "children"),
+    [Output("selected-view", "children"),
+     Output("param-store", "data")],
     [Input("url", "pathname")],
     [State("url", "search"),
      State("sample-store", "data")]
 )
 def update_run_name(pathname, params, sample_store):
-    pparams = urlparse.urlparse(params)
-    print(urlparse.parse_qs(pparams.query))
+    pparse = urlparse.urlparse(params)
+    params = urlparse.parse_qs(pparse.query)
 
     if pathname is None or pathname == "/":
         pathname = "/"
     path = pathname.split("/")
     if path[1] == "":
-        return html_div_filter()
+        return [html_div_filter(), params]
     elif path[1] == "sample-report":
-        return sample_report(sample_store)
+        return [sample_report(sample_store), params]
     else:
-        return "Not found"
+        return ["Not found", params]
 
 
 @app.callback(
-    Output("run-list", "options"),
-    [Input("param-store", "data")]
+    [Output("run-list", "options"),
+     Output("group-list", "options"),
+     Output("species-list", "options")],
+    [Input("placeholder0", "data"),
+     Input("form-species-source", "value")]
 )
-def update_run_options(param_data):
+def update_run_options(ignore, form_species):
+    # Runs
     run_list = import_data.get_run_list()
-    options = [
+    run_options = [
         {
             "label": "{} ({})".format(run["name"],
                                       len(run["samples"])),
             "value": run["name"]
         } for run in run_list]
-    return options
 
-@app.callback(
-    Output("group-list", "options"),
-    [Input("param-store", "data")]
-)
-def update_group_list_options(param_data):
+    # Groups
     group_list = import_data.get_group_list()
-    group_list_options = []
+    group_options = []
     for item in group_list:
         if item["_id"] is None:
-            group_list_options.append({
+            group_options.append({
                 "label": "Not defined ({})".format(item["count"]),
                 "value": "Not defined"
             })
         else:
-            group_list_options.append({
+            group_options.append({
                 "label": "{} ({})".format(item["_id"], item["count"]),
                 "value": item["_id"]
             })
-    return group_list_options
+
+    species_list = import_data.get_species_list(form_species)
+
+    species_options = []
+    for item in species_list:
+        if item["_id"] == None:
+            species_options.append({
+                "label": "Not classified",
+                "value": "Not classified"
+            })
+        else:
+            species_options.append({
+                "label": item["_id"],
+                "value": item["_id"]
+            })
+
+    return [run_options, group_options, species_options]
 
 
-# @app.callback(
-#     Output("run-link", "href"),
-#     [Input("run-list", "value")]
-# )
-# def update_run_button(run):
-#     if run is not None:
-#         return "/" + run
-#     else:
-#         return "/"
+@app.callback(
+    [Output("run-list", "value"),
+     Output("group-list", "value"),
+     Output("species-list", "value"),
+     Output("qc-list", "value")],
+    [Input("param-store", "data")]
+)
+def update_filter_values(param_store):
+    print(param_store)
+    runs = param_store.get("run", [])
+    groups = param_store.get("group", [])
+    species = param_store.get("species", [])
+    qcs = param_store.get("qc", [])
+    return [runs, groups, species, qcs]
 
 @app.callback(
     Output("lasso-div", "children"),
@@ -343,38 +365,6 @@ def display_selected_data(selected_data, rows, selected_rows):
                     style={"display": "none"},
                     id="lasso-sample-ids")
     ]
-
-
-@app.callback(
-    Output("species-div", "children"),
-    [Input("param-store", "data"),
-    Input("form-species-source", "value")]
-)
-def update_species_list(run_name, form_species):
-    species_list = import_data.get_species_list(form_species)
-
-    species_options = []
-    species_list_options = []
-    for item in species_list:
-        if item["_id"] == None:
-            species_options.append("Not classified")
-            species_list_options.append({
-                "label": "Not classified",
-                "value": "Not classified"
-            })
-        else:
-            species_options.append(item["_id"])
-            species_list_options.append({
-                "label": item["_id"],
-                "value": item["_id"]
-            })
-    return dcc.Dropdown(
-        id="species-list",
-        options=species_list_options,
-        placeholder="All species selected",
-        multi=True,
-        value=[]
-    )
 
 
 
@@ -660,8 +650,11 @@ def generate_download_button(download_button,
 )
 def store_update(sample_store):
     rows = []
-    for sample in sample_store:
+    for sample in sample_store[:500]:
         rows.append(html.Tr(html.Td(sample["name"])))
+    if len(sample_store) > 500:
+        rows.append(html.Tr(html.Td(
+            "{} more samples".format(len(sample_store) - 500))))
     return html.Tbody(rows)
 
 
