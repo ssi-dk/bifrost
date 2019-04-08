@@ -204,7 +204,7 @@ app.layout = html.Div([
                     # loading a view other than the filter with params.
                     html.Button(id="apply-filter-button",
                                style={"display": "none"},
-                               n_clicks=-1),
+                               n_clicks=0),
                     dcc.Input(value="",
                               style={"display": "none"},
                               id="run-list"),
@@ -549,8 +549,6 @@ def update_selected_samples(n_clicks, param_store,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names):
-    if n_clicks == 0:
-        raise InterruptedError
 
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
@@ -566,7 +564,7 @@ def update_selected_samples(n_clicks, param_store,
         qc_list = param_store.get("qc", [])
         
 
-    if (n_clicks == -1 and 
+    if (n_clicks == 0 and
         sample_names == [] and
         run_names == [] and
         group_list == [] and
