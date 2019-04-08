@@ -14,70 +14,60 @@ import json
 SAMPLE_PAGESIZE = 25
 
 def sample_report(data):
-    if "selected_samples" in data:
-        sample_n = len(data["selected_samples"])
-    else:
-        sample_n = 0
+
+    sample_n = len(data)
+    
     return [
         html.H3("Sample Report"),
         html.Span("0", style={"display": "none"}, id="page-n"),
-        html.Span(sample_n // SAMPLE_PAGESIZE,
+        
+        html.Span(str(sample_n // SAMPLE_PAGESIZE),
                   style={"display": "none"}, id="max-page"),
-        html.Div(
+        dbc.Row(
             [
-                html.Div(
+                dbc.Col(
                     [
                         html.Button(
                             "Previous page", id="prevpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
+                    ]
                 ),
-                html.Div(
+                dbc.Col(
                     [
                         # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
+                    ]
                 ),
-                html.Div(
+                dbc.Col(
                     [
                         html.Button(
                             "Next page", id="nextpage", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
+                    ]
                 ),
-            ],
-            className="row"
+            ]
         ),
 
         html.Div(id="sample-report"),
 
-        html.Div(
+        html.Div(dbc.Row(
             [
-                html.Div(
+                dbc.Col(
                     [
                         html.Button(
                             "Previous page", id="prevpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
+                    ]
                 ),
-                html.Div(
+                dbc.Col(
                     [
                         # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ],
-                    className="three columns"
+                    ]
                 ),
-                html.Div(
+                dbc.Col(
                     [
                         html.Button(
                             "Next page", id="nextpage2", n_clicks_timestamp=0),
-                    ],
-                    className="three columns"
+                    ]
                 ),
-            ],
-            className="row"
-        ),
-        
-        admin.html_qc_expert_form()
+            ]
+        ), className="mb-4"),
     ]
 
 def check_test(test_name, sample):
@@ -115,7 +105,7 @@ def generate_sample_report(sample, n_sample):
         dbc.Card(
             [
                 dbc.CardHeader([
-                    html.A(id="sample-" + sample["name"]),
+                    html.A(id="sample-" + str(sample["name"])),
                     dbc.CardTitle(
                         sample["name"],
                         className="d-inline-block float-left"
@@ -130,16 +120,6 @@ def generate_sample_report(sample, n_sample):
             ]
         )
     )
-
-
-def html_species_report(dataframe, species, row_index, **kwargs):
-    report = []
-    for index, sample in \
-            dataframe.loc[dataframe["properties.species"] == species].iterrows():
-        report.append(generate_sample_report(sample,
-                                             row_index))
-        row_index += 1
-    return (html.Div(report, **kwargs), row_index)
 
 
 def html_organisms_table(sample_data, **kwargs):
@@ -475,7 +455,7 @@ def html_sample_tables(sample_data, **kwargs):
     mlst_type = "ND"
     if "sample_components.ariba_mlst.summary.mlst_report" in sample_data and sample_data["sample_components.ariba_mlst.summary.mlst_report"] is not None:
         mlst_report_string = sample_data["sample_components.ariba_mlst.summary.mlst_report"]
-        if "," in mlst_report_string:
+        if "," in str(mlst_report_string):
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type = mlst_text_split[0].split(":",1)[1]
 
@@ -499,18 +479,15 @@ def html_sample_tables(sample_data, **kwargs):
     ])
 
 
-def children_sample_list_report(filtered_df):
+def children_sample_list_report(dataframe):
     report = []
-    result_index = 0
-    for species in filtered_df["properties.species"].unique():
-        species_report_div, result_index = html_species_report(
-            filtered_df, species, result_index)
-        report.append(html.Div([
-            html.A(id="species-cat-" + str(species).replace(" ", "-")),
-            html.H4(html.I(str(species))),
-            species_report_div
-        ]))
-    return report
+    row_index = 0
+    for index, sample in \
+            dataframe.iterrows():
+        report.append(generate_sample_report(sample,
+                                             row_index))
+        row_index += 1
+    return html.Div(report)
 
 def generate_sample_folder(sample_ids):
     """Generates a script string """

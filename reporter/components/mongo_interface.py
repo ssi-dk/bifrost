@@ -228,9 +228,9 @@ def filter_qc(qc_list):
 def filter(run_names=None,
            species=None, species_source="species", group=None,
            qc_list=None, samples=None, pagination=None,
-           sample_names=None):
-    if qc_list == ["OK", "core facility", "supplying lab", "skipped", "Not checked"]:
-        qc_list = None
+           sample_names=None,
+           include_s_c=False,
+           projection=None):
     if species_source == "provided":
         spe_field = "properties.provided_species"
     elif species_source == "detected":
@@ -311,22 +311,24 @@ def filter(run_names=None,
         else:
             match_query = qc_query["$match"]
             final_query = [{"$match": match_query}] + \
-                TABLE_QUERY + skip_limit_steps
+                [sort_step] + TABLE_QUERY + skip_limit_steps
     else:
         if qc_query is None:
             match_query = {"$and": query}
             final_query = [{"$match": match_query}] + \
-                TABLE_QUERY + skip_limit_steps
+                [sort_step] + TABLE_QUERY + skip_limit_steps
         else:
             match_query = {"$and": query + qc_query["$match"]["$and"]}
             final_query = [{"$match": match_query}] + \
-                TABLE_QUERY + skip_limit_steps
+                [sort_step] + TABLE_QUERY + skip_limit_steps
 
-    query_result = db.samples.aggregate(final_query)
-    result = []
-    samples = list(db.samples.find(match_query, {"name": 1}))
-    result = list(query_result)
-    return (result, samples)
+    if include_s_c:
+        query_result = list(db.samples.aggregate(final_query))
+    else:
+        query_result = list(db.samples.find(match_query, projection).sort(
+            [('name', pymongo.ASCENDING)]
+        ))
+    return query_result
 
 
 def get_results(sample_ids):

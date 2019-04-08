@@ -1,19 +1,20 @@
 import os
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 
 
 def html_qc_expert_form():
     if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
         return html.Div([
-            html.Div([
-                html.Div(html.H5("Submit Supplying Lab Feedback:",
-                                className="nomargin"), className="six columns"),
-                html.Div(dcc.Input(id="qc-user-1", placeholder="Your initials (e.g. MBAS)",
-                                value="", type="text"), className="three columns"),
-                html.Div(html.Button("Submit QC values",
-                                    id="feedback-button"), className="three columns")
-            ], className="row"),
+            dbc.Row([
+                dbc.Col(html.H5("Submit Supplying Lab Feedback:",
+                                className="nomargin"), width=6),
+                dbc.Col(dcc.Input(id="qc-user-1", placeholder="Your initials (e.g. MBAS)",
+                                  value="", type="text"), width=3),
+                dbc.Col(html.Button("Submit QC values",
+                                    id="feedback-button"), width=3)
+            ]),
             html.Div([
                 html.Details([
                     html.Summary("How it works (click to show)"),
@@ -24,7 +25,7 @@ def html_qc_expert_form():
                     with the "Supplying lab" warning and their data will
                     be used in the future to adjust QC thresholds.""")
                 ])
-            ], className="row mb-1")
+            ], className="mb-1")
 
         ])
         

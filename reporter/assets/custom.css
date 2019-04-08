@@ -878,6 +878,10 @@ td.center {
   padding: 0 15px;
 }
 
+.card-body {
+  background: #f1f1f1;
+}
+
 /* BEGIN BOOTSTRAP DASHBOARD */
 
 .feather {

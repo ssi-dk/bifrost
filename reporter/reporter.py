@@ -68,9 +68,8 @@ app.css.append_css(
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
-    html.Div(id="placeholder0", style={"display": "none"}),
     # To store url param values
-    dcc.Store(id="sample-store", storage_type="session", data=[]),
+    dcc.Store(id="sample-store", data=[]),
     dcc.Store(id="param-store", data={}),
     dbc.Navbar(
         [
@@ -201,6 +200,29 @@ app.layout = html.Div([
                     #     ],
                     #     className="border-box"
                     # ),
+                    # These here avoid problems loading parameters when 
+                    # loading a view other than the filter with params.
+                    html.Button(id="apply-filter-button",
+                               style={"display": "none"},
+                               n_clicks=1),
+                    dcc.Input(value="",
+                              style={"display": "none"},
+                              id="run-list"),
+                    dcc.Input(value="",
+                              style={"display": "none"},
+                              id="species-list"),
+                    dcc.Input(value="provided",
+                              style={"display": "none"},
+                              id="form-species-source"),
+                    dcc.Input(value="",
+                              style={"display": "none"},
+                              id="group-list"),
+                    dcc.Input(value="",
+                              style={"display": "none"},
+                              id="qc-list"),
+                    dcc.Input(value="",
+                              style={"display": "none"},
+                              id="samples-form"),
                     html.Footer([
                         "Created with 🔬 at SSI. Bacteria icons from ",
                         html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -244,10 +266,9 @@ def update_run_name(pathname, params, sample_store):
     [Output("run-list", "options"),
      Output("group-list", "options"),
      Output("species-list", "options")],
-    [Input("placeholder0", "data"),
-     Input("form-species-source", "value")]
+    [Input("form-species-source", "value")]
 )
-def update_run_options(ignore, form_species):
+def update_run_options(form_species):
     # Runs
     run_list = import_data.get_run_list()
     run_options = [
@@ -294,7 +315,8 @@ def update_run_options(ignore, form_species):
     [Output("run-list", "value"),
      Output("group-list", "value"),
      Output("species-list", "value"),
-     Output("qc-list", "value")],
+     Output("qc-list", "value"),
+     Output("samples-form", "value")],
     [Input("param-store", "data")]
 )
 def update_filter_values(param_store):
@@ -303,7 +325,8 @@ def update_filter_values(param_store):
     groups = param_store.get("group", [])
     species = param_store.get("species", [])
     qcs = param_store.get("qc", [])
-    return [runs, groups, species, qcs]
+    sample_names = param_store.get("sample_names", [])
+    return [runs, groups, species, qcs, "\n".join(sample_names)]
 
 @app.callback(
     Output("lasso-div", "children"),
@@ -425,11 +448,11 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
     page_n = int(page_n)
     max_page = int(max_page)
     if max(prev_ts, prev_ts2) > max(next_ts, next_ts2):
-        return max(page_n - 1, 0)
+        return str(max(page_n - 1, 0))
     elif max(next_ts, next_ts2) > max(prev_ts, prev_ts2):
-        return min(page_n + 1, max_page)
+        return str(min(page_n + 1, max_page))
     else:
-        return 0
+        return '0'
 
 
 @app.callback(
@@ -444,13 +467,11 @@ def fill_sample_report(page_n, sample_store):
     if len(sample_ids) == 0:
         return None
     
-    data_table, total_count = import_data.filter_all(sample_ids=sample_ids)
-    samples = data_table["_id"]
-    data_table = data_table.sort_values(["properties.species", "name"])
-    skips = SAMPLE_PAGESIZE * (page_n)
-    page = data_table[skips:skips+SAMPLE_PAGESIZE]
-    max_page = len(samples) // SAMPLE_PAGESIZE
-    page_species = page["properties.species"].unique().tolist()
+    data_table = import_data.filter_all(
+        sample_ids=sample_ids,
+        include_s_c=True,
+        pagination={"page_size": SAMPLE_PAGESIZE, "current_page": page_n})
+    max_page = len(sample_store) // SAMPLE_PAGESIZE
     # We need to have fake radio buttons with the same ids to account for times 
     # when not all SAMPLE_PAGESIZE samples are shown and are not taking the ids required by the callback
     html_fake_radio_buttons = html.Div([dcc.RadioItems(
@@ -459,10 +480,10 @@ def fill_sample_report(page_n, sample_store):
         ],
         value='noaction',
         id="sample-radio-{}".format(n_sample)
-    ) for n_sample in range(len(page), SAMPLE_PAGESIZE)], style={"display": "none"})
+    ) for n_sample in range(len(data_table), SAMPLE_PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page)),
+        html.Div(children_sample_list_report(data_table)),
         html_fake_radio_buttons,
         # admin.html_qc_expert_form(),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
@@ -512,11 +533,12 @@ def update_report(lasso_selected):
 
 
 @app.callback(
-    [Output("filter-sample-count", "children"),
-     Output("datatable-ssi_stamper", "data"),
+    [
+     #Output("filter-sample-count", "children"),
+     #Output("datatable-ssi_stamper", "data"),
      Output("sample-store", "data")],
     [Input("apply-filter-button", "n_clicks"),
-     Input('datatable-ssi_stamper', 'pagination_settings')],
+     Input("param-store", "data")],
     [State("run-list", "value"),
      State("species-list", "value"),
      State("form-species-source", "value"),
@@ -524,32 +546,62 @@ def update_report(lasso_selected):
      State("qc-list", "value"),
      State("samples-form", "value")]
 )
-def update_selected_samples(n_clicks, pagination_settings,
+def update_selected_samples(n_clicks, param_store,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names):
     if n_clicks == 0:
         raise InterruptedError
-    empty_table = [{}]
-    empty_count = "0"
 
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
 
-    tests_df, samples = import_data.filter_all(
+    if not run_names:
+        run_names = param_store.get("run", [])
+    if not group_list:
+        group_list = param_store.get("group", [])
+    if not species_list:
+        species_list = param_store.get("species", [])
+    if not qc_list:
+        qc_list = param_store.get("qc", [])
+    if not sample_names:
+        sample_names = param_store.get("sample_names", [])
+
+    samples = import_data.filter_all(
         species=species_list, species_source=species_source,
         group=group_list, qc_list=qc_list,
         run_names=run_names,
         sample_names=sample_names,
-        pagination=pagination_settings)
-    # return samples.to_dict()
-    sample_count = str(len(samples))
-    if sample_count == 0:
-        return [sample_count, empty_table, samples]
+        include_s_c=False,
+        projection={"name": 1})
 
-    tests_df = generate_table(tests_df)
+    samples["_id"] = samples["_id"].astype(str)
+    samples = samples.to_dict('records')
 
-    return [sample_count, tests_df.to_dict("rows"), samples]
+    return [samples]
+
+
+
+@app.callback(
+    [Output("filter-sample-count", "children"),
+     Output("datatable-ssi_stamper", "data")],
+    [Input("sample-store", "data"),
+     Input('datatable-ssi_stamper', 'pagination_settings')]
+)
+def update_filter_table(sample_store, pagination_settings):
+    if len(sample_store) == 0:
+        return ["0", [{}]]
+    sample_ids = list(
+        map(lambda x: x["_id"], sample_store))
+
+    samples = import_data.filter_all(
+        sample_ids=sample_ids,
+        pagination=pagination_settings,
+        include_s_c=True)
+
+    samples = generate_table(samples)
+    return [len(sample_store), samples.to_dict("rows")]
+    # return [sample_count, tests_df.to_dict("rows"), samples]
 
 
 @app.callback(
