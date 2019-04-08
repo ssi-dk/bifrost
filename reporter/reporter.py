@@ -566,7 +566,7 @@ def update_selected_samples(n_clicks, param_store,
         qc_list = param_store.get("qc", [])
         
 
-    if (n_clicks == -1 and :
+    if (n_clicks == -1 and 
         sample_names == [] and
         run_names == [] and
         group_list == [] and
