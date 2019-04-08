@@ -103,7 +103,7 @@ rule ariba_resfinder:
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_resfinder_database"])
     shell:
-        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} > {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "abricate_on_ariba_resfinder"
@@ -164,7 +164,7 @@ rule ariba_plasmidfinder:
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_plasmidfinder_database"])
     shell:
-        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} > {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "abricate_on_ariba_plasmidfinder"

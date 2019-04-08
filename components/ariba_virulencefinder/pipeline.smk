@@ -103,7 +103,7 @@ rule ariba_virulencefinder:
     params:
         database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_virulencefinder_database"])
     shell:
-        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} --tmp_dir /scratch > {log.out_file} 2> {log.err_file}"
+        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} > {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "abricate_on_ariba_virulencefinder"
