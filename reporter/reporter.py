@@ -485,9 +485,8 @@ def fill_sample_report(page_n, sample_store):
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
         html.Div(children_sample_list_report(data_table)),
         html_fake_radio_buttons,
-        # admin.html_qc_expert_form(),
+        admin.html_qc_expert_form(),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(id="placeholder0", style={"display": "none"}),
         dcc.ConfirmDialog(
             id='qc-confirm',
             message='Are you sure you want to send sample feedback?',
