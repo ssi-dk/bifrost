@@ -2,6 +2,11 @@
 
 [![Build Status](https://dev.azure.com/SSI-MPV/bifrost-private/_apis/build/status/ssi-dk.bifrost-private?branchName=master)](https://dev.azure.com/SSI-MPV/bifrost-private/_build/latest?definitionId=1&branchName=master)
 
+![](docs/_media/usage.gif)
+![](docs/_media/screenshot-filter.png)
+![](docs/_media/screenshot-plot.png)
+![](docs/_media/run_checker.png)
+
 ## Installing bifrost
 
 ### Requirements
