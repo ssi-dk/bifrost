@@ -429,7 +429,9 @@ def get_sample_component_status(sample_ids):
         sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": sample_ids},
-        }, {"sample._id": 1, "status": 1, "component.name": 1})
+        }, {"sample._id": 1, "status": 1, "component.name": 1}).sort(
+            "setup_date", pymongo.ASCENDING)  #make sure latest is last, 
+            # overwrites others
         output = {}
         for s_c in s_c_list:
             sample = output.get(str(s_c["sample"]["_id"]), {
