@@ -9,9 +9,9 @@
 **ssi_stamper:** Checks if the sample passes SSI QC. Depends on
 whats_my_species and assemblatron.
 
-**ariba_****:** Runs mlst/*finder pipeline on the reads.
+**ariba_\*\*\*\*:** Runs mlst/\*finder pipeline on the reads.
 Depends on whats_my_species. *Note: ariba_virulencefinder runs only on some
-species.
+species.*
 
 **min_read_check:** Checks if sample has minimum number of reads.
 Not in use currently.
