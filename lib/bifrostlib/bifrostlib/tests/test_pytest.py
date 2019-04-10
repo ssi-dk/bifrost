@@ -285,12 +285,12 @@ def test_export_run():
     }
     run_db = datahandling.post_run(run)
 
-    run_export = datahandling.get_run_export(run_ids=[str(run_db["_id"])])
+    run_export = datahandling.get_run_export(names=[str(run_db["name"])])
 
     run_id = str(run_db["_id"])
 
     run_expected = {
-        run_id: {
+        run_db["name"]: {
             "components": [
                 component_db_2,
                 component_db
@@ -311,7 +311,7 @@ def test_export_run():
 
 
 @mongomock.patch(('mongodb://server.example.com:27017'))
-def test_inport_run():
+def test_import_run():
     component = {"name": "assemblatron"}
     component_db = datahandling.post_component(component)
     component_2 = {"name": "whats_my_species"}
@@ -365,7 +365,7 @@ def test_inport_run():
     }
     run_db = datahandling.post_run(run)
 
-    run_export = datahandling.get_run_export(run_ids=[str(run_db["_id"])])
+    run_export = datahandling.get_run_export(names=[str(run_db["name"])])
 
     #drop database
     conn = pymongo.MongoClient('mongodb://server.example.com:27017')
@@ -381,7 +381,7 @@ def test_inport_run():
         "components": []
     }
 
-    run_dict = run_export[str(run_db["_id"])]
+    run_dict = run_export[str(run_db["name"])]
 
     for s in run_dict["samples"]:
         get_s = datahandling.get_samples(sample_ids=[str(s["_id"])])[0]

@@ -198,13 +198,13 @@ def delete_run(name=None, run_id=None):
     return deleted
 
 
-def get_run_export(run_ids=None):
+def get_run_export(names=None):
     """
     Export runs
     """
     run_dicts = {}
-    for run_id in run_ids:
-        run_db = get_runs(run_id=run_id)[0]
+    for run_name in names:
+        run_db = get_runs(names=[run_name])[0]
         component_ids = set()
         if "components" in run_db:
             for comp in run_db["components"]:
@@ -216,7 +216,7 @@ def get_run_export(run_ids=None):
                 component_ids.add(comp["_id"])
         components = get_components(component_ids=list(component_ids))
         sample_components = get_sample_components(sample_ids=sample_ids)
-        run_dicts[run_id] = {
+        run_dicts[run_name] = {
             "components": components,
             "samples": samples,
             "sample_components": sample_components,
