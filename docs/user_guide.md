@@ -1,4 +1,4 @@
-# Bifrost KMA README
+# User Guide
 
 This is the basic folder structure with a sample run containing only one sample:
 
