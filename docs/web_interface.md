@@ -23,7 +23,7 @@ data for future data analysis.
 
 (Text instructions below)
 
-![gif reruning a component](docs/_media/rerunning_component.gif)
+![gif reruning a component](_media/rerunning_component.gif)
 
 - Go to the run checker
 - Load your run
