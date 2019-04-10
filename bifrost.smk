@@ -236,7 +236,7 @@ rule initialize_samples_from_sample_folder:
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["name"] = sample_name
@@ -377,7 +377,7 @@ rule set_samples_from_sample_info:
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
                     ##NOTE Sample name can be changed to Unnamed_ following the logic below (no name in sample sheet) however the .yaml path uses the value in the sample sheet
-                    if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
+                    if config.get("samples_to_include", None) is None or row["SampleID"] in str(config["samples_to_include"]).split(","):
                         sample_db = datahandling.load_sample(sample_config)
                         sample_db["sample_sheet"] = {}
                         for column in df:
@@ -508,7 +508,7 @@ rule add_components_to_samples:
                         sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
@@ -572,7 +572,7 @@ rule initialize_sample_components_for_each_sample:
                         sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
 
@@ -647,7 +647,7 @@ rule initialize_run:
             run_db["samples"] = run_db.get("samples", [])
             # Todo: handle change in samples properly
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_id = sample_db.get("_id",)
@@ -724,7 +724,7 @@ rule setup_sample_components_to_run:
 
             with open(run_cmd, "w") as run_cmd_handle:
                 for sample_name in unique_sample_names:
-                    if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
+                    if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                         current_time = datetime.datetime.now()
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                             sample_config = sample_name + "/sample.yaml"
