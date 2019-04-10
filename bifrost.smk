@@ -442,7 +442,7 @@ rule set_sample_species:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
-                    if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
+                    if config.get("samples_to_include", None) is None or row["SampleID"] in str(config["samples_to_include"]).split(","):
                         sample_db = datahandling.load_sample(sample_config)
 
                         sample_db["properties"] = sample_db.get("properties", {})
