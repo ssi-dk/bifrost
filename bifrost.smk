@@ -232,11 +232,11 @@ rule initialize_samples_from_sample_folder:
             for file in sorted(os.listdir(sample_folder)):
                 result = re.search(config["read_pattern"], file)
                 if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                    sample_name = result.group("sample_name")
+                    sample_name = str(result.group("sample_name"))
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or str(sample_name) in str(config["samples_to_include"]).split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["name"] = sample_name
@@ -245,7 +245,7 @@ rule initialize_samples_from_sample_folder:
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                            if sample_name == result.group("sample_name"):
+                            if sample_name == str(result.group("sample_name")):
                                 sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
                                 md5sum_key = result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
@@ -503,12 +503,12 @@ rule add_components_to_samples:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or str(sample_name) in str(config["samples_to_include"]).split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_db["components"] = sample_db.get("components", [])
@@ -567,12 +567,12 @@ rule initialize_sample_components_for_each_sample:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or str(sample_name) in str(config["samples_to_include"]).split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
 
@@ -641,13 +641,13 @@ rule initialize_run:
             run_db["path"] = os.path.realpath(run_folder)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             run_db["samples"] = run_db.get("samples", [])
             # Todo: handle change in samples properly
             for sample_name in unique_sample_names:
-                if config.get("samples_to_include", None) is None or str(sample_name) in str(config["samples_to_include"]).split(","):
+                if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                     sample_config = sample_name + "/sample.yaml"
                     sample_db = datahandling.load_sample(sample_config)
                     sample_id = sample_db.get("_id",)
@@ -718,13 +718,13 @@ rule setup_sample_components_to_run:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
             with open(run_cmd, "w") as run_cmd_handle:
                 for sample_name in unique_sample_names:
-                    if config.get("samples_to_include", None) is None or str(sample_name) in str(config["samples_to_include"]).split(","):
+                    if config.get("samples_to_include", None) is None or sample_name in str(config["samples_to_include"]).split(","):
                         current_time = datetime.datetime.now()
                         with open(sample_name + "/cmd_" + component + "_{}.sh".format(current_time), "w") as command:
                             sample_config = sample_name + "/sample.yaml"
