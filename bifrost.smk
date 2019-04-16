@@ -18,10 +18,11 @@ from bifrostlib import datahandling
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
 # hacky fix for AB#371, need to REDO
-if type(config["samples_to_include"]) is tuple:
-    config["samples_to_include"] = ",".join([str(i) for i in list(config["samples_to_include"])])
-if type(config["samples_to_include"]) is int:
-    config["samples_to_include"] = str(config["samples_to_include"])
+if config.get("samples_to_include", None) is not None:
+    if type(config["samples_to_include"]) is tuple:
+        config["samples_to_include"] = ",".join([str(i) for i in list(config["samples_to_include"])])
+    if type(config["samples_to_include"]) is int:
+        config["samples_to_include"] = str(config["samples_to_include"])
 
 #Saving the config
 component = "bifrost"
