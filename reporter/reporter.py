@@ -31,6 +31,7 @@ from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sa
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
+from run_checker import pipeline_report
 
 # Globals
 # also defined in mongo_interface.py
@@ -258,6 +259,8 @@ def update_run_name(pathname, params, sample_store):
         return [html_div_filter(), params]
     elif path[1] == "sample-report":
         return [sample_report(sample_store), params]
+    elif path[1] == "pipeline-report":
+        return [pipeline_report(sample_store), params]
     else:
         return ["Not found", params]
 

@@ -95,12 +95,11 @@ app.layout = html.Div([
         "."], className="footer container")
 ], className="appcontainer")
 
+def pipeline_report(sample_data):
+    return str(sample_data)
+
 
 # Callbacks
-
-# We could make this one much faster by hiding the unused species with CSS
-# by adding a new hidden class.
-
 
 @app.callback(
     Output("run-name", "children"),
