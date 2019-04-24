@@ -77,8 +77,8 @@ def get_assemblies_paths(samples):
     return mongo_interface.get_assemblies_paths(samples)
 
 # For run_checker
-def get_sample_component_status(sample_ids):
-    return mongo_interface.get_sample_component_status(sample_ids)
+def get_sample_component_status(samples):
+    return mongo_interface.get_sample_component_status(samples)
 
 
 def get_species_QC_values(ncbi_species):

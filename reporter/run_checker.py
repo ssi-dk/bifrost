@@ -96,7 +96,102 @@ app.layout = html.Div([
 ], className="appcontainer")
 
 def pipeline_report(sample_data):
-    return str(sample_data)
+    update_notice = "The table will update every 30s automatically."
+
+    # resequence_link = html.H4(dcc.Link(
+    #     "Resequence Report", href="/{}/resequence".format(run["name"])))  # move to multiple outputs
+
+    s_c_status = import_data.get_sample_component_status(
+        sample_data)
+
+    if "components" in run:
+        components = list(
+            map(lambda x: x["name"], run["components"]))
+    else:
+        components = []
+        for sample_id, s_c in s_c_status.items():
+            if s_c["component"]["name"] not in components:
+                components.append(s_c["component"]["name"])
+    header = html.Tr([
+        html.Th(html.Div(html.Strong("Priority")),
+                className="rotate rotate-short"),
+        html.Th(html.Div(html.Strong("Sample")),
+                className="rotate rotate-short"),
+        html.Th(html.Div(html.Strong("QC status")),
+                className="rotate rotate-short"),
+        html.Th()
+    ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+                                    className="rotate rotate-short"),
+                    components)))
+    rows = [header]
+    for sample_id, s_components in s_c_status.items():
+        sample = samples_by_id[sample_id]
+        name = sample["name"]
+        if name == "Undetermined":
+            continue  # ignore this row
+        row = []
+        sample = import_data.get_sample(
+            str(s_components["sample._id"]))
+        stamps = sample.get("stamps", {})
+        priority = sample.get("sample_sheet",
+                                {}).get("priority", "").lower()
+        prio_display = " "
+        prio_title = priority
+        if priority == "high":
+            prio_display = "🚨"
+        else:
+            prio_display = ""
+        row.append(html.Td(prio_display,
+                            title=prio_title,
+                            className="center"))
+
+        row.append(html.Td(name))
+        qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
+
+        expert_check = False
+        if ("supplying_lab_check" in stamps and
+                "value" in stamps["supplying_lab_check"]):
+            qc_val = stamps["supplying_lab_check"]["value"]
+            expert_check = True
+
+        statusname = ""
+        if qc_val == "fail:supplying lab":
+            qc_val = "SL"
+            statusname = "status-1"
+        elif qc_val == "N/A":
+            statusname = "status--2"
+        elif (qc_val == "fail:core facility" or
+                qc_val == "fail:resequence"):
+            statusname = "status--1"
+            qc_val = "CF"
+        elif qc_val == "pass:OK":
+            statusname = "status-2"
+            qc_val = "OK"
+
+        if expert_check:
+            qc_val += "*"
+
+        row.append(
+            html.Td(qc_val, className="center {}".format(statusname)))
+        row.append(html.Td())
+
+        for component in components:
+            if component in s_components.keys():
+                s_c = s_components[component]
+                row.append(
+                    html.Td(s_c[1],
+                            className="center status-{}".format(s_c[0])))
+            else:
+                row.append(html.Td("None", className="center status-0"))
+        rows.append(html.Tr(row))
+    table = html.Table(rows, className="unset-width-table")
+    update_notice += (" Req.: requirements not met. Init.: initialised. "
+                        "*: user submitted")
+
+    return [
+        resequence_link,
+        html.P(update_notice),
+        table]
 
 
 # Callbacks
