@@ -70,7 +70,7 @@ app.css.append_css(
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     # To store url param values
-    dcc.Store(id="sample-store", data=[]),
+    dcc.Store(id="sample-store", data=[], storage_type='session'),
     dcc.Store(id="param-store", data={}),
     dbc.Navbar(
         [
@@ -121,7 +121,7 @@ app.layout = html.Div([
                             , className="selected-samples-table"),
                     ], className="selected-samples-nav"),
                 ], className="sidebar-sticky position-relative"),
-            ], className="col-md-2 d-none d-md-block bg-light sidebar"),
+            ], className="col-md-2 bg-light sidebar"),
             html.Main([
                 html.Div(id="selected-view"),
                     # 
@@ -1009,6 +1009,8 @@ def create_stamp(value, user):
         "value": value
     }
 
+
+#  
 
 @app.callback(Output('qc-confirm', 'displayed'),
               [Input('feedback-button', 'n_clicks_timestamp')])

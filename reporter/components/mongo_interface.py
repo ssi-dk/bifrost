@@ -364,10 +364,10 @@ def get_assemblies_paths(sample_ids):
 
 
 # Run_checker.py
-def get_sample_component_status(sample_ids):
+def get_sample_component_status(samples):
     with get_connection() as connection:
         db = connection.get_database()
-        sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
+        sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": sample_ids},
         }, {"sample._id": 1, "status": 1, "component.name": 1})
@@ -398,6 +398,9 @@ def get_sample_component_status(sample_ids):
                 status_code = float('nan')
             sample[s_c["component"]["name"]] = (status_code, status)
             output[str(s_c["sample"]["_id"])] = sample
+        for sample in output.keys():
+            output[sample]["sample"] = db.samples.find_one(
+                {"_id": ObjectId(sample)}) 
         return output
 
 

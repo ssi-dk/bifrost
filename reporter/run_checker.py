@@ -7,6 +7,8 @@ import dash
 import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
@@ -104,34 +106,38 @@ def pipeline_report(sample_data):
     s_c_status = import_data.get_sample_component_status(
         sample_data)
 
-    if "components" in run:
-        components = list(
-            map(lambda x: x["name"], run["components"]))
-    else:
-        components = []
-        for sample_id, s_c in s_c_status.items():
-            if s_c["component"]["name"] not in components:
-                components.append(s_c["component"]["name"])
-    header = html.Tr([
-        html.Th(html.Div(html.Strong("Priority")),
-                className="rotate rotate-short"),
-        html.Th(html.Div(html.Strong("Sample")),
-                className="rotate rotate-short"),
-        html.Th(html.Div(html.Strong("QC status")),
-                className="rotate rotate-short"),
-        html.Th()
-    ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
-                                    className="rotate rotate-short"),
-                    components)))
-    rows = [header]
+    components_order = [
+        "whats_my_species", "analyzer", "assemblatron", "ssi_stamper",
+        "ariba_resfinder", "ariba_mlst", "ariba_plasmidfinder",
+        "ariba_virulencefinder", "sp_cdiff_fbi", "sp_ecoli_fbi",
+        "sp_salm_fbi", "min_read_check", "qcquickie"]
+    s_c_components = []
+    for sample_id, s_c in s_c_status.items():
+        for comp_name in s_c.keys():
+            if comp_name not in s_c_components and comp_name != "sample":
+                s_c_components.append(comp_name)
+    components = [comp for comp in components_order if comp in s_c_components]
+
+
+    rows = []
+
+    columns = [
+        {"name": "Priority", "id": "priority"},
+        {"name": "Sample", "id": "sample"},
+        {"name": "QC status", "id": "qc_val"}
+    ]
+    for comp in components:
+        columns.append({"name": comp, "id": comp})
+
     for sample_id, s_components in s_c_status.items():
-        sample = samples_by_id[sample_id]
+        row = {}
+        sample = s_components["sample"]
+
         name = sample["name"]
+        row["sample"] = name
         if name == "Undetermined":
             continue  # ignore this row
-        row = []
-        sample = import_data.get_sample(
-            str(s_components["sample._id"]))
+
         stamps = sample.get("stamps", {})
         priority = sample.get("sample_sheet",
                                 {}).get("priority", "").lower()
@@ -141,11 +147,7 @@ def pipeline_report(sample_data):
             prio_display = "🚨"
         else:
             prio_display = ""
-        row.append(html.Td(prio_display,
-                            title=prio_title,
-                            className="center"))
-
-        row.append(html.Td(name))
+        row["priority"] = prio_display
         qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
         expert_check = False
@@ -171,27 +173,36 @@ def pipeline_report(sample_data):
         if expert_check:
             qc_val += "*"
 
-        row.append(
-            html.Td(qc_val, className="center {}".format(statusname)))
-        row.append(html.Td())
+        row["qc_val"] = qc_val
 
         for component in components:
             if component in s_components.keys():
                 s_c = s_components[component]
-                row.append(
-                    html.Td(s_c[1],
-                            className="center status-{}".format(s_c[0])))
+                row[component] = s_c[1]
             else:
-                row.append(html.Td("None", className="center status-0"))
-        rows.append(html.Tr(row))
-    table = html.Table(rows, className="unset-width-table")
+                row[component] = "None"
+        rows.append(row)
+
+    table = dash_table.DataTable(
+        id="pipeline-table", selected_rows=[],
+        style_table={
+            'overflowX': 'scroll',
+        },
+        data=rows, columns=columns)
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                         "*: user submitted")
 
     return [
-        resequence_link,
-        html.P(update_notice),
-        table]
+        # resequence_link,
+        dbc.Row([
+            dbc.Col([
+                html.P(update_notice),
+                table
+            ], width=9),
+            dbc.Col([dbc.Button("Rerun selected sample components")],
+                width=3, style={"backgroundColor": "rgba(0, 0, 0, .05)"})
+        ])
+    ]
 
 
 # Callbacks
