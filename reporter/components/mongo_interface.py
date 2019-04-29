@@ -484,7 +484,9 @@ def get_sample_QC_status(last_runs):
     samples_runs_qc = {}
     for sample in samples:
         sample_dict = {}
-
+        if str(sample["_id"]) not in samples_by_ids:
+            print("Missing sample from DB: " + str(sample["_id"]))
+            continue
         name = samples_by_ids[str(sample["_id"])]["name"]
         for run in last_runs:
             for run_sample in run["samples"]:
