@@ -135,6 +135,7 @@ def pipeline_report(sample_data):
 
         name = sample["name"]
         row["sample"] = name
+        row["_id"] = str(sample["_id"])
         if name == "Undetermined":
             continue  # ignore this row
 
@@ -190,17 +191,38 @@ def pipeline_report(sample_data):
         },
         data=rows, columns=columns)
     update_notice += (" Req.: requirements not met. Init.: initialised. "
-                        "*: user submitted")
+                      "*: user submitted")
+    rerun_columns = [
+        {"id": "sample", "name": "sample"},
+        {"id": "component", "name": "component"},
+    ]
 
     return [
         # resequence_link,
         dbc.Row([
             dbc.Col([
+                html.H2("Pipeline Status", className="mt-3"),
                 html.P(update_notice),
                 table
             ], width=9),
-            dbc.Col([dbc.Button("Rerun selected sample components")],
-                width=3, style={"backgroundColor": "rgba(0, 0, 0, .05)"})
+            dbc.Col([
+                html.H3("Rerun components", className="mt-3"),
+                dbc.Alert(id="rerun-output",
+                          color="secondary",
+                          dismissable=True,
+                          is_open=False),
+                dbc.Button("Rerun selected sample components",
+                           id="rerun-button"),
+                html.Div(
+                    dash_table.DataTable(
+                        id="pipeline-rerun",
+                        columns=rerun_columns,
+                        row_deletable=True),
+                className="mt-3")
+            ],
+                width=3,
+                style={"backgroundColor": "rgba(0, 0, 0, .05)"}
+            )
         ])
     ]
 
@@ -515,98 +537,85 @@ def update_rerun_form(run_name):
     ])
 
 
-@app.callback(
-    Output("rerun-output", "message"),
-    [Input("rerun-button", "n_clicks")],
-    [State("rerun-samples", "value"),
-     State("rerun-components", "value"),
-     State("run-name", "children")]
-)
-def rerun_form_button(button, samples, components, run_name):
-    if button == 0 or not hasattr(keys, "rerun") or run_name == "/":
-        return ""
+
+def rerun_components_button(button, table_data):
+    if button == 0:
+        return "", False
     out = []
-    run_name = run_name.split("/")[0]
-    # ends in /bifrost
-    run_path_bifrost = import_data.get_run(run_name).get("path", "")
-    samples = samples.split("\n")
-    # removes /bifrost
-    run_path = os.path.dirname(run_path_bifrost)
-    for sample_name in samples:
-        sample_name = sample_name.strip()
-        # Check sample priority here
+    to_rerun = {}
+    for row in table_data:
+        sample_rerun = to_rerun.get(row["sample_id"], [])
+        sample_rerun.append(row["component"])
+        to_rerun[row["sample_id"]] = sample_rerun
+    
+    sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys())
+    samples_by_id = {str(s["_id"]) : s for s in sample_dbs}
+
+    bifrost_components_dir = os.path.join(keys.rerun["bifrost_dir"], "components/")
+
+    for sample, components in to_rerun.items():
+        sample_db = samples_by_id[sample]
+        sample_name = sample_db["name"]
+        run_path = sample_db["path"]
+        sample_command = ""
         for component in components:
+            component_path = os.path.join(bifrost_components_dir, "components",
+                                          component, "pipeline.smk")
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
             # unlock first
             command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
-                        r" --cores 4 -s {}/src/components/{}/pipeline.smk "
+                        r" --cores 4 -s {} "
                         r"--config Sample=sample.yaml --unlock; ").format(
-                run_path, component)
+                            component_path)
             command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
-                        r" --cores 4 -s {}/src/components/{}/pipeline.smk "
-                        r"--config Sample=sample.yaml").format(run_path,
-                                                               component)
-            if keys.rerun["grid"] == "slurm":
-                process = subprocess.Popen(
-                    ('sbatch --mem={memory}G -p {priority} -c {threads} '
-                     '-t {walltime} -J "bifrost_{sample_name}" --wrap'
-                     ' "{command}"').format(
-                                            **keys.rerun,
+                        r" --cores 4 -s {} "
+                        r"--config Sample=sample.yaml; ").format(
+                            component_path)
+            sample_command += command
+        
+        if keys.rerun["grid"] == "slurm":
+            process = subprocess.Popen(
+                ('sbatch --mem={memory}G -p {priority} -c {threads} '
+                    '-t {walltime} -J "bifrost_{sample_name}" --wrap'
+                    ' "{command}"').format(
+                        **keys.rerun,
                         sample_name=sample_name,
-                                            command=command),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    shell=True,
-                    env=os.environ,
-                    cwd=run_path + "/" + sample_name)
-                process_out, process_err = process.communicate()
-                out.append((sample_name, component, process_out, process_err))
-            elif keys.rerun["grid"] == "torque":
+                        command=sample_command),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                shell=True,
+                env=os.environ,
+                cwd=run_path)
+            process_out, process_err = process.communicate()
+            out.append((sample_name, process_out, process_err))
+        elif keys.rerun["grid"] == "torque":
 
-                if "advres" in keys.rerun:
-                    advres = ",advres={}".format(
-                        keys.rerun["advres"])
-                else:
-                    advres = ''
-                torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
-                script_path = os.path.join(run_path, sample_name, "manual_rerun.sh")
-                with open(script_path, "w") as script:
-                    command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
-                                "ppn={threads},walltime={walltime}{advres} -N "
-                                "'bifrost_{sample_name}' -W group_list={group}"
-                                " -A {group} \n").format(**keys.rerun,
-                                                         sample_name=sample_name)
-                    script.write(command)
-                process = subprocess.Popen('qsub {}'.format(script_path),
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True,
-                                           env=os.environ,
-                                           cwd=run_path + "/" + sample_name)
-                process_out, process_err = process.communicate()
-                out.append((sample_name, component, process_out, process_err))
+            if "advres" in keys.rerun:
+                advres = ",advres={}".format(
+                    keys.rerun["advres"])
+            else:
+                advres = ''
+            torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
+            script_path = os.path.join(run_path, "manual_rerun.sh")
+            with open(script_path, "w") as script:
+                command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
+                            "ppn={threads},walltime={walltime}{advres} -N "
+                            "'bifrost_{sample_name}' -W group_list={group}"
+                            " -A {group} \n").format(**keys.rerun,
+                                                     sample_name=sample_name)
+                script.write(command)
+            process = subprocess.Popen('qsub {}'.format(script_path),
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT,
+                                        shell=True,
+                                        env=os.environ,
+                                        cwd=run_path)
+            process_out, process_err = process.communicate()
+            out.append((sample_name, component, process_out, process_err))
 
     message = "Jobs sent to the server:\n"
     message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
                          for el in out])
-    message += "\nClick OK or Cancel to close this notice."
-    return message
+    return message, True
 
-
-@app.callback(
-    Output("rerun-output", "displayed"),
-    [Input("rerun-output", "message")],
-)
-def update_run_report(message):
-    if message != "":
-        return True
-    return False
-
-server = app.server  # Required for gunicorn
-
-# app.run_server(debug=True, host="0.0.0.0")
-if __name__ == '__main__':
-    # 0.0.0.0 exposes the app to the network.
-    app.run_server(debug=True, host="0.0.0.0",
-                   port=8051, dev_tools_hot_reload=True)

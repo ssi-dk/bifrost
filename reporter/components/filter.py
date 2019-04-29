@@ -28,7 +28,7 @@ def html_div_filter():
         html.Div(
             [
                 dcc.Store(id="param-store", storage_type="memory", data={}),
-                html.H1("Filter", className="mt-3"),
+                html.H2("Filter", className="mt-3"),
 
                 dbc.Row([
                     dbc.Col([

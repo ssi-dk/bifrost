@@ -370,13 +370,14 @@ def get_sample_component_status(samples):
         sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": sample_ids},
-        }, {"sample._id": 1, "status": 1, "component.name": 1})
+         }, {"sample._id": 1, "status": 1, "component.name": 1})
         output = {}
         for s_c in s_c_list:
             sample = output.get(str(s_c["sample"]["_id"]), {
                 "sample._id": str(s_c["sample"]["_id"])
             })
-            status = s_c["status"]
+            status = s_c.get("status", float('nan'))
+
             if status == "Success":
                 status = "OK"
                 status_code = 2

@@ -18,7 +18,7 @@ def sample_report(data):
     sample_n = len(data)
     
     return [
-        html.H3("Sample Report"),
+        html.H2("Sample Report", className="mt-3"),
         html.Span("0", style={"display": "none"}, id="page-n"),
         
         html.Span(str(sample_n // SAMPLE_PAGESIZE),

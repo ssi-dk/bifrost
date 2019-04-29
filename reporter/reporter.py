@@ -31,7 +31,7 @@ from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sa
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
-from run_checker import pipeline_report
+from run_checker import pipeline_report, rerun_components_button
 
 # Globals
 # also defined in mongo_interface.py
@@ -1010,7 +1010,37 @@ def create_stamp(value, user):
     }
 
 
-#  
+@app.callback(Output("pipeline-rerun", "data"),
+              [Input("pipeline-table", "active_cell"),
+               Input("pipeline-table", "derived_viewport_data")],
+              [State("pipeline-table", "columns"),
+               State("pipeline-rerun", "derived_viewport_data")])
+def update_rerun_table(active, table_data, columns, prev_data):
+    if prev_data is None:
+        prev_data = []
+    if active is None:
+        return prev_data
+    col = columns[active[1]]["name"]
+    sample = table_data[active[0]]["sample"]
+    sample_id = table_data[active[0]]["_id"]
+
+    new_row = {"sample": sample, "component": col, "sample_id": sample_id}
+    if new_row not in prev_data:
+        data = prev_data + [new_row]
+    else:
+        data = prev_data
+    return data
+
+
+@app.callback(
+    [Output("rerun-output", "children"),
+     Output("rerun-output", "is_open")],
+    [Input("rerun-button", "n_clicks")],
+    [State("pipeline-rerun", "derived_viewport_data")]
+)
+def rerun_components_button_f(n_clicks, data):
+    return rerun_components_button(n_clicks, data)
+
 
 @app.callback(Output('qc-confirm', 'displayed'),
               [Input('feedback-button', 'n_clicks_timestamp')])
