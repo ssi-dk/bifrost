@@ -201,7 +201,6 @@ def update_run_report(store, n_intervals):
     samples_by_id = store["samples_by_id"]
 
     if store["report"] == "run_checker":
-        run_data = import_data.get_run(run)  #NOTE: de;ete tjos
         
         resequence_link = html.H4(dcc.Link(
             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
@@ -249,6 +248,8 @@ def update_run_report(store, n_intervals):
 
             row.append(html.Td(name))
             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
+            if qc_val == "N/A" and (not "reads" in sample or not "R1" in sample["reads"]):
+                qc_val = "CF(LF)"
 
             expert_check = False
             if ("supplying_lab_check" in stamps and
@@ -266,6 +267,8 @@ def update_run_report(store, n_intervals):
                   qc_val == "fail:resequence"):
                 statusname = "status--1"
                 qc_val = "CF"
+            elif qc_val == "CF(LF)":
+                statusname = "status--1"
             elif qc_val == "pass:OK":
                 statusname = "status-2"
                 qc_val = "OK"

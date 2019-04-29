@@ -491,12 +491,14 @@ def get_sample_QC_status(last_runs):
         for run in last_runs:
             for run_sample in run["samples"]:
                 if name == samples_by_ids[str(run_sample["_id"])]["name"]:
-                    stamps = db.samples.find_one(
-                        {"_id": run_sample["_id"]}, {"stamps": 1})
-                    if stamps is not None:
-                        stamps = stamps.get("stamps", {})
+                    sample_db = db.samples.find_one(
+                        {"_id": run_sample["_id"]}, {"reads": 1, "stamps": 1})
+                    if sample_db is not None:
+                        stamps = sample_db.get("stamps", {})
                         qc_val = stamps.get(
-                            "ssi_stamper", {}).get("value", "CF(LF)")
+                            "ssi_stamper", {}).get("value", "N/A")
+                        if qc_val == "N/A" and (not "reads" in sample_db or not "R1" in sample_db["reads"]):
+                            qc_val = "CF(LF)"
                         expert_check = False
                         if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
                             qc_val = stamps["ssi_expert_check"]["value"]
