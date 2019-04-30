@@ -126,8 +126,13 @@ def pipeline_report(sample_data):
         {"name": "Sample", "id": "sample"},
         {"name": "QC status", "id": "qc_val"}
     ]
+    
+    rerun_form_samples = []
+    rerun_form_components = []
+    
     for comp in components:
         columns.append({"name": comp, "id": comp})
+        rerun_form_components.append({"label": comp, "value": comp})
 
     for sample_id, s_components in s_c_status.items():
         row = {}
@@ -138,6 +143,9 @@ def pipeline_report(sample_data):
         row["_id"] = str(sample["_id"])
         if name == "Undetermined":
             continue  # ignore this row
+
+        rerun_form_samples.append({"label": name, "value": "{}:{}".format(
+            sample_id, name)})
 
         stamps = sample.get("stamps", {})
         priority = sample.get("sample_sheet",
@@ -190,6 +198,7 @@ def pipeline_report(sample_data):
             'overflowX': 'scroll',
         },
         data=rows, columns=columns)
+
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                       "*: user submitted")
     rerun_columns = [
@@ -211,14 +220,38 @@ def pipeline_report(sample_data):
                           color="secondary",
                           dismissable=True,
                           is_open=False),
-                dbc.Button("Rerun selected sample components",
-                           id="rerun-button"),
-                html.Div(
+                html.Label(html.Strong("Add all components for sample")),
+                dbc.InputGroup([
+                    dcc.Dropdown(options=rerun_form_samples, id="rerun-components",
+                                className="dropdown-group"),
+                    dbc.InputGroupAddon(
+                        dbc.Button("Add", id="rerun-add-components"),
+                        addon_type="append",
+                    ),
+                ]),
+                html.Label(html.Strong("Add component for all samples"),
+                           className="mt-3"),
+                dbc.InputGroup([
+                    dcc.Dropdown(options=rerun_form_components, id="rerun-samples",
+                                 className="dropdown-group"),
+                    dbc.InputGroupAddon(
+                        dbc.Button("Add", id="rerun-add-samples"),
+                        addon_type="append",
+                    ),
+                ]),
+                html.Label(html.Strong("Add all failed components"),
+                           className="mt-3"),
+                dbc.Button("Add", id="rerun-add-failed", block=True),
+                html.Div([
+                    html.H4("Selected sample components"),
                     dash_table.DataTable(
                         id="pipeline-rerun",
                         columns=rerun_columns,
                         row_deletable=True),
-                className="mt-3")
+                    dbc.Button("Rerun selected sample components",
+                               id="rerun-button", className="mt-3", block=True,
+                               color="primary"),
+                ], className="mt-3")
             ],
                 width=3,
                 style={"backgroundColor": "rgba(0, 0, 0, .05)"}

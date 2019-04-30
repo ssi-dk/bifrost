@@ -204,23 +204,26 @@ app.layout = html.Div([
                     # These here avoid problems loading parameters when 
                     # loading a view other than the filter with params.
                     html.Button(id="apply-filter-button",
-                               style={"display": "none"},
-                               n_clicks=0),
-                    dcc.Input(value="",
-                              style={"display": "none"},
-                              id="run-list"),
-                    dcc.Input(value="",
-                              style={"display": "none"},
-                              id="species-list"),
+                                style={"display": "none"},
+                                n_clicks=0),
+                    dcc.Dropdown(value="",
+                                 multi=True,
+                                 style={"display": "none"},
+                                 id="run-list"),
+                    dcc.Dropdown(value="",
+                                 multi=True,
+                                 style={"display": "none"},
+                                 id="species-list"),
                     dcc.Input(value="provided",
                               style={"display": "none"},
                               id="form-species-source"),
-                    dcc.Input(value="",
-                              style={"display": "none"},
-                              id="group-list"),
-                    dcc.Input(value="",
-                              style={"display": "none"},
-                              id="qc-list"),
+                    dcc.Dropdown(value="",
+                                 style={"display": "none"},
+                                 id="group-list"),
+                    dcc.Dropdown(value="",
+                                 multi=True,
+                                 style={"display": "none"},
+                                 id="qc-list"),
                     dcc.Input(value="",
                               style={"display": "none"},
                               id="samples-form"),
@@ -251,6 +254,7 @@ app.layout = html.Div([
 def update_run_name(pathname, params, sample_store):
     pparse = urlparse.urlparse(params)
     params = urlparse.parse_qs(pparse.query)
+    print(params)
 
     if pathname is None or pathname == "/":
         pathname = "/"
@@ -1010,26 +1014,70 @@ def create_stamp(value, user):
     }
 
 
+@app.callback(Output("rerun-output", "isOpen"),
+              [Input("rerun-add-components", "n_clicks")],
+              [State("rerun-components", "value")])
+def rerun_form(n_clicks, value):
+    print(value)
+
 @app.callback(Output("pipeline-rerun", "data"),
               [Input("pipeline-table", "active_cell"),
-               Input("pipeline-table", "derived_viewport_data")],
+               Input("pipeline-table", "derived_viewport_data"),
+               Input("rerun-add-components", "n_clicks"),
+               Input("rerun-add-samples", "n_clicks"),
+               Input("rerun-add-failed", "n_clicks")], 
               [State("pipeline-table", "columns"),
-               State("pipeline-rerun", "derived_viewport_data")])
-def update_rerun_table(active, table_data, columns, prev_data):
+               State("pipeline-rerun", "derived_viewport_data"),
+               State("rerun-components", "value"),
+               State("rerun-samples", "value")])
+def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
+                       n_click_fail, columns, prev_data, rerun_comp,
+                       rerun_samp):
+    # default values
     if prev_data is None:
         prev_data = []
-    if active is None:
-        return prev_data
-    col = columns[active[1]]["name"]
-    sample = table_data[active[0]]["sample"]
-    sample_id = table_data[active[0]]["_id"]
 
-    new_row = {"sample": sample, "component": col, "sample_id": sample_id}
-    if new_row not in prev_data:
-        data = prev_data + [new_row]
+    #Get context to know which button was triggered.
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        triggered_id = None
     else:
-        data = prev_data
-    return data
+        triggered_id = ctx.triggered[0]['prop_id']
+    
+    #Nothing triggered it, return empty table if init call or prev data.
+    if active is None and triggered_id is None:
+        return prev_data
+
+    if triggered_id == "pipeline-table.active_cell":
+
+        col = columns[active[1]]["name"]
+        sample = table_data[active[0]]["sample"]
+        sample_id = table_data[active[0]]["_id"]
+
+        new_rows = [{"sample":sample, "component":col,
+                     "sample_id": sample_id}]
+    elif triggered_id == "rerun-add-components.n_clicks":
+        sample_id, sample = rerun_comp.split(":")
+        new_rows = [{"sample":sample,
+                     "component": comp["name"],
+                     "sample_id": sample_id} for comp in columns]
+    elif triggered_id == "rerun-add-samples.n_clicks":
+        new_rows = []
+        for row in table_data:
+            new_rows.append({"sample": row["sample"],
+                             "component": rerun_samp,
+                             "sample_id": row["_id"]})
+    elif triggered_id == "rerun-add-samples.n_clicks":
+        pass
+    else:
+        new_rows = []
+
+    for new_row in new_rows:
+        if new_row not in prev_data:
+            prev_data = prev_data + [new_row]
+
+    return prev_data
 
 
 @app.callback(
