@@ -28,8 +28,88 @@ from bson import json_util
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
 
-    # resequence_link = html.H4(dcc.Link(
-    #     "Resequence Report", href="/{}/resequence".format(run["name"])))  # move to multiple outputs
+
+    table = dash_table.DataTable(
+        id="pipeline-table", selected_rows=[],
+        style_table={
+            'overflowX': 'scroll',
+        },
+        style_as_list_view=True,
+        style_cell={
+            'textAlign': 'center',
+            "fontFamily": "Arial",
+            "padding": "0px 10px",
+            "fontSize": "0.7rem",
+            "height": "25px"
+            })
+
+    update_notice += (" Req.: requirements not met. Init.: initialised. "
+                      "*: user submitted")
+    rerun_columns = [
+        {"id": "sample", "name": "sample"},
+        {"id": "component", "name": "component"},
+    ]
+
+    return [
+        # resequence_link,
+        dbc.Row([
+            dbc.Col([
+                html.H2("Pipeline Status", className="mt-3"),
+                html.P(update_notice),
+                table,
+                dcc.Interval(
+                    id='table-interval',
+                    interval=30*1000,  # in milliseconds
+                    n_intervals=0
+                )
+            ], width=9),
+            dbc.Col([
+                html.H3("Rerun components", className="mt-3"),
+                dbc.Alert(id="rerun-output",
+                          color="secondary",
+                          dismissable=True,
+                          is_open=False),
+                html.Label(html.Strong("Add all components for sample")),
+                dbc.InputGroup([
+                    dcc.Dropdown(id="rerun-components",
+                                className="dropdown-group"),
+                    dbc.InputGroupAddon(
+                        dbc.Button("Add", id="rerun-add-components"),
+                        addon_type="append",
+                    ),
+                ]),
+                html.Label(html.Strong("Add component for all samples"),
+                           className="mt-3"),
+                dbc.InputGroup([
+                    dcc.Dropdown(id="rerun-samples",
+                                 className="dropdown-group"),
+                    dbc.InputGroupAddon(
+                        dbc.Button("Add", id="rerun-add-samples"),
+                        addon_type="append",
+                    ),
+                ]),
+                html.Label(html.Strong("Add all failed components"),
+                           className="mt-3"),
+                dbc.Button("Add", id="rerun-add-failed", block=True),
+                html.Div([
+                    html.H4("Selected sample components"),
+                    dash_table.DataTable(
+                        id="pipeline-rerun",
+                        columns=rerun_columns,
+                        row_deletable=True),
+                    dbc.Button("Rerun selected sample components",
+                               id="rerun-button", className="mt-3", block=True,
+                               color="primary"),
+                ], className="mt-3")
+            ],
+                width=3,
+                style={"backgroundColor": "rgba(0, 0, 0, .05)"}
+            )
+        ])
+    ]
+
+
+def pipeline_report_data(sample_data):
 
     s_c_status = import_data.get_sample_component_status(
         sample_data)
@@ -39,13 +119,14 @@ def pipeline_report(sample_data):
         "ariba_resfinder", "ariba_mlst", "ariba_plasmidfinder",
         "ariba_virulencefinder", "sp_cdiff_fbi", "sp_ecoli_fbi",
         "sp_salm_fbi", "min_read_check", "qcquickie"]
+
+
     s_c_components = []
     for sample_id, s_c in s_c_status.items():
         for comp_name in s_c.keys():
             if comp_name not in s_c_components and comp_name != "sample":
                 s_c_components.append(comp_name)
     components = [comp for comp in components_order if comp in s_c_components]
-
 
     rows = []
 
@@ -54,13 +135,76 @@ def pipeline_report(sample_data):
         {"name": "Sample", "id": "sample"},
         {"name": "QC status", "id": "qc_val"}
     ]
-    
-    rerun_form_samples = []
+
     rerun_form_components = []
-    
+
     for comp in components:
         columns.append({"name": comp, "id": comp})
         rerun_form_components.append({"label": comp, "value": comp})
+
+    # Conditional data colors
+    style_data_conditional = [
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "CF"'
+            },
+            "backgroundColor": "#ea6153"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "CF(LF)"'
+            },
+            "backgroundColor": "#ea6153"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "OK"'
+            },
+            "backgroundColor": "#27ae60"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "SL"'
+            },
+            "backgroundColor": "#f1c40f"
+        }
+    ]
+    for col in s_c_components:
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Fail"'.format(col)
+            },
+            "backgroundColor": "#ea6153"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "OK"'.format(col)
+            },
+            "backgroundColor": "#27ae60"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Running"'.format(col)
+            },
+            "backgroundColor": "#f1c40f"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Req."'.format(col)
+            },
+            "backgroundColor": "#d3d3d3",
+            "color": "#525252"
+        })
+
+    rerun_form_samples = []
 
     for sample_id, s_components in s_c_status.items():
         row = {}
@@ -77,7 +221,7 @@ def pipeline_report(sample_data):
 
         stamps = sample.get("stamps", {})
         priority = sample.get("sample_sheet",
-                                {}).get("priority", "").lower()
+                              {}).get("priority", "").lower()
         prio_display = " "
         prio_title = priority
         if priority == "high":
@@ -119,149 +263,7 @@ def pipeline_report(sample_data):
             else:
                 row[component] = "None"
         rows.append(row)
-
-    # Conditional data colors
-    style_data_conditional = [
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter": 'qc_val eq "CF"'
-            },
-            "backgroundColor": "#ea6153"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter": 'qc_val eq "CF(LF)"'
-            },
-            "backgroundColor": "#ea6153"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter": 'qc_val eq "OK"'
-            },
-            "backgroundColor": "#27ae60"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter": 'qc_val eq "SL"'
-            },
-            "backgroundColor": "#f1c40f"
-        }
-    ]
-    for col in components:
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter": '{} eq "Fail"'.format(col)
-            },
-            "backgroundColor": "#ea6153"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter": '{} eq "OK"'.format(col)
-            },
-            "backgroundColor": "#27ae60"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter": '{} eq "Running"'.format(col)
-            },
-            "backgroundColor": "#f1c40f"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter": '{} eq "Req."'.format(col)
-            },
-            "backgroundColor": "#d3d3d3",
-            "color": "#525252"
-        })
-
-
-    table = dash_table.DataTable(
-        id="pipeline-table", selected_rows=[],
-        style_table={
-            'overflowX': 'scroll',
-        },
-        style_data_conditional=style_data_conditional,
-        style_as_list_view=True,
-        style_cell={
-            'textAlign': 'center',
-            "fontFamily": "Arial",
-            "padding": "0px 10px",
-            "fontSize": "0.7rem",
-            "height": "25px"
-            },
-        data=rows,
-        columns=columns)
-
-    update_notice += (" Req.: requirements not met. Init.: initialised. "
-                      "*: user submitted")
-    rerun_columns = [
-        {"id": "sample", "name": "sample"},
-        {"id": "component", "name": "component"},
-    ]
-
-    
-
-    return [
-        # resequence_link,
-        dbc.Row([
-            dbc.Col([
-                html.H2("Pipeline Status", className="mt-3"),
-                html.P(update_notice),
-                table
-            ], width=9),
-            dbc.Col([
-                html.H3("Rerun components", className="mt-3"),
-                dbc.Alert(id="rerun-output",
-                          color="secondary",
-                          dismissable=True,
-                          is_open=False),
-                html.Label(html.Strong("Add all components for sample")),
-                dbc.InputGroup([
-                    dcc.Dropdown(options=rerun_form_samples, id="rerun-components",
-                                className="dropdown-group"),
-                    dbc.InputGroupAddon(
-                        dbc.Button("Add", id="rerun-add-components"),
-                        addon_type="append",
-                    ),
-                ]),
-                html.Label(html.Strong("Add component for all samples"),
-                           className="mt-3"),
-                dbc.InputGroup([
-                    dcc.Dropdown(options=rerun_form_components, id="rerun-samples",
-                                 className="dropdown-group"),
-                    dbc.InputGroupAddon(
-                        dbc.Button("Add", id="rerun-add-samples"),
-                        addon_type="append",
-                    ),
-                ]),
-                html.Label(html.Strong("Add all failed components"),
-                           className="mt-3"),
-                dbc.Button("Add", id="rerun-add-failed", block=True),
-                html.Div([
-                    html.H4("Selected sample components"),
-                    dash_table.DataTable(
-                        id="pipeline-rerun",
-                        columns=rerun_columns,
-                        row_deletable=True),
-                    dbc.Button("Rerun selected sample components",
-                               id="rerun-button", className="mt-3", block=True,
-                               color="primary"),
-                ], className="mt-3")
-            ],
-                width=3,
-                style={"backgroundColor": "rgba(0, 0, 0, .05)"}
-            )
-        ])
-    ]
-
+    return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
 
 # # Callbacks
 
@@ -670,7 +672,7 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
     if prev_data is None:
         prev_data = []
 
-    if len(columns):
+    if columns:
         columns = columns[3:]
 
     #Get context to know which button was triggered.

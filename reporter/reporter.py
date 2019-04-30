@@ -31,7 +31,7 @@ from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sa
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
-from run_checker import pipeline_report, rerun_components_button, update_rerun_table
+from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
 
 # Globals
 # also defined in mongo_interface.py
@@ -765,6 +765,18 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
         value=selected_species
     )
 
+
+@app.callback(
+    [Output("pipeline-table", "data"),
+     Output("pipeline-table", "columns"),
+     Output("pipeline-table", "style_data_conditional"),
+     Output("rerun-samples", "options"),
+     Output("rerun-components", "options")],
+    [Input("sample-store", "data"),
+     Input("table-interval", "n_intervals")]
+)
+def pipeline_report_data_f(sample_store, ignore):
+    return pipeline_report_data(sample_store)
 
 # @app.callback(
 #     Output("summary-plot", "selectedData"),
