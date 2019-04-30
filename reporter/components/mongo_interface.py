@@ -419,7 +419,7 @@ def get_assemblies_paths(sample_ids):
     return list(db.sample_components.find({
         "sample._id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))},
         "component.name": "assemblatron"
-    }, {"path": 1, "sample.name": 1}))
+    }, {"path": 1, "sample": 1}))
 
 
 # Run_checker.py
