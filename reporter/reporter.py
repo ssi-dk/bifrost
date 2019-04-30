@@ -31,7 +31,7 @@ from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sa
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
-from run_checker import pipeline_report, rerun_components_button
+from run_checker import pipeline_report, rerun_components_button, update_rerun_table
 
 # Globals
 # also defined in mongo_interface.py
@@ -1030,54 +1030,12 @@ def rerun_form(n_clicks, value):
                State("pipeline-rerun", "derived_viewport_data"),
                State("rerun-components", "value"),
                State("rerun-samples", "value")])
-def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
+def update_rerun_table_f(active, table_data, n_click_comp, n_click_samp,
                        n_click_fail, columns, prev_data, rerun_comp,
                        rerun_samp):
-    # default values
-    if prev_data is None:
-        prev_data = []
-
-    #Get context to know which button was triggered.
-    ctx = dash.callback_context
-
-    if not ctx.triggered:
-        triggered_id = None
-    else:
-        triggered_id = ctx.triggered[0]['prop_id']
-    
-    #Nothing triggered it, return empty table if init call or prev data.
-    if active is None and triggered_id is None:
-        return prev_data
-
-    if triggered_id == "pipeline-table.active_cell":
-
-        col = columns[active[1]]["name"]
-        sample = table_data[active[0]]["sample"]
-        sample_id = table_data[active[0]]["_id"]
-
-        new_rows = [{"sample":sample, "component":col,
-                     "sample_id": sample_id}]
-    elif triggered_id == "rerun-add-components.n_clicks":
-        sample_id, sample = rerun_comp.split(":")
-        new_rows = [{"sample":sample,
-                     "component": comp["name"],
-                     "sample_id": sample_id} for comp in columns]
-    elif triggered_id == "rerun-add-samples.n_clicks":
-        new_rows = []
-        for row in table_data:
-            new_rows.append({"sample": row["sample"],
-                             "component": rerun_samp,
-                             "sample_id": row["_id"]})
-    elif triggered_id == "rerun-add-samples.n_clicks":
-        pass
-    else:
-        new_rows = []
-
-    for new_row in new_rows:
-        if new_row not in prev_data:
-            prev_data = prev_data + [new_row]
-
-    return prev_data
+    return update_rerun_table(active, table_data, n_click_comp, n_click_samp,
+                              n_click_fail, columns, prev_data, rerun_comp,
+                              rerun_samp)
 
 
 @app.callback(

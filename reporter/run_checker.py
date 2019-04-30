@@ -24,78 +24,6 @@ import json
 from bson import json_util
 
 
-app = dash.Dash()
-
-app.config["suppress_callback_exceptions"] = True
-app.title = "bifrost Run Checker"
-
-if hasattr(keys, "pass_protected") and keys.pass_protected:
-    dash_auth.BasicAuth(
-        app,
-        keys.USERNAME_PASSWORD
-    )
-
-# Temp css to make it look nice
-# Dash CSS
-app.css.append_css(
-    {"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
-# Lato font
-app.css.append_css(
-    {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
-
-
-app.layout = html.Div([
-    html.Div(className="container", children=[
-        dash_scroll_up.DashScrollUp(
-            id="input",
-            label="UP",
-            className="button button-primary no-print"
-        ),
-        html.Div(id='none', children=[], style={'display': 'none'}),
-        html.H1("SerumQC Run Checker"),
-        dcc.Store(id="sample-store", storage_type="memory"),
-        dcc.Interval(
-            id='table-interval',
-            interval=30*1000,  # in milliseconds
-            n_intervals=0),
-        html.Div([
-            html.Div(
-                [
-                    html.Div(
-                        dcc.Dropdown(
-                            id="run-list",
-                            options=[],
-                            placeholder="Sequencing run"
-                        )
-                    )
-                ],
-                className="nine columns"
-            ),
-            html.Div(
-                [
-                    dcc.Link(
-                        "Load run",
-                        id="run-link",
-                        href="/",
-                        className="button button-primary")
-                ],
-                className="three columns"
-            )
-        ], id="run-selector", className="row"),
-        html.P("", id="run-name", style={"display": "none"}),
-        html.H2("", id="run-name-title"),
-        html.Div(id="report-link"),
-        dcc.Location(id="url", refresh=False),
-        html.Div(id="run-report", className="run_checker_report"),
-        html.Div(id="rerun-form"),
-        dcc.ConfirmDialog(message="", displayed=False, id="rerun-output")
-
-    ]),
-    html.Footer([
-        "Created with 🔬 at SSI. Bacteria icons from ",
-        html.A("Flaticon", href="https://www.flaticon.com/"),
-        "."], className="footer container")
-], className="appcontainer")
 
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
@@ -192,12 +120,85 @@ def pipeline_report(sample_data):
                 row[component] = "None"
         rows.append(row)
 
+    # Conditional data colors
+    style_data_conditional = [
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "CF"'
+            },
+            "backgroundColor": "#ea6153"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "CF(LF)"'
+            },
+            "backgroundColor": "#ea6153"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "OK"'
+            },
+            "backgroundColor": "#27ae60"
+        },
+        {
+            "if": {
+                "column_id": "qc_val",
+                "filter": 'qc_val eq "SL"'
+            },
+            "backgroundColor": "#f1c40f"
+        }
+    ]
+    for col in components:
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Fail"'.format(col)
+            },
+            "backgroundColor": "#ea6153"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "OK"'.format(col)
+            },
+            "backgroundColor": "#27ae60"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Running"'.format(col)
+            },
+            "backgroundColor": "#f1c40f"
+        })
+        style_data_conditional.append({
+            "if": {
+                "column_id": col,
+                "filter": '{} eq "Req."'.format(col)
+            },
+            "backgroundColor": "#d3d3d3",
+            "color": "#525252"
+        })
+
+
     table = dash_table.DataTable(
         id="pipeline-table", selected_rows=[],
         style_table={
             'overflowX': 'scroll',
         },
-        data=rows, columns=columns)
+        style_data_conditional=style_data_conditional,
+        style_as_list_view=True,
+        style_cell={
+            'textAlign': 'center',
+            "fontFamily": "Arial",
+            "padding": "0px 10px",
+            "fontSize": "0.7rem",
+            "height": "25px"
+            },
+        data=rows,
+        columns=columns)
 
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                       "*: user submitted")
@@ -205,6 +206,8 @@ def pipeline_report(sample_data):
         {"id": "sample", "name": "sample"},
         {"id": "component", "name": "component"},
     ]
+
+    
 
     return [
         # resequence_link,
@@ -260,314 +263,314 @@ def pipeline_report(sample_data):
     ]
 
 
-# Callbacks
+# # Callbacks
 
-@app.callback(
-    Output("run-name", "children"),
-    [Input("url", "pathname")]
-)
-def update_run_name(pathname):
-    if pathname is None:
-        pathname = "/"
-    path = pathname.split("/")
-    if import_data.check_run_name(path[1]):
-        name = path[1]
-    elif path[1] == "":
-        name = ""
-    else:
-        name = "Not found"
-    if len(path) > 2:
-        return name + "/" + path[2]
-    else:
-        return name + "/"
-
-
-@app.callback(
-    Output("run-list", "options"),
-    [Input("none", "children")]
-)
-def update_run_options(none):
-    run_list = import_data.get_run_list()
-    return [
-        {
-            "label": "{} ({})".format(run["name"],
-                                      len(run["samples"])),
-            "value": run["name"]
-        } for run in run_list]
+# @app.callback(
+#     Output("run-name", "children"),
+#     [Input("url", "pathname")]
+# )
+# def update_run_name(pathname):
+#     if pathname is None:
+#         pathname = "/"
+#     path = pathname.split("/")
+#     if import_data.check_run_name(path[1]):
+#         name = path[1]
+#     elif path[1] == "":
+#         name = ""
+#     else:
+#         name = "Not found"
+#     if len(path) > 2:
+#         return name + "/" + path[2]
+#     else:
+#         return name + "/"
 
 
-@app.callback(
-    Output("run-name-title", "children"),
-    [Input("run-name", "children")]
-)
-def update_run_title(run_name):
-    return run_name.split("/")[0]
+# @app.callback(
+#     Output("run-list", "options"),
+#     [Input("none", "children")]
+# )
+# def update_run_options(none):
+#     run_list = import_data.get_run_list()
+#     return [
+#         {
+#             "label": "{} ({})".format(run["name"],
+#                                       len(run["samples"])),
+#             "value": run["name"]
+#         } for run in run_list]
 
 
-@app.callback(
-    Output("report-link", "children"),
-    [Input("run-name", "children")]
-)
-def update_run_name(run_name):
-    run_name = run_name.split("/")[0]
-    if run_name == "" or run_name == "Not found":
-        return None
-    else:
-        return html.H3(html.A("QC Report",
-                              href="{}/{}".format(keys.qc_report_url,
-                                                  run_name)))
+# @app.callback(
+#     Output("run-name-title", "children"),
+#     [Input("run-name", "children")]
+# )
+# def update_run_title(run_name):
+#     return run_name.split("/")[0]
 
 
-@app.callback(
-    Output("run-link", "href"),
-    [Input("run-list", "value")]
-)
-def update_run_button(run):
-    if run is not None:
-        return "/" + run
-    else:
-        return "/"
+# @app.callback(
+#     Output("report-link", "children"),
+#     [Input("run-name", "children")]
+# )
+# def update_run_name(run_name):
+#     run_name = run_name.split("/")[0]
+#     if run_name == "" or run_name == "Not found":
+#         return None
+#     else:
+#         return html.H3(html.A("QC Report",
+#                               href="{}/{}".format(keys.qc_report_url,
+#                                                   run_name)))
 
 
-@app.callback(
-    Output("sample-store", "data"),
-    [Input("run-name", "children")]
-)
-def update_sample_store(run_name):
-    split = run_name.split("/")
-    run_name = split[0]
-    run = import_data.get_run(run_name)
-    if run is None:
-        return json_util.dumps({"run": None})
-    samples = import_data.get_samples(list(map(lambda x: str(x["_id"]), run["samples"])))
-
-    store = {
-        "run": run,
-        "samples_by_id": {str(s["_id"]): s for s in samples},
-        "report": "resequence" if len(split) > 1 and split[1] == "resequence" else "run_checker"
-    }
-
-    return json_util.dumps(store)
+# @app.callback(
+#     Output("run-link", "href"),
+#     [Input("run-list", "value")]
+# )
+# def update_run_button(run):
+#     if run is not None:
+#         return "/" + run
+#     else:
+#         return "/"
 
 
-@app.callback(
-    Output("run-report", "children"),
-    [Input("sample-store", "data"),
-     Input("table-interval", "n_intervals")]
-)
-def update_run_report(store, n_intervals):
-    update_notice = "The table will update every 30s automatically."
-    store = json_util.loads(store)
-    run = store["run"]
-    if run is None:
-        return None
-    samples_by_id = store["samples_by_id"]
+# @app.callback(
+#     Output("sample-store", "data"),
+#     [Input("run-name", "children")]
+# )
+# def update_sample_store(run_name):
+#     split = run_name.split("/")
+#     run_name = split[0]
+#     run = import_data.get_run(run_name)
+#     if run is None:
+#         return json_util.dumps({"run": None})
+#     samples = import_data.get_samples(list(map(lambda x: str(x["_id"]), run["samples"])))
 
-    if store["report"] == "run_checker":
-        run_data = import_data.get_run(run)  #NOTE: de;ete tjos
+#     store = {
+#         "run": run,
+#         "samples_by_id": {str(s["_id"]): s for s in samples},
+#         "report": "resequence" if len(split) > 1 and split[1] == "resequence" else "run_checker"
+#     }
+
+#     return json_util.dumps(store)
+
+
+# @app.callback(
+#     Output("run-report", "children"),
+#     [Input("sample-store", "data"),
+#      Input("table-interval", "n_intervals")]
+# )
+# def update_run_report(store, n_intervals):
+#     update_notice = "The table will update every 30s automatically."
+#     store = json_util.loads(store)
+#     run = store["run"]
+#     if run is None:
+#         return None
+#     samples_by_id = store["samples_by_id"]
+
+#     if store["report"] == "run_checker":
+#         run_data = import_data.get_run(run)  #NOTE: de;ete tjos
         
-        resequence_link = html.H4(dcc.Link(
-            "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
+#         resequence_link = html.H4(dcc.Link(
+#             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
 
-        s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
+#         s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
 
-        if "components" in run:
-            components = list(
-                map(lambda x: x["name"], run["components"]))
-        else:
-            components = []
-            for sample_id, s_c in s_c_status.items():
-                if s_c["component"]["name"] not in components:
-                    components.append(s_c["component"]["name"])
-        header = html.Tr([
-            html.Th(html.Div(html.Strong("Priority")),
-                    className="rotate rotate-short"),
-            html.Th(html.Div(html.Strong("Sample")),
-                    className="rotate rotate-short"),
-            html.Th(html.Div(html.Strong("QC status")),
-                    className="rotate rotate-short"),
-            html.Th()
-            ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
-                                           className="rotate rotate-short"),
-                         components)))
-        rows = [header]
-        for sample_id, s_components in s_c_status.items():
-            sample = samples_by_id[sample_id]
-            name = sample["name"]
-            if name == "Undetermined":
-                continue #ignore this row
-            row = []
-            sample = import_data.get_sample(
-                str(s_components["sample._id"]))
-            stamps = sample.get("stamps", {})
-            priority = sample.get("sample_sheet",
-                                  {}).get("priority", "").lower()
-            prio_display = " "
-            prio_title = priority
-            if priority == "high":
-                prio_display = "🚨"
-            else:
-                prio_display = ""
-            row.append(html.Td(prio_display,
-                               title=prio_title,
-                               className="center"))
+#         if "components" in run:
+#             components = list(
+#                 map(lambda x: x["name"], run["components"]))
+#         else:
+#             components = []
+#             for sample_id, s_c in s_c_status.items():
+#                 if s_c["component"]["name"] not in components:
+#                     components.append(s_c["component"]["name"])
+#         header = html.Tr([
+#             html.Th(html.Div(html.Strong("Priority")),
+#                     className="rotate rotate-short"),
+#             html.Th(html.Div(html.Strong("Sample")),
+#                     className="rotate rotate-short"),
+#             html.Th(html.Div(html.Strong("QC status")),
+#                     className="rotate rotate-short"),
+#             html.Th()
+#             ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+#                                            className="rotate rotate-short"),
+#                          components)))
+#         rows = [header]
+#         for sample_id, s_components in s_c_status.items():
+#             sample = samples_by_id[sample_id]
+#             name = sample["name"]
+#             if name == "Undetermined":
+#                 continue #ignore this row
+#             row = []
+#             sample = import_data.get_sample(
+#                 str(s_components["sample._id"]))
+#             stamps = sample.get("stamps", {})
+#             priority = sample.get("sample_sheet",
+#                                   {}).get("priority", "").lower()
+#             prio_display = " "
+#             prio_title = priority
+#             if priority == "high":
+#                 prio_display = "🚨"
+#             else:
+#                 prio_display = ""
+#             row.append(html.Td(prio_display,
+#                                title=prio_title,
+#                                className="center"))
 
-            row.append(html.Td(name))
-            qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
+#             row.append(html.Td(name))
+#             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
 
-            expert_check = False
-            if ("supplying_lab_check" in stamps and
-                    "value" in stamps["supplying_lab_check"]):
-                qc_val = stamps["supplying_lab_check"]["value"]
-                expert_check = True
+#             expert_check = False
+#             if ("supplying_lab_check" in stamps and
+#                     "value" in stamps["supplying_lab_check"]):
+#                 qc_val = stamps["supplying_lab_check"]["value"]
+#                 expert_check = True
 
-            statusname = ""
-            if qc_val == "fail:supplying lab":
-                qc_val = "SL"
-                statusname = "status-1"
-            elif qc_val == "N/A":
-                statusname = "status--2"
-            elif (qc_val == "fail:core facility" or
-                  qc_val == "fail:resequence"):
-                statusname = "status--1"
-                qc_val = "CF"
-            elif qc_val == "pass:OK":
-                statusname = "status-2"
-                qc_val = "OK"
+#             statusname = ""
+#             if qc_val == "fail:supplying lab":
+#                 qc_val = "SL"
+#                 statusname = "status-1"
+#             elif qc_val == "N/A":
+#                 statusname = "status--2"
+#             elif (qc_val == "fail:core facility" or
+#                   qc_val == "fail:resequence"):
+#                 statusname = "status--1"
+#                 qc_val = "CF"
+#             elif qc_val == "pass:OK":
+#                 statusname = "status-2"
+#                 qc_val = "OK"
 
-            if expert_check:
-                qc_val += "*"
+#             if expert_check:
+#                 qc_val += "*"
 
-            row.append(
-                html.Td(qc_val, className="center {}".format(statusname)))
-            row.append(html.Td())
+#             row.append(
+#                 html.Td(qc_val, className="center {}".format(statusname)))
+#             row.append(html.Td())
 
-            for component in components:
-                if component in s_components.keys():
-                    s_c = s_components[component]
-                    row.append(
-                        html.Td(s_c[1],
-                                className="center status-{}".format(s_c[0])))
-                else:
-                    row.append(html.Td("None", className="center status-0"))
-            rows.append(html.Tr(row))
-        table = html.Table(rows, className="unset-width-table")
-        update_notice += (" Req.: requirements not met. Init.: initialised. "
-                          "*: user submitted")
+#             for component in components:
+#                 if component in s_components.keys():
+#                     s_c = s_components[component]
+#                     row.append(
+#                         html.Td(s_c[1],
+#                                 className="center status-{}".format(s_c[0])))
+#                 else:
+#                     row.append(html.Td("None", className="center status-0"))
+#             rows.append(html.Tr(row))
+#         table = html.Table(rows, className="unset-width-table")
+#         update_notice += (" Req.: requirements not met. Init.: initialised. "
+#                           "*: user submitted")
 
-        return [
-            resequence_link,
-            html.P(update_notice),
-            table]
+#         return [
+#             resequence_link,
+#             html.P(update_notice),
+#             table]
 
-    if store["report"] == "resequence":
+#     if store["report"] == "resequence":
 
-        run_checker_link = html.H4(html.A(
-            "Run Checker Report", href="/{}".format(run)))
+#         run_checker_link = html.H4(html.A(
+#             "Run Checker Report", href="/{}".format(run)))
 
-        last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
-        last_runs_names = [run["name"] for run in last_runs]
-        prev_runs_dict = import_data.get_sample_QC_status(last_runs)
-        header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
-                                  className="rotate")] +
-                         list(map(lambda x: html.Th(html.Div(html.Strong(x)),
-                                                    className="rotate"),
-                                  last_runs_names)))
-        rows = [header]
-        for name, p_runs in prev_runs_dict.items():
-            if name == "Undetermined":
-                continue
-            row = []
-            row.append(html.Td(name))
+#         last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
+#         last_runs_names = [run["name"] for run in last_runs]
+#         prev_runs_dict = import_data.get_sample_QC_status(last_runs)
+#         header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
+#                                   className="rotate")] +
+#                          list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+#                                                     className="rotate"),
+#                                   last_runs_names)))
+#         rows = [header]
+#         for name, p_runs in prev_runs_dict.items():
+#             if name == "Undetermined":
+#                 continue
+#             row = []
+#             row.append(html.Td(name))
 
-            sample_all_OKs = True
+#             sample_all_OKs = True
 
-            for index in range(len(last_runs)):
-                if last_runs[index]["name"] in p_runs:
-                    className = "0"
-                    title = "Not Run"
-                    status = p_runs[last_runs[index]["name"]]
-                    if status.startswith("OK"):
-                        className = "2"
-                        title = "OK"
-                    elif status == "SL":
-                        sample_all_OKs = False
-                        className = "1"
-                        title = "Supplying Lab"
-                    elif status.startswith("CF"):
-                        # Wont be triggered by supplying because its after.
-                        className = "-1"
-                        sample_all_OKs = False
-                        title = "Core Facility"
-                    else:
-                        # to account for libray fails
-                        sample_all_OKs = False
-                    row.append(
-                        html.Td(status,
-                                className="center status-" + className))
-                else:
-                    row.append(html.Td("-", className="center status-0"))
+#             for index in range(len(last_runs)):
+#                 if last_runs[index]["name"] in p_runs:
+#                     className = "0"
+#                     title = "Not Run"
+#                     status = p_runs[last_runs[index]["name"]]
+#                     if status.startswith("OK"):
+#                         className = "2"
+#                         title = "OK"
+#                     elif status == "SL":
+#                         sample_all_OKs = False
+#                         className = "1"
+#                         title = "Supplying Lab"
+#                     elif status.startswith("CF"):
+#                         # Wont be triggered by supplying because its after.
+#                         className = "-1"
+#                         sample_all_OKs = False
+#                         title = "Core Facility"
+#                     else:
+#                         # to account for libray fails
+#                         sample_all_OKs = False
+#                     row.append(
+#                         html.Td(status,
+#                                 className="center status-" + className))
+#                 else:
+#                     row.append(html.Td("-", className="center status-0"))
 
-            if not sample_all_OKs:
-                rows.append(html.Tr(row))
-        table = html.Table(rows, className="unset-width-table")
-        update_notice += (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
-                          "Core Facility (Library Fail). -: No data. "
-                          "*: user submitted")
-        return [
-            run_checker_link,
-            html.P(update_notice),
-            table
-        ]
-    return []
+#             if not sample_all_OKs:
+#                 rows.append(html.Tr(row))
+#         table = html.Table(rows, className="unset-width-table")
+#         update_notice += (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
+#                           "Core Facility (Library Fail). -: No data. "
+#                           "*: user submitted")
+#         return [
+#             run_checker_link,
+#             html.P(update_notice),
+#             table
+#         ]
+#     return []
 
 
-@app.callback(
-    Output("rerun-form", "children"),
-    [Input("run-name", "children")]
-)
-def update_rerun_form(run_name):
-    run_name = run_name.split("/")[0]
-    if run_name == "" or not hasattr(keys, "rerun"):
-        return None
+# @app.callback(
+#     Output("rerun-form", "children"),
+#     [Input("run-name", "children")]
+# )
+# def update_rerun_form(run_name):
+#     run_name = run_name.split("/")[0]
+#     if run_name == "" or not hasattr(keys, "rerun"):
+#         return None
 
-    run_data = import_data.get_run(run_name)
-    if run_data is not None:
-        components = list(
-            map(lambda x: x["name"], run_data["components"]))
-    else:
-        components = []
+#     run_data = import_data.get_run(run_name)
+#     if run_data is not None:
+#         components = list(
+#             map(lambda x: x["name"], run_data["components"]))
+#     else:
+#         components = []
 
-    components_options = [{"value": c, "label": c} for c in components]
+#     components_options = [{"value": c, "label": c} for c in components]
 
-    return html.Div([
-        html.H6("Rerun components"),
-        html.Div([
-            html.Div([
-                dcc.Textarea(
-                    id="rerun-samples",
-                    placeholder="one sample per line",
-                    value=""
-                )
-            ], className="four columns"),
-            html.Div([
-                dcc.Dropdown(
-                    id="rerun-components",
-                    options=components_options,
-                    placeholder="Components",
-                    multi=True,
-                    value=""
-                )
-            ], className="four columns"),
-            html.Div([
-                html.Button(
-                    "Send",
-                    id="rerun-button",
-                    n_clicks=0
-                )
-            ], className="two columns")
-        ], className="row"),
-    ])
+#     return html.Div([
+#         html.H6("Rerun components"),
+#         html.Div([
+#             html.Div([
+#                 dcc.Textarea(
+#                     id="rerun-samples",
+#                     placeholder="one sample per line",
+#                     value=""
+#                 )
+#             ], className="four columns"),
+#             html.Div([
+#                 dcc.Dropdown(
+#                     id="rerun-components",
+#                     options=components_options,
+#                     placeholder="Components",
+#                     multi=True,
+#                     value=""
+#                 )
+#             ], className="four columns"),
+#             html.Div([
+#                 html.Button(
+#                     "Send",
+#                     id="rerun-button",
+#                     n_clicks=0
+#                 )
+#             ], className="two columns")
+#         ], className="row"),
+#     ])
 
 
 
@@ -646,9 +649,75 @@ def rerun_components_button(button, table_data):
                                         cwd=run_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, component, process_out, process_err))
+        elif keys.rerun["grid"] == "slurm.mock":
+            print(('sbatch --mem={memory}G -p {priority} -c {threads} '
+                  '-t {walltime} -J "bifrost_{sample_name}" --wrap'
+                  ' "{command}"').format(
+                **keys.rerun,
+                sample_name=sample_name,
+                command=sample_command))
 
     message = "Jobs sent to the server:\n"
     message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
                          for el in out])
     return message, True
 
+
+def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
+                       n_click_fail, columns, prev_data, rerun_comp,
+                       rerun_samp):
+    # default values
+    if prev_data is None:
+        prev_data = []
+
+    if len(columns):
+        columns = columns[3:]
+
+    #Get context to know which button was triggered.
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        triggered_id = None
+    else:
+        triggered_id = ctx.triggered[0]['prop_id']
+
+    #Nothing triggered it, return empty table if init call or prev data.
+    if active is None and triggered_id is None:
+        return prev_data
+
+    if triggered_id == "pipeline-table.active_cell":
+        col_index = active[1] - 3
+        col = columns[col_index]["id"]
+        sample = table_data[active[0]]["sample"]
+        sample_id = table_data[active[0]]["_id"]
+
+        new_rows = [{"sample": sample, "component": col,
+                     "sample_id": sample_id}]
+    elif triggered_id == "rerun-add-components.n_clicks":
+        sample_id, sample = rerun_comp.split(":")
+        new_rows = [{"sample": sample,
+                     "component": comp["id"],
+                     "sample_id": sample_id} for comp in columns]
+    elif triggered_id == "rerun-add-samples.n_clicks":
+        new_rows = []
+        for row in table_data:
+            new_rows.append({"sample": row["sample"],
+                             "component": rerun_samp,
+                             "sample_id": row["_id"]})
+    elif triggered_id == "rerun-add-failed.n_clicks":
+        new_rows = []
+        for row in table_data:
+            for col in columns:
+                col = col["id"]
+                if row[col] == "Fail":
+                    new_rows.append({"sample": row["sample"],
+                                     "component": col,
+                                     "sample_id": row["_id"]})
+    else:
+        new_rows = []
+
+    for new_row in new_rows:
+        if new_row not in prev_data:
+            prev_data = prev_data + [new_row]
+
+    return prev_data
