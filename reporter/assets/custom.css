@@ -342,21 +342,25 @@ body, .appcontainer {
 .fixed_headers tbody {
   overflow-y: auto;
   height: 120px;
-}
+}*/
 
 .error-pre {
   border: 1px solid red;
   padding: 1em;
   margin-bottom: 20px;
   overflow-x: auto;
+  background-color: #f8f9fa;
+
 }
 
 .folder-pre {
-  border: 1px solid black;
+  /* border: 1px solid black; */
   padding: 1em;
   overflow-x: auto;
+  background-color: #f8f9fa;
+  /* border-radius: 5px; */
 }
-
+/*
 .status-1 {
   background-color: #f1c40f;
 }

@@ -27,12 +27,13 @@ import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.filter import html_div_filter, generate_table
-from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, generate_sample_folder
+from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
 from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
 from components.resequence_report import resequence_report
+from components.link_to_files import link_to_files
 
 # Globals
 # also defined in mongo_interface.py
@@ -114,6 +115,9 @@ app.layout = html.Div([
                         dbc.NavItem(dcc.Link("Resequence Report",
                                              className="nav-link active",
                                              href="resequence-report")),
+                        dbc.NavItem(dcc.Link("Link to Files",
+                                             className="nav-link active",
+                                             href="link-to-files")),
                     ], vertical=True),
                     html.Div([
                         html.H6(
@@ -248,6 +252,18 @@ app.layout = html.Div([
 # We could make this one much faster by hiding the unused species with CSS
 # by adding a new hidden class.
 
+@app.callback(
+    Output("selected-samples", "children"),
+    [Input("sample-store", "data")]
+)
+def store_updateasdasd(sample_store):
+    rows = []
+    for sample in sample_store[:500]:
+        rows.append(html.Tr(html.Td(sample["name"])))
+    if len(sample_store) > 500:
+        rows.append(html.Tr(html.Td(
+            "{} more samples".format(len(sample_store) - 500))))
+    return html.Tbody(rows)
 
 @app.callback(
     [Output("selected-view", "children"),
@@ -271,6 +287,8 @@ def update_run_name(pathname, params, sample_store):
         return [pipeline_report(sample_store), params]
     elif path[1] == "resequence-report":
         return [resequence_report("190430_NB551234_0128_N_WGS_220_AHH2GLAFXY"), params]
+    elif path[1] == "link-to-files":
+        return [link_to_files(sample_store), params]
     else:
         return ["Not found", params]
 
@@ -554,12 +572,13 @@ def update_report(lasso_selected):
      State("group-list", "value"),
      State("qc-list", "value"),
      State("samples-form", "value"),
+     State("sample-store", "data")
      ]
 )
 def update_selected_samples(n_clicks, param_store, deleted_samples,
                             run_names, species_list,
                             species_source, group_list, qc_list,
-                            sample_names):
+                            sample_names, prev_sample_store):
 
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
@@ -581,23 +600,22 @@ def update_selected_samples(n_clicks, param_store, deleted_samples,
         group_list == [] and
         species_list == [] and
         qc_list == []):
-        raise InterruptedError
-        dash.exceptions.PreventUpdate()
+        samples = prev_sample_store
+    else:
 
-    samples = import_data.filter_all(
-        species=species_list, species_source=species_source,
-        group=group_list, qc_list=qc_list,
-        run_names=run_names,
-        sample_names=sample_names,
-        include_s_c=False,
-        projection={"name": 1})
+        samples = import_data.filter_all(
+            species=species_list, species_source=species_source,
+            group=group_list, qc_list=qc_list,
+            run_names=run_names,
+            sample_names=sample_names,
+            include_s_c=False,
+            projection={"name": 1})
 
-    samples["_id"] = samples["_id"].astype(str)
-    if deleted_samples is not None:
-        deleted_samples = deleted_samples.split(",")
-        samples = samples[~samples["_id"].isin(deleted_samples)]
-    samples = samples.to_dict('records')
-
+        samples["_id"] = samples["_id"].astype(str)
+        samples = samples.to_dict('records')
+    if deleted_samples:
+        samples = [s for s in samples if s["_id"] not in deleted_samples]
+    
     return samples
 
 
@@ -613,8 +631,7 @@ def update_deleted_sample(n_clicks, selected, data, prev_deleted):
     if not prev_deleted:
         prev_deleted = ""
     if not n_clicks or not selected:
-        raise InterruptedError
-        dash.exceptions.PreventUpdate()
+        raise dash.exceptions.PreventUpdate
     else:
         deleted = [str(data[i]["_id"]) for i in selected]
         return [prev_deleted + "," + ",".join(deleted), []]
@@ -736,18 +753,7 @@ def generate_download_button(download_button,
 #     return sample_store
 
 
-@app.callback(
-    Output("selected-samples", "children"),
-    [Input("sample-store", "data")]
-)
-def store_update(sample_store):
-    rows = []
-    for sample in sample_store[:500]:
-        rows.append(html.Tr(html.Td(sample["name"])))
-    if len(sample_store) > 500:
-        rows.append(html.Tr(html.Td(
-            "{} more samples".format(len(sample_store) - 500))))
-    return html.Tbody(rows)
+
 
 
 # @app.callback(

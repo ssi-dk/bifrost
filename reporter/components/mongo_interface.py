@@ -243,10 +243,11 @@ def filter(run_names=None,
     query = []
     sample_set = set()
     if sample_names is not None and len(sample_names) != 0:
-        s_n_2 = []
+        sample_names_with_re = []
         for s_n in sample_names:
-            s_n_2.append(re.compile(s_n))
-        query.append({"name": {"$in": s_n_2}})
+            if s_n.startswith("/") and s_n.endswith("/"):
+                sample_names_with_re.append(re.compile(s_n[1:-1]))
+        query.append({"name": {"$in": sample_names_with_re}})
     if samples is not None and len(samples) != 0:
         sample_set = {ObjectId(id) for id in samples}
         query.append({"_id": {"$in": list(sample_set)}})
@@ -364,7 +365,7 @@ def get_assemblies_paths(sample_ids):
     return list(db.sample_components.find({
         "sample._id": {"$in": list(map(lambda x: ObjectId(x), sample_ids))},
         "component.name": "assemblatron"
-    }, {"path": 1, "sample.name": 1}))
+    }, {"path": 1, "sample": 1}))
 
 
 # Run_checker.py

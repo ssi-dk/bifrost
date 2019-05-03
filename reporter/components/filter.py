@@ -130,12 +130,20 @@ def html_div_filter():
                     ], width=9),
                     dbc.Col([
                         dbc.Row(dbc.Col([
-                            dbc.Label("Sample names", html_for="samples-form"),
+                            dbc.Label(["Sample names ", html.Span(
+                                "(?)", id="sample-names-tooltip")],
+                                html_for="samples-form",
+                                style={"display": "block"}),
                             dcc.Textarea(
                                 id="samples-form",
                                 placeholder="one sample per line",
                                 value="",
                                 rows=6
+                            ),
+                            dbc.Tooltip(
+                                "Sample name must match exactly. "
+                                "Search samples using regex by starting and finishing sample name with the '/' character.",
+                                target="sample-names-tooltip",
                             )
                         ], width=12))
                     ], width=3),
