@@ -32,6 +32,7 @@ from components.images import list_of_images, static_image_route, image_director
 import components.global_vars as global_vars
 import components.admin as admin
 from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
+from components.resequence_report import resequence_report
 
 # Globals
 # also defined in mongo_interface.py
@@ -72,6 +73,7 @@ app.layout = html.Div([
     # To store url param values
     dcc.Store(id="sample-store", data=[], storage_type='session'),
     dcc.Store(id="param-store", data={}),
+    dcc.Store(id="removed-samples-store", data=None),
     dbc.Navbar(
         [
             dbc.Col(
@@ -109,6 +111,9 @@ app.layout = html.Div([
                         dbc.NavItem(dcc.Link("Pipeline Status",
                                              className="nav-link active",
                                              href="pipeline-report")),
+                        dbc.NavItem(dcc.Link("Resequence Report",
+                                             className="nav-link active",
+                                             href="resequence-report")),
                     ], vertical=True),
                     html.Div([
                         html.H6(
@@ -254,7 +259,6 @@ app.layout = html.Div([
 def update_run_name(pathname, params, sample_store):
     pparse = urlparse.urlparse(params)
     params = urlparse.parse_qs(pparse.query)
-    print(params)
 
     if pathname is None or pathname == "/":
         pathname = "/"
@@ -265,6 +269,8 @@ def update_run_name(pathname, params, sample_store):
         return [sample_report(sample_store), params]
     elif path[1] == "pipeline-report":
         return [pipeline_report(sample_store), params]
+    elif path[1] == "resequence-report":
+        return [resequence_report("190430_NB551234_0128_N_WGS_220_AHH2GLAFXY"), params]
     else:
         return ["Not found", params]
 
@@ -327,7 +333,6 @@ def update_run_options(form_species):
     [Input("param-store", "data")]
 )
 def update_filter_values(param_store):
-    print(param_store)
     runs = param_store.get("run", [])
     groups = param_store.get("group", [])
     species = param_store.get("species", [])
@@ -335,66 +340,66 @@ def update_filter_values(param_store):
     sample_names = param_store.get("sample_names", [])
     return [runs, groups, species, qcs, "\n".join(sample_names)]
 
-@app.callback(
-    Output("lasso-div", "children"),
-    [Input("summary-plot", "selectedData"),
-     Input('datatable-ssi_stamper', 'derived_virtual_data'),
-     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
-)
-def display_selected_data(selected_data, rows, selected_rows):
-    # ignore_this is there so the function is called 
-    # when the sample list is updated.
-    if rows == [{}] or rows == [] or rows == None:
-        return [
-            html.Label(
-                [
-                    "Selected from table/lasso (0):"
-                ],
-                htmlFor="selected-from-plot"),
-            dcc.Textarea(
-                id="selected-from-plot",
-                className="u-full-width",
-                style={"resize": "none"},
-                readOnly=True,
-                value=""
-            ),
-            html.Div(style={"display": "none"},
-                        id="lasso-sample-ids")
-        ]
-    dtdf = pd.DataFrame(rows)
-    if selected_rows is not None and len(selected_rows) > 0:
-        dtdf = dtdf.iloc[selected_rows]
-    points = list(map(str, list(dtdf["name"])))
-    sample_ids = list(dtdf["_id"])
-    if selected_data is not None and len(selected_data["points"]):
-        lasso_points = set([sample["text"]
-                    for sample in selected_data["points"]])
-        lasso_sample_ids = set([sample["customdata"]
-                        for sample in selected_data["points"]])
-        union_points = set(points).intersection(lasso_points)
-        union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
-        # This way we keep the table order.
-        points = list(dtdf[dtdf["_id"].isin(lasso_sample_ids)]["name"])
-        sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
-    return [
-        html.Label(
-            [
-                "Selected from table/lasso (",
-                    str(len(points)),
-                "):"
-            ],
-            htmlFor="selected-from-plot"),
-        dcc.Textarea(
-            id="selected-from-plot",
-            className="u-full-width",
-            style={"resize": "none"},
-            readOnly=True,
-            value=", ".join(points)
-        ),
-        html.Div(",".join(sample_ids),
-                    style={"display": "none"},
-                    id="lasso-sample-ids")
-    ]
+# @app.callback(
+#     Output("lasso-div", "children"),
+#     [Input("summary-plot", "selectedData"),
+#      Input('datatable-ssi_stamper', 'derived_virtual_data'),
+#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
+# )
+# def display_selected_data(selected_data, rows, selected_rows):
+#     # ignore_this is there so the function is called 
+#     # when the sample list is updated.
+#     if rows == [{}] or rows == [] or rows == None:
+#         return [
+#             html.Label(
+#                 [
+#                     "Selected from table/lasso (0):"
+#                 ],
+#                 htmlFor="selected-from-plot"),
+#             dcc.Textarea(
+#                 id="selected-from-plot",
+#                 className="u-full-width",
+#                 style={"resize": "none"},
+#                 readOnly=True,
+#                 value=""
+#             ),
+#             html.Div(style={"display": "none"},
+#                         id="lasso-sample-ids")
+#         ]
+#     dtdf = pd.DataFrame(rows)
+#     if selected_rows is not None and len(selected_rows) > 0:
+#         dtdf = dtdf.iloc[selected_rows]
+#     points = list(map(str, list(dtdf["name"])))
+#     sample_ids = list(dtdf["_id"])
+#     if selected_data is not None and len(selected_data["points"]):
+#         lasso_points = set([sample["text"]
+#                     for sample in selected_data["points"]])
+#         lasso_sample_ids = set([sample["customdata"]
+#                         for sample in selected_data["points"]])
+#         union_points = set(points).intersection(lasso_points)
+#         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
+#         # This way we keep the table order.
+#         points = list(dtdf[dtdf["_id"].isin(lasso_sample_ids)]["name"])
+#         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
+#     return [
+#         html.Label(
+#             [
+#                 "Selected from table/lasso (",
+#                     str(len(points)),
+#                 "):"
+#             ],
+#             htmlFor="selected-from-plot"),
+#         dcc.Textarea(
+#             id="selected-from-plot",
+#             className="u-full-width",
+#             style={"resize": "none"},
+#             readOnly=True,
+#             value=", ".join(points)
+#         ),
+#         html.Div(",".join(sample_ids),
+#                     style={"display": "none"},
+#                     id="lasso-sample-ids")
+#     ]
 
 
 
@@ -539,20 +544,19 @@ def update_report(lasso_selected):
 
 
 @app.callback(
-    [
-     #Output("filter-sample-count", "children"),
-     #Output("datatable-ssi_stamper", "data"),
-     Output("sample-store", "data")],
+    Output("sample-store", "data"),
     [Input("apply-filter-button", "n_clicks"),
-     Input("param-store", "data")],
+     Input("param-store", "data"),
+     Input("removed-samples-store", "data")],
     [State("run-list", "value"),
      State("species-list", "value"),
      State("form-species-source", "value"),
      State("group-list", "value"),
      State("qc-list", "value"),
-     State("samples-form", "value")]
+     State("samples-form", "value"),
+     ]
 )
-def update_selected_samples(n_clicks, param_store,
+def update_selected_samples(n_clicks, param_store, deleted_samples,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names):
@@ -578,6 +582,7 @@ def update_selected_samples(n_clicks, param_store,
         species_list == [] and
         qc_list == []):
         raise InterruptedError
+        dash.exceptions.PreventUpdate()
 
     samples = import_data.filter_all(
         species=species_list, species_source=species_source,
@@ -588,19 +593,39 @@ def update_selected_samples(n_clicks, param_store,
         projection={"name": 1})
 
     samples["_id"] = samples["_id"].astype(str)
+    if deleted_samples is not None:
+        deleted_samples = deleted_samples.split(",")
+        samples = samples[~samples["_id"].isin(deleted_samples)]
     samples = samples.to_dict('records')
 
-    return [samples]
-
+    return samples
 
 
 @app.callback(
-    [Output("filter-sample-count", "children"),
-     Output("datatable-ssi_stamper", "data")],
-    [Input("sample-store", "data"),
-     Input('datatable-ssi_stamper', 'pagination_settings')]
+    [Output("removed-samples-store", "data"),
+     Output("datatable-ssi_stamper", "selected_rows")],
+    [Input("remove-selected", "n_clicks")],
+    [State("datatable-ssi_stamper", "derived_virtual_selected_rows"),
+     State("datatable-ssi_stamper", "derived_virtual_data"),
+     State("removed-samples-store", "data")]
 )
-def update_filter_table(sample_store, pagination_settings):
+def update_deleted_sample(n_clicks, selected, data, prev_deleted):
+    if not prev_deleted:
+        prev_deleted = ""
+    if not n_clicks or not selected:
+        raise InterruptedError
+        dash.exceptions.PreventUpdate()
+    else:
+        deleted = [str(data[i]["_id"]) for i in selected]
+        return [prev_deleted + "," + ",".join(deleted), []]
+
+@app.callback(
+    [Output("filter-sample-count", "children"),
+     Output("datatable-ssi_stamper", "data"),
+     Output("datatable-ssi_stamper", "virtualization")],
+    [Input("sample-store", "data")]
+)
+def update_filter_table(sample_store):
     if len(sample_store) == 0:
         return ["0", [{}]]
     sample_ids = list(
@@ -608,11 +633,14 @@ def update_filter_table(sample_store, pagination_settings):
 
     samples = import_data.filter_all(
         sample_ids=sample_ids,
-        pagination=pagination_settings,
         include_s_c=True)
 
     samples = generate_table(samples)
-    return [len(sample_store), samples.to_dict("rows")]
+    if len(sample_store) > 500:
+        virtualization = True
+    else:
+        virtualization = False
+    return [len(sample_store), samples.to_dict("rows"), virtualization]
     # return [sample_count, tests_df.to_dict("rows"), samples]
 
 
@@ -636,13 +664,13 @@ def generate_download_button(download_button,
         if sample_names is not None and sample_names != "":
             sample_names = sample_names.split("\n")
 
-        tests_df, query_count = import_data.filter_all(species=species_list, species_source=species_source,
+        tests_df = import_data.filter_all(species=species_list, species_source=species_source,
                                                        group=group_list, qc_list=qc_list,
                                                        run_names=run_names,
                                                        sample_names=sample_names,
                                                        pagination=None)
     # return samples.to_dict()
-    if query_count == 0:
+    if not len(tests_df):
         return None
 
     tests_df = generate_table(tests_df)
@@ -722,48 +750,47 @@ def store_update(sample_store):
     return html.Tbody(rows)
 
 
+# @app.callback(
+#     Output("plot-species-div", "children"),
+#     [Input('datatable-ssi_stamper', 'derived_virtual_data'),
+#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows'),
+#      Input("plot-species-source", "value")],
+#     [State("plot-species", "value")]
+# )
+# def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
+#     plot_df = pd.DataFrame(rows)
+#     if selected_rows is not None and len(selected_rows) > 0:
+#         plot_df = plot_df.iloc[selected_rows]
+#     # part of the HACK, replace with "properties.detected_species" when issue is solved
+#     species_col = "properties_detected_species"
 
-@app.callback(
-    Output("plot-species-div", "children"),
-    [Input('datatable-ssi_stamper', 'derived_virtual_data'),
-     Input('datatable-ssi_stamper', 'derived_virtual_selected_rows'),
-     Input("plot-species-source", "value")],
-    [State("plot-species", "value")]
-)
-def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
-    plot_df = pd.DataFrame(rows)
-    if selected_rows is not None and len(selected_rows) > 0:
-        plot_df = plot_df.iloc[selected_rows]
-    # part of the HACK, replace with "properties.detected_species" when issue is solved
-    species_col = "properties_detected_species"
-
-    if plot_species == "provided":
-        species_col = "properties_provided_species"
-    elif plot_species == "detected":
-        species_col = "properties_detected_species"
-    # end HACK
-    if species_col not in plot_df or plot_df[species_col].unique() is None:
-        return dcc.Dropdown(
-            id="plot-species"
-        )
-    plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
-    species_list = plot_df[species_col].unique()
-    species_list = ["All species",] + list(species_list)
-    if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
-        if species_list[0] == "Not classified" and len(species_list) > 1:
-            selected_species = species_list[1]
-        else:
-            selected_species = species_list[0]
-    species_list_options = [
-        {
-            "label": species,
-            "value": species
-        } for species in species_list]
-    return dcc.Dropdown(
-        id="plot-species",
-        options=species_list_options,
-        value=selected_species
-    )
+#     if plot_species == "provided":
+#         species_col = "properties_provided_species"
+#     elif plot_species == "detected":
+#         species_col = "properties_detected_species"
+#     # end HACK
+#     if species_col not in plot_df or plot_df[species_col].unique() is None:
+#         return dcc.Dropdown(
+#             id="plot-species"
+#         )
+#     plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
+#     species_list = plot_df[species_col].unique()
+#     species_list = ["All species",] + list(species_list)
+#     if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
+#         if species_list[0] == "Not classified" and len(species_list) > 1:
+#             selected_species = species_list[1]
+#         else:
+#             selected_species = species_list[0]
+#     species_list_options = [
+#         {
+#             "label": species,
+#             "value": species
+#         } for species in species_list]
+#     return dcc.Dropdown(
+#         id="plot-species",
+#         options=species_list_options,
+#         value=selected_species
+#     )
 
 
 @app.callback(
@@ -1026,11 +1053,11 @@ def create_stamp(value, user):
     }
 
 
-@app.callback(Output("rerun-output", "isOpen"),
-              [Input("rerun-add-components", "n_clicks")],
-              [State("rerun-components", "value")])
-def rerun_form(n_clicks, value):
-    print(value)
+# @app.callback(Output("rerun-output", "isOpen"),
+#               [Input("rerun-add-components", "n_clicks")],
+#               [State("rerun-components", "value")])
+# def rerun_form(n_clicks, value):
+#     print(value)
 
 @app.callback(Output("pipeline-rerun", "data"),
               [Input("pipeline-table", "active_cell"),

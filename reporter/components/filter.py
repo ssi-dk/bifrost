@@ -160,12 +160,14 @@ def html_div_filter():
                     html.Div([
                         html.H6([
                             html.Span("0", id="filter-sample-count"),
-                            ' samples loaded.'
+                            ' samples loaded.',
+                            dbc.Button("Remove selected",
+                                       id="remove-selected",
+                                       n_clicks=0,
+                                       size="sm")
                         ]),
-                        
                     ]),
                     dash_table.DataTable(
-
                         data=[{}],
                         style_table={
                             'overflowX': 'scroll',
@@ -184,16 +186,17 @@ def html_div_filter():
                             }
                         ],
                         n_fixed_rows=1,
-                        # row_deletable=True,
+                        row_selectable=True,
                         # filtering=True,  # Front end filtering
                         # sorting=True,
                         selected_rows=[],
                         # style_data_conditional=style_data_conditional,
-                        pagination_settings={
-                            'current_page': 0,
-                            'page_size': TABLE_PAGESIZE
-                        },
-                        pagination_mode='be',
+                        # pagination_settings={
+                        #     'current_page': 0,
+                        #     'page_size': TABLE_PAGESIZE
+                        # },
+                        virtualization=False,
+                        pagination_mode=False,
                         id="datatable-ssi_stamper"
                     )
                 ], id="ssi_stamper-report", className="bigtable"),
