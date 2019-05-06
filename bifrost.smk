@@ -741,16 +741,12 @@ rule setup_sample_components_to_run:
                             # Default priority
                             partition = config["partition"]
 
-                            # Set sample priority to value from run_metadata.
+                            # Set sample priority to value from run_metadata then map it based off config file
                             if "sample_sheet" in sample_db:
                                 if "priority" in sample_db["sample_sheet"]:
-                                    partition = sample_db["sample_sheet"]["priority"].lower()
-                            
-                            # Replace priorities with config values according to map.
-                            if "priority_mapping" in config:
-                                if partition in config["priority_mapping"]:
-                                    partition = config["priority_mapping"][partition]
-                            
+                                    if isinstance(sample_db["sample_sheet"]["priority"], str) is True and sample_db["sample_sheet"]["priority"].lower() in config["priority_mapping"]:
+                                        partition = config["priority_mapping"][sample_db["sample_sheet"]["priority"].lower()]
+
                             # Overrule run_metadata and default value
                             if "force_partition" in config:
                                 partition = config["force_partition"]
