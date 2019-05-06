@@ -74,7 +74,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
+        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
 
 
 rule_name = "setup__filter_reads_with_bbduk"
@@ -105,36 +105,6 @@ rule setup__filter_reads_with_bbduk:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo qtrim=r minlength=30 1> {log.out_file} 2> {log.err_file}"
 
 
-rule_name = "assembly__spades"
-rule assembly__spades:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
-    output:
-        spades_folder = temp(directory("spades")),
-        contigs = rules.setup.params.folder + "/temp.fasta",
-        assembly_with = touch(rules.setup.params.folder + "/assembly_with_spades"),
-    shell:
-        """
-        spades.py -k 21,33,55,77 --12 {input.filtered_reads} -o {output.spades_folder} --careful 1> {log.out_file} 2> {log.err_file}
-        mv {output.spades_folder}/contigs.fasta {output.contigs}
-        """
-
-
 rule_name = "assembly__skesa"
 rule assembly__skesa:
     # Static
@@ -155,37 +125,11 @@ rule assembly__skesa:
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        contigs = rules.setup.params.folder + "/temp.fasta",
+        contigs = rules.setup.params.folder + "/contigs.fasta",
         assembly_with = touch(rules.setup.params.folder + "/assembly_with_skesa"),
     shell:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} 1> {log.out_file} 2> {log.err_file}"
 
-
-rule_name = "assembly__selection"
-rule assembly__selection:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        assembly_with = rules.setup.params.folder + "/assembly_with_" + db_component["assembly_with"]
-    params:
-        rules.setup.params.folder + "/temp.fasta"
-    output:
-        rules.setup.params.folder + "/contigs.fasta"
-    shell:
-        "mv {params} {output}"
 
 rule_name = "assembly_check__quast_on_contigs"
 rule assembly_check__quast_on_contigs:
@@ -205,7 +149,7 @@ rule assembly_check__quast_on_contigs:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output
+        contigs = rules.assembly__skesa.output
     output:
         quast = directory(rules.setup.params.folder + "/quast")
     shell:

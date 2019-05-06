@@ -18,7 +18,7 @@ description: >
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-adapters_fasta: "../../resources/adapters.fasta"
+adapters_fasta: "resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

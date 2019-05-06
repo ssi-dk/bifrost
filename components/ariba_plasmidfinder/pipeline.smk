@@ -4,6 +4,7 @@ import traceback
 import shutil
 
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "ariba_plasmidfinder"  # Depends on component name, should be same as folder
 
@@ -75,7 +76,7 @@ rule check_requirements:
         sample = sample,
         sample_component = sample_component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
+        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
 
 
 rule_name = "ariba_plasmidfinder"

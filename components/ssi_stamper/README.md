@@ -1,24 +1,30 @@
 #-Information---------------------------------------------------------------------------------------
-name: ariba_resfinder
-version: 1.1
+name: ssi_stamper
+version: 1.0
 target: sample
-type: pipeline
-recommendation: recommended
+type: stamper
+recommendation: required
+requires_db: True
 description: >
-  This preforms read based mapping against the resfinder DB's.
+  This runs against the mondoDB database and certifies a sample that has run assemblatron and 
+  whats_my_species on it's QC preformance (Core Facility/Supplying Lab/Ok). This can also be run
+  as a script without output on the server (only bifrost DB)
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# -None
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-abricate_resfinder_database: "resources/abricate_resfinder_db" 
-ariba_resfinder_database: "resources/ariba_resfinder_db"
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  components:
+    assemblatron:
+      status:
+    whats_my_species:
+      status: Success
 #---------------------------------------------------------------------------------------------------
