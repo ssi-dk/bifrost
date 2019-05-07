@@ -1,7 +1,9 @@
 import functools
-from bifrostlib import datahandling
 import pandas
 import os
+
+from bifrostlib import datahandling
+
 
 
 def script__initialization(requirements_file, component, sample, sample_component, output_file, log_out, log_err):

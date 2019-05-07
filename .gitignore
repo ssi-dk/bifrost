@@ -13,3 +13,4 @@ docs/build
 .pylintrc
 # Taking out private components 
 components/sp_*_fbi
+scripts
