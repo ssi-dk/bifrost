@@ -14,3 +14,4 @@ docs/build
 # Taking out private components 
 components/sp_*_fbi
 scripts
+resources
