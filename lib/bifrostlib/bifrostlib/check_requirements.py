@@ -5,7 +5,6 @@ import os
 from bifrostlib import datahandling
 
 
-
 def script__initialization(requirements_file, component, sample, sample_component, output_file, log_out, log_err):
     set_status_to_running(sample_component)
     component_db = datahandling.load_component(component)

@@ -73,7 +73,7 @@ rule check_requirements:
         component = component_file_name,
         sample = sample,
         sample_component = sample_component_file_name
-    script:
+    run:
         check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
 
 

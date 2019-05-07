@@ -1,14 +1,18 @@
-#-Information---------------------------------------------------------------------------------------
-name: ariba_mlst
-version: 1.1
-target: sample
-type: pipeline
-recommendation: recommended
-requires_db: True
-description: >
-  This preforms read based mapping against the mlst DB's. The mlst DB's are set via the species 
-  table in the mongoDB. This was previously a part of Analyzer, but is better maintained by 
-  splitting that component apart
+# Information
+# **An MLST component for [bifrost](https://github.com/ssi-dk/bifrost) utilizing ariba**
+
+Category | Value
+--- | ---
+name | ariba_mlst
+version | 1.1
+target | sample
+type | pipeline
+recommendation | recommended
+
+### **Description**:
+This preforms read based mapping against the mlst DB's. The mlst DB's are set via the species 
+table in the mongoDB. This was previously a part of Analyzer, but is better maintained by 
+splitting that component apart
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -28,3 +32,4 @@ requirements:
     properties:
       species:
 #---------------------------------------------------------------------------------------------------
+
