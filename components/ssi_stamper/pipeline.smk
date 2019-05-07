@@ -3,6 +3,7 @@ import sys
 import traceback
 import shutil
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "ssi_stamper"  # Depends on component name, should be same as folder
 

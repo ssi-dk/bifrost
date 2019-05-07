@@ -1,9 +1,10 @@
 # Information
 # **An MLST component for [bifrost](https://github.com/ssi-dk/bifrost) utilizing ariba**
+NOTE: This pipeline is intended for use within [bifrost](https://github.com/ssi-dk/bifrost) and not to be used on it's own. 
 
-Category | Value
---- | ---
-name | ariba_mlst
+Category | Value | Description
+-------- | ----- | -----------
+name | ariba_mlst | MLST run on reads with 
 version | 1.1
 target | sample
 type | pipeline

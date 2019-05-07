@@ -2,7 +2,6 @@ import os
 import sys
 import traceback
 import shutil
-
 from bifrostlib import datahandling
 from bifrostlib import check_requirements
 

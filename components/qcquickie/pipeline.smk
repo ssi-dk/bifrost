@@ -5,6 +5,7 @@ import Bio.SeqIO
 import traceback
 import shutil
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "qcquickie"  # Depends on component name, should be same as folder
 

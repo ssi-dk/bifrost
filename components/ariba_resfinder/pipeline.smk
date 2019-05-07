@@ -3,6 +3,7 @@ import sys
 import traceback
 import shutil
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "ariba_resfinder"  # Depends on component name, should be same as folder
 

@@ -6,6 +6,7 @@ import re
 import traceback
 import shutil
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "min_read_check"  # Depends on component name, should be same as folder
 
