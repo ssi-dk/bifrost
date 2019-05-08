@@ -63,7 +63,7 @@ def get_run_list():
     connection = get_connection()
     db = connection.get_database()
     # Fastest.
-    runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+    runs = list(db.runs.find( {},#{"type": "routine"}, #Leave in routine
                                 {"name": 1,
                                 "_id": 0,
                                 "samples": 1}).sort([['name', pymongo.DESCENDING]]))
@@ -205,7 +205,8 @@ def get_qc_list(run_name=None):
             }
         ]))
     else:
-        runs = list(db.runs.find({"type": "routine"}, {"samples": 1}))
+        runs = list(db.runs.find({}, #{"type": "routine"},
+                                 {"samples": 1}))
         sample_ids = set()
         for run in runs:
             for sample in run["samples"]:
@@ -522,7 +523,9 @@ def get_sample_QC_status(last_runs):
 def get_last_runs(run, n):
     connection = get_connection()
     db = connection.get_database()
-    return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
+    return list(db.runs.find({"name": {"$lte": run},
+                              }, #"type": "routine"},
+                             {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
 
 
 def get_sample(sample_id):
