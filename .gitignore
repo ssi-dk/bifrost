@@ -11,3 +11,8 @@ docs/build
 *\.pytest_cache
 */*.egg-info
 .pylintrc
+# Taking out private components 
+components/sp_*_fbi
+scripts
+resources
+lib

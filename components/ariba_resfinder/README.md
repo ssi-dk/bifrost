@@ -1,28 +1,24 @@
 #-Information---------------------------------------------------------------------------------------
-name: send_email
-version: 1.0
-target: run
-type: filler
-recommendation: optional
+name: ariba_resfinder
+version: 1.1
+target: sample
+type: pipeline
+recommendation: recommended
 description: >
-  TEMPORARY COMPONENT!\n\n
-  This component has been implemented as a temporary measure to allow old scripts work with the new
-  system. What it'll do is launch the program and not store any of the results into the DB other 
-  than if the job ran to completion or not.
+  This preforms read based mapping against the resfinder DB's.
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# None
+# -None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-# None
+abricate_resfinder_database: "resources/abricate_resfinder_db" 
+ariba_resfinder_database: "resources/ariba_resfinder_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  sample:
-    properties:
-      species: Clostridioides difficile
+  # None
 #---------------------------------------------------------------------------------------------------

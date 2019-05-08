@@ -1,14 +1,15 @@
 #-Information---------------------------------------------------------------------------------------
-name: sp_cdiff_fbi
+name: qcquickie
 version: 1.0
 target: sample
 type: pipeline
-recommendation: optional
+recommendation: recommended
 description: >
-  TEMPORARY COMPONENT!\n\n
-  This component has been implemented as a temporary measure to allow old scripts work with the new
-  system. What it'll do is launch the program and not store any of the results into the DB other 
-  than if the job ran to completion or not.
+  This does de-novo assembly on a sample and then maps the reads back against the denovo assembly
+  for variant calling. In the process it gathers metrics on many aspects for the use of QC. This
+  generates the same metrics as assemblatron but prioritizes speed. It is also used to help 
+  correlate metrics for comparing other assemblers. It is not recommended to use these contigs for 
+  downstream analysis
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -17,12 +18,10 @@ description: >
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-# None
+adapters_fasta: "resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  sample:
-    properties:
-      species: Clostridioides difficile
+  # None
 #---------------------------------------------------------------------------------------------------

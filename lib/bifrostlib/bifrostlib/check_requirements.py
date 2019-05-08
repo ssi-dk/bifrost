@@ -1,7 +1,8 @@
 import functools
-from bifrostlib import datahandling
 import pandas
 import os
+
+from bifrostlib import datahandling
 
 
 def script__initialization(requirements_file, component, sample, sample_component, output_file, log_out, log_err):
@@ -101,6 +102,7 @@ def requirements_met(requirements_file, sample, log_out, log_err):
     else:
         return False
 
+
 def passes_check_reads_pipeline(sample, requirements_file, log_err):
     """
     Checks if the component is a pipeline. In that case it will require reads to be present
@@ -113,13 +115,3 @@ def passes_check_reads_pipeline(sample, requirements_file, log_err):
                 log_err, "Pipeline component can't run on a sample with no reads. db:{}".format(sample_db))
             return False
     return True
-
-
-script__initialization(
-    snakemake.input.requirements_file,
-    snakemake.params.component,
-    snakemake.params.sample,
-    snakemake.params.sample_component,
-    snakemake.output,
-    snakemake.log.out_file,
-    snakemake.log.err_file)
