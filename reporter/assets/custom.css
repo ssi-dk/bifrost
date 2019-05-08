@@ -404,9 +404,9 @@ body, .appcontainer {
 button.passfail {
   margin: 5px;
 }
-
+*/
 th.rotate {
-  height: 280px;
+  height: 350px;
   white-space: nowrap;
 }
 
@@ -417,11 +417,11 @@ th.rotate.rotate-short {
 th.rotate > div {
   transform: 
     /* Magic Numbers */
-    /* translate(7px, 112px) */
+    translate(7px, 112px) 
     /* 45 is really 360 - 45 */
-    /* rotate(315deg);
+    rotate(315deg);
   width: 55px;
-} */
+} 
 
 /* th.rotate.rotate-short > div {
   transform: 
@@ -432,11 +432,11 @@ th.rotate > div {
   /* width: 55px; */
 /* } */
 
-/* th.rotate > div > strong {
+th.rotate > div > strong {
   border-bottom: 1px solid #ccc;
   padding: 5px 10px;
 }
-
+/*
 td.center {
   text-align: center;
 }
