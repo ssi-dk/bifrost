@@ -767,8 +767,12 @@ body, .appcontainer {
   background-color: #ea6153;
 }
 
-.status-2 {
+.status-ok {
   background-color: #27ae60;
+}
+
+.status-2 {
+  background-color: #3498db;
 }
 
 .status--2 {

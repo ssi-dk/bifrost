@@ -270,7 +270,7 @@ def update_run_report(store, n_intervals):
             elif qc_val == "CF(LF)":
                 statusname = "status--1"
             elif qc_val == "pass:OK":
-                statusname = "status-2"
+                statusname = "status-ok"
                 qc_val = "OK"
 
             if expert_check:
@@ -326,7 +326,7 @@ def update_run_report(store, n_intervals):
                     title = "Not Run"
                     status = p_runs[last_runs[index]["name"]]
                     if status.startswith("OK"):
-                        className = "2"
+                        className = "ok"
                         title = "OK"
                     elif status == "SL":
                         #sample_all_OKs = False #Disabled
