@@ -489,3 +489,13 @@ def children_sample_list_report(dataframe):
         row_index += 1
     return html.Div(report)
 
+# callback
+def samples_next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
+    page_n = int(page_n)
+    max_page = int(max_page)
+    if max(prev_ts, prev_ts2) > max(next_ts, next_ts2):
+        return str(max(page_n - 1, 0))
+    elif max(next_ts, next_ts2) > max(prev_ts, prev_ts2):
+        return str(min(page_n + 1, max_page))
+    else:
+        return '0'

@@ -134,7 +134,7 @@ def html_div_filter():
                                 "(?)", id="sample-names-tooltip")],
                                 html_for="samples-form",
                                 style={"display": "block"}),
-                            dcc.Textarea(
+                            dbc.Textarea(
                                 id="samples-form",
                                 placeholder="one sample per line",
                                 value="",
@@ -366,3 +366,57 @@ def generate_table(tests_df):
     tests_df = tests_df.filter([ c["id"] for c in COLUMNS])
 
     return tests_df
+
+
+# callback
+def filter_update_run_options(form_species):
+    # Runs
+    run_list = import_data.get_run_list()
+    run_options = [
+        {
+            "label": "{} ({})".format(run["name"],
+                                      len(run["samples"])),
+            "value": run["name"]
+        } for run in run_list]
+
+    # Groups
+    group_list = import_data.get_group_list()
+    group_options = []
+    for item in group_list:
+        if item["_id"] is None:
+            group_options.append({
+                "label": "Not defined ({})".format(item["count"]),
+                "value": "Not defined"
+            })
+        else:
+            group_options.append({
+                "label": "{} ({})".format(item["_id"], item["count"]),
+                "value": item["_id"]
+            })
+
+    species_list = import_data.get_species_list(form_species)
+
+    species_options = []
+    for item in species_list:
+        if item["_id"] == None:
+            species_options.append({
+                "label": "Not classified",
+                "value": "Not classified"
+            })
+        else:
+            species_options.append({
+                "label": item["_id"],
+                "value": item["_id"]
+            })
+
+    return [run_options, group_options, species_options]
+
+
+# callback
+def filter_update_filter_values(param_store):
+    runs = param_store.get("run", [])
+    groups = param_store.get("group", [])
+    species = param_store.get("species", [])
+    qcs = param_store.get("qc", [])
+    sample_names = param_store.get("sample_names", [])
+    return [runs, groups, species, qcs, "\n".join(sample_names)]

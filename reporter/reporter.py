@@ -26,8 +26,8 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_filter, generate_table
-from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report
+from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values
+from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
 import components.admin as admin
@@ -256,7 +256,7 @@ app.layout = html.Div([
     Output("selected-samples", "children"),
     [Input("sample-store", "data")]
 )
-def store_updateasdasd(sample_store):
+def store_update(sample_store):
     rows = []
     for sample in sample_store[:500]:
         rows.append(html.Tr(html.Td(sample["name"])))
@@ -300,46 +300,7 @@ def update_run_name(pathname, params, sample_store):
     [Input("form-species-source", "value")]
 )
 def update_run_options(form_species):
-    # Runs
-    run_list = import_data.get_run_list()
-    run_options = [
-        {
-            "label": "{} ({})".format(run["name"],
-                                      len(run["samples"])),
-            "value": run["name"]
-        } for run in run_list]
-
-    # Groups
-    group_list = import_data.get_group_list()
-    group_options = []
-    for item in group_list:
-        if item["_id"] is None:
-            group_options.append({
-                "label": "Not defined ({})".format(item["count"]),
-                "value": "Not defined"
-            })
-        else:
-            group_options.append({
-                "label": "{} ({})".format(item["_id"], item["count"]),
-                "value": item["_id"]
-            })
-
-    species_list = import_data.get_species_list(form_species)
-
-    species_options = []
-    for item in species_list:
-        if item["_id"] == None:
-            species_options.append({
-                "label": "Not classified",
-                "value": "Not classified"
-            })
-        else:
-            species_options.append({
-                "label": item["_id"],
-                "value": item["_id"]
-            })
-
-    return [run_options, group_options, species_options]
+    return filter_update_run_options(form_species)
 
 
 @app.callback(
@@ -351,12 +312,7 @@ def update_run_options(form_species):
     [Input("param-store", "data")]
 )
 def update_filter_values(param_store):
-    runs = param_store.get("run", [])
-    groups = param_store.get("group", [])
-    species = param_store.get("species", [])
-    qcs = param_store.get("qc", [])
-    sample_names = param_store.get("sample_names", [])
-    return [runs, groups, species, qcs, "\n".join(sample_names)]
+    return filter_update_filter_values(param_store)
 
 # @app.callback(
 #     Output("lasso-div", "children"),
@@ -475,14 +431,7 @@ def update_filter_values(param_store):
         State("max-page", "children")]
 )
 def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
-    page_n = int(page_n)
-    max_page = int(max_page)
-    if max(prev_ts, prev_ts2) > max(next_ts, next_ts2):
-        return str(max(page_n - 1, 0))
-    elif max(next_ts, next_ts2) > max(prev_ts, prev_ts2):
-        return str(min(page_n + 1, max_page))
-    else:
-        return '0'
+    return samples_next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page)
 
 
 @app.callback(
