@@ -644,7 +644,7 @@ def update_deleted_sample(n_clicks, selected, data, prev_deleted):
 )
 def update_filter_table(sample_store):
     if len(sample_store) == 0:
-        return ["0", [{}]]
+        return ["0", [{}], False]
     sample_ids = list(
         map(lambda x: x["_id"], sample_store))
 
