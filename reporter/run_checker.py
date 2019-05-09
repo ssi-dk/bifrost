@@ -650,7 +650,7 @@ def rerun_components_button(button, table_data):
                                         env=os.environ,
                                         cwd=run_path)
             process_out, process_err = process.communicate()
-            out.append((sample_name, component, process_out, process_err))
+            out.append((sample_name, process_out, process_err))
         elif keys.rerun["grid"] == "slurm.mock":
             print(('sbatch --mem={memory}G -p {priority} -c {threads} '
                   '-t {walltime} -J "bifrost_{sample_name}" --wrap'
@@ -660,7 +660,7 @@ def rerun_components_button(button, table_data):
                 command=sample_command))
 
     message = "Jobs sent to the server:\n"
-    message += "\n".join(["{}, {}: out: {} | err: {}".format(*el)
+    message += "\n".join(["{}: out: {} | err: {}".format(*el)
                          for el in out])
     return message, True
 
