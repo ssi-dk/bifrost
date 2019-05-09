@@ -368,7 +368,7 @@ def test_import_run():
     run_export = datahandling.get_run_export(names=[str(run_db["name"])])
 
     #drop database
-    conn = pymongo.MongoClient('mongodb://server.example.com:27017')
+    conn = mongomock.MongoClient('mongodb://server.example.com:27017')
     conn.drop_database("serumqc_prod")
     conn.close()
 
