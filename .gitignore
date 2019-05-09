@@ -7,3 +7,5 @@ docs/build
 *\.pytest_cache
 */*.egg-info
 .pylintrc
+resources
+scripts
