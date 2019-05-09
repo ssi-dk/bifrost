@@ -117,10 +117,8 @@ rule ariba_mlst:
                 shell("mkdir {}".format(output.folder))
                 shell("touch {}/no_mlst_species_DB".format(output.folder))
             else:
-                mlst_species_DB = os.path.join(
-                    db_component["mlst_database_path"], mlst_species_DB_name)
-                datahandling.log(
-                    log_out, "mlst species path: {}\n".format(mlst_species_DB))
+                mlst_species_DB = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"], mlst_species_DB_name)
+                datahandling.log(log_out, "mlst species path: {}\n".format(mlst_species_DB))
                 shell("ariba run {} {} {} {} 1> {} 2> {}".format(
                     mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
