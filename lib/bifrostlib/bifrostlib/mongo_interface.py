@@ -44,7 +44,7 @@ def dump_run_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=False  # insert the document if it does not exist
+            upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
         data_dict = runs_db.find_one_and_update(
@@ -73,7 +73,7 @@ def dump_sample_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=False  # insert the document if it does not exist
+            upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
         data_dict = samples_db.find_one_and_update(
@@ -111,7 +111,7 @@ def dump_component_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=False  # insert the document if it does not exist
+            upsert=True  # This might change in the future # insert the document if it does not exist
         )
     else:
         data_dict = components_db.find_one_and_update(
@@ -140,7 +140,7 @@ def dump_sample_component_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=False  # insert the document if it does not exist
+            upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
         data_dict = sample_components_db.find_one_and_update(
