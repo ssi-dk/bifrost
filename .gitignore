@@ -10,3 +10,4 @@ docs/build
 resources
 scripts
 components/private__*
+config.yaml
