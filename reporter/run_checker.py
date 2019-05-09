@@ -597,7 +597,7 @@ def rerun_components_button(button, table_data):
         run_path = sample_db["path"]
         sample_command = ""
         for component in components:
-            component_path = os.path.join(bifrost_components_dir, "components",
+            component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
