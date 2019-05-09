@@ -126,8 +126,7 @@ rule assembly__skesa:
     input:
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads,
     output:
-        contigs = rules.setup.params.folder + "/contigs.fasta",
-        assembly_with = touch(rules.setup.params.folder + "/assembly_with_skesa"),
+        contigs = rules.setup.params.folder + "/contigs.fasta"
     shell:
         "skesa --cores {threads} --memory {resources.memory_in_GB} --use_paired_ends --fastq {input.filtered_reads} --contigs_out {output.contigs} 1> {log.out_file} 2> {log.err_file}"
 
