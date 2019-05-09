@@ -9,3 +9,4 @@ docs/build
 .pylintrc
 resources
 scripts
+components/private__*
