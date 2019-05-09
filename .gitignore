@@ -1,18 +1,9 @@
 *\__pycache__
 *\.DS_Store
 .vscode
-resources/keys.txt
-resources/species_keys.txt
-resources/dev_keys.txt
-start.sh
 *.pyc
 reporter/keys.py
 docs/build
 *\.pytest_cache
 */*.egg-info
 .pylintrc
-# Taking out private components 
-components/sp_*_fbi
-scripts
-resources
-lib
