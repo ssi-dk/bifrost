@@ -175,7 +175,7 @@ rule assembly_check__sketch_on_contigs:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output
+        contigs = rules.assembly__skesa.output
     output:
         sketch = rules.setup.params.folder + "/contigs.sketch"
     shell:
@@ -202,7 +202,7 @@ rule post_assembly__stats:
     message:
         "Running step: {rule}"
     input:
-        contigs = rules.assembly__selection.output
+        contigs = rules.assembly__skesa.output
     output:
         stats = touch(rules.setup.params.folder + "/post_assermbly__stats")
     shell:
@@ -227,7 +227,7 @@ rule post_assembly__mapping:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output,
+        contigs = rules.assembly__skesa.output,
         filtered_reads = rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
         mapped = temp(rules.setup.params.folder + "/contigs.sam")
@@ -328,7 +328,7 @@ rule post_assembly__call_variants:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output,
+        contigs = rules.assembly__skesa.output,
         mapped = rules.post_assembly__mapping.output.mapped
     output:
         variants = temp(rules.setup.params.folder + "/contigs.vcf"),
@@ -377,7 +377,7 @@ rule post_assembly__annotate:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output,
+        contigs = rules.assembly__skesa.output,
     output:
         gff = rules.setup.params.folder + "/contigs.gff",
     params:
@@ -407,7 +407,7 @@ rule rename_contigs:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        contigs = rules.assembly__selection.output,
+        contigs = rules.assembly__skesa.output,
     output:
         contigs = rules.setup.params.folder + "/" + db_sample["name"] + ".fasta",
     params:
