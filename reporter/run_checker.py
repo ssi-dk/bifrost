@@ -186,7 +186,7 @@ def pipeline_report_data(sample_data):
                 "column_id": col,
                 "filter": '{} eq "OK"'.format(col)
             },
-            "backgroundColor": "#27ae60"
+            "backgroundColor": "#3498db"
         })
         style_data_conditional.append({
             "if": {

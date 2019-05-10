@@ -2,6 +2,8 @@
 
 - [Getting started](getting_started.md)
 
-- [KMA readme](KMA_README.md)
+- [Web Interface User Guide](web_interface.md)
+
+- [User Guide](user_guide.md)
 
 - [Adding a new KMA](setting_up_kma.md)

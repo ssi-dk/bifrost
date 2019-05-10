@@ -1,31 +1,26 @@
 #-Information---------------------------------------------------------------------------------------
-name: analyzer
-version: 1.1
+name: assemblatron
+version: 1.0
 target: sample
 type: pipeline
-recommendation: recommended
-requires_db: True
+recommendation: required
 description: >
-  This preforms read based mapping against the resfinder, plasmidfinder and mlst DB's. The mlst DB's 
-  are set via the species table in the mongoDB.
+  This does de-novo assembly on a sample and then maps the reads back against the denovo assembly
+  for variant calling. In the process it gathers metrics on many aspects for the use of QC. This
+  generates the same metrics as qcquickie but should yield better contigs and it is recommended
+  to use these contigs for downstream analysis.
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# None
+assembly_with: "skesa"  # Choices: skesa|spades
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-mlst_database_path: "/srv/data/DB/ariba/mlst/"
-abricate_resfinder_database: "/srv/data/DB/abricate/resfinder_db/" 
-abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
-ariba_resfinder_database: "/srv/data/DB/ariba/resfinder_db/"
-ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder_db/"
+adapters_fasta: "resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  sample:
-    properties:
-      species:
+  # None
 #---------------------------------------------------------------------------------------------------

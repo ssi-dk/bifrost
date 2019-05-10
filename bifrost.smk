@@ -16,6 +16,14 @@ sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 from bifrostlib import datahandling
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+
+# hacky fix for AB#371, need to REDO
+if config.get("samples_to_include", None) is not None:
+    if type(config["samples_to_include"]) is tuple:
+        config["samples_to_include"] = ",".join([str(i) for i in list(config["samples_to_include"])])
+    if type(config["samples_to_include"]) is int:
+        config["samples_to_include"] = str(config["samples_to_include"])
+
 #Saving the config
 component = "bifrost"
 rerun_folder = component + "/delete_to_update"
@@ -232,7 +240,7 @@ rule initialize_samples_from_sample_folder:
             for file in sorted(os.listdir(sample_folder)):
                 result = re.search(config["read_pattern"], file)
                 if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                    sample_name = result.group("sample_name")
+                    sample_name = str(result.group("sample_name"))
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
@@ -245,7 +253,7 @@ rule initialize_samples_from_sample_folder:
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
-                            if sample_name == result.group("sample_name"):
+                            if sample_name == str(result.group("sample_name")):
                                 sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
                                 md5sum_key = result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
@@ -376,7 +384,7 @@ rule set_samples_from_sample_info:
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
-                    ##NOTE Sample name can be changed to Unnamed_ following the logic below (no name in sample sheet) however the .yaml path uses the value in the sample sheet
+                    # NOTE Sample name can be changed to Unnamed_ following the logic below (no name in sample sheet) however the .yaml path uses the value in the sample sheet
                     if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
                         sample_db["sample_sheet"] = {}
@@ -503,7 +511,7 @@ rule add_components_to_samples:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
@@ -567,7 +575,7 @@ rule initialize_sample_components_for_each_sample:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
@@ -641,7 +649,7 @@ rule initialize_run:
             run_db["path"] = os.path.realpath(run_folder)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             run_db["samples"] = run_db.get("samples", [])
@@ -718,7 +726,7 @@ rule setup_sample_components_to_run:
             # So that they can run components. (only stamps for now)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
-                    sample_name = folder
+                    sample_name = str(folder)
                     unique_sample_names[sample_name] = unique_sample_names.get(
                         sample_name, 0) + 1
 
@@ -733,16 +741,12 @@ rule setup_sample_components_to_run:
                             # Default priority
                             partition = config["partition"]
 
-                            # Set sample priority to value from run_metadata.
+                            # Set sample priority to value from run_metadata then map it based off config file
                             if "sample_sheet" in sample_db:
                                 if "priority" in sample_db["sample_sheet"]:
-                                    partition = sample_db["sample_sheet"]["priority"].lower()
-                            
-                            # Replace priorities with config values according to map.
-                            if "priority_mapping" in config:
-                                if partition in config["priority_mapping"]:
-                                    partition = config["priority_mapping"][partition]
-                            
+                                    if isinstance(sample_db["sample_sheet"]["priority"], str) is True and sample_db["sample_sheet"]["priority"].lower() in config["priority_mapping"]:
+                                        partition = config["priority_mapping"][sample_db["sample_sheet"]["priority"].lower()]
+
                             # Overrule run_metadata and default value
                             if "force_partition" in config:
                                 partition = config["force_partition"]

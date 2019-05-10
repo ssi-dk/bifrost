@@ -4,12 +4,12 @@
 # rename_samples: True # Temporarily shelved idea to rename samples
 sample_folder: "samples"
 sample_sheet: "sample_sheet.xlsx"
-partition: "standard"
+partition: "standard" # Default partition
 #force_partition: "outbreak" # Force a slurm partition
 #torque_node: # for use on specifying a torque node
 grid: "slurm" # slurm|torque|none
 walltime: "03:00:00"
-components: "whats_my_species,analyzer,assemblatron,ssi_stamper,ariba_resfinder,ariba_mlst,ariba_plasmidfinder,ariba_virulencefinder,sp_cdiff_fbi,sp_ecoli_fbi,sp_salm_fbi,min_read_check,qcquickie" # available options are in components directory
+components: "min_read_check,whats_my_species,assemblatron,ssi_stamper,ariba_resfinder,ariba_mlst,ariba_plasmidfinder,ariba_virulencefinder" # available options are in components directory
 group: "" # group for sbatch on torque system
 use_mongodb: True 
 type: "project" # run type (routine, project)

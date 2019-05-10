@@ -135,10 +135,10 @@ def get_run_list():
     connection = get_connection()
     db = connection.get_database()
     # Fastest.
-    runs = list(db.runs.find({"type": "routine"}, #Leave in routine
+    runs = list(db.runs.find( {},#{"type": "routine"}, #Leave in routine
                                 {"name": 1,
                                 "_id": 0,
-                                "samples": 1}).sort([['name', pymongo.DESCENDING]]))
+                                "samples": 1}).sort([['_id', pymongo.DESCENDING]]))
     return runs
 
 
@@ -375,7 +375,9 @@ def get_sample_component_status(samples):
         sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
         s_c_list = db.sample_components.find({
             "sample._id": {"$in": sample_ids},
-         }, {"sample._id": 1, "status": 1, "component.name": 1})
+        }, {"sample._id": 1, "status": 1, "component.name": 1}).sort(
+            "setup_date", pymongo.ASCENDING)  #make sure latest is last,
+            # overwrites others
         output = {}
         for s_c in s_c_list:
             sample = output.get(str(s_c["sample"]["_id"]), {
@@ -432,17 +434,21 @@ def get_sample_QC_status(last_runs):
     samples_runs_qc = {}
     for sample in samples:
         sample_dict = {}
-
+        if str(sample["_id"]) not in samples_by_ids:
+            print("Missing sample from DB: " + str(sample["_id"]))
+            continue
         name = samples_by_ids[str(sample["_id"])]["name"]
         for run in last_runs:
             for run_sample in run["samples"]:
                 if name == samples_by_ids[str(run_sample["_id"])]["name"]:
-                    stamps = db.samples.find_one(
-                        {"_id": run_sample["_id"]}, {"stamps": 1})
-                    if stamps is not None:
-                        stamps = stamps.get("stamps", {})
+                    sample_db = db.samples.find_one(
+                        {"_id": run_sample["_id"]}, {"reads": 1, "stamps": 1})
+                    if sample_db is not None:
+                        stamps = sample_db.get("stamps", {})
                         qc_val = stamps.get(
                             "ssi_stamper", {}).get("value", "N/A")
+                        if qc_val == "N/A" and (not "reads" in sample_db or not "R1" in sample_db["reads"]):
+                            qc_val = "CF(LF)"
                         expert_check = False
                         if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
                             qc_val = stamps["ssi_expert_check"]["value"]
@@ -466,7 +472,9 @@ def get_sample_QC_status(last_runs):
 def get_last_runs(run, n):
     connection = get_connection()
     db = connection.get_database()
-    return list(db.runs.find({"name": {"$lte": run}, "type": "routine"}, {"name": 1, "samples": 1}).sort([("name", pymongo.DESCENDING)]).limit(n))
+    return list(db.runs.find({"name": {"$lte": run},
+                              }, #"type": "routine"},
+                             {"name": 1, "samples": 1}).sort([("_id", pymongo.DESCENDING)]).limit(n))
 
 
 def get_sample(sample_id):

@@ -14,8 +14,8 @@ description: >
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-abricate_plasmidfinder_database: "/srv/data/DB/abricate/plasmidfinder_db/" 
-ariba_plasmidfinder_database: "/srv/data/DB/ariba/plasmidfinder_db/"
+abricate_plasmidfinder_database: "resources/abricate_plasmidfinder_db" 
+ariba_plasmidfinder_database: "resources/ariba_plasmidfinder_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

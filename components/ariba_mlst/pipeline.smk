@@ -3,6 +3,7 @@ import sys
 import traceback
 import shutil
 from bifrostlib import datahandling
+from bifrostlib import check_requirements
 
 component = "ariba_mlst"  # Depends on component name, should be same as folder
 
@@ -73,8 +74,8 @@ rule check_requirements:
         component = component_file_name,
         sample = sample,
         sample_component = sample_component_file_name
-    script:
-        os.path.join(os.path.dirname(workflow.snakefile), "../common/check_requirements.py")
+    run:
+        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
 
 
 rule_name = "ariba_mlst"
@@ -116,10 +117,8 @@ rule ariba_mlst:
                 shell("mkdir {}".format(output.folder))
                 shell("touch {}/no_mlst_species_DB".format(output.folder))
             else:
-                mlst_species_DB = os.path.join(
-                    db_component["mlst_database_path"], mlst_species_DB_name)
-                datahandling.log(
-                    log_out, "mlst species path: {}\n".format(mlst_species_DB))
+                mlst_species_DB = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"], mlst_species_DB_name)
+                datahandling.log(log_out, "mlst species path: {}\n".format(mlst_species_DB))
                 shell("ariba run {} {} {} {} 1> {} 2> {}".format(
                     mlst_species_DB, input.reads[0], input.reads[1], output.folder, log.out_file, log.err_file))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
