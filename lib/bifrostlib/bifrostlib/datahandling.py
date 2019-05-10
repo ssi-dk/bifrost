@@ -212,8 +212,9 @@ def get_run_export(names=None):
         sample_ids = [str(s["_id"]) for s in run_db["samples"]]
         samples = get_samples(sample_ids=sample_ids)
         for sample in samples:
-            for comp in sample["components"]:
-                component_ids.add(comp["_id"])
+            if "components" in sample:
+                for comp in sample["components"]:
+                    component_ids.add(comp["_id"])
         components = get_components(component_ids=list(component_ids))
         sample_components = get_sample_components(sample_ids=sample_ids)
         run_dicts[run_name] = {
