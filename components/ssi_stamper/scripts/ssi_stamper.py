@@ -4,7 +4,7 @@ from bifrostlib import datahandling
 
 
 def get_components(sample_dict):
-    component_names = ["whats_my_species", "qcquickie", "assemblatron"]
+    component_names = ["whats_my_species", "assemblatron"]
     comps = {}
     for component in component_names:
         comps[component] = datahandling.get_sample_components(
@@ -22,7 +22,7 @@ def script__test_ssi_stamper(sample, sample_yaml, sample_component, log_err):
         else:
             species = datahandling.load_species(None)
         
-        results, summary, stamp = stamps.ssi_stamp.test(comps['whats_my_species'], comps['qcquickie'], comps['assemblatron'],
+        results, summary, stamp = stamps.ssi_stamp.test(comps['whats_my_species'], comps['assemblatron'],
                                 species, sample)
 
         datadump_dict = datahandling.load_sample_component(sample_component)
