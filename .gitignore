@@ -11,3 +11,7 @@ resources
 scripts
 components/private__*
 config.yaml
+# Temporary for SSI
+components/sp_cdiff_fbi
+components/sp_ecoli_fbi
+components/sp_salm_fbi
