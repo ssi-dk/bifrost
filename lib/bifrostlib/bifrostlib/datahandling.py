@@ -2,6 +2,7 @@ import os
 import ruamel.yaml
 from bson.objectid import ObjectId
 from bifrostlib import mongo_interface
+import pymongo
 
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
@@ -235,24 +236,45 @@ def post_run_export(import_dict):
     for import_run in import_dict.values():
 
         for c in import_run["components"]:
-            get_c = post_component(c)
-            if get_c is not None:
-                imported += 1
+            try:
+                get_c = post_component(c)
+                if get_c is not None:
+                    imported += 1
+            except pymongo.errors.PyMongoError as e:
+                print("Error importing component with id {}.\n{}".format(c["_id"], c))
+                print("Error: \n{}\n\n".format(str(e)))
+            
 
         for s in import_run["samples"]:
-            get_s = post_sample(s)
-            if get_s is not None:
-                imported += 1
+            try:
+                get_s = post_sample(s)
+                if get_s is not None:
+                    imported += 1
+            except pymongo.errors.PyMongoError as e:
+                print("Error importing sample with id {}.\n{}".format(
+                    s["_id"], s))
+                print("Error: \n{}\n\n".format(str(e)))
+            
 
         for s_c in import_run["sample_components"]:
-            get_s_c = post_sample_component(s_c)
-            if get_s_c is not None:
-                imported += 1
+            try:
+                get_s_c = post_sample_component(s_c)
+                if get_s_c is not None:
+                    imported += 1
+            except pymongo.errors.PyMongoError as e:
+                print("Error importing sample_component with id {}.\n{}".format(
+                    s_c["_id"], s_c))
+                print("Error: \n{}\n\n".format(str(e)))
 
         for r in import_run["runs"]:
-            get_r = post_run(r)
-            if get_r is not None:
-                imported += 1
+            try:
+                get_r = post_run(r)
+                if get_r is not None:
+                    imported += 1
+            except pymongo.errors.PyMongoError as e:
+                print("Error importing run with id {}.\n{}".format(
+                    r["_id"], r))
+                print("Error: \n{}\n\n".format(str(e)))
 
         return imported
 
