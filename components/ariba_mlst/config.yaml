@@ -25,6 +25,11 @@ mlst_database_path: "resources/ariba_mlst_db"
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
+    reads:
+      R1:
+      R2:
     properties:
       species:
+#-DB Value changes (excluding component output)-----------------------------------------------------
+# None
 #---------------------------------------------------------------------------------------------------

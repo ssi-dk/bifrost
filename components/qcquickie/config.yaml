@@ -23,5 +23,11 @@ adapters_fasta: "resources/adapters.fasta"
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  sample:
+    reads:
+      R1:
+      R2:
+#-DB Value changes (excluding component output)-----------------------------------------------------
+# None
 #---------------------------------------------------------------------------------------------------
+
