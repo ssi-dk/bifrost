@@ -140,11 +140,17 @@ def dump_sample_component_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # This might change in the future  # insert the document if it does not exist
+            upsert=True  # This might change in the future. It doesnt make much sense with our current system.
+            # Import relies on this to be true.
+            # insert the document if it does not exist
         )
     else:
+        search_fields = {
+            "sample._id": data_dict["sample"]["_id"],
+            "component._id": data_dict["component"]["_id"],
+        }
         data_dict = sample_components_db.find_one_and_update(
-            filter=data_dict,
+            filter=search_fields,
             update={"$setOnInsert": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
