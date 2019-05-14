@@ -22,5 +22,14 @@ kraken_kmer_dist: "resources/minikraken_20171019_8GB/minikraken_8GB_100mers_dist
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  sample:
+    reads:
+      R1:
+      R2:
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  sample:
+    properties:
+      species:
 #---------------------------------------------------------------------------------------------------
+

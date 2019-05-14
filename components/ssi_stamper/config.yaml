@@ -27,4 +27,11 @@ requirements:
       status: Success
     whats_my_species:
       status: Success
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  sample:
+    stamps:
+      stamp_list:
+      ssi_stamper:
 #---------------------------------------------------------------------------------------------------
+
