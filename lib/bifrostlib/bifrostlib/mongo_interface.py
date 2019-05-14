@@ -12,7 +12,6 @@ CONNECTION = None
 
 def close_connection():
     global CONNECTION
-    global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
 
