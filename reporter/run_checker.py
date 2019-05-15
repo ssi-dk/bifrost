@@ -34,6 +34,7 @@ def pipeline_report(sample_data):
         style_table={
             'overflowX': 'scroll',
         },
+        pagination_mode=False,
         style_as_list_view=True,
         style_cell={
             'textAlign': 'center',
