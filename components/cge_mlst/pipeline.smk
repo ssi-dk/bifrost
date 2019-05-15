@@ -119,8 +119,9 @@ rule cge_mlst:
                 mlst_database_path = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"])
                 mlst_species = db_component["mlst_species_mapping"][species]
                 for mlst_entry in mlst_species:
+                    mlst_entry_path = os.path.join(os.path.dirname(workflow.snakefile), mlst_entry)
                     datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
-                    shell("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry, mlst_entry, mlst_database_path, input.reads[0], input.reads[1], mlst_entry, log.out_file, log.err_file))
+                    shell("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, mlst_database_path, input.reads[0], input.reads[1], mlst_entry_path, log.out_file, log.err_file))
             shell("touch {}".format(output.complete))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
