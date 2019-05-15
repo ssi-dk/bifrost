@@ -116,7 +116,7 @@ rule cge_mlst:
                 datahandling.log(log_out, "cge mlst species: {}\n".format(mlst_species_DB_name))
                 shell("touch no_mlst_species_DB")
             else:
-                mlst_database_path = db_component["mlst_database_path"]
+                mlst_database_path = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"])
                 mlst_species = db_component["mlst_species_mapping"][species]
                 for mlst_entry in mlst_species:
                     datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
