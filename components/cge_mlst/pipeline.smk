@@ -114,7 +114,6 @@ rule cge_mlst:
             mlst_species = []
             if species not in db_component["mlst_species_mapping"]:
                 datahandling.log(log_out, "cge mlst species: {}\n".format(mlst_species_DB_name))
-                shell("touch {}".format(output.complete))
                 shell("touch no_mlst_species_DB")
             else:
                 mlst_database_path = db_component["mlst_database_path"]
@@ -122,6 +121,7 @@ rule cge_mlst:
                 for specie in mlst_species:
                     datahandling.log(log_out, "mlst on species: {}\n".format(mlst_species))
                     shell("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_species, mlst_species, mlst_database_path, input.reads[0], input.reads[1], mlst_species, log.out_file, log.err_file))
+            shell("touch {}".format(output.complete))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
