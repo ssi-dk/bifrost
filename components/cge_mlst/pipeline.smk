@@ -142,7 +142,7 @@ rule datadumpt:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.cge_mlst.output.folder,
+        rules.cge_mlst.output.complete,
     output:
         summary = touch(rules.all.input)
     params:
