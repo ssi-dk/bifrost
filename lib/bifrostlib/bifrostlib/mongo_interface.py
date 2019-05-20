@@ -162,7 +162,6 @@ def query_mlst_species(ncbi_species_name):
     if ncbi_species_name is None:
         return None
     try:
-        ncbi_species_name = re.compile(ncbi_species_name)
         connection = get_connection()
         db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
@@ -181,7 +180,6 @@ def query_ncbi_species(species_entry):
     if species_entry is None:
         return None
     try:
-        species_entry = re.compile(species_entry)
         connection = get_connection()
         db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
