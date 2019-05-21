@@ -1,6 +1,6 @@
 #!/bin/sh
 
-conda install -y create --file bifrost/envs/bifrost_for_install_full.yaml; \
+conda install -y create --file ../envs/bifrost_for_install_full.yaml; \
 #Currently a bug with samtools installation, need to redo it from this source
 conda install -y samtools conda-forge::ncurses; \
 conda activate bifrost; \
