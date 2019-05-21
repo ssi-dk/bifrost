@@ -34,7 +34,7 @@ Additional structure within the input and output could also prove useful. As an 
 │           ├──Sample2_R1.fastq.gz
 │           └──Sample2_R2.fastq.gz
 └── output
-    └── 2018
+    └── 2019
 ```
 **Note** The foders for the runs or the data can be symbolically linked as always so the structure does not have to conflict with existing storage solutions for data.
 
@@ -77,3 +77,4 @@ Which will generate an output with the following structure:
             ├──Sample2
             └──<other run files>
 ```
+Keep this location locked down as changes in the input and output folder not made by bifrost will not be tracked properly in the bifrost database. As the database tracks where output is and where input is this structure allows you to be able to re-run or update components in a structured manner.
