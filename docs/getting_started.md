@@ -115,7 +115,7 @@ mv bifrost src
 
 Run snakemake to generate the run command and the folder structures.
 
-Set the components you want to run (component names are the filenames in /components dir).
+Set the components you want to run (component names are the filenames in /components dir). With the basic install you'll be able to run min_read_check, whats_my_species, assemblatron, qcquickie and ssi_stamper. Other components require additional set-up. In the future components will have a more streamlined install process
 
 Use `use_mongodb=False` in config if you don't want to store the run, samples and results in the database.
 For now however, you need to use the database to access the species table to run mlst.
@@ -129,7 +129,8 @@ snakemake -s src/bifrost.smk
 You can change any option in config.yaml using the `--config` argument. Here is an example with some useful ones:
 
 ```
---config components=qcquickie,assemblatron,analyzer
+--config components=min_read_check,whats_my_species,assemblatron,ssi_stamper
 ```
 
 For more info on each parameter, check the sample config file.
+
