@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+import urllib.parse as urlparse
 
 import dash
 import dash_auth
@@ -80,10 +81,12 @@ app.layout = html.Div([
         html.P("", id="run-name", style={"display": "none"}),
         html.H2("", id="run-name-title"),
         html.Div(id="report-link"),
+        html.Div(id="comment-section"),
         dcc.Location(id="url", refresh=False),
         html.Div(id="run-report", className="run_checker_report"),
         html.Div(id="rerun-form"),
-        dcc.ConfirmDialog(message="", displayed=False, id="rerun-output")
+        dcc.ConfirmDialog(message="", displayed=False, id="rerun-output"),
+        
 
     ]),
     html.Footer([
@@ -186,6 +189,28 @@ def update_sample_store(run_name):
 
     return json_util.dumps(store)
 
+@app.callback(
+    Output("comment-section", "children"),
+    [Input("sample-store", "data"),
+     Input("url", "search")]
+)
+def show_comment_box(store, params):
+    store = json_util.loads(store)
+    run = store["run"]
+    pparse = urlparse.urlparse(params)
+    params = urlparse.parse_qs(pparse.query)
+    if params.get("admin", [""])[0] == "admin":
+        comments = html.Div([
+            dcc.Textarea(id="comments-admin",
+                         className="comments-admin",
+                         value=run.get("Comments", "")),
+            html.Button("Submit", id="submit-comments", n_clicks=0),
+            html.Div(id="comment-status")
+        ])
+    else:
+        comments = None
+
+    return comments
 
 @app.callback(
     Output("run-report", "children"),
@@ -199,6 +224,13 @@ def update_run_report(store, n_intervals):
     if run is None:
         return None
     samples_by_id = store["samples_by_id"]
+
+    run_comments = import_data.get_comment(run["_id"])
+
+    if run_comments:
+        comments = html.Pre(run_comments, className="folder-pre")
+    else:
+        comments = None
 
     if store["report"] == "run_checker":
         
@@ -295,6 +327,7 @@ def update_run_report(store, n_intervals):
 
         return [
             resequence_link,
+            comments,
             html.P(update_notice),
             table]
 
@@ -354,11 +387,27 @@ def update_run_report(store, n_intervals):
                           "*: user submitted")
         return [
             run_checker_link,
+            comments,
             html.P(update_notice),
             table
         ]
     return []
 
+@app.callback(
+    Output("comment-status", "children"),
+    [Input("submit-comments", "n_clicks")],
+    [State("comments-admin", "value"),
+     State("sample-store", "data")]
+)
+def update_comment(n_clicks, text_area, store):
+    store = json_util.loads(store)
+    run = store.get("run")
+    if run is not None and n_clicks > 0:
+        success = import_data.set_comment(run["_id"], text_area)
+        if success:
+            return "Done"
+
+    return None
 
 @app.callback(
     Output("rerun-form", "children"),
