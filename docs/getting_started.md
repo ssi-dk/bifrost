@@ -93,7 +93,7 @@ Activate conda environment `bifrost`:
 source activate bifrost
 ```
 
-Create output directory, and move into it:
+Create output directory, and move into it, though we [recommend this structure](file_structure.md):
 
 ```bash
 mkdir run_name # Run name will be taken from the directory name or it can be set through config
@@ -129,7 +129,7 @@ snakemake -s src/bifrost.smk
 You can change any option in config.yaml using the `--config` argument. Here is an example with some useful ones:
 
 ```
---config components=qcquickie,assemblatron,analyzer partition=project run_name=myrun assembly_with=spades
+--config components=qcquickie,assemblatron,analyzer
 ```
 
 For more info on each parameter, check the sample config file.
