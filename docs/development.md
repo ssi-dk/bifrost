@@ -1,80 +1,18 @@
 # Development
 
-## High Level Concepts
+Bifrost is meant to be an ambitious project for data analysis tracking. To accomplish this the following development projects are being explored in future development:
 
-Bifrost is being developed with the concept that data analysis should be tracked downstream through the use of components. The idea is that summarized values are often used for downstream analysis and that we should encourage running standardized components on samples or collections of samples. This serves the purpose of both centralizing the results and encouraging the use of standard tools for analysis. The first components for bifrost have all been developed based on quality control of bacterial WGS samples. If the resulting data is standardized then visual analysis tools can be built on top of the summarized data and pool information from all samples that have also run the same component and additional metrics can be discovered more easilly off the pooled datasets.
-
-## DB Structure
-
-At it's core bifrost is heavilly influenced by it's DB structure. The DB revolves around the relationship of 5 Collections:
-![Database Structure](_media/database_structure.png)
-
-Collection | Short Description| Long Description
---- | --- | ---
-**sample** | sample | This is the smallest unit for processing data on the system which contain information pertanent for use or can generate the data via components run on the sample.
-**component** | pipeline | A component can be thought of as a pipeline which manipulates a sample or run to some other form of output, this is typically a software pipeline but can also by something that runs exclusively on the database. Components should be versioned for the purpose of reproducability and compatability.
-**sample_component** | result of pipeline on sample | When a sample is run against a single component the result is stored in a sample_component, running a sample on two different components thus stores results in 2 different sample_component entries.
-**run** | samples | A run is a collection of samples, organized within a set for both run_components and management of data
-**run_component** | result of pipeline on samples | When a run is manipulated by a component the resulting output is stored in a run_component. This differs from a sample component in that results should be specific to the collection of samples included and not to the individual samples themselves. (Currently not implemented)
-
-
-
-## Workflow
-
-Initialization -> Run
-
-Initialization is the process of generating the appropriate run, sample, component, run_component, and sample_component structure for a "Run" of data. No data is actually processed at this time but the database is set up accordingly for the inputs.
-
-A run in this system can be considered the same as a sequencing run or project. It's an organization structure for samples including which samples belong to the run and what components are planned to be run. Typically sequencing runs will form the basis of your data structure for the platform.
-
-A sample in this system can be thought of as a single isolate from a single run. This platform is very sample orientated. Information related to the sample include read information, what components the sample will be run against, some properties such as species, and optional metadata. The idea is from a sample alone you can track all the components run against it and which ones it hasn't.
-
-A component in this system can be thought of as a software pipeline. Each version of a component is considered a different component. There are several types of components, 
-
-- Pipeline: The most standard which indicates running a software pipeline on a sample and record the results. Each pipeline should have a datadump file which summarizes output for the database.
-- Stamper: A component which works exclusively off of the database. The idea behind this is if we need to create or adjust QC standards we can apply it quickly to all samples in the system without using the linux server to run new software.
-- Connector: A connector converts the output of one to multiple components to fit a standard form. This can be useful for running visualization which requires set input on multiple pipelines. This one is currently not implemented.
-
-On top of this components currently target 2 broad categories:
-
-- Run (meant to affect whole runs and not individual samples)
-- Sample (meant to affect individual samples)
-
-A sample_component in this system is where you store the results of the specific sample and the specific component.
-
-A run_component in this system is where you store the results of a specific run and a specific component.
-
-Currently the bifrost system is only designed to handle Illumina Paired-end reads for bacterial WGS most nominally for QC related tasks.
-
-## Starting up a run
-
-01. find all potential samples which will be included in the run
-02. create the samples folder based on the potential samples
-03. find all potential components which will be included in the run
-04. create the components folder based on the potential components
-05. create the components into the component DB entry
-06. create the run folder
-07. save the samples and components (both sample and run) into the run DB entry
-08. add run_components to run folder
-09. add run_components DB entry with run and component info
-10. add sample DB entry
-11. add components to samples DB entry
-12. add sample_components to sample folder
-13. add sample_components DB entry with sample and component info
-14. Create shell script for running program
-15. run program
-
-### Species picker logic
-
-Possibilities:
-  0. no provided species, no detected species -> leave blank
-  1. no provided species -> set species to detected
-  2. provided species not in DB -> set species to provided species
-  3. provided species in DB as species -> set species to provided species
-  4. provided species in DB as group
-    a. detected species is a member of the group -> set species to detected species
-    b. detected species is NOT a member of the group -> set species to None
-
-## Anonymizer approach
-
-New DB table with mapping from ID to name, names are internally saved as ID both in DB and in server a mirrored directory could exist linking the IDs to dynamix names which the DB mapping table would provide, updating the table should update the name in all locations then. If you don't have a mapping a name would be assigned. If you want to export data you could choose which to anonymize and which to leave.
+Component compartmentalization (Continiuum/Docker)
+Better handling of metadata
+Examination of existing data to better facilitate background information
+Addition of Tags for sample/run
+Private/Public databases
+More automated testing
+Autorun of outdated components
+Workspaces/Projects (on run)
+Refactoring of bifrost launcher
+API development
+Import/Export of DB data
+Run components
+Component development
+Anonymization of data
