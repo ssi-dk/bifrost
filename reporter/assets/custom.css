@@ -668,7 +668,10 @@ body, .appcontainer {
     to   { opacity: 1; }
 }
 
-
+.comments-admin {
+  width: 100%;
+  height: 200px;
+}
 
 
 /* table {
