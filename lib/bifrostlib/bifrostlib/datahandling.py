@@ -1,6 +1,7 @@
 import os
 import ruamel.yaml
 from bson.objectid import ObjectId
+from bson.int64 import Int64
 from bifrostlib import mongo_interface
 import pymongo
 
@@ -12,9 +13,17 @@ ObjectId.to_yaml = classmethod(
 ObjectId.from_yaml = classmethod(
     lambda cls, constructor, node: cls(node.value))
 
+Int64.yaml_tag = u'!bson.int64.Int64'
+Int64.to_yaml = classmethod(
+    lambda cls, representer, node: representer.represent_scalar(
+        cls.yaml_tag, u'{}'.format(node)))
+Int64.from_yaml = classmethod(
+    lambda cls, constructor, node: cls(node.value))
+
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 yaml.register_class(ObjectId)
+yaml.register_class(Int64)
 
 
 def log(log_file, content):
