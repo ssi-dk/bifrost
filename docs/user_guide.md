@@ -1,6 +1,6 @@
 # User Guide
 
-This is the basic folder structure with a sample run containing only one sample:
+This is the basic folder structure with a sample run containing 5 samples:
 
 ```bash
 ├── config
@@ -148,3 +148,4 @@ The logs for this stage can be found in output/year/run/.snamemake/log/ and in o
 If a component fails, (it shows as Failed or in rare cases as Running for a long time, in the Run checker), you can check the logs in `output/year/run/<sample>/<component>/log/`
 
 There might be some logs from torque in your home directory, although we plan to change it to a proper location.
+
