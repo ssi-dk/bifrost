@@ -121,6 +121,7 @@ rule cge_mlst:
                 for mlst_entry in mlst_species:
                     mlst_entry_path = component + "/" + mlst_entry
                     datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
+                    shell("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path))
                     shell("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, mlst_database_path, input.reads[0], input.reads[1], mlst_entry_path, log.out_file, log.err_file))
             shell("touch {}".format(output.complete))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
