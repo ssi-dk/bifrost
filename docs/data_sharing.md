@@ -5,7 +5,7 @@ Data sharing is one of the pillars that bifrost was developed around for Staten 
 ## Sharing model currently
 ![Sharing model current](_media/sharing_model_current.png)
 
-This is how we currently view sharing of data between different places. Everyone runs their own components of pipelines and analysis and if data is shared that data has to be shared as raw data to be reprocessed in local pipelines. Some analysis will not be done at different locations and results from one location to another will always be suspect because the workflow to reach the results are not the same.
+This is how we currently view sharing of data between different places. Everyone runs their own components of pipelines and analysis and if data is shared that data has to be shared as raw data to be reprocessed in local pipelines. Some analysis will not be done at different locations and results from one location to another will always be suspect because the workflow to reach the results are not the same. 
 
 ## Sharing model with bifrost
 ![Sharing model bifrost](_media/sharing_model_bifrost.png)
@@ -14,6 +14,14 @@ Bifrost provides a platform so the components save data in a common structured D
 
 ## Types of sharing
 ![Sharing modes](_media/sharing_modes.png)
+
+This is all the methods of sharing we currently envision
+- Full Transfer: Transfer input/output and shared data from one institute to another, this provides as much as possible to both sides.
+- Analysis Only: Transfer the summarized results of components but not the Input/Output of the data. 
+- Partial Transfer: In the case of the QC component it provides the raw basic data, the output of it, and the summarized data but not the other information regarding other components
+- Anonymized Transfer: This mixes with other transfer types but the idea is you can send information and either change values in what you send or mask them out. A use case could be to share information with the public and masking our private information. The goal would also be that the sender gets a record of the mapping/masking to be able to do lookups for additional information if need be.
+- Provide Analysis: This is a partial transfer but in this case the sample has been processed on the recieving institute for some components but not the one being transfered. This could be useful for large analysis that you don't want to preform multiple times or that each Institute shares the runtime burden.
+- Recieving Information: Of course all previous steps can be reversed as well.
 
 ## Further sharing 
 ![Sharing model bifrost](_media/sharing_model_private_public.png)
