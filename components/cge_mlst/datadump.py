@@ -1,4 +1,5 @@
 import pkg_resources
+import datetime
 import os
 import re
 from bifrostlib import datahandling
@@ -22,7 +23,7 @@ def script__datadump(folder, sample, sample_file_name, component_file_name):
     datadump_dict["summary"]["db"] = []
     datadump_dict["summary"]["strain"] = []
     datadump_dict["summary"]["alleles"] = []
-    datadump_dict["summary"]["component"] = {"id" :db_component["_id"]}
+    datadump_dict["summary"]["component"] = {"id": db_component["_id"], "date": datetime.datetime.utcnow()}
 
     mlst_species = db_component["mlst_species_mapping"][species]
     for mlst_entry in mlst_species:
