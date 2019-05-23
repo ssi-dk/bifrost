@@ -32,8 +32,11 @@ def script__datadump(folder, sample, sample_file_name, component_file_name):
         datadump_dict["summary"]["strain"].append(mlst_entry_db["mlst"]["results"].get("sequence_type","NA"))
         datadump_dict["summary"]["alleles"].append(",".join([mlst_entry_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in [i for i in mlst_entry_db["mlst"]["results"]["allele_profile"]]]))
 
+    db_sample["properties"]["mlst"] = datadump_dict["summary"]
     datahandling.save_sample_component(datadump_dict, sample)
+    datahandling.save_sample(db_sample, sample_file_name)
 
     return 0
+
 
 script__datadump(snakemake.params.folder, snakemake.params.sample, snakemake.params.sample_file_name, snakemake.params.component_file_name)
