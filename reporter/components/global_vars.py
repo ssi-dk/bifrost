@@ -25,6 +25,10 @@ COLUMNS = [
         "id": "name"
     },
     {
+        "name": "Run",
+        "id": "sample_sheet.run_name"
+    },
+    {
         "name": "Supplying_lab_feedback",
         "id": "stamp.supplying_lab_check.value",
     },
