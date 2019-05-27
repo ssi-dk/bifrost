@@ -101,6 +101,8 @@ def test_get_sample_components():
     s_c_2 = datahandling.get_sample_components(
         sample_ids=[str(sample_db["_id"])],
         component_names=["assemblatron"])
+    print("res", s_c_2)
+    print("list", list(datahandling.get_sample_components()))
     assert s_c_2[0] == s_c_db
 
 
