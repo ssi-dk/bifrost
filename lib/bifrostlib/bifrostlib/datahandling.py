@@ -25,7 +25,6 @@ yaml.default_flow_style = False
 yaml.register_class(ObjectId)
 yaml.register_class(Int64)
 
-
 def log(log_file, content):
     with open(log_file, "a+") as file_handle:
         file_handle.write(content)
