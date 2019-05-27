@@ -735,6 +735,7 @@ rule setup_sample_components_to_run:
                         sample_name, 0) + 1
 
             with open(run_cmd, "w") as run_cmd_handle:
+                run_cmd_handle.write("bifrost__job_ids=;")
                 for sample_name in unique_sample_names:
                     if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
                         current_time = datetime.datetime.now()
@@ -807,12 +808,19 @@ rule setup_sample_components_to_run:
                         os.symlink(os.path.realpath(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time))), os.path.join(sample_name, "cmd_" + component + ".sh"))
                         run_cmd_handle.write("cd {};\n".format(sample_name))
                         if config["grid"] == "torque":
-                            run_cmd_handle.write("qsub cmd_{}.sh;\n".format(component))  # dependent on grid engine
+                            run_cmd_handle.write("bifrost__job_ids=$job_ids:$(qsub cmd_{}.sh);\n".format(component))  # dependent on grid engine
                         elif config["grid"] == "slurm":
-                            run_cmd_handle.write("sbatch cmd_{}.sh;\n".format(component))  # dependent on grid engine
+                            run_cmd_handle.write("bifrost__job_ids=$job_ids:$(sbatch --parsable cmd_{}.sh);\n".format(component))  # dependent on grid engine
                         else:
                             run_cmd_handle.write("bash cmd_{}.sh;\n".format(component))
                         run_cmd_handle.write("cd {};\n".format(os.getcwd()))
+            if os.path.isfile(os.path.join(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh"):
+                if config["grid"] == "torque":
+                    run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && qsub depend=afterany:$bifrost__job_ids {}.sh;\n".format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh"))  # dependent on grid engine
+                elif config["grid"] == "slurm":
+                    run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && sbatch --parsable -d afterany:$bifrost__job_ids {});\n").format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh"))  # dependent on grid engine
+                else:
+                    run_cmd_handle.write("bash {};\n".format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
