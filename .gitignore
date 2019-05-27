@@ -11,6 +11,7 @@ docs/build
 /scripts
 components/private__*
 /config.yaml
+envs/dev.env
 # Temporary for SSI
 components/sp_cdiff_fbi
 components/sp_ecoli_fbi
