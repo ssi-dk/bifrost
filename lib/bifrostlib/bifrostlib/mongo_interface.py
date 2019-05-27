@@ -150,7 +150,7 @@ def dump_sample_component_info(data_dict):
         }
         data_dict = sample_components_db.find_one_and_update(
             filter=search_fields,
-            update={"$setOnInsert": data_dict},
+            update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
         )
