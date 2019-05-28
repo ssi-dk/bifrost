@@ -5,7 +5,7 @@
 
 trigger:
 - master
-- reorganize_mongointerface
+- dev
 
 variables:
   bifrost_db_key: "../../resources/keys.txt"
