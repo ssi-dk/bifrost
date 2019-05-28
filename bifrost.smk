@@ -824,7 +824,7 @@ rule setup_sample_components_to_run:
                 if config["grid"] == "torque":
                     run_cmd_handle.write("qrls -h $bifrost__job_ids;\n")
                 elif config["grid"] == "slurm":
-                    run_cmd_handle.write("scontrol release JobId=${bifrost__job_ids/:/,};\n")
+                    run_cmd_handle.write("scontrol release JobId=${bifrost__job_ids//:/,};\n")
 
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
