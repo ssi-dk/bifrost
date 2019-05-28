@@ -645,7 +645,11 @@ rule initialize_run:
 
             run_db = datahandling.load_run(run_folder + "/run.yaml")
             run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
-            run_db["type"] = config.get("type", "default")
+            if "type" in config:
+                run_db["type"] = config["type"]
+            else:
+                if "type" not in run_db:
+                    run_db["type"] = "default"
             run_db["path"] = os.path.realpath(run_folder)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):

@@ -237,3 +237,14 @@ def email_stamps(stamplist):
 def get_samples(sample_ids):
     sample_ids = [ObjectId(id) for id in sample_ids]
     return mongo_interface.get_samples(sample_ids)
+
+
+def get_comment(run_id):
+    returned = mongo_interface.get_comment(run_id)
+    if returned:
+        return returned.get("Comments", None)
+    else:
+        return returned
+
+def set_comment(run_id, comment):
+    return mongo_interface.set_comment(run_id, comment)

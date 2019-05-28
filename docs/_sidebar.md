@@ -4,6 +4,9 @@
 
 - [Web Interface User Guide](web_interface.md)
 
+- [Structure](structure.md)
+
+- [Development](development.md)
+
 - [User Guide](user_guide.md)
 
-- [Adding a new KMA](setting_up_kma.md)

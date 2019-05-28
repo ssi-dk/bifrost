@@ -1,6 +1,6 @@
 # User Guide
 
-This is the basic folder structure with a sample run containing only one sample:
+This is the basic folder structure with a sample run containing 5 samples:
 
 ```bash
 ├── config
@@ -20,27 +20,27 @@ This is the basic folder structure with a sample run containing only one sample:
 │           ├── Sample5_S5_L001_R1_001.fastq.gz
 │           └── Sample5_S5_L001_R2_001.fastq.gz
 ├── output 
-│   └── 2019
-│       └── example_run_01 
-│           │   # (before bifrost is run)
-│           ├── samples -> ../../../input/2019/example_run01/
-│           ├── sample_sheet.tsv
-│           │── src
-│           │   # (additional files after software is run)
-│           ├── bifrost
-│           ├── bifrost_successfully_initialized_on_(DATETIME)
-│           ├── components
-│           ├── config.yaml
-│           ├── Sample1
-│           ├── Sample2
-│           ├── Sample3
-│           ├── Sample4
-│           ├── Sample5
-│           └── run_cmd_bifrost.sh
-└── README.md <-- this file
+    └── 2019
+        └── example_run_01 
+            │   # (before bifrost is run)
+            ├── samples -> ../../../input/2019/example_run01/
+            ├── sample_sheet.tsv
+            │── src # This is a copy of the bifrost folder.
+            │   # (additional files after software is run)
+            ├── bifrost
+            ├── bifrost_successfully_initialized_on_(DATETIME)
+            ├── components
+            ├── config.yaml
+            ├── Sample1
+            ├── Sample2
+            ├── Sample3
+            ├── Sample4
+            ├── Sample5
+            └── run_cmd_bifrost.sh
+
 ```
 
-`config` contains `config.yaml` which includes KMA specific config values to run the pipeline such as the group name for the torque queue and which components to run. This is also pointed to by the Webserver for access to the bifrost web interface.
+`config` contains `config.yaml` which includes user specific config values to run the pipeline such as the group name for the torque queue and which components to run. This is also pointed to by the Webserver for access to the bifrost web interface.
 
 ## Before starting
 
@@ -89,8 +89,6 @@ Also note, to make it work with the xlsx you need to change the default config.y
 - Load the environment:
 
 ```bash
-module load tools
-module load anaconda3/4.4.0
 source activate bifrost
 ```
 
@@ -150,3 +148,4 @@ The logs for this stage can be found in output/year/run/.snamemake/log/ and in o
 If a component fails, (it shows as Failed or in rare cases as Running for a long time, in the Run checker), you can check the logs in `output/year/run/<sample>/<component>/log/`
 
 There might be some logs from torque in your home directory, although we plan to change it to a proper location.
+
