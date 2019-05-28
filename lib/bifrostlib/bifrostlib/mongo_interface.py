@@ -150,7 +150,7 @@ def dump_sample_component_info(data_dict):
         }
         data_dict = sample_components_db.find_one_and_update(
             filter=search_fields,
-            update={"$setOnInsert": data_dict},
+            update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
         )
@@ -295,7 +295,11 @@ def get_sample_components(sample_component_ids=None,
     try:
         connection = get_connection()
         db = connection.get_database()
-        return list(db.sample_components.find({"$and": query})
+        if len(query):
+            query = {"$and": query}
+        else:
+            query = {}
+        return list(db.sample_components.find(query)
                                         .sort([("setup_date", -1)])
                                         .limit(size))
 
