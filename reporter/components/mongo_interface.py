@@ -446,7 +446,7 @@ def get_sample_component_status(sample_ids):
 
 
 def get_species_QC_values(ncbi_species):
-    connection = get_species_connection()
+    connection = get_connection()
     db = connection.get_database('bifrost_species')
     if ncbi_species != "default":
         return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
