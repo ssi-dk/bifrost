@@ -301,7 +301,7 @@ def update_run_report(store, n_intervals):
                 qc_val = "CF"
             elif qc_val == "CF(LF)":
                 statusname = "status--1"
-            elif qc_val == "pass:OK":
+            elif qc_val == "pass:OK" or qc_val == "pass:accepted":
                 statusname = "status-ok"
                 qc_val = "OK"
 

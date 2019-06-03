@@ -492,7 +492,7 @@ def get_sample_QC_status(last_runs):
                     elif (qc_val == "fail:core facility" or
                             qc_val == "fail:resequence"):
                         qc_val = "CF"
-                    elif qc_val == "pass:OK":
+                    elif qc_val == "pass:OK" or "pass:accepted":
                         qc_val = "OK"
 
                     if expert_check:
