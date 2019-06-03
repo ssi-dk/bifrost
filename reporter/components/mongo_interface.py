@@ -483,21 +483,21 @@ def get_sample_QC_status(last_runs):
                         if qc_val == "N/A" and (not "reads" in sample_db or not "R1" in sample_db["reads"]):
                             qc_val = "CF(LF)"
                         expert_check = False
-                        if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
-                            qc_val = stamps["ssi_expert_check"]["value"]
+                        if "supplying_lab_check" in stamps and "value" in stamps["supplying_lab_check"]:
+                            qc_val = stamps["supplying_lab_check"]["value"]
                             expert_check = True
 
-                    if qc_val == "fail:supplying lab":
-                        qc_val = "SL"
-                    elif (qc_val == "fail:core facility" or
-                            qc_val == "fail:resequence"):
-                        qc_val = "CF"
-                    elif qc_val == "pass:OK" or "pass:accepted":
-                        qc_val = "OK"
+                        if qc_val == "fail:supplying lab":
+                            qc_val = "SL"
+                        elif (qc_val == "fail:core facility" or
+                                qc_val == "fail:resequence"):
+                            qc_val = "CF"
+                        elif qc_val == "pass:OK" or qc_val == "pass:accepted":
+                            qc_val = "OK"
 
-                    if expert_check:
-                        qc_val += "*"
-                    sample_dict[run["name"]] = qc_val
+                        if expert_check:
+                            qc_val += "*"
+                        sample_dict[run["name"]] = qc_val
         samples_runs_qc[name] = sample_dict
     return samples_runs_qc
 
