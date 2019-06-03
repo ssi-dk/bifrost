@@ -849,3 +849,7 @@ td.center {
 .unset-width-table {
   width: unset;
 }
+
+.qc-feedback {
+  color: rgb(179, 204, 193);
+}
