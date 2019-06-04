@@ -92,7 +92,9 @@ required for the whats_my_species component.
 The script will also install the conda environment.
 
 
-## Running bifrost (more info in [User guide](user_guide.md)):
+## Running bifrost:
+
+(more info in [User guide](user_guide.md))
 
 Activate conda environment `bifrost`:
 
