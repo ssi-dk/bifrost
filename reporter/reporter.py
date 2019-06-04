@@ -1100,7 +1100,7 @@ def display_confirm_feedback(button):
 
 
 @app.callback(
-    Output("placeholder0", "children"),
+    Output("qc-feedback", "children"),
     [Input("qc-confirm", "submit_n_clicks")],
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
                                      for n in range(PAGESIZE)]
@@ -1122,6 +1122,7 @@ def print_radio(n_clicks_timestamp, user, *args):
         if len(stamplist) > 0:
             import_data.email_stamps(stamplist)
             import_data.post_stamps(stamplist)
+            return "Feedback saved"
     return []
 
 

@@ -15,15 +15,17 @@ def html_qc_expert_form():
                                     id="feedback-button"), className="three columns")
             ], className="row"),
             html.Div([
-                html.Details([
-                    html.Summary("How it works (click to show)"),
-                    html.P("""If you want to send a sample to resequence,
-                    go to the sample card and select "Resequence" in 
-                    the Suplying Lab Feedback section. The admin will get
-                    an email with the change. You can also "Accept" samples
-                    with the "Supplying lab" warning and their data will
-                    be used in the future to adjust QC thresholds.""")
-                ])
+                html.Div(
+                    html.Details([
+                        html.Summary("How it works (click to show)"),
+                        html.P("""If you want to send a sample to resequence,
+                        go to the sample card and select "Resequence" in 
+                        the Suplying Lab Feedback section. The admin will get
+                        an email with the change. You can also "Accept" samples
+                        with the "Supplying lab" warning and their data will
+                        be used in the future to adjust QC thresholds.""")
+                ]), className="six columns"),
+                html.Div(id="qc-feedback", className="six columns qc-feedback")
             ], className="row mb-1")
 
         ])
