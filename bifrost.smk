@@ -457,8 +457,12 @@ rule set_sample_species:
                         provided_species = sample_db["sample_sheet"].get("provided_species")
                         if pandas.isna(provided_species):
                             provided_species = None
-                        sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(
-                            provided_species)
+                        else:
+                            species_db = datahandling.get_ncbi_species(
+                                provided_species)
+                            if species_db is None:
+                                provided_species = "*" + str(provided_species)
+                        sample_db["properties"]["provided_species"] = provided_species
                         datahandling.save_sample(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:

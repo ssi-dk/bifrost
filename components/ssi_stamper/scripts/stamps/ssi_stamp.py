@@ -157,7 +157,7 @@ def test(whats_my_species, assemblatron, species, sample):
             test["value"] = detected
             if detected == "default":
                 test["status"] = "fail"
-                test["reason"] = "Detected species not in bifrost db. Please report this to system admin."
+                test["reason"] = "Detected species not in bifrost db. Can't estimate proper QC values."
             else:
                 test["status"] = "pass"
                 test["reason"] = ""
@@ -179,10 +179,13 @@ def test(whats_my_species, assemblatron, species, sample):
             test["value"] = "{}=={}".format(submitted, detected)
 
             if submitted is None:
-                test["status"] = "fail"
+                test["status"] = "pass"
                 test["reason"] = "No submitted species"
+            elif submitted.startswith("*"):
+                test["status"] = "pass"
+                test["reason"] = "Submitted species not in db"
             else:
-                if submitted != detected and submitted != species["group"]: # If submitted is group it should be contained 
+                if submitted != detected and submitted != species["group"]: # If submitted is group it should be contained
                     test["status"] = "fail"
                     test["reason"] = "Detected species ({}) different than expected ({})".format(detected, submitted)
                 else:

@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: ssi_stamper
-version: 1.1
+version: 1.2
 target: sample
 type: stamper
 recommendation: required
