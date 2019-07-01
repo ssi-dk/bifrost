@@ -204,7 +204,7 @@ def html_div_filter():
                         #     'page_size': TABLE_PAGESIZE
                         # },
                         virtualization=False,
-                        pagination_mode=False,
+                        page_action='none',
                         id="datatable-ssi_stamper"
                     )
                 ], id="ssi_stamper-report", className="bigtable"),
