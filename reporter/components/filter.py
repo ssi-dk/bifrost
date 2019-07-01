@@ -193,7 +193,7 @@ def html_div_filter():
                                 "textAlign": "left"
                             }
                         ],
-                        n_fixed_rows=1,
+                        fixed_rows={'data': 1},
                         row_selectable=True,
                         # filtering=True,  # Front end filtering
                         # sorting=True,
