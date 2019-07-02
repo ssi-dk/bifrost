@@ -753,7 +753,7 @@ def update_test_table(data_store):
                 "textAlign": "left"
             }
         ],
-        fixed_rows={"data": 1},
+        fixed_rows={'headers': True, "data": 1},
         row_selectable="multi",
         filter_action='native', #Front end filtering
         sort_action='native',
