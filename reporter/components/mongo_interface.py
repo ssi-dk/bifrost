@@ -454,6 +454,50 @@ def get_sample_component_status(sample_ids):
                 }
             }
         ])
+        ## Replace with 
+        # [
+        #     {
+        #         u"$sort": SON([(u"setup_date", -1)])
+        #     },
+        #     {
+        #         u"$project": {
+        #             u"sample._id": 1.0,
+        #             u"_id": 0.0,
+        #             u"component.name": 1.0,
+        #             u"status": 1.0,
+        #             u"setup_date": 1.0
+        #         }
+        #     },
+        #     {
+        #         u"$group": {
+        #             u"_id": {
+        #                 u"sample": u"$sample._id",
+        #                 u"component": u"$component.name"
+        #             },
+        #             u"status": {
+        #                 u"$first": u"$status"
+        #             }
+        #         }
+        #     },
+        #     {
+        #         u"$match": {
+        #             u"_id.sample": {
+        #                 u"$in": sample_ids
+        #             }
+        #         }
+        #     },
+        #     {
+        #         u"$group": {
+        #             u"_id": u"$_id.sample",
+        #             u"s_cs": {
+        #                 u"$push": {
+        #                     u"k": u"$_id.component",
+        #                     u"v": u"$status"
+        #                 }
+        #             }
+        #         }
+        #     }
+        # ]
         print("done")
         return s_c_list
         output = {}
