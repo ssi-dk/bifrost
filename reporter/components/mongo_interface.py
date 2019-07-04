@@ -2,6 +2,7 @@ import os
 import pymongo
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
+from bson.son import SON
 import atexit
 
 
@@ -410,11 +411,51 @@ def get_sample_component_status(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
         sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
-        s_c_list = db.sample_components.find({
-            "sample._id": {"$in": sample_ids},
-        }, {"sample._id": 1, "status": 1, "component.name": 1}).sort(
-            "setup_date", pymongo.ASCENDING)  #make sure latest is last,
-            # overwrites others
+        print("start")
+        s_c_list = db.sample_components.aggregate([
+            {
+                "$sort": SON([("setup_date", 1)])
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "sample": "$sample._id",
+                        "component": "$component.name"
+                    },
+                    "status": {
+                        "$last": "$status"
+                    }
+                }
+            },
+            {
+                "$match": {
+                    "_id.sample": {
+                        "$in": sample_ids
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$_id.sample",
+                    "s_cs": {
+                        "$push": {
+                            "k": "$_id.component",
+                            "v": "$status"
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 1.0,
+                    "s_cs": {
+                        "$arrayToObject": "$s_cs"
+                    }
+                }
+            }
+        ])
+        print("done")
+        return s_c_list
         output = {}
         for s_c in s_c_list:
             sample = output.get(str(s_c["sample"]["_id"]), {
@@ -440,8 +481,10 @@ def get_sample_component_status(sample_ids):
                 status_code = 0
             else:
                 status_code = float('nan')
-            sample[s_c["component"]["name"]] = (status_code, status)
-            output[str(s_c["sample"]["_id"])] = sample
+            if (s_c["component"]["name"] not in sample or
+                s_c["setup_date"] >= sample[s_c["component"]["name"]](2)):
+                sample[s_c["component"]["name"]] = (status_code, status, s_c["setup_date"])
+                output[str(s_c["sample"]["_id"])] = sample
         return output
 
 
