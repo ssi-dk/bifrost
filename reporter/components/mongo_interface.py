@@ -412,9 +412,18 @@ def get_sample_component_status(sample_ids):
         db = connection.get_database()
         sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
         print("start")
-        s_c_list = db.sample_components.aggregate([
+        s_c_list = list(db.sample_components.aggregate([
             {
-                "$sort": SON([("setup_date", 1)])
+                "$sort": SON([("setup_date", -1)])
+            },
+            {
+                "$project": {
+                    "sample._id": 1.0,
+                    "_id": 0.0,
+                    "component.name": 1.0,
+                    "status": 1.0,
+                    "setup_date": 1.0
+                }
             },
             {
                 "$group": {
@@ -423,7 +432,7 @@ def get_sample_component_status(sample_ids):
                         "component": "$component.name"
                     },
                     "status": {
-                        "$last": "$status"
+                        "$first": "$status"
                     }
                 }
             },
@@ -444,60 +453,9 @@ def get_sample_component_status(sample_ids):
                         }
                     }
                 }
-            },
-            {
-                "$project": {
-                    "_id": 1.0,
-                    "s_cs": {
-                        "$arrayToObject": "$s_cs"
-                    }
-                }
             }
-        ])
-        ## Replace with 
-        # [
-        #     {
-        #         u"$sort": SON([(u"setup_date", -1)])
-        #     },
-        #     {
-        #         u"$project": {
-        #             u"sample._id": 1.0,
-        #             u"_id": 0.0,
-        #             u"component.name": 1.0,
-        #             u"status": 1.0,
-        #             u"setup_date": 1.0
-        #         }
-        #     },
-        #     {
-        #         u"$group": {
-        #             u"_id": {
-        #                 u"sample": u"$sample._id",
-        #                 u"component": u"$component.name"
-        #             },
-        #             u"status": {
-        #                 u"$first": u"$status"
-        #             }
-        #         }
-        #     },
-        #     {
-        #         u"$match": {
-        #             u"_id.sample": {
-        #                 u"$in": sample_ids
-        #             }
-        #         }
-        #     },
-        #     {
-        #         u"$group": {
-        #             u"_id": u"$_id.sample",
-        #             u"s_cs": {
-        #                 u"$push": {
-        #                     u"k": u"$_id.component",
-        #                     u"v": u"$status"
-        #                 }
-        #             }
-        #         }
-        #     }
-        # ]
+        ]))
+        
         print("done")
         return s_c_list
         output = {}

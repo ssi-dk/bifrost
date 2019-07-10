@@ -255,6 +255,7 @@ def update_run_report(store, n_intervals):
             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
 
         s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
+        print(s_c_status)
 
         if "components" in run:
             components = list(
