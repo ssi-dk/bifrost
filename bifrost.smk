@@ -313,7 +313,9 @@ rule check__provided_sample_info:
                 df = pandas.read_excel(sample_sheet)
             else:  # assume it's a tsv
                 df = pandas.read_table(sample_sheet)
-
+            
+            #Convert sample name to string in case all sample names are numbers
+            df["SampleID"] = df["SampleID"].astype(str)
             # Dropping rows with no sample name.
             noname_index = df[df["SampleID"].isna()].index
             df.drop(noname_index, inplace=True)
@@ -381,6 +383,8 @@ rule set_samples_from_sample_info:
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
+                #Convert sample name to string in case all sample names are numbers
+                df["SampleID"] = df["SampleID"].astype(str)
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
@@ -448,6 +452,8 @@ rule set_sample_species:
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
+                #Convert sample name to string in case all sample names are numbers
+                df["SampleID"] = df["SampleID"].astype(str)
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
                     if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
