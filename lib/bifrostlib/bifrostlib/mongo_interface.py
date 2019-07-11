@@ -1,6 +1,7 @@
 import pymongo
 import re
 import os
+from datetime import datetime
 import ruamel.yaml
 import traceback
 import atexit
@@ -38,6 +39,9 @@ def dump_run_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     runs_db = db.runs  # Collection name is samples
+    now = datetime.utcnow()
+    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = runs_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
@@ -46,12 +50,10 @@ def dump_run_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict = runs_db.find_one_and_update(
-            filter=data_dict,
-            update={"$setOnInsert": data_dict},
-            return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # insert the document if it does not exist
-        )
+        data_dict["metadata"]["inserted_at"] = now
+        result = runs_db.insert_one(data_dict)
+        data_dict["_id"] = result.inserted_id
+
     return data_dict
 
 def delete_run(run_id):
@@ -67,6 +69,9 @@ def dump_sample_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     samples_db = db.samples  # Collection name is samples
+    now = datetime.utcnow()
+    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = samples_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
@@ -75,12 +80,9 @@ def dump_sample_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict = samples_db.find_one_and_update(
-            filter=data_dict,
-            update={"$setOnInsert": data_dict},
-            return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # insert the document if it does not exist
-        )
+        data_dict["metadata"]["inserted_at"] = now
+        result = samples_db.insert_one(data_dict)
+        data_dict["_id"] = result.inserted_id
     return data_dict
 
 def get_components(component_ids=None):
@@ -105,6 +107,9 @@ def dump_component_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     components_db = db.components  # Collection name is samples
+    now = datetime.utcnow()
+    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = components_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
@@ -113,12 +118,10 @@ def dump_component_info(data_dict):
             upsert=True  # This might change in the future # insert the document if it does not exist
         )
     else:
-        data_dict = components_db.find_one_and_update(
-            filter=data_dict,
-            update={"$setOnInsert": data_dict},
-            return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # insert the document if it does not exist
-        )
+        data_dict["metadata"]["inserted_at"] = now
+        result = components_db.insert_one(data_dict)
+        data_dict["_id"] = result.inserted_id
+
     return data_dict
 
 def delete_component(component_id):
@@ -134,6 +137,9 @@ def dump_sample_component_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     sample_components_db = db.sample_components  # Collection name is samples
+    now = datetime.utcnow()
+    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = sample_components_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
@@ -150,7 +156,10 @@ def dump_sample_component_info(data_dict):
         }
         data_dict = sample_components_db.find_one_and_update(
             filter=search_fields,
-            update={"$set": data_dict},
+            update={
+                "$set": data_dict,
+                "$setOnInsert": {"created_at": now}
+            },
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
         )
