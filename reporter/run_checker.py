@@ -255,7 +255,6 @@ def update_run_report(store, n_intervals):
             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
 
         s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
-        print(s_c_status)
 
         if "components" in run:
             components = list(
@@ -320,7 +319,7 @@ def update_run_report(store, n_intervals):
                 qc_val = "CF"
             elif qc_val == "CF(LF)":
                 statusname = "status--1"
-            elif qc_val == "pass:OK":
+            elif qc_val == "pass:OK" or qc_val == "pass:accepted":
                 statusname = "status-ok"
                 qc_val = "OK"
 
