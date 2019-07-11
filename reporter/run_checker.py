@@ -233,6 +233,23 @@ def update_run_report(store, n_intervals):
         comments = None
 
     if store["report"] == "run_checker":
+
+        status_dict = {
+            "Success": "OK",
+            "Running": "Running",
+            "initialized": "init.",
+            "Failure": "Fail",
+            "Requirements not met": "Req.",
+            "queued to run": "queue",
+        }
+        status_code_dict = {
+            "Success": 2,
+            "Running": 1,
+            "initialized": 0,
+            "Failure": -1,
+            "Requirements not met": -2,
+            "queued to run": 0
+        }
         
         resequence_link = html.H4(dcc.Link(
             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
@@ -259,7 +276,8 @@ def update_run_report(store, n_intervals):
                                            className="rotate rotate-short"),
                          components)))
         rows = [header]
-        for sample_id, s_components in s_c_status.items():
+        for s_components in s_c_status:
+            sample_id = str(s_components["_id"])
             sample = samples_by_id[sample_id]
             name = sample["name"]
             if name == "Undetermined":
@@ -313,11 +331,11 @@ def update_run_report(store, n_intervals):
             row.append(html.Td())
 
             for component in components:
-                if component in s_components.keys():
-                    s_c = s_components[component]
+                if component in s_components["s_cs"]:
+                    s_c = s_components["s_cs"][component]
                     row.append(
-                        html.Td(s_c[1],
-                                className="center status-{}".format(s_c[0])))
+                        html.Td(status_dict[s_c],
+                                className="center status-{}".format(status_code_dict[s_c])))
                 else:
                     row.append(html.Td("None", className="center status-0"))
             rows.append(html.Tr(row))
@@ -358,7 +376,6 @@ def update_run_report(store, n_intervals):
                     className = "0"
                     title = "Not Run"
                     status = p_runs[last_runs[index]["name"]]
-                    print(name, status)
                     if status.startswith("OK"):
                         className = "ok"
                         title = "OK"

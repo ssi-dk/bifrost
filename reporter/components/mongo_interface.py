@@ -2,6 +2,7 @@ import os
 import pymongo
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
+from bson.son import SON
 import atexit
 
 
@@ -410,39 +411,50 @@ def get_sample_component_status(sample_ids):
     with get_connection() as connection:
         db = connection.get_database()
         sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
-        s_c_list = db.sample_components.find({
-            "sample._id": {"$in": sample_ids},
-        }, {"sample._id": 1, "status": 1, "component.name": 1}).sort(
-            "setup_date", pymongo.ASCENDING)  #make sure latest is last,
-            # overwrites others
-        output = {}
-        for s_c in s_c_list:
-            sample = output.get(str(s_c["sample"]["_id"]), {
-                "sample._id": str(s_c["sample"]["_id"])
-            })
-            status = s_c["status"]
-            if status == "Success":
-                status = "OK"
-                status_code = 2
-            elif status == "Running":
-                status_code = 1
-            elif status == "initialized":
-                status = "init."
-                status_code = 0
-            elif status == "Failure":
-                status = "Fail"
-                status_code = -1
-            elif status == 'Requirements not met':
-                status = "Req."
-                status_code = -2
-            elif status == 'queued to run':
-                status = "queue"
-                status_code = 0
-            else:
-                status_code = float('nan')
-            sample[s_c["component"]["name"]] = (status_code, status)
-            output[str(s_c["sample"]["_id"])] = sample
-        return output
+        s_c_list = list(db.sample_components.aggregate([
+            {
+                "$match": {
+                    "sample._id": {
+                        "$in": sample_ids
+                    }
+                }
+            },
+            {
+                "$sort": SON([("setup_date", 1)])
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "sample": "$sample._id",
+                        "component": "$component.name"
+                    },
+                    "status": {
+                        "$last": "$status"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$_id.sample",
+                    "s_cs": {
+                        "$push": {
+                            "k": "$_id.component",
+                            "v": "$status"
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 1.0,
+                    "s_cs": {
+                        "$arrayToObject": "$s_cs"
+                    }
+                }
+            }
+        ]))
+        return s_c_list
+
 
 
 def get_species_QC_values(ncbi_species):
