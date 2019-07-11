@@ -2,11 +2,16 @@
 
 - [Getting started](getting_started.md)
 
-- [Web Interface User Guide](web_interface.md)
+- [User Guide](user_guide.md)
 
 - [Structure](structure.md)
 
+- [Components](components.md)
+
+- [Web Interface User Guide](web_interface.md)
+
+- [Data Sharing](data_sharing.md)
+
 - [Development](development.md)
 
-- [User Guide](user_guide.md)
-
+- [Other information](ramblings.md)

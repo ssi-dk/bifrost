@@ -726,11 +726,11 @@ def update_test_table(data_store):
     
     for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
         style_data_conditional += list(map(lambda x: {"if": {
-            "column_id": x, "filter": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
+            "column_id": x, "filter_query": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
     
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
-            "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+            "column_id": qc_action, "filter_query": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
 
     table = dash_table.DataTable(
@@ -753,10 +753,10 @@ def update_test_table(data_store):
                 "textAlign": "left"
             }
         ],
-        n_fixed_rows=1,
+        fixed_rows={'headers': True},
         row_selectable="multi",
-        filtering=True, #Front end filtering
-        sorting=True,
+        filter_action='native', #Front end filtering
+        sort_action='native',
         selected_rows=[],
         style_data_conditional=style_data_conditional,
         id="datatable-ssi_stamper"
@@ -1100,7 +1100,7 @@ def display_confirm_feedback(button):
 
 
 @app.callback(
-    Output("placeholder0", "children"),
+    Output("qc-feedback", "children"),
     [Input("qc-confirm", "submit_n_clicks")],
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
                                      for n in range(PAGESIZE)]
@@ -1122,6 +1122,7 @@ def print_radio(n_clicks_timestamp, user, *args):
         if len(stamplist) > 0:
             import_data.email_stamps(stamplist)
             import_data.post_stamps(stamplist)
+            return "Feedback saved"
     return []
 
 

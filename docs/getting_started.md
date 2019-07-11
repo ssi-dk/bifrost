@@ -83,9 +83,18 @@ Save this file in the `<bifrost repo>/resources` directory as `keys.txt`
 
 Copy `<bifrost repo>/setup/default_config.yaml` to `<bifrost repo>/config.yaml` and adjust the parameters.
 
+## 7. Install the required resources
+
+Go to the `setup` directory and run `bash install.sh` or execute the commands one by one.
+The script will set up a folder named bifrost_resources with the minikraken database
+required for the whats_my_species component.
+
+The script will also install the conda environment.
 
 
 ## Running bifrost:
+
+(more info in [User guide](user_guide.md))
 
 Activate conda environment `bifrost`:
 
@@ -106,19 +115,15 @@ Link the demultiplexed (fastq.gz) samples folder as samples (by default):
 ln -s path/to/run samples
 ```
 
-Copy/clone this directory in src directory:
+Copy this directory in src directory:
 
 ```bash
-git clone git@github.com:ssi-dk/bifrost.git # Or copy from your downloaded version.
-mv bifrost src
+cp -r <path to your bifrost directory> src
 ```
 
 Run snakemake to generate the run command and the folder structures.
 
-Set the [components](components.md) you want to run (component names are the filenames in /components dir). With the basic install you'll be able to run min_read_check, whats_my_species, assemblatron, qcquickie and ssi_stamper. Other components require additional set-up. In the future components will have a more streamlined install process
-
-Use `use_mongodb=False` in config if you don't want to store the run, samples and results in the database.
-For now however, you need to use the database to access the species table to run mlst.
+Set the [components](components.md) you want to run (component names are the filenames in /components dir). With the basic install you'll be able to run min_read_check, whats_my_species, assemblatron, qcquickie and ssi_stamper. Other components require additional set-up. In the future components will have a more streamlined install process.
 
 Then start the program running:
 

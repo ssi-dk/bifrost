@@ -1,3 +1,6 @@
+![usage gif](/_media/usage.gif)
+
+
 # Welcome to bifrost's documentation
 
 Bifrost is a sharing platform/LIMS for data analysis currently focused on bacterial quality control (QC).
