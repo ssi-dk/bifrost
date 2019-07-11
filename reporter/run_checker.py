@@ -376,7 +376,6 @@ def update_run_report(store, n_intervals):
                     className = "0"
                     title = "Not Run"
                     status = p_runs[last_runs[index]["name"]]
-                    print(name, status)
                     if status.startswith("OK"):
                         className = "ok"
                         title = "OK"
