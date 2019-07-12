@@ -77,7 +77,8 @@ def test_post_sample_component():
     }
     s_c_db = datahandling.post_sample_component(s_c)
     s_c["_id"] = s_c_db["_id"]
-    s_c_db.pop('metadata', None)
+    # we can't get this timestamp so we won't test it
+    s_c_db["metadata"].pop('created_at', None)
     assert s_c == s_c_db
 
 
