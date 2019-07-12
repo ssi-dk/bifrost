@@ -12,7 +12,8 @@ def date_now():
     """
     Needed to keep the same date in python and mongo, as mongo rounds to millisecond
     """
-    return datetime.utcnow().replace(microsecond=round(d.microsecond/1000)*1000)
+    d = datetime.utcnow()
+    return d.replace(microsecond=round(d.microsecond/1000)*1000)
 
 CONNECTION = None
 
