@@ -8,6 +8,12 @@ import atexit
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
+def date_now():
+    """
+    Needed to keep the same date in python and mongo, as mongo rounds to millisecond
+    """
+    return datetime.utcnow().replace(microsecond=round(d.microsecond/1000)*1000)
+
 CONNECTION = None
 
 
@@ -39,7 +45,7 @@ def dump_run_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     runs_db = db.runs  # Collection name is samples
-    now = datetime.utcnow()
+    now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
@@ -69,7 +75,7 @@ def dump_sample_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     samples_db = db.samples  # Collection name is samples
-    now = datetime.utcnow()
+    now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
@@ -107,7 +113,7 @@ def dump_component_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     components_db = db.components  # Collection name is samples
-    now = datetime.utcnow()
+    now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
@@ -137,7 +143,7 @@ def dump_sample_component_info(data_dict):
     connection = get_connection()
     db = connection.get_database()
     sample_components_db = db.sample_components  # Collection name is samples
-    now = datetime.utcnow()
+    now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
