@@ -313,7 +313,9 @@ rule check__provided_sample_info:
                 df = pandas.read_excel(sample_sheet)
             else:  # assume it's a tsv
                 df = pandas.read_table(sample_sheet)
-
+            
+            #Convert sample name to string in case all sample names are numbers
+            df["SampleID"] = df["SampleID"].astype(str)
             # Dropping rows with no sample name.
             noname_index = df[df["SampleID"].isna()].index
             df.drop(noname_index, inplace=True)
@@ -381,6 +383,8 @@ rule set_samples_from_sample_info:
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
+                #Convert sample name to string in case all sample names are numbers
+                df["SampleID"] = df["SampleID"].astype(str)
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
@@ -448,6 +452,8 @@ rule set_sample_species:
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
+                #Convert sample name to string in case all sample names are numbers
+                df["SampleID"] = df["SampleID"].astype(str)
                 for index, row in df.iterrows():
                     sample_config = row["SampleID"] + "/sample.yaml"
                     if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
@@ -457,8 +463,12 @@ rule set_sample_species:
                         provided_species = sample_db["sample_sheet"].get("provided_species")
                         if pandas.isna(provided_species):
                             provided_species = None
-                        sample_db["properties"]["provided_species"] = datahandling.get_ncbi_species(
-                            provided_species)
+                        else:
+                            species_db = datahandling.get_ncbi_species(
+                                provided_species)
+                            if species_db is None:
+                                provided_species = "*" + str(provided_species)
+                        sample_db["properties"]["provided_species"] = provided_species
                         datahandling.save_sample(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
@@ -645,7 +655,11 @@ rule initialize_run:
 
             run_db = datahandling.load_run(run_folder + "/run.yaml")
             run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
-            run_db["type"] = config.get("type", "default")
+            if "type" in config:
+                run_db["type"] = config["type"]
+            else:
+                if "type" not in run_db:
+                    run_db["type"] = "default"
             run_db["path"] = os.path.realpath(run_folder)
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
@@ -770,32 +784,34 @@ rule setup_sample_components_to_run:
                             else:
                                 tmp_dir = ""
 
-                            if sample_name in config["samples_to_ignore"]:
-                                sample_component_db["status"] = "skipped"
-                            else:
-                                for component_name in components:
-                                    component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
-                                    if os.path.isfile(component_file):
-                                        unlock = ""
-                                        if config["unlock"]:
-                                            unlock = "--unlock"
-                                        else:
-                                            # Only delete directory on non unlock mode
-                                            command.write(
-                                                "if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-
-                                        command.write("snakemake {} --restart-times {} --cores {} -s {} {} --config Sample={};\n".format(tmp_dir, config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
-
-                                        sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                        sample_component_db["status"] = "queued to run"
-                                        sample_component_db["setup_date"] = current_time
-                                        datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                            for component_name in components:
+                                component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
+                                if sample_name in config["samples_to_ignore"]:
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "skipped"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                elif os.path.isfile(component_file):
+                                    unlock = ""
+                                    if config["unlock"]:
+                                        unlock = "--unlock"
                                     else:
-                                        datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
-                                        sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                        sample_component_db["status"] = "component missing"
-                                        sample_component_db["setup_date"] = current_time
-                                        datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                        # Only delete directory on non unlock mode
+                                        command.write(
+                                            "if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
+
+                                    command.write("snakemake {} --restart-times {} --cores {} -s {} {} --config Sample={};\n".format(tmp_dir, config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
+
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "queued to run"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                else:
+                                    datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
+                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    sample_component_db["status"] = "component missing"
+                                    sample_component_db["setup_date"] = current_time
+                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
                         os.chmod(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time)), 0o777)
                         if os.path.islink(os.path.join(sample_name, "cmd_{}.sh").format(component)):

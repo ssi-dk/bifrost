@@ -5,7 +5,7 @@
 
 trigger:
 - master
-- reorganize_mongointerface
+- dev
 
 variables:
   bifrost_db_key: "../../resources/keys.txt"
@@ -37,6 +37,7 @@ jobs:
     workingDirectory: lib/bifrostlib/
 
   - script: |
+      mkdir resources
       echo "mongodb://server.example.com:27017/serumqc_prod" > resources/keys.txt
 
 

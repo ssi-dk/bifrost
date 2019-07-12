@@ -1,0 +1,642 @@
+/* 1 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c0a"),
+    "organism" : "Clostridioides difficile",
+    "group" : "C. difficile",
+    "ncbi_species" : "Clostridioides difficile",
+    "min_length" : 3810000,
+    "max_length" : 4570000,
+    "mlst_species" : "Clostridium_difficile/ref_db"
+}
+
+/* 2 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c16"),
+    "organism" : "Klebsiella oxytoca",
+    "group" : "K. oxytoca",
+    "ncbi_species" : "Klebsiella oxytoca",
+    "min_length" : 5710000,
+    "max_length" : 6300000,
+    "mlst_species" : "Klebsiella_oxytoca/ref_db"
+}
+
+/* 3 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c1e"),
+    "organism" : "Listeria monocytogenes",
+    "group" : "Listeria",
+    "ncbi_species" : "Listeria monocytogenes",
+    "min_length" : 2810000,
+    "max_length" : 3090000,
+    "mlst_species" : "Listeria_monocytogenes/ref_db"
+}
+
+/* 4 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c22"),
+    "organism" : "Neisseria meningitidis",
+    "group" : "Meningococcus",
+    "ncbi_species" : "Neisseria meningitidis",
+    "min_length" : 1920000,
+    "max_length" : 2170000,
+    "mlst_species" : "Neisseria_spp_/ref_db"
+}
+
+/* 5 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c20"),
+    "organism" : "Neisseria gonorrhoeae",
+    "group" : "N. gonorrhoeae",
+    "ncbi_species" : "Neisseria gonorrhoeae",
+    "min_length" : 1980000,
+    "max_length" : 2180000,
+    "mlst_species" : "Neisseria_spp_/ref_db"
+}
+
+/* 6 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c26"),
+    "organism" : "Salmonella enterica",
+    "group" : "Salmonella",
+    "ncbi_species" : "Salmonella enterica",
+    "min_length" : 4510000,
+    "max_length" : 5060000,
+    "mlst_species" : "Salmonella_enterica/ref_db",
+    "color" : "#8dd3c7"
+}
+
+/* 7 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c24"),
+    "organism" : "Pseudomonas aeruginosa",
+    "group" : "P. aeruginosa",
+    "ncbi_species" : "Pseudomonas aeruginosa",
+    "min_length" : 6100000,
+    "max_length" : 7000000,
+    "mlst_species" : "Pseudomonas_aeruginosa/ref_db",
+    "metrics_based_on" : "manual entry"
+}
+
+/* 8 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c2a"),
+    "organism" : "Staphylococcus capitis",
+    "group" : "S. capitis",
+    "ncbi_species" : "Staphylococcus capitis",
+    "min_length" : 2310000,
+    "max_length" : 2640000,
+    "color" : "#c5c516"
+}
+
+/* 9 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c28"),
+    "organism" : "Staphylococcus aureus",
+    "group" : "S. aureus",
+    "ncbi_species" : "Staphylococcus aureus",
+    "min_length" : 2630000,
+    "max_length" : 2910000,
+    "mlst_species" : "Staphylococcus_aureus/ref_db",
+    "color" : "#c5c516"
+}
+
+/* 10 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c2e"),
+    "organism" : "Staphylococcus pseudintermedius",
+    "group" : "S. pseudintermedius",
+    "ncbi_species" : "Staphylococcus pseudintermedius",
+    "min_length" : 2490000,
+    "max_length" : 2720000,
+    "mlst_species" : "Staphylococcus_pseudintermedius/ref_db",
+    "color" : "#c5c516"
+}
+
+/* 11 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c30"),
+    "organism" : "Staphylococcus sciuri",
+    "group" : "S. sciuri",
+    "ncbi_species" : "Staphylococcus sciuri",
+    "min_length" : 2650000,
+    "max_length" : 3010000,
+    "color" : "#c5c516"
+}
+
+/* 12 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c0e"),
+    "organism" : "Enterococcus faecalis",
+    "group" : "E. faecalis",
+    "ncbi_species" : "Enterococcus faecalis",
+    "min_length" : 2680000,
+    "max_length" : 3320000,
+    "mlst_species" : "Enterococcus_faecalis/ref_db"
+}
+
+/* 13 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c34"),
+    "organism" : "Staphylococcus xylosus",
+    "group" : "S. xylosus",
+    "ncbi_species" : "Staphylococcus xylosus",
+    "min_length" : 5190000,
+    "max_length" : 7110000,
+    "color" : "#c5c516"
+}
+
+/* 14 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c36"),
+    "organism" : "Streptococcus agalactiae",
+    "group" : "S. agalactiae",
+    "ncbi_species" : "Streptococcus agalactiae",
+    "min_length" : 1930000,
+    "max_length" : 2280000,
+    "mlst_species" : "Streptococcus_agalactiae/ref_db",
+    "color" : "#ccebc5"
+}
+
+/* 15 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c38"),
+    "organism" : "Streptococcus pneumoniae",
+    "group" : "S. pneumoniae",
+    "ncbi_species" : "Streptococcus pneumoniae",
+    "min_length" : 1850000,
+    "max_length" : 2230000,
+    "mlst_species" : "Streptococcus_pneumoniae/ref_db",
+    "color" : "#ccebc5"
+}
+
+/* 16 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c3a"),
+    "organism" : "Streptococcus pseudopneumoniae",
+    "group" : "S. pseudopneumoniae",
+    "ncbi_species" : "Streptococcus pseudopneumoniae",
+    "min_length" : 1940000,
+    "max_length" : 2250000,
+    "mlst_species" : "Bordetella_spp_/ref_db",
+    "color" : "#ccebc5"
+}
+
+/* 17 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c3e"),
+    "organism" : "Yersinia aleksiciae",
+    "group" : "Y. aleksiciae",
+    "ncbi_species" : "Yersinia aleksiciae",
+    "min_length" : 4170000,
+    "max_length" : 4890000,
+    "color" : "#fdb462"
+}
+
+/* 18 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c08"),
+    "organism" : "Citrobacter freundii",
+    "group" : "C. freundii",
+    "ncbi_species" : "Citrobacter freundii",
+    "min_length" : 4890000,
+    "max_length" : 5800000,
+    "mlst_species" : "Citrobacter_freundii/ref_db"
+}
+
+/* 19 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c40"),
+    "organism" : "Yersinia enterocolitica",
+    "group" : "Yersinia",
+    "ncbi_species" : "Yersinia enterocolitica",
+    "min_length" : 4270000,
+    "max_length" : 5020000,
+    "mlst_species" : "Yersinia_spp_/ref_db",
+    "color" : "#fdb462"
+}
+
+/* 20 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c2c"),
+    "organism" : "Staphylococcus epidermidis",
+    "group" : "S. epidermidis",
+    "ncbi_species" : "Staphylococcus epidermidis",
+    "min_length" : 2350000,
+    "max_length" : 2770000,
+    "mlst_species" : "Staphylococcus_epidermidis/ref_db",
+    "color" : "#c5c516"
+}
+
+/* 21 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c1c"),
+    "organism" : "Legionella pneumophila",
+    "group" : "L. pneumophila",
+    "ncbi_species" : "Legionella pneumophila",
+    "min_length" : 3200000,
+    "max_length" : 3670000
+}
+
+/* 22 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c06"),
+    "organism" : "Campylobacter jejuni",
+    "group" : "C. jejuni",
+    "ncbi_species" : "Campylobacter jejuni",
+    "min_length" : 1530000,
+    "max_length" : 1840000,
+    "mlst_species" : "Campylobacter_jejuni/ref_db"
+}
+
+/* 23 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c3c"),
+    "organism" : "Streptococcus pyogenes",
+    "group" : "Gr. A Streptococcus",
+    "ncbi_species" : "Streptococcus pyogenes",
+    "min_length" : 1660000,
+    "max_length" : 1940000,
+    "mlst_species" : "Streptococcus_pyogenes/ref_db",
+    "color" : "#ccebc5"
+}
+
+/* 24 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c0c"),
+    "organism" : "Cronobacter sakazakii",
+    "group" : "Cronobacter",
+    "ncbi_species" : "Cronobacter sakazakii",
+    "min_length" : 4420000,
+    "max_length" : 4700000,
+    "mlst_species" : "Cronobacter_spp_/ref_db"
+}
+
+/* 25 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c12"),
+    "organism" : "Escherichia coli",
+    "group" : "E. coli",
+    "ncbi_species" : "Escherichia coli",
+    "min_length" : 4640000,
+    "max_length" : 5560000,
+    "mlst_species" : "Escherichia_coli_1/ref_db",
+    "color" : "#fb8072"
+}
+
+/* 26 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c04"),
+    "organism" : "Campylobacter coli",
+    "group" : "C. coli",
+    "ncbi_species" : "Campylobacter coli",
+    "min_length" : 1480000,
+    "max_length" : 1890000
+}
+
+/* 27 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c32"),
+    "organism" : "Staphylococcus simulans",
+    "group" : "S. simulans",
+    "ncbi_species" : "Staphylococcus simulans",
+    "min_length" : 2540000,
+    "max_length" : 2890000,
+    "color" : "#c5c516"
+}
+
+/* 28 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c00"),
+    "organism" : "Acinetobacter baumannii",
+    "group" : "A. baumannii",
+    "ncbi_species" : "Acinetobacter baumannii",
+    "min_length" : 3620000,
+    "max_length" : 4160000,
+    "mlst_species" : "Acinetobacter_baumannii_1/ref_db"
+}
+
+/* 29 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c18"),
+    "organism" : "Klebsiella pneumoniae",
+    "group" : "K. pneumoniae",
+    "ncbi_species" : "Klebsiella pneumoniae",
+    "min_length" : 5080000,
+    "max_length" : 5790000,
+    "mlst_species" : "Klebsiella_pneumoniae/ref_db"
+}
+
+/* 30 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c14"),
+    "organism" : "Haemophilus influenzae",
+    "group" : "H. influenzae",
+    "ncbi_species" : "Haemophilus influenzae",
+    "min_length" : 1660000,
+    "max_length" : 1970000,
+    "mlst_species" : "Haemophilus_influenzae/ref_db"
+}
+
+/* 31 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c10"),
+    "organism" : "Enterococcus faecium",
+    "group" : "E. faecium",
+    "ncbi_species" : "Enterococcus faecium",
+    "min_length" : 2720000,
+    "max_length" : 3130000,
+    "mlst_species" : "Enterococcus_faecium/ref_db"
+}
+
+/* 32 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c02"),
+    "organism" : "Bordetella pertussis",
+    "group" : "B. pertussis",
+    "ncbi_species" : "Bordetella pertussis",
+    "min_length" : 2910000,
+    "max_length" : 3840000
+}
+
+/* 33 */
+{
+    "_id" : ObjectId("5c335a13fbd5c404eb4a8c1a"),
+    "organism" : "Klebsiella variicola",
+    "group" : "K. variicola",
+    "ncbi_species" : "Klebsiella variicola",
+    "min_length" : 5350000,
+    "max_length" : 6050000
+}
+
+/* 34 */
+{
+    "_id" : ObjectId("5c335a14fbd5c404eb4a8c42"),
+    "organism" : "default",
+    "min_length" : 1000000,
+    "max_length" : 15000000,
+    "color" : "#d9d9d9",
+    "group" : ""
+}
+
+/* 35 */
+{
+    "_id" : ObjectId("5c406d2efbd5c404eb55eba8"),
+    "organism" : "Clostridium perfringens",
+    "group" : "C. perfringens",
+    "ncbi_species" : "Clostridium perfringens",
+    "min_length" : 3250000,
+    "max_length" : 3750000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 36 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609deb"),
+    "organism" : "Enterobacter cloacae",
+    "group" : "E. cloacae",
+    "ncbi_species" : "Enterobacter cloacae",
+    "min_length" : 5060000,
+    "max_length" : 5410000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 37 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609ded"),
+    "organism" : "Staphylococcus lugdunensis",
+    "group" : "S. lugdunensis",
+    "ncbi_species" : "Staphylococcus lugdunensis",
+    "min_length" : 2400000,
+    "max_length" : 2760000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 38 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609df2"),
+    "organism" : "Clostridium butyricum",
+    "group" : "C. butyricum",
+    "ncbi_species" : "Clostridium butyricum",
+    "min_length" : 3570000,
+    "max_length" : 3930000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 39 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609df5"),
+    "organism" : "Streptococcus uberis",
+    "group" : "S. uberis",
+    "ncbi_species" : "Streptococcus uberis",
+    "min_length" : 1600000,
+    "max_length" : 1960000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 40 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609df7"),
+    "organism" : "Vibrio vulnificus",
+    "group" : "V. vulnificus",
+    "ncbi_species" : "Vibrio vulnificus",
+    "min_length" : 4900000,
+    "max_length" : 5260000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 41 */
+{
+    "_id" : ObjectId("5c4706bbfbd5c404eb609df9"),
+    "organism" : "Bacillus cereus",
+    "group" : "B. cereus",
+    "ncbi_species" : "Bacillus cereus",
+    "min_length" : 320000,
+    "max_length" : 680000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 42 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609dfb"),
+    "organism" : "Shigella sonnei",
+    "group" : "S. sonnei",
+    "ncbi_species" : "Shigella sonnei",
+    "min_length" : 4570000,
+    "max_length" : 4930000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 43 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609dfd"),
+    "organism" : "Vibrio cholerae",
+    "group" : "V. cholerae",
+    "ncbi_species" : "Vibrio cholerae",
+    "min_length" : 3780000,
+    "max_length" : 4140000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 44 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609dff"),
+    "organism" : "Acinetobacter pittii",
+    "group" : "A. pittii",
+    "ncbi_species" : "Acinetobacter pittii",
+    "min_length" : 3760000,
+    "max_length" : 4120000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 45 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e01"),
+    "organism" : "Arcanobacterium phocae",
+    "group" : "A. phocae",
+    "ncbi_species" : "Arcanobacterium phocae",
+    "min_length" : 1740000,
+    "max_length" : 2100000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 46 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e03"),
+    "organism" : "Providencia stuartii",
+    "group" : "P. stuartii",
+    "ncbi_species" : "Providencia stuartii",
+    "min_length" : 4150000,
+    "max_length" : 4510000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 47 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e05"),
+    "organism" : "Streptococcus equi",
+    "group" : "S. equi",
+    "ncbi_species" : "Streptococcus equi",
+    "min_length" : 1910000,
+    "max_length" : 2270000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 48 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e0f"),
+    "organism" : "Citrobacter farmeri",
+    "group" : "C. farmeri",
+    "ncbi_species" : "Citrobacter farmeri",
+    "min_length" : 5460000,
+    "max_length" : 5820000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 49 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e11"),
+    "organism" : "Clostridium botulinum",
+    "group" : "C. botulinum",
+    "ncbi_species" : "Clostridium botulinum",
+    "min_length" : 3630000,
+    "max_length" : 3990000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 50 */
+{
+    "_id" : ObjectId("5c4706bcfbd5c404eb609e13"),
+    "organism" : "Corynebacterium diphtheriae",
+    "group" : "C. diphtheriae",
+    "ncbi_species" : "Corynebacterium diphtheriae",
+    "min_length" : 2230000,
+    "max_length" : 2590000,
+    "metrics_based_on" : "manual entry"
+}
+
+/* 51 */
+{
+    "_id" : ObjectId("5c4ae4e9fbd5c404eb7a7e2e"),
+    "organism" : "Actinobacillus pleuropneumoniae",
+    "group" : "A. pleuropneumoniae",
+    "ncbi_species" : "Actinobacillus pleuropneumoniae",
+    "min_length" : 2100000,
+    "max_length" : 2300000
+}
+
+/* 52 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7dd8"),
+    "organism" : "Staphylococcus hyicus",
+    "group" : "S. hyicus",
+    "ncbi_species" : "Staphylococcus hyicus",
+    "min_length" : 2200000.0,
+    "max_length" : 3200000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 53 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7dd9"),
+    "organism" : "Staphylococcus simulans",
+    "group" : "S. simulans",
+    "ncbi_species" : "Staphylococcus simulans",
+    "min_length" : 2350000.0,
+    "max_length" : 3350000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 54 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7dda"),
+    "organism" : "Staphylococcus chromogenes",
+    "group" : "S. chromogenes",
+    "ncbi_species" : "Staphylococcus chromogenes",
+    "min_length" : 1900000.0,
+    "max_length" : 2900000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 55 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7ddb"),
+    "organism" : "Staphylococcus vitulinus",
+    "group" : "S. vitulinus",
+    "ncbi_species" : "Staphylococcus vitulinus",
+    "min_length" : 2100000.0,
+    "max_length" : 3100000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 56 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7ddc"),
+    "organism" : "Proteus mirabilis",
+    "group" : "P. mirabilis",
+    "ncbi_species" : "Proteus mirabilis",
+    "max_length" : 4400000.0,
+    "min_length" : 3600000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 57 */
+{
+    "_id" : ObjectId("5c6d4cbeb903d3f5befe7ddd"),
+    "organism" : "Staphylococcus lentus",
+    "group" : "S. vitulinus",
+    "ncbi_species" : "Staphylococcus lentus",
+    "min_length" : 2200000.0,
+    "max_length" : 3200000.0,
+    "metrics_based_on" : "manual_entry"
+}
+
+/* 58 */
+{
+    "_id" : ObjectId("5c98d840df2411624d671062"),
+    "organism" : "Francisella tularensis",
+    "group" : "F. tularensis",
+    "ncbi_species" : "Francisella tularensis",
+    "min_length" : 1500000,
+    "max_length" : 1900000,
+    "metrics_based_on" : "guesstimate"
+}

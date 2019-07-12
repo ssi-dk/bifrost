@@ -27,7 +27,7 @@ def generate_summary(results, actions):
 
 def evaluate_tests(tests, component):
 
-    ## Check qcquickie results and define action
+    ## Check assemblatron results and define action
     results_dict = {result["name"]: result for result in tests}
     core_facility = False  # important
     supplying_lab = False
@@ -38,7 +38,7 @@ def evaluate_tests(tests, component):
                     supplying_lab = True
                 elif result["effect"] == "core facility":
                     core_facility = True
-    if (component == "qcquickie" or component == "assemblatron") and \
+    if component == "assemblatron" and \
     "whats_my_species:submitted == detected" in results_dict:
         if (results_dict[component + ":avgcoverage"]["status"] == "fail" and
             results_dict[component + ":avgcoverage"]["effect"] == "supplying lab") and \
@@ -69,7 +69,7 @@ def generate_stamp(actions, assemblatron):
         "date": datetime.datetime.utcnow()
     }
 
-def test(whats_my_species, qcquickie, assemblatron, species, sample):
+def test(whats_my_species, assemblatron, species, sample):
 
 
     results = []
@@ -157,7 +157,7 @@ def test(whats_my_species, qcquickie, assemblatron, species, sample):
             test["value"] = detected
             if detected == "default":
                 test["status"] = "fail"
-                test["reason"] = "Detected species not in bifrost db. Please report this to system admin."
+                test["reason"] = "Detected species not in bifrost db. Can't estimate proper QC values."
             else:
                 test["status"] = "pass"
                 test["reason"] = ""
@@ -179,10 +179,13 @@ def test(whats_my_species, qcquickie, assemblatron, species, sample):
             test["value"] = "{}=={}".format(submitted, detected)
 
             if submitted is None:
-                test["status"] = "fail"
+                test["status"] = "pass"
                 test["reason"] = "No submitted species"
+            elif submitted.startswith("*"):
+                test["status"] = "pass"
+                test["reason"] = "Submitted species not in db"
             else:
-                if submitted != detected and submitted != species["group"]: # If submitted is group it should be contained 
+                if submitted != detected and submitted != species["group"]: # If submitted is group it should be contained
                     test["status"] = "fail"
                     test["reason"] = "Detected species ({}) different than expected ({})".format(detected, submitted)
                 else:
@@ -194,7 +197,7 @@ def test(whats_my_species, qcquickie, assemblatron, species, sample):
                 e.args[0])
         results.append(test)
 
-    for assembly_component, comp_name in ((qcquickie, "qcquickie"), (assemblatron, "assemblatron")):
+    for assembly_component, comp_name in [(assemblatron, "assemblatron")]:
         if assembly_component and len(assembly_component):
             # Genome size check for 1x
             try:

@@ -335,7 +335,7 @@ def html_sample_tables(sample_data, **kwargs):
 
                 columns=global_vars.finder_columns,
                 data=resfinder,
-                pagination_mode=False
+                page_action='none'
             ), className="grey-border")
     elif (sample_data.get("sample_components.ariba_resfinder.status", "") == "Success" and
          (type(resfinder) == float or resfinder is None or not len(resfinder))):
@@ -355,7 +355,7 @@ def html_sample_tables(sample_data, **kwargs):
                 },
                 columns=global_vars.finder_columns,
                 data=plasmidfinder,
-                pagination_mode=False
+                page_action='none'
             ), className="grey-border")
     elif (sample_data.get("sample_components.ariba_plasmidfinder.status", "") == "Success" and
          (type(plasmidfinder) == float or
@@ -377,7 +377,7 @@ def html_sample_tables(sample_data, **kwargs):
                 },
                 columns=global_vars.finder_columns,
                 data=virulencefinder,
-                pagination_mode=False
+                page_action='none'
             ), className="grey-border")
     elif sample_data.get("sample_components.ariba_virulencefinder.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
         virulencefinder_div = html.P("No virulence markers found")
@@ -404,7 +404,7 @@ def html_sample_tables(sample_data, **kwargs):
                 },
                 columns=columns,
                 data=[mlst_dict],
-                pagination_mode=False
+                page_action='none'
             ), className="grey-border")
     else:
         mlst_div = html.P("MLST not run")

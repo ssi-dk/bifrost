@@ -7,8 +7,12 @@ docs/build
 **\.pytest_cache
 **/*.egg-info/*
 .pylintrc
-resources
-scripts
+/resources
+/scripts
 components/private__*
-config.yaml
-
+/config.yaml
+envs/dev.env
+# Temporary for SSI
+components/sp_cdiff_fbi
+components/sp_ecoli_fbi
+components/sp_salm_fbi

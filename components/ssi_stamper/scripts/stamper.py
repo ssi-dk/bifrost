@@ -7,21 +7,21 @@ from stamps import ssi_stamp
 
 def run_test(sample_dict, stamp):
     if stamp == "ssi_stamper":
-        component_names = ["whats_my_species", "qcquickie", "assemblatron"]
+        component_names = ["whats_my_species", "assemblatron"]
         comps = {}
         for component in component_names:
             comps[component] = datahandling.get_sample_component(
                 sample_ids=[str(sample_dict["_id"])],
                 component_names=[component])[0]
         species = datahandling.load_species(sample_dict["properties"].get("species", None))
-        return ssi_stamp.test(comps["whats_my_species"], comps["qcquickie"], comps["assemblatron"],
+        return ssi_stamp.test(comps["whats_my_species"], comps["assemblatron"],
                             species, sample_dict)
 
 
 def create_component(stamp_name):
     return {
         "name": stamp_name,
-        "version": "1.0",
+        "version": "1.1",
         "target": "sample",
         "type": "stamper",
         "recommendation": "required",

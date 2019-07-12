@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: ssi_stamper
-version: 1.0
+version: 1.2
 target: sample
 type: stamper
 recommendation: required
@@ -27,4 +27,11 @@ requirements:
       status: Success
     whats_my_species:
       status: Success
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  sample:
+    stamps:
+      stamp_list:
+      ssi_stamper:
 #---------------------------------------------------------------------------------------------------
+

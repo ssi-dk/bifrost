@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+import urllib.parse as urlparse
 
 import dash
 import dash_auth

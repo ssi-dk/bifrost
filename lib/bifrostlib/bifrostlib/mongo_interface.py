@@ -12,7 +12,6 @@ CONNECTION = None
 
 def close_connection():
     global CONNECTION
-    global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
 
@@ -140,12 +139,18 @@ def dump_sample_component_info(data_dict):
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # This might change in the future  # insert the document if it does not exist
+            upsert=True  # This might change in the future. It doesnt make much sense with our current system.
+            # Import relies on this to be true.
+            # insert the document if it does not exist
         )
     else:
+        search_fields = {
+            "sample._id": data_dict["sample"]["_id"],
+            "component._id": data_dict["component"]["_id"],
+        }
         data_dict = sample_components_db.find_one_and_update(
-            filter=data_dict,
-            update={"$setOnInsert": data_dict},
+            filter=search_fields,
+            update={"$set": data_dict},
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
         )
@@ -157,7 +162,6 @@ def query_mlst_species(ncbi_species_name):
     if ncbi_species_name is None:
         return None
     try:
-        ncbi_species_name = re.compile(ncbi_species_name)
         connection = get_connection()
         db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
@@ -176,7 +180,6 @@ def query_ncbi_species(species_entry):
     if species_entry is None:
         return None
     try:
-        species_entry = re.compile(species_entry)
         connection = get_connection()
         db = connection.get_database('bifrost_species')
         species_db = db.species  # Collection name is samples
@@ -292,7 +295,11 @@ def get_sample_components(sample_component_ids=None,
     try:
         connection = get_connection()
         db = connection.get_database()
-        return list(db.sample_components.find({"$and": query})
+        if len(query):
+            query = {"$and": query}
+        else:
+            query = {}
+        return list(db.sample_components.find(query)
                                         .sort([("setup_date", -1)])
                                         .limit(size))
 

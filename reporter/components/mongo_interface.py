@@ -3,12 +3,12 @@ import re
 import pymongo
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
+from bson.son import SON
 import atexit
 
 PAGESIZE = 25
 
 CONNECTION = None
-SPECIES_CONNECTION = None
 
 TABLE_QUERY = [
     {
@@ -85,11 +85,8 @@ TABLE_QUERY = [
 
 def close_connection():
     global CONNECTION
-    global SPECIES_CONNECTION
     if CONNECTION is not None:
         CONNECTION.close()
-    if SPECIES_CONNECTION is not None:
-        SPECIES_CONNECTION.close()
 
 
 atexit.register(close_connection)
@@ -108,20 +105,6 @@ def get_connection():
         return CONNECTION
 
 
-def get_species_connection():
-    global SPECIES_CONNECTION
-    if SPECIES_CONNECTION is not None:
-        return SPECIES_CONNECTION
-    else:
-        mongo_db_key_location = os.getenv("BIFROST_SPECIES_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        "Return mongodb connection"
-        SPECIES_CONNECTION = pymongo.MongoClient(mongodb_url)
-        return SPECIES_CONNECTION
-        
-
-
 
 def check_run_name(name):
     connection = get_connection()
@@ -138,7 +121,7 @@ def get_run_list():
     runs = list(db.runs.find( {},#{"type": "routine"}, #Leave in routine
                                 {"name": 1,
                                 "_id": 0,
-                                "samples": 1}).sort([['_id', pymongo.DESCENDING]]))
+                                "samples": 1}).sort([['name', pymongo.DESCENDING]]))
     return runs
 
 
@@ -372,49 +355,56 @@ def get_assemblies_paths(sample_ids):
 def get_sample_component_status(samples):
     with get_connection() as connection:
         db = connection.get_database()
-        sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
-        s_c_list = db.sample_components.find({
-            "sample._id": {"$in": sample_ids},
-        }, {"sample._id": 1, "status": 1, "component.name": 1}).sort(
-            "setup_date", pymongo.ASCENDING)  #make sure latest is last,
-            # overwrites others
-        output = {}
-        for s_c in s_c_list:
-            sample = output.get(str(s_c["sample"]["_id"]), {
-                "sample._id": str(s_c["sample"]["_id"])
-            })
-            status = s_c.get("status", float('nan'))
+        sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
+        s_c_list = list(db.sample_components.aggregate([
+            {
+                "$match": {
+                    "sample._id": {
+                        "$in": sample_ids
+                    }
+                }
+            },
+            {
+                "$sort": SON([("setup_date", 1)])
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "sample": "$sample._id",
+                        "component": "$component.name"
+                    },
+                    "status": {
+                        "$last": "$status"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$_id.sample",
+                    "s_cs": {
+                        "$push": {
+                            "k": "$_id.component",
+                            "v": "$status"
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 1.0,
+                    "s_cs": {
+                        "$arrayToObject": "$s_cs"
+                    }
+                }
+            }
+        ]))
+        return s_c_list
 
-            if status == "Success":
-                status = "OK"
-                status_code = 2
-            elif status == "Running":
-                status_code = 1
-            elif status == "initialized":
-                status = "init."
-                status_code = 0
-            elif status == "Failure":
-                status = "Fail"
-                status_code = -1
-            elif status == 'Requirements not met':
-                status = "Req."
-                status_code = -2
-            elif status == 'queued to run':
-                status = "queue"
-                status_code = 0
-            else:
-                status_code = float('nan')
-            sample[s_c["component"]["name"]] = (status_code, status)
-            output[str(s_c["sample"]["_id"])] = sample
-        for sample in output.keys():
-            output[sample]["sample"] = db.samples.find_one(
-                {"_id": ObjectId(sample)}) 
-        return output
 
 
 def get_species_QC_values(ncbi_species):
-    connection = get_species_connection()
-    db = connection.get_database()
+    connection = get_connection()
+    db = connection.get_database('bifrost_species')
     if ncbi_species != "default":
         return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
     else:
@@ -450,21 +440,21 @@ def get_sample_QC_status(last_runs):
                         if qc_val == "N/A" and (not "reads" in sample_db or not "R1" in sample_db["reads"]):
                             qc_val = "CF(LF)"
                         expert_check = False
-                        if "ssi_expert_check" in stamps and "value" in stamps["ssi_expert_check"]:
-                            qc_val = stamps["ssi_expert_check"]["value"]
+                        if "supplying_lab_check" in stamps and "value" in stamps["supplying_lab_check"]:
+                            qc_val = stamps["supplying_lab_check"]["value"]
                             expert_check = True
 
-                    if qc_val == "fail:supplying lab":
-                        qc_val = "SL"
-                    elif (qc_val == "fail:core facility" or
-                            qc_val == "fail:resequence"):
-                        qc_val = "CF"
-                    elif qc_val == "pass:OK":
-                        qc_val = "OK"
+                        if qc_val == "fail:supplying lab":
+                            qc_val = "SL"
+                        elif (qc_val == "fail:core facility" or
+                                qc_val == "fail:resequence"):
+                            qc_val = "CF"
+                        elif qc_val == "pass:OK" or qc_val == "pass:accepted":
+                            qc_val = "OK"
 
-                    if expert_check:
-                        qc_val += "*"
-                    sample_dict[run["name"]] = qc_val
+                        if expert_check:
+                            qc_val += "*"
+                        sample_dict[run["name"]] = qc_val
         samples_runs_qc[name] = sample_dict
     return samples_runs_qc
 
@@ -524,3 +514,19 @@ def get_samples(sample_ids):
     connection = get_connection()
     db = connection.get_database()
     return list(db.samples.find({"_id": {"$in": sample_ids}}))
+
+
+def get_comment(run_id):
+    connection = get_connection()
+    db = connection.get_database()
+    return db.runs.find_one(
+        {"_id": run_id}, {"Comments": 1})
+
+def set_comment(run_id, comment):
+    connection = get_connection()
+    db = connection.get_database()
+    ret = db.runs.find_one_and_update({"_id": run_id}, {"$set": {"Comments": comment}})
+    if ret != None:
+        return 1
+    else:
+        return 0

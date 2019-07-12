@@ -2,8 +2,16 @@
 
 - [Getting started](getting_started.md)
 
-- [Web Interface User Guide](web_interface.md)
-
 - [User Guide](user_guide.md)
 
-- [Adding a new KMA](setting_up_kma.md)
+- [Structure](structure.md)
+
+- [Components](components.md)
+
+- [Web Interface User Guide](web_interface.md)
+
+- [Data Sharing](data_sharing.md)
+
+- [Development](development.md)
+
+- [Other information](ramblings.md)

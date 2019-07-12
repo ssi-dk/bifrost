@@ -94,7 +94,7 @@ def get_last_runs(run, n):
 def post_stamps(stamplist):
     for pair in stamplist:
         sample_id, stamp = pair
-        sample_db = mongo_interface.get_samples([sample_id])[0]
+        sample_db = mongo_interface.get_samples([ObjectId(sample_id)])[0]
         stamps = sample_db.get("stamps", {})
         stamp_list = stamps.get("stamp_list", [])
         stamp_list.append(stamp)
@@ -102,6 +102,7 @@ def post_stamps(stamplist):
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
         mongo_interface.save_sample(sample_db)
+    return "Feedback saved"
 
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
@@ -121,7 +122,7 @@ def email_stamps(stamplist):
         sample_id, stamp = stamp_pair
         user = stamp["user"]
         new_status = stamp["value"]
-        sample = mongo_interface.get_samples([sample_id])[0]
+        sample = mongo_interface.get_samples([ObjectId(sample_id)])[0]
         if sample is not None:
             sample_name = sample["name"]
         else:
@@ -166,3 +167,14 @@ def email_stamps(stamplist):
 def get_samples(sample_ids):
     sample_ids = [ObjectId(id) for id in sample_ids]
     return mongo_interface.get_samples(sample_ids)
+
+
+def get_comment(run_id):
+    returned = mongo_interface.get_comment(run_id)
+    if returned:
+        return returned.get("Comments", None)
+    else:
+        return returned
+
+def set_comment(run_id, comment):
+    return mongo_interface.set_comment(run_id, comment)
