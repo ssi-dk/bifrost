@@ -158,7 +158,7 @@ def dump_sample_component_info(data_dict):
             filter=search_fields,
             update={
                 "$set": data_dict,
-                "$setOnInsert": {"metadata": {"created_at": now}}
+                "$setOnInsert": {"metadata.created_at": now}
             },
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
