@@ -77,6 +77,7 @@ def test_post_sample_component():
     }
     s_c_db = datahandling.post_sample_component(s_c)
     s_c["_id"] = s_c_db["_id"]
+    s_c_db.pop('metadata', None)
     assert s_c == s_c_db
 
 
