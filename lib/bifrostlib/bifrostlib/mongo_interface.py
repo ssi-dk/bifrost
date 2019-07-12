@@ -50,7 +50,7 @@ def dump_run_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["inserted_at"] = now
+        data_dict["metadata"]["created_at"] = now
         result = runs_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
 
@@ -80,7 +80,7 @@ def dump_sample_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["inserted_at"] = now
+        data_dict["metadata"]["created_at"] = now
         result = samples_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
     return data_dict
@@ -118,7 +118,7 @@ def dump_component_info(data_dict):
             upsert=True  # This might change in the future # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["inserted_at"] = now
+        data_dict["metadata"]["created_at"] = now
         result = components_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
 
@@ -158,7 +158,7 @@ def dump_sample_component_info(data_dict):
             filter=search_fields,
             update={
                 "$set": data_dict,
-                "$setOnInsert": {"created_at": now}
+                "$setOnInsert": {"metadata": {"created_at": now}}
             },
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
