@@ -18,7 +18,6 @@ import keys
 
 import dash_scroll_up
 
-import components.mongo_interface
 import components.import_data as import_data
 
 import json
@@ -113,6 +112,15 @@ def pipeline_report(sample_data):
 
 def pipeline_report_data(sample_data):
 
+    status_dict = {
+        "Success": "OK",
+        "Running": "Running",
+        "initialized": "init.",
+        "Failure": "Fail",
+        "Requirements not met": "Req.",
+        "queued to run": "queue",
+    }
+
     s_c_status = import_data.get_sample_component_status(
         sample_data)
 
@@ -124,11 +132,11 @@ def pipeline_report_data(sample_data):
 
 
     s_c_components = []
-    for sample_id, s_c in s_c_status.items():
-        for comp_name in s_c.keys():
-            if comp_name not in s_c_components and comp_name != "sample":
+    for sample in s_c_status:
+        for comp_name in sample['s_cs'].keys():
+            if comp_name not in s_c_components:
                 s_c_components.append(comp_name)
-    components = [comp for comp in components_order if comp in s_c_components]
+    components_list = [comp for comp in components_order if comp in s_c_components]
 
     rows = []
 
@@ -140,7 +148,7 @@ def pipeline_report_data(sample_data):
 
     rerun_form_components = []
 
-    for comp in components:
+    for comp in components_list:
         columns.append({"name": comp, "id": comp})
         rerun_form_components.append({"label": comp, "value": comp})
 
@@ -208,15 +216,16 @@ def pipeline_report_data(sample_data):
 
     rerun_form_samples = []
 
-    for sample_id, s_components in s_c_status.items():
-        row = {}
-        sample = s_components["sample"]
-
+    for s_components in s_c_status:
+        sample_id = str(s_components["_id"])
+        sample = samples_by_id[sample_id]
         name = sample["name"]
-        row["sample"] = name
-        row["_id"] = str(sample["_id"])
+
+        row = {}
         if name == "Undetermined":
             continue  # ignore this row
+
+        row["name"] = name
 
         rerun_form_samples.append({"label": name, "value": "{}:{}".format(
             sample_id, name)})
@@ -258,10 +267,10 @@ def pipeline_report_data(sample_data):
 
         row["qc_val"] = qc_val
 
-        for component in components:
-            if component in s_components.keys():
-                s_c = s_components[component]
-                row[component] = s_c[1]
+        for component in components_list:
+            if component in s_components["s_cs"].keys():
+                s_c = components["s_cs"][component]
+                row[component] = status_code[s_c]
             else:
                 row[component] = "None"
         rows.append(row)

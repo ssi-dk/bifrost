@@ -355,7 +355,7 @@ def get_assemblies_paths(sample_ids):
 def get_sample_component_status(samples):
     with get_connection() as connection:
         db = connection.get_database()
-        sample_ids = list(map(lambda x: ObjectId(x), sample_ids))
+        sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
         s_c_list = list(db.sample_components.aggregate([
             {
                 "$match": {

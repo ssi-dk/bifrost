@@ -193,8 +193,8 @@ def html_div_filter():
                                 "textAlign": "left"
                             }
                         ],
-                        fixed_rows={'data': 1},
-                        row_selectable=True,
+                        fixed_rows={'headers': True},
+                        row_selectable='multi',
                         # filtering=True,  # Front end filtering
                         # sorting=True,
                         selected_rows=[],
@@ -383,7 +383,7 @@ def filter_update_run_options(form_species):
     group_list = import_data.get_group_list()
     group_options = []
     for item in group_list:
-        if item["_id"] is None:
+        if pd.isnull(item["_id"]):
             group_options.append({
                 "label": "Not defined ({})".format(item["count"]),
                 "value": "Not defined"
@@ -408,7 +408,6 @@ def filter_update_run_options(form_species):
                 "label": item["_id"],
                 "value": item["_id"]
             })
-
     return [run_options, group_options, species_options]
 
 
