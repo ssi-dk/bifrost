@@ -468,6 +468,8 @@ rule set_sample_species:
                                 provided_species)
                             if species_db is None:
                                 provided_species = "*" + str(provided_species)
+                            else:
+                                provided_species = species_db # Use proper name if exists.
                         sample_db["properties"]["provided_species"] = provided_species
                         datahandling.save_sample(sample_db, sample_config)
 
