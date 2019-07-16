@@ -98,6 +98,10 @@ COLUMNS = [
         "id": "sample_components.whats_my_species.summary.percent_unclassified"
     },
     {
+        "name": "File path",
+        "id": "path"
+    },
+    {
         "name": "DB_ID",
         "id": "_id"
     },

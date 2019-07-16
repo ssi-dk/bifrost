@@ -398,7 +398,7 @@ def filter_update_run_options(form_species):
 
     species_options = []
     for item in species_list:
-        if item["_id"] == None:
+        if pd.isna(item["_id"]):
             species_options.append({
                 "label": "Not classified",
                 "value": "Not classified"
