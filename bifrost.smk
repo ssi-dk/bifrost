@@ -816,13 +816,13 @@ rule setup_sample_components_to_run:
                         run_cmd_handle.write("cd {};\n".format(os.getcwd()))
                 if os.path.isfile(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")):
                     if config["grid"] == "torque":
-                        run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && qsub depend=afterany:$bifrost__job_ids {}.sh;\n".format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))  # dependent on grid engine
+                        run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && bifrost__job_ids=$bifrost__job_ids:$(qsub -h -w depend=afterany:$bifrost__job_ids {}.sh);\n".format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))  # dependent on grid engine
                     elif config["grid"] == "slurm":
-                        run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && sbatch -p {} --parsable -d afterany:$bifrost__job_ids {};\n".format(partition, os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))  # dependent on grid engine
+                        run_cmd_handle.write("[ ! -z \"$bifrost__job_ids\" ] && bifrost__job_ids=$bifrost__job_ids:$(sbatch --hold -p {} --parsable -d afterany:$bifrost__job_ids {});\n".format(partition, os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))  # dependent on grid engine
                     else:
                         run_cmd_handle.write("bash {};\n".format(os.path.join(os.path.dirname(workflow.snakefile), "scripts/final_script.sh")))
                 if config["grid"] == "torque":
-                    run_cmd_handle.write("qrls -h $bifrost__job_ids;\n")
+                    run_cmd_handle.write("qrls ${bifrost__job_ids//:/ };\n")
                 elif config["grid"] == "slurm":
                     run_cmd_handle.write("scontrol release JobId=${bifrost__job_ids//:/ };\n")
 
