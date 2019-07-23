@@ -33,6 +33,7 @@ def pipeline_report(sample_data):
         id="pipeline-table", selected_rows=[],
         style_table={
             'overflowX': 'scroll',
+            'width': '100%'
         },
         page_action='none',
         style_as_list_view=True,
@@ -55,56 +56,68 @@ def pipeline_report(sample_data):
         # resequence_link,
         dbc.Row([
             dbc.Col([
-                html.H2("Pipeline Status", className="mt-3"),
-                html.P(update_notice),
-                table,
-                dcc.Interval(
-                    id='table-interval',
-                    interval=30*1000,  # in milliseconds
-                    n_intervals=0
-                )
+                html.Div([
+                    html.Div([
+                        html.H6("Pipeline status", className="m-0 font-weight-bold text-primary")
+                    ], className="card-header py-3"),
+                    html.Div([
+                        html.P(update_notice),
+                        table,
+                        dcc.Interval(
+                            id='table-interval',
+                            interval=30*1000,  # in milliseconds
+                            n_intervals=0
+                        )
+                    ], className="card-body")
+                ], className="card shadow mb-4")                
             ], width=9),
             dbc.Col([
-                html.H3("Rerun components", className="mt-3"),
-                dbc.Alert(id="rerun-output",
-                          color="secondary",
-                          dismissable=True,
-                          is_open=False),
-                html.Label(html.Strong("Add all components for sample")),
-                dbc.InputGroup([
-                    dcc.Dropdown(id="rerun-components",
-                                className="dropdown-group"),
-                    dbc.InputGroupAddon(
-                        dbc.Button("Add", id="rerun-add-components"),
-                        addon_type="append",
-                    ),
-                ]),
-                html.Label(html.Strong("Add component for all samples"),
-                           className="mt-3"),
-                dbc.InputGroup([
-                    dcc.Dropdown(id="rerun-samples",
-                                 className="dropdown-group"),
-                    dbc.InputGroupAddon(
-                        dbc.Button("Add", id="rerun-add-samples"),
-                        addon_type="append",
-                    ),
-                ]),
-                html.Label(html.Strong("Add all failed components"),
-                           className="mt-3"),
-                dbc.Button("Add", id="rerun-add-failed", block=True),
                 html.Div([
-                    html.H4("Selected sample components"),
-                    dash_table.DataTable(
-                        id="pipeline-rerun",
-                        columns=rerun_columns,
-                        row_deletable=True),
-                    dbc.Button("Rerun selected sample components",
-                               id="rerun-button", className="mt-3", block=True,
-                               color="primary"),
-                ], className="mt-3")
-            ],
-                width=3,
-                style={"backgroundColor": "rgba(0, 0, 0, .05)"}
+                    html.Div([
+                        html.H6("Rerun components",
+                                className="m-0 font-weight-bold text-primary")
+                    ], className="card-header py-3"),
+                    html.Div([
+                        dbc.Alert(id="rerun-output",
+                                  color="secondary",
+                                  dismissable=True,
+                                  is_open=False),
+                        html.Label(html.Strong(
+                            "Add all components for sample")),
+                        dbc.InputGroup([
+                            dcc.Dropdown(id="rerun-components",
+                                         className="dropdown-group"),
+                            dbc.InputGroupAddon(
+                                dbc.Button("Add", id="rerun-add-components"),
+                                addon_type="append",
+                            ),
+                        ]),
+                        html.Label(html.Strong("Add component for all samples"),
+                                   className="mt-3"),
+                        dbc.InputGroup([
+                            dcc.Dropdown(id="rerun-samples",
+                                         className="dropdown-group"),
+                            dbc.InputGroupAddon(
+                                dbc.Button("Add", id="rerun-add-samples"),
+                                addon_type="append",
+                            ),
+                        ]),
+                        html.Label(html.Strong("Add all failed components"),
+                                   className="mt-3"),
+                        dbc.Button("Add", id="rerun-add-failed", block=True),
+                        html.Div([
+                            html.H4("Selected sample components"),
+                            dash_table.DataTable(
+                                id="pipeline-rerun",
+                                columns=rerun_columns,
+                                row_deletable=True),
+                            dbc.Button("Rerun selected sample components",
+                                       id="rerun-button", className="mt-3", block=True,
+                                       color="primary"),
+                        ], className="mt-3")
+                    ], className="card-body")
+                ], className="card shadow mb-4")
+            ], width=3
             )
         ])
     ]
@@ -120,6 +133,12 @@ def pipeline_report_data(sample_data):
         "Requirements not met": "Req.",
         "queued to run": "queue",
     }
+    samples = import_data.filter_all(
+        sample_ids = [s["_id"] for s in sample_data],
+        include_s_c=False,
+        projection={"stamps": 1, 'name': 1, 'sample_sheet.priority': 1})
+    samples["_id"] = samples["_id"].astype(str)
+    samples = samples.set_index("_id")
 
     s_c_status = import_data.get_sample_component_status(
         sample_data)
@@ -157,28 +176,28 @@ def pipeline_report_data(sample_data):
         {
             "if": {
                 "column_id": "qc_val",
-                "filter": 'qc_val eq "CF"'
+                "filter_query": '{qc_val} eq "CF"'
             },
             "backgroundColor": "#ea6153"
         },
         {
             "if": {
                 "column_id": "qc_val",
-                "filter": 'qc_val eq "CF(LF)"'
+                "filter_query": '{qc_val} eq "CF(LF)"'
             },
             "backgroundColor": "#ea6153"
         },
         {
             "if": {
                 "column_id": "qc_val",
-                "filter": 'qc_val eq "OK"'
+                "filter_query": '{qc_val} eq "OK"'
             },
             "backgroundColor": "#27ae60"
         },
         {
             "if": {
                 "column_id": "qc_val",
-                "filter": 'qc_val eq "SL"'
+                "filter_query": '{qc_val} eq "SL"'
             },
             "backgroundColor": "#f1c40f"
         }
@@ -187,28 +206,28 @@ def pipeline_report_data(sample_data):
         style_data_conditional.append({
             "if": {
                 "column_id": col,
-                "filter": '{} eq "Fail"'.format(col)
+                "filter_query": '{{{}}} eq "Fail"'.format(col)
             },
             "backgroundColor": "#ea6153"
         })
         style_data_conditional.append({
             "if": {
                 "column_id": col,
-                "filter": '{} eq "OK"'.format(col)
+                "filter_query": '{{{}}} eq "OK"'.format(col)
             },
             "backgroundColor": "#3498db"
         })
         style_data_conditional.append({
             "if": {
                 "column_id": col,
-                "filter": '{} eq "Running"'.format(col)
+                "filter_query": '{{{}}} eq "Running"'.format(col)
             },
             "backgroundColor": "#f1c40f"
         })
         style_data_conditional.append({
             "if": {
                 "column_id": col,
-                "filter": '{} eq "Req."'.format(col)
+                "filter_query": '{{{}}} eq "Req."'.format(col)
             },
             "backgroundColor": "#d3d3d3",
             "color": "#525252"
@@ -218,34 +237,30 @@ def pipeline_report_data(sample_data):
 
     for s_components in s_c_status:
         sample_id = str(s_components["_id"])
-        sample = samples_by_id[sample_id]
+        sample = samples.loc[sample_id]
         name = sample["name"]
 
         row = {}
         if name == "Undetermined":
             continue  # ignore this row
 
-        row["name"] = name
+        row["sample"] = name
 
         rerun_form_samples.append({"label": name, "value": "{}:{}".format(
             sample_id, name)})
 
-        stamps = sample.get("stamps", {})
-        priority = sample.get("sample_sheet",
-                              {}).get("priority", "").lower()
-        prio_display = " "
-        prio_title = priority
-        if priority == "high":
-            prio_display = "🚨"
-        else:
-            prio_display = ""
-        row["priority"] = prio_display
-        qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
+        priority = str(sample.get("sample_sheet.priority", "")).lower()
+        # prio_display = " " Emoji not supported
+        # if priority == "high":
+        #     prio_display = "High"
+        # else:
+        #     prio_display = "Low"
+        row["priority"] = priority
+        qc_val = sample.get("stamps.ssi_stamper.value", "N/A")
 
         expert_check = False
-        if ("supplying_lab_check" in stamps and
-                "value" in stamps["supplying_lab_check"]):
-            qc_val = stamps["supplying_lab_check"]["value"]
+        if sample.get('stamps.supplying_lab_check.value') is not None:
+            qc_val = sample.get('stamps.supplying_lab_check.value')
             expert_check = True
 
         statusname = ""
@@ -269,321 +284,14 @@ def pipeline_report_data(sample_data):
 
         for component in components_list:
             if component in s_components["s_cs"].keys():
-                s_c = components["s_cs"][component]
-                row[component] = status_code[s_c]
+                s_c = s_components["s_cs"][component]
+                row[component] = status_dict[s_c]
             else:
                 row[component] = "None"
         rows.append(row)
     return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
 
-# # Callbacks
 
-# @app.callback(
-#     Output("run-name", "children"),
-#     [Input("url", "pathname")]
-# )
-# def update_run_name(pathname):
-#     if pathname is None:
-#         pathname = "/"
-#     path = pathname.split("/")
-#     if import_data.check_run_name(path[1]):
-#         name = path[1]
-#     elif path[1] == "":
-#         name = ""
-#     else:
-#         name = "Not found"
-#     if len(path) > 2:
-#         return name + "/" + path[2]
-#     else:
-#         return name + "/"
-
-
-# @app.callback(
-#     Output("run-list", "options"),
-#     [Input("none", "children")]
-# )
-# def update_run_options(none):
-#     run_list = import_data.get_run_list()
-#     return [
-#         {
-#             "label": "{} ({})".format(run["name"],
-#                                       len(run["samples"])),
-#             "value": run["name"]
-#         } for run in run_list]
-
-
-# @app.callback(
-#     Output("run-name-title", "children"),
-#     [Input("run-name", "children")]
-# )
-# def update_run_title(run_name):
-#     return run_name.split("/")[0]
-
-
-# @app.callback(
-#     Output("report-link", "children"),
-#     [Input("run-name", "children")]
-# )
-# def update_run_name(run_name):
-#     run_name = run_name.split("/")[0]
-#     if run_name == "" or run_name == "Not found":
-#         return None
-#     else:
-#         return html.H3(html.A("QC Report",
-#                               href="{}/{}".format(keys.qc_report_url,
-#                                                   run_name)))
-
-
-# @app.callback(
-#     Output("run-link", "href"),
-#     [Input("run-list", "value")]
-# )
-# def update_run_button(run):
-#     if run is not None:
-#         return "/" + run
-#     else:
-#         return "/"
-
-
-# @app.callback(
-#     Output("sample-store", "data"),
-#     [Input("run-name", "children")]
-# )
-# def update_sample_store(run_name):
-#     split = run_name.split("/")
-#     run_name = split[0]
-#     run = import_data.get_run(run_name)
-#     if run is None:
-#         return json_util.dumps({"run": None})
-#     samples = import_data.get_samples(list(map(lambda x: str(x["_id"]), run["samples"])))
-
-#     store = {
-#         "run": run,
-#         "samples_by_id": {str(s["_id"]): s for s in samples},
-#         "report": "resequence" if len(split) > 1 and split[1] == "resequence" else "run_checker"
-#     }
-
-#     return json_util.dumps(store)
-
-
-# @app.callback(
-#     Output("run-report", "children"),
-#     [Input("sample-store", "data"),
-#      Input("table-interval", "n_intervals")]
-# )
-# def update_run_report(store, n_intervals):
-#     update_notice = "The table will update every 30s automatically."
-#     store = json_util.loads(store)
-#     run = store["run"]
-#     if run is None:
-#         return None
-#     samples_by_id = store["samples_by_id"]
-
-#     if store["report"] == "run_checker":
-#         run_data = import_data.get_run(run)  #NOTE: de;ete tjos
-        
-#         resequence_link = html.H4(dcc.Link(
-#             "Resequence Report", href="/{}/resequence".format(run["name"]))) #move to multiple outputs
-
-#         s_c_status = import_data.get_sample_component_status(samples_by_id.keys())
-
-#         if "components" in run:
-#             components = list(
-#                 map(lambda x: x["name"], run["components"]))
-#         else:
-#             components = []
-#             for sample_id, s_c in s_c_status.items():
-#                 if s_c["component"]["name"] not in components:
-#                     components.append(s_c["component"]["name"])
-#         header = html.Tr([
-#             html.Th(html.Div(html.Strong("Priority")),
-#                     className="rotate rotate-short"),
-#             html.Th(html.Div(html.Strong("Sample")),
-#                     className="rotate rotate-short"),
-#             html.Th(html.Div(html.Strong("QC status")),
-#                     className="rotate rotate-short"),
-#             html.Th()
-#             ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
-#                                            className="rotate rotate-short"),
-#                          components)))
-#         rows = [header]
-#         for sample_id, s_components in s_c_status.items():
-#             sample = samples_by_id[sample_id]
-#             name = sample["name"]
-#             if name == "Undetermined":
-#                 continue #ignore this row
-#             row = []
-#             sample = import_data.get_sample(
-#                 str(s_components["sample._id"]))
-#             stamps = sample.get("stamps", {})
-#             priority = sample.get("sample_sheet",
-#                                   {}).get("priority", "").lower()
-#             prio_display = " "
-#             prio_title = priority
-#             if priority == "high":
-#                 prio_display = "🚨"
-#             else:
-#                 prio_display = ""
-#             row.append(html.Td(prio_display,
-#                                title=prio_title,
-#                                className="center"))
-
-#             row.append(html.Td(name))
-#             qc_val = stamps.get("ssi_stamper", {}).get("value", "N/A")
-
-#             expert_check = False
-#             if ("supplying_lab_check" in stamps and
-#                     "value" in stamps["supplying_lab_check"]):
-#                 qc_val = stamps["supplying_lab_check"]["value"]
-#                 expert_check = True
-
-#             statusname = ""
-#             if qc_val == "fail:supplying lab":
-#                 qc_val = "SL"
-#                 statusname = "status-1"
-#             elif qc_val == "N/A":
-#                 statusname = "status--2"
-#             elif (qc_val == "fail:core facility" or
-#                   qc_val == "fail:resequence"):
-#                 statusname = "status--1"
-#                 qc_val = "CF"
-#             elif qc_val == "pass:OK":
-#                 statusname = "status-2"
-#                 qc_val = "OK"
-
-#             if expert_check:
-#                 qc_val += "*"
-
-#             row.append(
-#                 html.Td(qc_val, className="center {}".format(statusname)))
-#             row.append(html.Td())
-
-#             for component in components:
-#                 if component in s_components.keys():
-#                     s_c = s_components[component]
-#                     row.append(
-#                         html.Td(s_c[1],
-#                                 className="center status-{}".format(s_c[0])))
-#                 else:
-#                     row.append(html.Td("None", className="center status-0"))
-#             rows.append(html.Tr(row))
-#         table = html.Table(rows, className="unset-width-table")
-#         update_notice += (" Req.: requirements not met. Init.: initialised. "
-#                           "*: user submitted")
-
-#         return [
-#             resequence_link,
-#             html.P(update_notice),
-#             table]
-
-#     if store["report"] == "resequence":
-
-#         run_checker_link = html.H4(html.A(
-#             "Run Checker Report", href="/{}".format(run)))
-
-#         last_runs = import_data.get_last_runs(run["name"], 12) #Get last 12 runs
-#         last_runs_names = [run["name"] for run in last_runs]
-#         prev_runs_dict = import_data.get_sample_QC_status(last_runs)
-#         header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
-#                                   className="rotate")] +
-#                          list(map(lambda x: html.Th(html.Div(html.Strong(x)),
-#                                                     className="rotate"),
-#                                   last_runs_names)))
-#         rows = [header]
-#         for name, p_runs in prev_runs_dict.items():
-#             if name == "Undetermined":
-#                 continue
-#             row = []
-#             row.append(html.Td(name))
-
-#             sample_all_OKs = True
-
-#             for index in range(len(last_runs)):
-#                 if last_runs[index]["name"] in p_runs:
-#                     className = "0"
-#                     title = "Not Run"
-#                     status = p_runs[last_runs[index]["name"]]
-#                     if status.startswith("OK"):
-#                         className = "2"
-#                         title = "OK"
-#                     elif status == "SL":
-#                         sample_all_OKs = False
-#                         className = "1"
-#                         title = "Supplying Lab"
-#                     elif status.startswith("CF"):
-#                         # Wont be triggered by supplying because its after.
-#                         className = "-1"
-#                         sample_all_OKs = False
-#                         title = "Core Facility"
-#                     else:
-#                         # to account for libray fails
-#                         sample_all_OKs = False
-#                     row.append(
-#                         html.Td(status,
-#                                 className="center status-" + className))
-#                 else:
-#                     row.append(html.Td("-", className="center status-0"))
-
-#             if not sample_all_OKs:
-#                 rows.append(html.Tr(row))
-#         table = html.Table(rows, className="unset-width-table")
-#         update_notice += (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
-#                           "Core Facility (Library Fail). -: No data. "
-#                           "*: user submitted")
-#         return [
-#             run_checker_link,
-#             html.P(update_notice),
-#             table
-#         ]
-#     return []
-
-
-# @app.callback(
-#     Output("rerun-form", "children"),
-#     [Input("run-name", "children")]
-# )
-# def update_rerun_form(run_name):
-#     run_name = run_name.split("/")[0]
-#     if run_name == "" or not hasattr(keys, "rerun"):
-#         return None
-
-#     run_data = import_data.get_run(run_name)
-#     if run_data is not None:
-#         components = list(
-#             map(lambda x: x["name"], run_data["components"]))
-#     else:
-#         components = []
-
-#     components_options = [{"value": c, "label": c} for c in components]
-
-#     return html.Div([
-#         html.H6("Rerun components"),
-#         html.Div([
-#             html.Div([
-#                 dcc.Textarea(
-#                     id="rerun-samples",
-#                     placeholder="one sample per line",
-#                     value=""
-#                 )
-#             ], className="four columns"),
-#             html.Div([
-#                 dcc.Dropdown(
-#                     id="rerun-components",
-#                     options=components_options,
-#                     placeholder="Components",
-#                     multi=True,
-#                     value=""
-#                 )
-#             ], className="four columns"),
-#             html.Div([
-#                 html.Button(
-#                     "Send",
-#                     id="rerun-button",
-#                     n_clicks=0
-#                 )
-#             ], className="two columns")
-#         ], className="row"),
-#     ])
 
 
 

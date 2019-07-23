@@ -26,7 +26,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values
+from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer
 from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
@@ -44,6 +44,46 @@ def hex_to_rgb(value):
     lv = len(value)
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
+def samples_list(active):
+    links = [
+        {
+            "icon": "fa-list",
+            "href": ""
+        },
+        {
+            "icon": "fa-money-check",
+            "href": "sample-report"
+        },
+        {
+            "icon": "fa-chart-pie",
+            "href": "aggregate"
+        },
+        {
+            "icon": "fa-wrench",
+            "href": "pipeline-report"
+        },
+        {
+            "icon": "fa-link",
+            "href": "link-to-files"
+        }
+    ]
+    link_list = []
+    for item in links:
+        if active == item['href']:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-sm".format(item['icon'])),
+                className="btn btn-outline-secondary btn-sm active",
+                href="/" + item['href']
+            ))
+        else:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-sm".format(item['icon'])),
+                className="btn btn-outline-secondary btn-sm",
+                href="/" + item['href']
+            ))
+    return link_list
+
+
 
 def short_species(species):
     if species is None or pd.isna(species):
@@ -54,7 +94,16 @@ def short_species(species):
     return "{}. {}".format(words[0][0], " ".join(words[1:]))
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+external_scripts = [
+    'https://kit.fontawesome.com/24170a81ff.js',
+]
+
+
+app = dash.Dash(__name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    external_scripts=external_scripts
+)
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 
@@ -75,63 +124,77 @@ app.layout = html.Div([
     dcc.Store(id="sample-store", data=[], storage_type='session'),
     dcc.Store(id="param-store", data={}),
     dcc.Store(id="removed-samples-store", data=None),
-    dbc.Navbar(
+    html.Ul(
         [
-            dbc.Col(
-                html.A(
-                    # Use row and col to control vertical alignment of logo / brand
+            html.A(
+                [
                     html.Img(src="assets/img/bifrost-logo-white@2x.png",
-                            className="navbar-logo "),
-                    href="https://plot.ly",
-                        className=" mr-0"
-                ),
-                sm=3,
-                md=2,
-                className="navbar-brand text-center"
+                             className="navbar-logo ")
+                    # html.Div("bifrost", className="sidebar-brand-text mx-3")
+                ],
+                className="sidebar-brand d-flex align-items-center justify-content-center",
+                href="http://example.com"
             ),
-            dbc.NavbarToggler(id="navbar-toggler"),
+            
+            html.Hr(className="sidebar-divider"),
+            html.Div("Browse data", className="sidebar-heading"),
+
+            html.Li(html.A("Samples", className="nav-link"),
+                    className="nav-item"),
+            html.Li(html.A("Collections", className="nav-link"),
+                    className="nav-item"),
+            html.Hr(className="sidebar-divider"),
+            html.Div(
+                html.Button(className="rounded-circle border-0",
+                            id="sidebarToggle"),
+                className="text-center d-none d-md-inline"
+            ),
         ],
-        color="dark",
-        dark=True,
-        className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow"
+        className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion",
+        id="sidebar"
     ),
-    dbc.Container([
-        html.Div(className="row", children=[
-            html.Div([
-                html.Div([
-                    dbc.Nav([
-                        dbc.NavItem(dcc.Link("Filter",
-                                             href="/",
-                                             className="nav-link active")),
-                        dbc.NavItem(dcc.Link("Aggregate Data",
-                                             className="nav-link active",
-                                             href="/aggregate")),
-                        dbc.NavItem(dcc.Link("Per Sample Data",
-                                             className="nav-link active",
-                                             href="/sample-report")),
-                        dbc.NavItem(dcc.Link("Pipeline Status",
-                                             className="nav-link active",
-                                             href="pipeline-report")),
-                        dbc.NavItem(dcc.Link("Resequence Report",
-                                             className="nav-link active",
-                                             href="resequence-report")),
-                        dbc.NavItem(dcc.Link("Link to Files",
-                                             className="nav-link active",
-                                             href="link-to-files")),
-                    ], vertical=True),
-                    html.Div([
-                        html.H6(
-                            "Selected samples",
-                            className=("sidebar-heading d-flex "
-                                       "justify-content-between align-items-center"
-                                       " px-3 mt-4 mb-1 text-muted")),
-                        html.Div(
-                            dbc.Table(size="sm", id="selected-samples")
-                            , className="selected-samples-table"),
-                    ], className="selected-samples-nav"),
-                ], className="sidebar-sticky position-relative"),
-            ], className="col-md-2 bg-light sidebar"),
+    html.Div([
+        html.Div(id="content", children=[
+            html.Nav(
+                [
+                    html.Ul([
+                        html.Li(
+                            dcc.Link("Filter", href="/")
+                            , className="nav-item dropdown no-arrow mx-1"
+                        ),
+                        html.Li(
+                            dcc.Link("Aggregate Data", href="/aggregate"), className="nav-item dropdown no-arrow mx-1"
+                        ),
+                        html.Li(
+                            dcc.Link("Per Sample Data", href="/sample-report"), className="nav-item dropdown no-arrow mx-1"
+                        ),
+                        html.Li(
+                            dcc.Link("Pipeline Status", href="/pipeline-report"), className="nav-item dropdown no-arrow mx-1"
+                        ),
+                        html.Li(
+                            dcc.Link("Resequence Report", href="/resequence-report"), className="nav-item dropdown no-arrow mx-1"
+                        ),
+                        html.Li(
+                            dcc.Link("Link to Files", href="/link-to-files"), className="nav-item dropdown no-arrow mx-1"
+                        )
+                    ],className="navbar-nav ml-auto")
+                ],
+                className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"),
             html.Main([
+                dbc.Collapse(
+                    [
+                        html_filter_drawer()
+                    ], id="filter_panel"
+                ),
+                html.Button(
+                    className="rounded-circle border-0 mx-auto d-block",
+                    id="filter_toggle"
+                ),
+                html.Div(
+                    samples_list('/'),
+                    className="btn-group shadow-sm my-4",
+                    id="selected-view-buttons"
+                ),
                 html.Div(id="selected-view"),
                     # 
                     # html.Div(id="placeholder1", style={"display": "none"}),
@@ -212,39 +275,39 @@ app.layout = html.Div([
                     # ),
                     # These here avoid problems loading parameters when 
                     # loading a view other than the filter with params.
-                    html.Button(id="apply-filter-button",
-                                style={"display": "none"},
-                                n_clicks=0),
-                    dcc.Dropdown(value="",
-                                 multi=True,
-                                 style={"display": "none"},
-                                 id="run-list"),
-                    dcc.Dropdown(value="",
-                                 multi=True,
-                                 style={"display": "none"},
-                                 id="species-list"),
-                    dcc.Input(value="provided",
-                              style={"display": "none"},
-                              id="form-species-source"),
-                    dcc.Dropdown(value="",
-                                 style={"display": "none"},
-                                 id="group-list"),
-                    dcc.Dropdown(value="",
-                                 multi=True,
-                                 style={"display": "none"},
-                                 id="qc-list"),
-                    dcc.Input(value="",
-                              style={"display": "none"},
-                              id="samples-form"),
-                    html.Footer([
-                        "Created with 🔬 at SSI. Bacteria icons from ",
-                        html.A("Flaticon", href="https://www.flaticon.com/"),
-                        "."], className="footer container")
-                ], className="col-md-9 ml-sm-auto col-lg-10 px-4",
-                role="main"),
+                # html.Button(id="apply-filter-button",
+                #             style={"display": "none"},
+                #             n_clicks=0),
+                # dcc.Dropdown(value="",
+                #                 multi=True,
+                #                 style={"display": "none"},
+                #                 id="run-list"),
+                # dcc.Dropdown(value="",
+                #                 multi=True,
+                #                 style={"display": "none"},
+                #                 id="species-list"),
+                # dcc.Input(value="provided",
+                #             style={"display": "none"},
+                #             id="form-species-source"),
+                # dcc.Dropdown(value="",
+                #                 style={"display": "none"},
+                #                 id="group-list"),
+                # dcc.Dropdown(value="",
+                #                 multi=True,
+                #                 style={"display": "none"},
+                #                 id="qc-list"),
+                # dcc.Input(value="",
+                #             style={"display": "none"},
+                            # id="samples-form"),
+                html.Footer([
+                    "Created with 🔬 at SSI. Bacteria icons from ",
+                    html.A("Flaticon", href="https://www.flaticon.com/"),
+                    "."], className="footer container")
+            ], className="col",
+            role="main"),
         ]),
-    ], className="appcontainer", fluid=True)
-])
+    ], id="content-wrapper", className="d-flex flex-column")
+], id="wrapper")
 
 
 # Callbacks
@@ -252,22 +315,33 @@ app.layout = html.Div([
 # We could make this one much faster by hiding the unused species with CSS
 # by adding a new hidden class.
 
+# @app.callback(
+#     Output("sidebar", "className"),
+#     [Input("sidebarToggle", "n_clicks")],
+#     [State("sidebar", "className")]
+# )
+# def sidebar_toggle(n_clicks, class_name):
+#     if n_clicks and not "toggled" in class_name:
+#         return "navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled"
+#     else:
+#         return "navbar-nav bg-gradient-primary sidebar sidebar-dark accordion"
+    
+
 @app.callback(
-    Output("selected-samples", "children"),
-    [Input("sample-store", "data")]
+    Output("filter_panel", "is_open"),
+    [Input("filter_toggle", "n_clicks")],
+    [State("filter_panel", "is_open")]
 )
-def store_update(sample_store):
-    rows = []
-    for sample in sample_store[:500]:
-        rows.append(html.Tr(html.Td(sample["name"])))
-    if len(sample_store) > 500:
-        rows.append(html.Tr(html.Td(
-            "{} more samples".format(len(sample_store) - 500))))
-    return html.Tbody(rows)
+def sidebar_toggle(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
 
 @app.callback(
     [Output("selected-view", "children"),
-     Output("param-store", "data")],
+     Output("param-store", "data"),
+     Output("selected-view-buttons", "children")],
     [Input("url", "pathname")],
     [State("url", "search"),
      State("sample-store", "data")]
@@ -279,19 +353,20 @@ def update_run_name(pathname, params, sample_store):
     if pathname is None or pathname == "/":
         pathname = "/"
     path = pathname.split("/")
+    view = None
     if path[1] == "":
-        return [html_div_filter(), params]
+        view = html_div_filter()
     elif path[1] == "sample-report":
-        return [sample_report(sample_store), params]
+        view = sample_report(sample_store)
     elif path[1] == "pipeline-report":
-        return [pipeline_report(sample_store), params]
+        view = pipeline_report(sample_store)
     elif path[1] == "resequence-report":
-        return [resequence_report("190430_NB551234_0128_N_WGS_220_AHH2GLAFXY"), params]
+        view = resequence_report("190430_NB551234_0128_N_WGS_220_AHH2GLAFXY")
     elif path[1] == "link-to-files":
-        return [link_to_files(sample_store), params]
+        view = link_to_files(sample_store)
     else:
-        return ["Not found", params]
-
+        view = "Not found"
+    return [view, params, samples_list(path[1])]
 
 @app.callback(
     [Output("run-list", "options"),

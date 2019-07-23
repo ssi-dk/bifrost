@@ -15,6 +15,172 @@ def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
+def html_filter_drawer():
+    qc_list_options = [
+        {"label": "OK", "value": "pass:OK"},
+        {"label": "Core Facility", "value": "fail:core facility"},
+        {"label": "Supplying Lab", "value": "fail:supplying lab"},
+        {"label": "Not checked", "value": "Not checked"}
+    ]
+    run_filter = html.Div(
+        [
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div(
+                                html.H6(
+                                    "Filter",
+                                    className="m-0 font-weight-bold text-primary"
+                                ),
+                                className="card-header py-3"
+                            ),
+                            html.Div(
+                                [
+                                    dbc.Row([
+                                        dbc.Col([
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        dbc.FormGroup(
+                                                            [
+                                                                dbc.Label(
+                                                                    "Run", html_for="run-list"),
+                                                                dcc.Dropdown(
+                                                                    id="run-list",
+                                                                    multi=True,
+                                                                    value=[],
+                                                                    placeholder="All runs selected",
+                                                                ),
+                                                            ]
+                                                        ),
+                                                        width=6,
+                                                    ),
+                                                    dbc.Col(
+                                                        dbc.FormGroup(
+                                                            [
+                                                                dbc.Label(
+                                                                    "Group", html_for="group-list"),
+                                                                dcc.Dropdown(
+                                                                    id="group-list",
+                                                                    multi=True,
+                                                                    value=[],
+                                                                    placeholder="All groups selected",
+                                                                ),
+                                                            ]
+                                                        ),
+                                                        width=6,
+                                                    ),
+                                                ],
+                                                form=True,
+                                            ),
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        dbc.FormGroup(
+                                                            [
+                                                                html.Label(
+                                                                    [
+                                                                        "Species: "
+                                                                    ],
+                                                                    htmlFor="species-list",
+                                                                    style={
+                                                                        "display": "inline-block"}
+                                                                ),
+                                                                dcc.RadioItems(
+                                                                    options=[
+                                                                        {"label": "Provided",
+                                                                         "value": "provided"},
+                                                                        {"label": "Detected",
+                                                                         "value": "detected"},
+                                                                    ],
+                                                                    value="provided",
+                                                                    labelStyle={
+                                                                        'display': 'inline-block'},
+                                                                    id="form-species-source",
+                                                                    style={
+                                                                        "display": "inline-block"}
+
+                                                                ),
+                                                                html.Div(
+                                                                    dcc.Dropdown(
+                                                                        id="species-list",
+                                                                        multi=True,
+                                                                        value=[],
+                                                                        placeholder="All species selected",
+                                                                    ),
+                                                                    id="species-div"
+                                                                )
+                                                            ]
+                                                        ),
+                                                        width=6,
+                                                    ),
+                                                    dbc.Col(
+                                                        dbc.FormGroup(
+                                                            [
+                                                                dbc.Label(
+                                                                    "SSI QC", html_for="qc-list"),
+                                                                dcc.Dropdown(
+                                                                    id="qc-list",
+                                                                    multi=True,
+                                                                    options=qc_list_options,
+                                                                    placeholder="All values selected",
+                                                                    value=[]
+                                                                ),
+                                                            ]
+                                                        ),
+                                                        width=6,
+                                                    ),
+                                                ],
+                                                form=True,
+                                            ),
+                                        ], width=9),
+                                        dbc.Col([
+                                            dbc.Row(dbc.Col([
+                                                dbc.Label(["Sample names ", html.Span(
+                                                    "(?)", id="sample-names-tooltip")],
+                                                    html_for="samples-form",
+                                                    style={"display": "block"}),
+                                                dbc.Textarea(
+                                                    id="samples-form",
+                                                    placeholder="one sample per line",
+                                                    value="",
+                                                    rows=6
+                                                ),
+                                                dbc.Tooltip(
+                                                    "Sample name must match exactly. "
+                                                    "Search samples using regex by starting and finishing sample name with the '/' character.",
+                                                    target="sample-names-tooltip",
+                                                )
+                                            ], width=12))
+                                        ], width=3),
+                                    ]),
+                                    dbc.ButtonGroup([
+                                        dbc.Button("Search samples",
+                                                   id="apply-filter-button",
+                                                   color="primary",
+                                                   n_clicks=0),
+                                        # dbc.Button("Generate download link (1000 samples max.)",
+                                        #            id="generate-download-button",
+                                        #            color="secondary",
+                                        #            n_clicks=0)
+                                    ]),
+                                ],
+                                className="card-body"
+                            )
+                        ], className="card shadow mb-4"
+                    )
+                ],
+                className="col"
+            )
+            
+            # html.Div(id="tsv-download")
+        ],
+        className="row"
+    )
+
+    return run_filter
+
 def html_div_filter():
     qc_list_options = [
         {"label": "OK", "value": "pass:OK"},
@@ -27,132 +193,7 @@ def html_div_filter():
     return html.Div([
         html.Div(
             [
-                dcc.Store(id="param-store", storage_type="memory", data={}),
-                html.H2("Filter", className="mt-3"),
-
-                dbc.Row([
-                    dbc.Col([
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    dbc.FormGroup(
-                                        [
-                                            dbc.Label(
-                                                "Run", html_for="run-list"),
-                                            dcc.Dropdown(
-                                                id="run-list",
-                                                multi=True,
-                                                value=[],
-                                                placeholder="All runs selected",
-                                            ),
-                                        ]
-                                    ),
-                                    width=6,
-                                ),
-                                dbc.Col(
-                                    dbc.FormGroup(
-                                        [
-                                            dbc.Label(
-                                                "Group", html_for="group-list"),
-                                            dcc.Dropdown(
-                                                id="group-list",
-                                                multi=True,
-                                                value=[],
-                                                placeholder="All groups selected",
-                                            ),
-                                        ]
-                                    ),
-                                    width=6,
-                                ),
-                            ],
-                            form=True,
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    dbc.FormGroup(
-                                        [
-                                            html.Label(
-                                                [
-                                                    "Species: "
-                                                ],
-                                                htmlFor="species-list",
-                                                style={
-                                                    "display": "inline-block"}
-                                            ),
-                                            dcc.RadioItems(
-                                                options=[
-                                                    {"label": "Provided",
-                                                     "value": "provided"},
-                                                    {"label": "Detected",
-                                                     "value": "detected"},
-                                                ],
-                                                value="provided",
-                                                labelStyle={
-                                                    'display': 'inline-block'},
-                                                id="form-species-source",
-                                                style={
-                                                    "display": "inline-block"}
-
-                                            ),
-                                            html.Div(
-                                                dcc.Dropdown(
-                                                    id="species-list",
-                                                    multi=True,
-                                                    value=[],
-                                                    placeholder="All species selected",
-                                                ),
-                                                id="species-div"
-                                            )
-                                        ]
-                                    ),
-                                    width=6,
-                                ),
-                                dbc.Col(
-                                    dbc.FormGroup(
-                                        [
-                                            dbc.Label(
-                                                "SSI QC", html_for="qc-list"),
-                                            dcc.Dropdown(
-                                                id="qc-list",
-                                                multi=True,
-                                                options=qc_list_options,
-                                                placeholder="All values selected",
-                                                value=[]
-                                            ),
-                                        ]
-                                    ),
-                                    width=6,
-                                ),
-                            ],
-                            form=True,
-                        ),
-                    ], width=9),
-                    dbc.Col([
-                        dbc.Row(dbc.Col([
-                            dbc.Label(["Sample names ", html.Span(
-                                "(?)", id="sample-names-tooltip")],
-                                html_for="samples-form",
-                                style={"display": "block"}),
-                            dbc.Textarea(
-                                id="samples-form",
-                                placeholder="one sample per line",
-                                value="",
-                                rows=6
-                            ),
-                            dbc.Tooltip(
-                                "Sample name must match exactly. "
-                                "Search samples using regex by starting and finishing sample name with the '/' character.",
-                                target="sample-names-tooltip",
-                            )
-                        ], width=12))
-                    ], width=3),
-                ]),
                 dbc.ButtonGroup([
-                    dbc.Button("Search samples",
-                            id="apply-filter-button",
-                            color="primary",
-                            n_clicks=0),
                     dbc.Button("Generate download link (1000 samples max.)",
                             id="generate-download-button",
                             color="secondary",
