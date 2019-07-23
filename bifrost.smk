@@ -12,8 +12,8 @@ import pkg_resources
 import hashlib
 import traceback
 import shutil
-sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 from bifrostlib import datahandling
+sys.path.append(os.path.join(os.path.dirname(workflow.snakefile), "scripts"))
 
 configfile: os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 
@@ -24,7 +24,7 @@ if config.get("samples_to_include", None) is not None:
     if type(config["samples_to_include"]) is int:
         config["samples_to_include"] = str(config["samples_to_include"])
 
-#Saving the config
+# Saving the config
 component = "bifrost"
 rerun_folder = component + "/delete_to_update"
 
@@ -78,7 +78,7 @@ rule make_components_dir:
     shell:
         "mkdir {output};"
 
-# TODO: temporarily shelved idea for anonymizing samples 
+# TODO: temporarily shelved idea for anonymizing samples
 # rule_name = "create_sample_folder"
 # rule create_sample_folder:
 #     # Static
