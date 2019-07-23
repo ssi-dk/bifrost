@@ -11,6 +11,7 @@ import dash_html_components as html
 import dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
+import numpy as np
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
@@ -27,23 +28,6 @@ from bson import json_util
 
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
-
-
-    table = dash_table.DataTable(
-        id="pipeline-table", selected_rows=[],
-        style_table={
-            'overflowX': 'scroll',
-            'width': '100%'
-        },
-        page_action='none',
-        style_as_list_view=True,
-        style_cell={
-            'textAlign': 'center',
-            "fontFamily": "Arial",
-            "padding": "0px 10px",
-            "fontSize": "0.7rem",
-            "height": "25px"
-            })
 
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                       "*: user submitted")
@@ -62,14 +46,14 @@ def pipeline_report(sample_data):
                     ], className="card-header py-3"),
                     html.Div([
                         html.P(update_notice),
-                        table,
+                        html.Div(id="pipeline-table"),
                         dcc.Interval(
                             id='table-interval',
                             interval=30*1000,  # in milliseconds
                             n_intervals=0
                         )
                     ], className="card-body")
-                ], className="card shadow mb-4")                
+                ], className="card shadow mb-4")
             ], width=9),
             dbc.Col([
                 html.Div([
@@ -133,10 +117,21 @@ def pipeline_report_data(sample_data):
         "Requirements not met": "Req.",
         "queued to run": "queue",
     }
+    status_code_dict = {
+        "Success": 2,
+        "Running": 1,
+        "initialized": 0,
+        "Failure": -1,
+        "Requirements not met": -2,
+        "queued to run": 0
+    }
     samples = import_data.filter_all(
         sample_ids = [s["_id"] for s in sample_data],
         include_s_c=False,
-        projection={"stamps": 1, 'name': 1, 'sample_sheet.priority': 1})
+        projection={"stamps": 1,
+         'reads.R1': 1,
+         'name': 1,
+         'sample_sheet.priority': 1})
     samples["_id"] = samples["_id"].astype(str)
     samples = samples.set_index("_id")
 
@@ -157,81 +152,23 @@ def pipeline_report_data(sample_data):
                 s_c_components.append(comp_name)
     components_list = [comp for comp in components_order if comp in s_c_components]
 
-    rows = []
-
-    columns = [
-        {"name": "Priority", "id": "priority"},
-        {"name": "Sample", "id": "sample"},
-        {"name": "QC status", "id": "qc_val"}
-    ]
+    header = html.Tr([
+        html.Th(html.Div(html.Strong("Priority")),
+                className="rotate rotate-short"),
+        html.Th(html.Div(html.Strong("Sample")),
+                className="rotate rotate-short"),
+        html.Th(html.Div(html.Strong("QC status")),
+                className="rotate rotate-short"),
+        html.Th()
+    ] + list(map(lambda x: html.Th(html.Div(html.Strong(x)),
+                                   className="rotate rotate-short"),
+                 components_list)))
+    rows = [header]
 
     rerun_form_components = []
 
     for comp in components_list:
-        columns.append({"name": comp, "id": comp})
         rerun_form_components.append({"label": comp, "value": comp})
-
-    # Conditional data colors
-    style_data_conditional = [
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "CF"'
-            },
-            "backgroundColor": "#ea6153"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "CF(LF)"'
-            },
-            "backgroundColor": "#ea6153"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "OK"'
-            },
-            "backgroundColor": "#27ae60"
-        },
-        {
-            "if": {
-                "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "SL"'
-            },
-            "backgroundColor": "#f1c40f"
-        }
-    ]
-    for col in s_c_components:
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter_query": '{{{}}} eq "Fail"'.format(col)
-            },
-            "backgroundColor": "#ea6153"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter_query": '{{{}}} eq "OK"'.format(col)
-            },
-            "backgroundColor": "#3498db"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter_query": '{{{}}} eq "Running"'.format(col)
-            },
-            "backgroundColor": "#f1c40f"
-        })
-        style_data_conditional.append({
-            "if": {
-                "column_id": col,
-                "filter_query": '{{{}}} eq "Req."'.format(col)
-            },
-            "backgroundColor": "#d3d3d3",
-            "color": "#525252"
-        })
 
     rerun_form_samples = []
 
@@ -240,23 +177,34 @@ def pipeline_report_data(sample_data):
         sample = samples.loc[sample_id]
         name = sample["name"]
 
-        row = {}
+        row = []
         if name == "Undetermined":
             continue  # ignore this row
 
-        row["sample"] = name
 
         rerun_form_samples.append({"label": name, "value": "{}:{}".format(
             sample_id, name)})
 
         priority = str(sample.get("sample_sheet.priority", "")).lower()
-        # prio_display = " " Emoji not supported
-        # if priority == "high":
-        #     prio_display = "High"
-        # else:
-        #     prio_display = "Low"
-        row["priority"] = priority
+        if priority == "high":
+            prio_display = "🚨"
+        else:
+            prio_display = ""
+        prio_title = priority
+        row.append(html.Td(prio_display,
+                            title=prio_title,
+                            className="center"))
+        row.append(html.Td(name))
         qc_val = sample.get("stamps.ssi_stamper.value", "N/A")
+        if pd.isnull(qc_val):
+            qc_val = "N/A"
+
+        if name == '131964':
+            print(qc_val)
+            print(sample)
+
+        if qc_val == "N/A" and (not pd.isnull(sample.get("reads.R1", np.NaN))):
+            qc_val = "CF(LF)"
 
         expert_check = False
         if sample.get('stamps.supplying_lab_check.value') is not None:
@@ -280,16 +228,21 @@ def pipeline_report_data(sample_data):
         if expert_check:
             qc_val += "*"
 
-        row["qc_val"] = qc_val
+        row.append(
+            html.Td(qc_val, className="center {}".format(statusname)))
+        row.append(html.Td())
 
         for component in components_list:
-            if component in s_components["s_cs"].keys():
+            if component in s_components["s_cs"]:
                 s_c = s_components["s_cs"][component]
-                row[component] = status_dict[s_c]
+                row.append(
+                    html.Td(status_dict[s_c],
+                            className="center status-{}".format(status_code_dict[s_c])))
             else:
-                row[component] = "None"
-        rows.append(row)
-    return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
+                row.append(html.Td("None", className="center status-0"))
+        rows.append(html.Tr(row))
+    table = html.Table(rows, className="unset-width-table")
+    return table, rerun_form_components, rerun_form_samples
 
 
 

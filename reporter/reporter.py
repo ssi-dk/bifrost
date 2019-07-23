@@ -824,9 +824,7 @@ def generate_download_button(download_button,
 
 
 @app.callback(
-    [Output("pipeline-table", "data"),
-     Output("pipeline-table", "columns"),
-     Output("pipeline-table", "style_data_conditional"),
+    [Output("pipeline-table", "children"),
      Output("rerun-samples", "options"),
      Output("rerun-components", "options")],
     [Input("sample-store", "data"),
