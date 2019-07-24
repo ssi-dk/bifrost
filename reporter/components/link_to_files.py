@@ -31,18 +31,31 @@ def link_to_files(sample_store):
 
     if len(assemblies_errors):
         assemblies_html = [
-            html.H5(
-                "Use this script to generate a folder with all the assemblies linked in it."),
-            "A few errors occurred locating the contigs. If you need more info, " +
-            "please contact an admin.",
-            html.Pre("\n".join(assemblies_errors), className="error-pre"),
-            html.Pre(assemblies_script, className="folder-pre")
+            html.Div([
+                html.Div([
+                    html.H6("Assemblies",
+                            className="m-0 font-weight-bold text-primary"),
+                ], className="card-header py-3"),
+                html.Div([
+                    "A few errors occurred locating the contigs. If you need more info, " +
+                    "please contact an admin.",
+                    html.Pre("\n".join(assemblies_errors),
+                             className="error-pre"),
+                    html.Pre(assemblies_script, className="folder-pre")
+                ], className="card-body")
+            ], className="card mb-4 shadow")
         ]
     else:
         assemblies_html = [
-            html.H5(
-                "Use this script to generate a folder with all the assemblies linked in it."),
-            html.Pre(html.Code(assemblies_script), className="folder-pre")
+            html.Div([
+                html.Div([
+                    html.H6("Assemblies",
+                            className="m-0 font-weight-bold text-primary"),
+                ], className="card-header py-3"),
+                html.Div([
+                    html.Pre(assemblies_script, className="folder-pre")
+                ], className="card-body")
+            ], className="card mb-4 shadow")
         ]
 
     for sample in samples:
@@ -59,17 +72,29 @@ def link_to_files(sample_store):
             ))
     if len(reads_errors):
         reads_html = [
-            html.H5(
-                "Use this script to generate a folder with all the sample reads linked in it."),
-            "A few errors occurred locating the read paths. If you need more info, " +
-            "please contact an admin.",
-            html.Pre("\n".join(reads_errors), className="error-pre"),
-            html.Pre(reads_script, className="folder-pre")
+            html.Div([
+                html.Div([
+                    html.H6("Read files",
+                            className="m-0 font-weight-bold text-primary"),
+                ], className="card-header py-3"),
+                html.Div([
+                    "A few errors occurred locating the read paths. If you need more info, " +
+                    "please contact an admin.",
+                    html.Pre("\n".join(reads_errors), className="error-pre"),
+                    html.Pre(reads_script, className="folder-pre")
+                ], className="card-body")
+            ], className="card shadow")
         ]
     else:
         reads_html = [
-            html.H5(
-                "Use this script to generate a folder with all the sample reads linked in it."),
-            html.Pre(html.Code(reads_script), className="folder-pre")
+            html.Div([
+                html.Div([
+                    html.H6("Read files",
+                            className="m-0 font-weight-bold text-primary"),
+                ], className="card-header py-3"),
+                html.Div([
+                    html.Pre(reads_script, className="folder-pre")
+                ], className="card-body")
+            ], className="card shadow")
         ]
     return html.Div([html.Div(assemblies_html), html.Div(reads_html)])

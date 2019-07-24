@@ -459,12 +459,21 @@ def get_sample_QC_status(last_runs):
     return samples_runs_qc
 
 
-def get_last_runs(run, n):
+def get_last_runs(run, n, runtype):
     connection = get_connection()
     db = connection.get_database()
-    return list(db.runs.find({"name": {"$lte": run},
-                              }, #"type": "routine"},
-                             {"name": 1, "samples": 1}).sort([("_id", pymongo.DESCENDING)]).limit(n))
+    if run is not None:
+        if runtype is not None:
+            query = {"name": {"$lte": run}, "type": runtype}
+        else:
+            query = {"name": {"$lte": run}}
+    else:
+        if runtype is not None:
+            query = {"type": runtype}
+        else:
+            query = {}
+    return list(db.runs.find(query, {"name": 1, "samples": 1}).sort(
+        [("_id", pymongo.DESCENDING)]).limit(n))
 
 
 def get_sample(sample_id):

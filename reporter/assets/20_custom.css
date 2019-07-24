@@ -40,15 +40,6 @@ h6 .table-header {
   padding: 20px 15px 15px 15px;
 } 
 
-.card-header {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.card {
-  margin-bottom: 4rem;
-}
-
 /*
 
 .box-title {
@@ -260,20 +251,10 @@ body, .appcontainer {
     to   { opacity: 1; }
 } */
 
-#filter_toggle::after {
-    font-weight: 900;
-    content: '\f0b0';
-    font-family: 'Font Awesome 5 Free';
-    margin-right: .1rem;
-}
-
 #filter_toggle {
   width: 2.5rem;
   height: 2.5rem;
   text-align: center;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  background-color: rgba(0,0,0,.04);
 }
 
 .bifrost-table {
@@ -546,7 +527,7 @@ td.center {
   text-transform: uppercase;
 }
 
-#pipeline-table {
+#pipeline-table, #resequence-table {
   color: rgb(50, 50, 50);
 }
 

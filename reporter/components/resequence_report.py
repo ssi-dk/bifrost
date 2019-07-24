@@ -6,14 +6,14 @@ import components.import_data as import_data
 # def resequence_report():
 
 
-def resequence_report(run_name):
+def resequence_report(run_name=None):
     update_notice = (" SL: Supplying Lab, CF: Core Facility, CF(LF): "
                         "Core Facility (Library Fail). -: No data. "
                         "*: user submitted. "
                         "The table will update every 30s automatically.")
 
     last_runs = import_data.get_last_runs(
-        run_name, 30)  # Get last 12 runs
+        run_name, 12, runtype="routine")  # Get last 12 runs
     last_runs_names = [run["name"] for run in last_runs]
     prev_runs_dict = import_data.get_sample_QC_status(last_runs)
     header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
@@ -59,7 +59,7 @@ def resequence_report(run_name):
 
         if not sample_all_OKs:
             rows.append(html.Tr(row))
-    table = html.Table(rows, className="unset-width-table")
+    table = html.Table(rows, className="unset-width-table", id="resequence-table")
     return [
         html.P(update_notice),
         table

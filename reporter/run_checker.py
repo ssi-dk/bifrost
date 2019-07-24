@@ -199,10 +199,6 @@ def pipeline_report_data(sample_data):
         if pd.isnull(qc_val):
             qc_val = "N/A"
 
-        if name == '131964':
-            print(qc_val)
-            print(sample)
-
         if qc_val == "N/A" and (not pd.isnull(sample.get("reads.R1", np.NaN))):
             qc_val = "CF(LF)"
 

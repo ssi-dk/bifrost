@@ -193,62 +193,79 @@ def html_div_filter():
     return html.Div([
         html.Div(
             [
-                dbc.ButtonGroup([
-                    dbc.Button("Generate download link (1000 samples max.)",
-                            id="generate-download-button",
-                            color="secondary",
-                            n_clicks=0)
-                ]),
-                html.Div(id="tsv-download")
+                
             ]
         ),
         html.Div(
             [
                 html.Div([
-                    html.H5('Search Results'),
-                    html.Div([
-                        html.H6([
-                            html.Span("0", id="filter-sample-count"),
-                            ' samples loaded.',
-                            dbc.Button("Remove selected",
-                                       id="remove-selected",
-                                       n_clicks=0,
-                                       size="sm")
-                        ]),
-                    ]),
-                    dash_table.DataTable(
-                        data=[{}],
-                        style_table={
-                            'overflowX': 'scroll',
-                            'overflowY': 'scroll',
-                            'maxHeight': '480'
-                        },
-                        columns=global_vars.COLUMNS,
-                        style_cell={
-                            'width': '200px',
-                            'padding': '0 15px'
-                        },
-                        style_cell_conditional=[
-                            {
-                                "if": {"column_id": "ssi_stamper_failed_tests"},
-                                "textAlign": "left"
-                            }
+                    html.Div(
+                        [
+                            html.H6("List view",
+                                className="m-0 font-weight-bold text-primary"),
                         ],
-                        fixed_rows={'headers': True},
-                        row_selectable='multi',
-                        # filtering=True,  # Front end filtering
-                        # sorting=True,
-                        selected_rows=[],
-                        # style_data_conditional=style_data_conditional,
-                        # pagination_settings={
-                        #     'current_page': 0,
-                        #     'page_size': TABLE_PAGESIZE
-                        # },
-                        virtualization=False,
-                        page_action='none',
-                        id="datatable-ssi_stamper"
-                    )
-                ], id="ssi_stamper-report", className="bigtable"),
+                        className="card-header py-3"
+                    ),
+
+                    html.Div([
+                        html.Div([
+                            html.Div([
+                                html.Div([
+                                    dbc.Button("Remove selected",
+                                               id="remove-selected",
+                                               n_clicks=0,
+                                               size="sm")
+                                ]),
+                            ], className="col-auto mr-auto"),
+                            html.Div([
+
+                                html.Span(
+                                    "0", id="filter-sample-count"),
+                                ' samples loaded.',
+
+                                dbc.ButtonGroup([
+                                    dbc.Button(html.I(className="fas fa-download fa-sm fa-fw"),
+                                               id="generate-download-button",
+                                               color="secondary",
+                                               size="sm",
+                                               className="ml-2",
+                                               n_clicks=0)
+                                ]),
+                                html.Div(id="tsv-download")
+                            ], className="col-auto"),
+                        ], className="row mb-3"),
+                        dash_table.DataTable(
+                            data=[{}],
+                            style_table={
+                                'overflowX': 'scroll',
+                            },
+                            columns=global_vars.COLUMNS,
+                            style_cell={
+                                'width': '200px',
+                                'padding': '0 15px'
+                            },
+                            style_cell_conditional=[
+                                {
+                                    "if": {"column_id": "ssi_stamper_failed_tests"},
+                                    "textAlign": "left"
+                                }
+                            ],
+                            fixed_rows={'headers': True},
+                            row_selectable='multi',
+                            # filtering=True,  # Front end filtering
+                            # sorting=True,
+                            selected_rows=[],
+                            # style_data_conditional=style_data_conditional,
+                            # pagination_settings={
+                            #     'current_page': 0,
+                            #     'page_size': TABLE_PAGESIZE
+                            # },
+                            virtualization=False,
+                            page_action='none',
+                            id="datatable-ssi_stamper")
+                    ], className="card-body bigtable")
+
+                ], id="ssi_stamper-report", className="card shadow mb-4"),
                 # html.Div(
                 #     [
                 #         html.Div(

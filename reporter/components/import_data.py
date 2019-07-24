@@ -87,8 +87,9 @@ def get_species_QC_values(ncbi_species):
 def get_sample_QC_status(run):
     return mongo_interface.get_sample_QC_status(run)
 
-def get_last_runs(run, n):
-    return mongo_interface.get_last_runs(run, n)
+
+def get_last_runs(run=None, n=12, runtype=None):
+    return mongo_interface.get_last_runs(run, n, runtype)
 
 
 def post_stamps(stamplist):

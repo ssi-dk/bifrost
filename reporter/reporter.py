@@ -59,7 +59,7 @@ def samples_list(active):
             "href": "aggregate"
         },
         {
-            "icon": "fa-wrench",
+            "icon": "fa-traffic-light",
             "href": "pipeline-report"
         },
         {
@@ -71,14 +71,14 @@ def samples_list(active):
     for item in links:
         if active == item['href']:
             link_list.append(dcc.Link(
-                html.I(className="fas {} fa-sm".format(item['icon'])),
-                className="btn btn-outline-secondary btn-sm active",
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary active",
                 href="/" + item['href']
             ))
         else:
             link_list.append(dcc.Link(
-                html.I(className="fas {} fa-sm".format(item['icon'])),
-                className="btn btn-outline-secondary btn-sm",
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary",
                 href="/" + item['href']
             ))
     return link_list
@@ -133,16 +133,33 @@ app.layout = html.Div([
                     # html.Div("bifrost", className="sidebar-brand-text mx-3")
                 ],
                 className="sidebar-brand d-flex align-items-center justify-content-center",
-                href="http://example.com"
+                href="/"
             ),
             
             html.Hr(className="sidebar-divider"),
             html.Div("Browse data", className="sidebar-heading"),
 
-            html.Li(html.A("Samples", className="nav-link"),
+            html.Li(dcc.Link(
+                [
+                    html.I(className="fas fa-vial fa-fw"),
+                    html.Span("Samples")
+                ], className="nav-link", href="/"),
+                className="nav-item",
+                id="samples-nav"),
+            html.Li(html.A([
+                    html.I(className="fas fa-vials fa-fw"),
+                    html.Span("Collections (unavailable)")
+                    ], className="nav-link"),
                     className="nav-item"),
-            html.Li(html.A("Collections", className="nav-link"),
-                    className="nav-item"),
+            html.Hr(className="sidebar-divider"),
+            html.Div("Reports", className="sidebar-heading"),
+
+            html.Li(dcc.Link(
+                [
+                    html.I(className="fas fa-chart-line fa-fw"),
+                    html.Span("Resequence report")
+                ], className="nav-link", href="/resequence-report"),
+                className="nav-item", id="resequence-nav"),
             html.Hr(className="sidebar-divider"),
             html.Div(
                 html.Button(className="rounded-circle border-0",
@@ -159,151 +176,44 @@ app.layout = html.Div([
                 [
                     html.Ul([
                         html.Li(
-                            dcc.Link("Filter", href="/")
-                            , className="nav-item dropdown no-arrow mx-1"
+                            html.A("Documentation", href="https://ssi-dk.github.io/bifrost/"), className="nav-item dropdown no-arrow mx-1"
                         ),
                         html.Li(
-                            dcc.Link("Aggregate Data", href="/aggregate"), className="nav-item dropdown no-arrow mx-1"
-                        ),
-                        html.Li(
-                            dcc.Link("Per Sample Data", href="/sample-report"), className="nav-item dropdown no-arrow mx-1"
-                        ),
-                        html.Li(
-                            dcc.Link("Pipeline Status", href="/pipeline-report"), className="nav-item dropdown no-arrow mx-1"
-                        ),
-                        html.Li(
-                            dcc.Link("Resequence Report", href="/resequence-report"), className="nav-item dropdown no-arrow mx-1"
-                        ),
-                        html.Li(
-                            dcc.Link("Link to Files", href="/link-to-files"), className="nav-item dropdown no-arrow mx-1"
+                            html.A("Github", href="https://github.com/ssi-dk/bifrost"), className="nav-item dropdown no-arrow mx-1"
                         )
                     ],className="navbar-nav ml-auto")
                 ],
                 className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"),
             html.Main([
-                dbc.Collapse(
-                    [
-                        html_filter_drawer()
-                    ], id="filter_panel"
-                ),
-                html.Button(
-                    className="rounded-circle border-0 mx-auto d-block",
-                    id="filter_toggle"
-                ),
-                html.Div(
-                    samples_list('/'),
-                    className="btn-group shadow-sm my-4",
-                    id="selected-view-buttons"
-                ),
+                html.Div([
+                    dbc.Collapse(
+                        [
+                            html_filter_drawer()
+                        ], id="filter_panel"
+                    ),
+                    html.Div([
+                        html.Div([
+                            html.Div(
+                                samples_list('/'),
+                                className="btn-group shadow-sm",
+                                id="selected-view-buttons"
+                            ),
+                        ], className="col-4"),
+                        html.Div([
+                            html.Button(
+                                html.I(className="fas fa-filter fa-sm"),
+                                className="btn btn-outline-secondary shadow-sm mx-auto d-block",
+                                id="filter_toggle"
+                            ),
+                        ], className="col-4"),
+                    ], className="row mb-4"),
+                ], id="samples-panel", className="d-none"),
                 html.Div(id="selected-view"),
-                    # 
-                    # html.Div(id="placeholder1", style={"display": "none"}),
-                    # html.Div(id="placeholder2", style={"display": "none"}),
-                    # dash_scroll_up.DashScrollUp(
-                    #     id="input",
-                    #     label="UP",
-                    #     className="button button-primary no-print"
-                    # ),
-                    # html.Div(dash_table.DataTable(editable=False), style={"display": "none"}),
-                    # html.H1("bifrost report", style={"display": "none"}),
-                    # html.Img(
-                    #     src="/assets/img/report.png",
-                    #     className="main-logo"
-                    # ),
-                    # html.H2("Loading...", id="run-name", style={"display": "none"}),
-                    # html.Div([
-                    #     html.Div(id="report-link", className="u-pull-left"),
-                    #     html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
-                    # ], className=""),
-                    # html.Details([
-                    #     html.Summary("Latest changes..."),
-                    #     html.Div([
-                    #         html.P(
-                    #             "2019-03-19: Add Priority to run checker."),
-                    #         html.P(
-                    #             "2019-03-14: Add Supplying lab feedback option."),
-                    #         html.P(
-                    #             "2019-03-07: Add QC values to Run checker."),
-                    #         html.P(
-                    #             "2019-02-28: Add assemblatron links to sample folder generator. Only samples run from now on will have the right paths."),
-                    #         html.P("2019-02-13: Filters default to empty (but behavior is the same), bring back apply button to reduce performance issues, add current run to run selector and other performance fixes. Add Latest changes section."),
-                    #     ])
-                    # ]),
-                    # dcc.Store(id="data-store", storage_type="memory"),
-                    # 
-                    # html.Div(html_table([["run_name", ""]]), id="run-table"),
-                    # html_div_summary(),
-                    # html.Div(id="current-report"),
-                    # html.Div(
-                    #     [
-                    #         html.H5(
-                    #             [
-                    #                 "Generate sample folder script"
-                    #             ],
-                    #             className="box-title"
-                    #             ),
-                    #         html.Div(
-                    #             [
-                    #                 html.Div(
-                    #                     [
-                    #                         html.Button(
-                    #                             "Assembly/Sample folder",
-                    #                             id="generate-folder",
-                    #                             n_clicks_timestamp=0,
-                    #                             className="button-primary u-full-width"
-                    #                         )
-                    #                     ],
-                    #                     className="twelve columns"
-                    #                 ),
-                    #             ],
-                    #             className="row"
-                    #         ),
-                    #         html.Div(
-                    #             [
-                    #                 html.Div(
-                    #                     [
-                    #                         html.Div(id="sample-folder-div")
-                    #                     ],
-                    #                     className="twelve columns"
-                    #                 ),
-                    #             ],
-                    #             className="row",
-                    #             style={"marginBottom": "15px"}
-                    #         )
-                    #     ],
-                    #     className="border-box"
-                    # ),
-                    # These here avoid problems loading parameters when 
-                    # loading a view other than the filter with params.
-                # html.Button(id="apply-filter-button",
-                #             style={"display": "none"},
-                #             n_clicks=0),
-                # dcc.Dropdown(value="",
-                #                 multi=True,
-                #                 style={"display": "none"},
-                #                 id="run-list"),
-                # dcc.Dropdown(value="",
-                #                 multi=True,
-                #                 style={"display": "none"},
-                #                 id="species-list"),
-                # dcc.Input(value="provided",
-                #             style={"display": "none"},
-                #             id="form-species-source"),
-                # dcc.Dropdown(value="",
-                #                 style={"display": "none"},
-                #                 id="group-list"),
-                # dcc.Dropdown(value="",
-                #                 multi=True,
-                #                 style={"display": "none"},
-                #                 id="qc-list"),
-                # dcc.Input(value="",
-                #             style={"display": "none"},
-                            # id="samples-form"),
                 html.Footer([
                     "Created with 🔬 at SSI. Bacteria icons from ",
                     html.A("Flaticon", href="https://www.flaticon.com/"),
                     "."], className="footer container")
-            ], className="col",
+            ], className="container-fluid",
             role="main"),
         ]),
     ], id="content-wrapper", className="d-flex flex-column")
@@ -328,20 +238,28 @@ app.layout = html.Div([
     
 
 @app.callback(
-    Output("filter_panel", "is_open"),
+    [Output("filter_panel", "is_open"),
+     Output("filter_toggle", "className")],
     [Input("filter_toggle", "n_clicks")],
     [State("filter_panel", "is_open")]
 )
 def sidebar_toggle(n, is_open):
     if n:
-        return not is_open
-    return is_open
+        if is_open:
+            return [False, "btn btn-outline-secondary shadow-sm mx-auto d-block"]
+        else:
+            return [True, "btn btn-outline-secondary shadow-sm mx-auto d-block active"]
+    return [is_open, "btn btn-outline-secondary shadow-sm mx-auto d-block"]
+
 
 
 @app.callback(
     [Output("selected-view", "children"),
      Output("param-store", "data"),
-     Output("selected-view-buttons", "children")],
+     Output("selected-view-buttons", "children"),
+     Output("samples-panel", "className"),
+     Output("samples-nav", "className"),
+     Output("resequence-nav", "className")],
     [Input("url", "pathname")],
     [State("url", "search"),
      State("sample-store", "data")]
@@ -354,19 +272,30 @@ def update_run_name(pathname, params, sample_store):
         pathname = "/"
     path = pathname.split("/")
     view = None
+    samples_panel = ""
+    samples_nav = "nav-item"
+    resequence_nav = "nav-item"
     if path[1] == "":
         view = html_div_filter()
+        samples_nav += " active"
     elif path[1] == "sample-report":
         view = sample_report(sample_store)
+        samples_nav += " active"
     elif path[1] == "pipeline-report":
         view = pipeline_report(sample_store)
+        samples_nav += " active"
     elif path[1] == "resequence-report":
-        view = resequence_report("190430_NB551234_0128_N_WGS_220_AHH2GLAFXY")
+        samples_panel = "d-none"
+        resequence_nav += " active"
+        view = resequence_report()
     elif path[1] == "link-to-files":
         view = link_to_files(sample_store)
+        samples_nav += " active"
     else:
+        samples_panel = "d-none"
         view = "Not found"
-    return [view, params, samples_list(path[1])]
+    return [view, params, samples_list(path[1]), samples_panel,
+            samples_nav, resequence_nav]
 
 @app.callback(
     [Output("run-list", "options"),

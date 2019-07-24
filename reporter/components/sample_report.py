@@ -18,7 +18,6 @@ def sample_report(data):
     sample_n = len(data)
     
     return [
-        html.H2("Sample Report", className="mt-3"),
         html.Span("0", style={"display": "none"}, id="page-n"),
         
         html.Span(str(sample_n // SAMPLE_PAGESIZE),
@@ -28,21 +27,24 @@ def sample_report(data):
                 dbc.Col(
                     [
                         html.Button(
-                            "Previous page", id="prevpage", n_clicks_timestamp=0),
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ]
+                            "Previous page",
+                            id="prevpage",
+                            className="btn btn-outline-secondary",
+                            n_clicks_timestamp=0),
+                    ],
+                    width="auto"
                 ),
                 dbc.Col(
                     [
                         html.Button(
-                            "Next page", id="nextpage", n_clicks_timestamp=0),
-                    ]
+                            "Next page",
+                            id="nextpage",
+                            className="btn btn-outline-secondary",
+                            n_clicks_timestamp=0),
+                    ],
+                    width="auto"
                 ),
-            ]
+            ], justify="between"
         ),
 
         html.Div(id="sample-report"),
@@ -52,21 +54,24 @@ def sample_report(data):
                 dbc.Col(
                     [
                         html.Button(
-                            "Previous page", id="prevpage2", n_clicks_timestamp=0),
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        # html.H4("Page {} of {}".format(page_n + 1, max_page + 1))
-                    ]
+                            "Previous page",
+                            id="prevpage2",
+                            className="btn btn-outline-secondary",
+                            n_clicks_timestamp=0),
+                    ],
+                    width="auto"
                 ),
                 dbc.Col(
                     [
                         html.Button(
-                            "Next page", id="nextpage2", n_clicks_timestamp=0),
-                    ]
+                            "Next page",
+                            id="nextpage2",
+                            className="btn btn-outline-secondary",
+                            n_clicks_timestamp=0),
+                    ],
+                    width="auto"
                 ),
-            ]
+            ], justify="between"
         ), className="mb-4"),
     ]
 
@@ -96,28 +101,31 @@ def get_species_img(sample_data):
 
 def generate_sample_report(sample, n_sample):
     img = get_species_img(sample)
-    img_div = dbc.CardTitle([
-        html.Div(html.I(sample["properties.species"]),
-                 className="d-inline-block mr-4"),
-        img
-    ], className="float-right")
+    img_div = html.Div(
+            [
+                img
+            ],
+            className="d-inline")
     return (
         dbc.Card(
             [
                 dbc.CardHeader([
-                    html.A(id="sample-" + str(sample["name"])),
-                    dbc.CardTitle(
-                        sample["name"],
-                        className="d-inline-block float-left"
-                    ),
                     img_div,
+                    html.Div([
+                        html.A(id="sample-" + str(sample["name"])),
+                        html.H6(
+                            sample["name"],
+                            className="d-inline font-weight-bold text-primary mx-2"),
+                        html.I(sample["properties.species"])
+                    ], className="d-inline-block py-3"),
+                    
                 ]),
                 dbc.CardBody([
                     html_sample_tables(sample),
                     admin.sample_radio_feedback(sample, n_sample)
                 ])
                 
-            ]
+            ], className="shadow"
         )
     )
 
@@ -428,21 +436,21 @@ def html_sample_tables(sample_data, **kwargs):
                     html.Div([
                         html.H6("ResFinder", className="table-header"),
                         resfinder_div
-                    ], className="six columns"),
+                    ], className="col-12 col-xl-6"),
                     html.Div([
                         html.H6("VirulenceFinder", className="table-header"),
                         virulencefinder_div
-                    ], className="six columns")
+                    ], className="col-12 col-xl-6")
                 ], className="row"),
                 html.Div([
                     html.Div([
                         html.H6("PlasmidFinder", className="table-header"),
                         plasmidfinder_div
-                    ], className="six columns"),
+                    ], className="col-12 col-xl-6"),
                     html.Div([
                         html.H6("MLST ({})".format(mlst_db), className="table-header"),
                         mlst_div
-                    ], className="six columns")
+                    ], className="col-12 col-xl-6")
                 ], className="row")
             ])
         ])
