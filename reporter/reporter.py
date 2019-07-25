@@ -32,6 +32,7 @@ from components.images import list_of_images, static_image_route, image_director
 import components.global_vars as global_vars
 import components.admin as admin
 from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
+from components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
 from components.resequence_report import resequence_report
 from components.link_to_files import link_to_files
 
@@ -280,6 +281,9 @@ def update_run_name(pathname, params, sample_store):
         samples_nav += " active"
     elif path[1] == "sample-report":
         view = sample_report(sample_store)
+        samples_nav += " active"
+    elif path[1] == "aggregate":
+        view = aggregate_report(sample_store)
         samples_nav += " active"
     elif path[1] == "pipeline-report":
         view = pipeline_report(sample_store)
@@ -564,7 +568,8 @@ def update_selected_samples(n_clicks, param_store, deleted_samples,
             include_s_c=False,
             projection={"name": 1})
 
-        samples["_id"] = samples["_id"].astype(str)
+        if "_id" in samples:
+            samples["_id"] = samples["_id"].astype(str)
         samples = samples.to_dict('records')
     if deleted_samples:
         samples = [s for s in samples if s["_id"] not in deleted_samples]
@@ -709,47 +714,14 @@ def generate_download_button(download_button,
 
 
 
-# @app.callback(
-#     Output("plot-species-div", "children"),
-#     [Input('datatable-ssi_stamper', 'derived_virtual_data'),
-#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows'),
-#      Input("plot-species-source", "value")],
-#     [State("plot-species", "value")]
-# )
-# def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
-#     plot_df = pd.DataFrame(rows)
-#     if selected_rows is not None and len(selected_rows) > 0:
-#         plot_df = plot_df.iloc[selected_rows]
-#     # part of the HACK, replace with "properties.detected_species" when issue is solved
-#     species_col = "properties_detected_species"
-
-#     if plot_species == "provided":
-#         species_col = "properties_provided_species"
-#     elif plot_species == "detected":
-#         species_col = "properties_detected_species"
-#     # end HACK
-#     if species_col not in plot_df or plot_df[species_col].unique() is None:
-#         return dcc.Dropdown(
-#             id="plot-species"
-#         )
-#     plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
-#     species_list = plot_df[species_col].unique()
-#     species_list = ["All species",] + list(species_list)
-#     if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
-#         if species_list[0] == "Not classified" and len(species_list) > 1:
-#             selected_species = species_list[1]
-#         else:
-#             selected_species = species_list[0]
-#     species_list_options = [
-#         {
-#             "label": species,
-#             "value": species
-#         } for species in species_list]
-#     return dcc.Dropdown(
-#         id="plot-species",
-#         options=species_list_options,
-#         value=selected_species
-#     )
+@app.callback(
+    Output("plot-species-div", "children"),
+    [Input("sample-store", "data"),
+     Input("plot-species-source", "value")],
+    [State("plot-species", "value")]
+)
+def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
+    return aggregate_species_dropdown(sample_store, plot_species, selected_species)
 
 
 @app.callback(
@@ -773,231 +745,15 @@ def pipeline_report_data_f(sample_store, ignore):
 #     return {"points":[]}
 
 
-# @app.callback(
-#     Output("summary-plot", "figure"),
-#     [Input("plot-species", "value"),
-#      Input('datatable-ssi_stamper', 'derived_virtual_data'),
-#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')],
-#     [State("plot-species-source", "value")]
-# )
-# def update_coverage_figure(selected_species, rows, selected_rows, plot_species_source):
-#     if rows == [{}] or rows == [] or rows == None:
-#         return {"data":[]}
-#     plot_values = global_vars.plot_values
-#     traces = []
-#     trace_ranges = []
-
-#      # part of the HACK, replace with "properties.detected_species" when issue is solved
-#     species_col = "properties_detected_species"
-#     if plot_species_source == "provided":
-#         species_col = "properties_provided_species"
-#     elif plot_species_source == "detected":
-#         species_col = "properties_detected_species"
-#     # end HACK
-
-#     plot_df = pd.DataFrame(rows)
-#     if selected_rows is not None and len(selected_rows) > 0:
-#         plot_df = plot_df.iloc[selected_rows]
-#     plot_df.loc[pd.isnull(plot_df[species_col]),
-#                 species_col] = "Not classified"
-
-#     df_ids = plot_df["_id"]
-#     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
-#         selected_species == "All species"):
-#         for plot_value in plot_values:
-#             plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
-#             if selected_species == "All species":
-#                 species_df = plot_df
-#             else:
-#                 species_df = plot_df[plot_df[species_col] == selected_species]
-#             species_df[plot_id] = pd.to_numeric(species_df[plot_id], errors="coerce")
-#             if (plot_id in species_df.columns):
-#                 data_range = plot_value["limits"][1] - plot_value["limits"][0]
-#                 low_limit = min(float(species_df[plot_id].min()), plot_value["limits"][0])
-#                 if low_limit == float(species_df[plot_id].min()):
-#                     low_limit -= data_range * 0.1
-#                 high_limit = max(float(species_df[plot_id].max()), plot_value["limits"][1])
-#                 if high_limit == float(species_df[plot_id].max()):
-#                     high_limit += data_range*0.1
-#                 trace_ranges.append([low_limit, high_limit])
-#                 traces.append(
-#                     go.Box(
-#                         x=species_df.loc[:, plot_id],
-#                         text=species_df["name"],
-#                         marker=dict(
-#                             size=4
-#                         ),
-                        
-#                         boxpoints="all",
-#                         jitter=0.3,
-#                         pointpos=-1.6,
-#                         selectedpoints=list(
-#                             range(len(species_df.index))),
-#                         name=plot_value["name"],
-#                         showlegend=False,
-#                         customdata=species_df["_id"]
-#                     )
-#                 )
-#     fig = tools.make_subplots(rows=7, cols=1, print_grid=False)
-#     fig["layout"].update(
-#         hovermode="closest",
-#         title=selected_species,
-#         height=750,
-#         margin=go.layout.Margin(
-#             l=175,
-#             r=50,
-#             b=25,
-#             t=50
-#         ),
-#     )
-#     try:
-#         fig.append_trace(traces[0], 1, 1)
-#         fig.append_trace(traces[1], 1, 1)
-#         fig.append_trace(traces[2], 2, 1)
-#         fig.append_trace(traces[3], 3, 1)
-#         fig.append_trace(traces[4], 4, 1)
-#         fig.append_trace(traces[5], 5, 1)
-#         fig.append_trace(traces[6], 6, 1)
-#         fig.append_trace(traces[7], 7, 1)
-        
-#         fig["layout"]["xaxis"].update(range=trace_ranges[0])
-#         fig["layout"]["xaxis2"].update(range=trace_ranges[2])
-#         fig["layout"]["xaxis3"].update(range=trace_ranges[3])
-#         fig["layout"]["xaxis4"].update(range=trace_ranges[4])
-#         fig["layout"]["xaxis5"].update(range=trace_ranges[5])
-#         fig["layout"]["xaxis6"].update(range=trace_ranges[6])
-#         fig["layout"]["xaxis7"].update(range=trace_ranges[7])
-#     except IndexError:
-#         pass # It won't draw al ranges/traces because they don't exist.
-
-
-#     fig["layout"]["yaxis"].update(domain=(0.78,1))
-#     fig["layout"]["yaxis2"].update(domain=(0.655, 0.75))
-#     fig["layout"]["yaxis3"].update(domain=(0.53, 0.625))
-#     fig["layout"]["yaxis4"].update(domain=(0.415, 0.5))
-#     fig["layout"]["yaxis5"].update(domain=(0.28, 0.375))
-#     fig["layout"]["yaxis6"].update(domain=(0.155, 0.25))
-#     fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
-
-#     species_size = import_data.get_species_QC_values(selected_species)
-#     if species_size is None:
-#         species_size = import_data.get_species_QC_values("default")
-
-#     annotations = [
-#         {
-#             "x": species_size["min_length"],
-#             "y": 0,
-#             "xref": "x",
-#             "yref": "y",
-#             "text": "min",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {
-#             "x": species_size["min_length"],
-#             "y": 1,
-#             "xref": "x",
-#             "yref": "y",
-#             "text": "min",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {
-#             "x": species_size["max_length"],
-#             "y": 0,
-#             "xref": "x",
-#             "yref": "y",
-#             "text": "max",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {
-#             "x": species_size["max_length"],
-#             "y": 1,
-#             "xref": "x",
-#             "yref": "y",
-#             "text": "max",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {
-#             "x": 250000,
-#             "y": 0,
-#             "xref": "x2",
-#             "yref": "y2",
-#             "text": "max",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         { # Cov
-#             "x": 10,
-#             "y": 0,
-#             "xref": "x3",
-#             "yref": "y3",
-#             "text": "fail",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         { # Cov
-#             "x": 25,
-#             "y": 0,
-#             "xref": "x3",
-#             "yref": "y3",
-#             "text": "low",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         { # Cov
-#             "x": 50,
-#             "y": 0,
-#             "xref": "x3",
-#             "yref": "y3",
-#             "text": "warn",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         { # Num reads
-#             "x": 10000,
-#             "y": 0,
-#             "xref": "x5",
-#             "yref": "y5",
-#             "text": "min",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {  # Main+uncl
-#             "x": 0.95,
-#             "y": 0,
-#             "xref": "x6",
-#             "yref": "y6",
-#             "text": "min",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#         {  # Uncl
-#             "x": 0.2,
-#             "y": 0,
-#             "xref": "x7",
-#             "yref": "y7",
-#             "text": "max",
-#             "arrowhead": 0,
-#             "ax": 0,
-#             "ay": 40
-#         },
-#     ]
-
-#     fig["layout"].update(annotations=annotations)
-#     return fig
+@app.callback(
+    [Output("summary-plot", "figure"),
+     Output("mlst-plot", "figure")],
+    [Input("plot-species", "value"),
+     Input("sample-store", "data")],
+    [State("plot-species-source", "value")]
+)
+def update_aggregate_fig_f(selected_species, samples, plot_species_source):
+    return update_aggregate_fig(selected_species, samples, plot_species_source)
 
 
 def create_stamp(value, user):

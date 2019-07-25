@@ -1,19 +1,19 @@
 import math
 
 def assemblatron_diff(res):
-    if "assemblatron.bin_length_at_1x" in res and "assemblatron.bin_length_at_10x" in res:
-        res["assemblatron.bin_length_1x_10x_diff"] = res["assemblatron.bin_length_at_1x"] - \
-            res["assemblatron.bin_length_at_10x"]
+    if "sample_components.assemblatron.summary.bin_length_at_1x" in res and "sample_components.assemblatron.summary.bin_length_at_10x" in res:
+        res["sample_components.assemblatron.summary.bin_length_1x_10x_diff"] = res["sample_components.assemblatron.summary.bin_length_at_1x"] - \
+            res["sample_components.assemblatron.summary.bin_length_at_10x"]
     else:
-        res["assemblatron.bin_length_1x_10x_diff"] = math.nan
+        res["sample_components.assemblatron.summary.bin_length_1x_10x_diff"] = math.nan
     return res
 
 def assemblatron_contig_diff(res):
-    if "assemblatron.bin_contigs_at_1x" in res and "assemblatron.bin_contigs_at_10x" in res:
-        res["assemblatron.bin_contigs_1x_10x_diff"] = res["assemblatron.bin_contigs_at_1x"] - \
-            res["assemblatron.bin_contigs_at_10x"]
+    if "sample_components.assemblatron.summary.bin_contigs_at_1x" in res and "sample_components.assemblatron.summary.bin_contigs_at_10x" in res:
+        res["sample_components.assemblatron.summary.bin_contigs_1x_10x_diff"] = res["sample_components.assemblatron.summary.bin_contigs_at_1x"] - \
+            res["sample_components.assemblatron.summary.bin_contigs_at_10x"]
     else:
-        res["assemblatron.bin_contigs_1x_10x_diff"] = math.nan
+        res["sample_components.assemblatron.summary.bin_contigs_1x_10x_diff"] = math.nan
     return res
 
 FUNCS = [assemblatron_diff, assemblatron_contig_diff]
@@ -39,7 +39,7 @@ COLUMNS = [
     {
         "name": "QC_action",
         "id": "stamps.ssi_stamper.value",
-        # "id": "ssi_stamper.assemblatron:action"
+        # "id": "sample_components.ssi_stamper.summary.assemblatron:action"
     },
     {
         "name": "Comments",
@@ -114,43 +114,43 @@ COLUMNS = [
 plot_values = [
     {
         "name": "Genome_size_1x",
-        "id": "assemblatron.bin_length_at_1x",
+        "id": "sample_components.assemblatron.summary.bin_length_at_1x",
         "limits": [1500000, 6000000]
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_10x",
+        "id": "sample_components.assemblatron.summary.bin_length_at_10x",
         "limits": [1500000, 6000000],
         "xaxis": "x"
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "ssi_stamper.assemblatron:1x10xsizediff_text",
+        "id": "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff_text",
         "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",
-        "id": "assemblatron.bin_coverage_at_1x",
+        "id": "sample_components.assemblatron.summary.bin_coverage_at_1x",
         "limits": [0, 200]
     },
     {
         "name": "Contig_num_1x",
-        "id": "assemblatron.bin_contigs_at_1x",
+        "id": "sample_components.assemblatron.summary.bin_contigs_at_1x",
         "limits": [0, 700]
     },
     {
         "name": "Num_reads",
-        "id": "assemblatron.filtered_reads_num",
+        "id": "sample_components.assemblatron.summary.filtered_reads_num",
         "limits": [1000, 8000000]
     },
     {
         "name": "Main_sp_plus_unclassified",
-        "id": "ssi_stamper.whats_my_species:minspecies_text",
+        "id": "sample_components.ssi_stamper.summary.whats_my_species:minspecies_text",
         "limits": [0.75, 1]
     },
     {
         "name": "Unclassified_reads",
-        "id": "whats_my_species.percent_unclassified",
+        "id": "sample_components.whats_my_species.summary.percent_unclassified",
         "limits": [0, 0.25]
     }
 ]
@@ -194,5 +194,5 @@ finder_columns = [
     }
 ]
 
-ROUND_COLUMNS = ["whats_my_species.percent_unclassified",
-                 "assemblatron.bin_coverage_at_1x"]
+ROUND_COLUMNS = ["sample_components.whats_my_species.summary.percent_unclassified",
+                 "sample_components.assemblatron.summary.bin_coverage_at_1x"]

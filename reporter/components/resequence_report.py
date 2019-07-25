@@ -60,7 +60,13 @@ def resequence_report(run_name=None):
         if not sample_all_OKs:
             rows.append(html.Tr(row))
     table = html.Table(rows, className="unset-width-table", id="resequence-table")
-    return [
-        html.P(update_notice),
-        table
-    ]
+    return html.Div([
+        html.Div([
+            html.H6("Resequence Report",
+                    className="m-0 font-weight-bold text-primary")
+        ], className="card-header py-3"),
+        html.Div([
+            html.P(update_notice),
+            table
+        ], className="card-body")
+    ], className="card shadow mb-4")

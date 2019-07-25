@@ -226,11 +226,13 @@ def filter(run_names=None,
     query = []
     sample_set = set()
     if sample_names is not None and len(sample_names) != 0:
-        sample_names_with_re = []
+        sample_names_query = []
         for s_n in sample_names:
             if s_n.startswith("/") and s_n.endswith("/"):
-                sample_names_with_re.append(re.compile(s_n[1:-1]))
-        query.append({"name": {"$in": sample_names_with_re}})
+                sample_names_query.append(re.compile(s_n[1:-1]))
+            else:
+                sample_names_query.append(s_n)
+        query.append({"name": {"$in": sample_names_query}})
     if samples is not None and len(samples) != 0:
         sample_set = {ObjectId(id) for id in samples}
         query.append({"_id": {"$in": list(sample_set)}})
