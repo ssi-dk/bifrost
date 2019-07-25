@@ -725,7 +725,9 @@ def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
 
 
 @app.callback(
-    [Output("pipeline-table", "children"),
+    [Output("pipeline-table", "data"),
+     Output("pipeline-table", "columns"),
+     Output("pipeline-table", "style_data_conditional"),
      Output("rerun-samples", "options"),
      Output("rerun-components", "options")],
     [Input("sample-store", "data"),
