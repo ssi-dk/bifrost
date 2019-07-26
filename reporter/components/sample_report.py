@@ -117,7 +117,7 @@ def generate_sample_report(sample, n_sample):
                             sample["name"],
                             className="d-inline font-weight-bold text-primary mx-2"),
                         html.I(sample["properties.species"])
-                    ], className="d-inline-block py-3"),
+                    ], className="d-inline-block"),
                     
                 ]),
                 dbc.CardBody([
@@ -125,7 +125,7 @@ def generate_sample_report(sample, n_sample):
                     admin.sample_radio_feedback(sample, n_sample)
                 ])
                 
-            ], className="shadow"
+            ], className="shadow mb-4"
         )
     )
 

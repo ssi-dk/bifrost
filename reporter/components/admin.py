@@ -41,17 +41,18 @@ def sample_radio_feedback(sample, n_sample):
                        style={'display': 'inline-block'}),
             dcc.RadioItems(
                 options=[
-                    {'label': 'Accept', 'value': 'A_{}'.format(
+                    {'label': ' Accept', 'value': 'A_{}'.format(
                                         sample["_id"])},
-                    {'label': 'Resequence', 'value': 'R_{}'.format(
+                    {'label': ' Resequence', 'value': 'R_{}'.format(
                         sample["_id"])},
-                    {'label': 'Other', 'value': 'O_{}'.format(
+                    {'label': ' Other', 'value': 'O_{}'.format(
                         sample["_id"])},
-                    {'label': 'No action', 'value': 'noaction'}
+                    {'label': ' No action', 'value': 'noaction'}
                 ],
                 value='noaction',
                 id="sample-radio-{}".format(n_sample),
-                labelStyle={'display': 'inline-block'},
+                labelStyle={
+                    'margin': '0 0.5rem 0.5rem 0'},
                 style={'display': 'inline-block'}),
         ]))
     else:

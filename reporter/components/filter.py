@@ -96,7 +96,7 @@ def html_filter_drawer():
                                                                     ],
                                                                     value="provided",
                                                                     labelStyle={
-                                                                        'display': 'inline-block'},
+                                                                        'margin': '0 0 0.5rem 0.5rem'},
                                                                     id="form-species-source",
                                                                     style={
                                                                         "display": "inline-block"}
@@ -211,10 +211,10 @@ def html_div_filter():
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    dbc.Button("Remove selected",
-                                               id="remove-selected",
-                                               n_clicks=0,
-                                               size="sm")
+                                    # dbc.Button("Remove selected",
+                                    #            id="remove-selected",
+                                    #            n_clicks=0,
+                                    #            size="sm")
                                 ]),
                             ], className="col-auto mr-auto"),
                             html.Div([
@@ -251,7 +251,7 @@ def html_div_filter():
                                 }
                             ],
                             fixed_rows={'headers': True},
-                            row_selectable='multi',
+                            # row_selectable='multi',
                             # filtering=True,  # Front end filtering
                             # sorting=True,
                             selected_rows=[],

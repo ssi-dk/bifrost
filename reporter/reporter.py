@@ -547,7 +547,6 @@ def update_selected_samples(n_clicks, param_store,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names, prev_sample_store):
-    print('sample-store', dash.callback_context.triggered)
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
     else:
@@ -769,8 +768,7 @@ def pipeline_report_data_f(sample_store, ignore):
 )
 # @cache.memoize(timeout=cache_timeout)  # in seconds
 def update_aggregate_fig_f(selected_species, samples, plot_species_source):
-    ctx = dash.callback_context
-    return update_aggregate_fig(selected_species, samples, plot_species_source, ctx)
+    return update_aggregate_fig(selected_species, samples, plot_species_source)
 
 
 def create_stamp(value, user):

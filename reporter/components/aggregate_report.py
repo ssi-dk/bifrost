@@ -24,30 +24,25 @@ def aggregate_report(data):
                 html.Div([
                     html.Div(
                         [
-                            html.Div(
-                                [
-                                    html.Label("Plot species",
-                                               htmlFor="plot-species"),
-                                    dcc.RadioItems(
-                                        options=[
-                                            {"label": "Provided",
-                                             "value": "provided"},
-                                            {"label": "Detected",
-                                             "value": "detected"},
-                                        ],
-                                        value="provided",
-                                        labelStyle={
-                                            'display': 'inline-block'},
-                                        id="plot-species-source"
-                                    ),
-                                    html.Div(dcc.Dropdown(
-                                        id="plot-species"
-                                    ), id="plot-species-div")
+                            html.Label("Plot species",
+                                        htmlFor="plot-species"),
+                            dcc.RadioItems(
+                                options=[
+                                    {"label": " Provided",
+                                        "value": "provided"},
+                                    {"label": " Detected",
+                                        "value": "detected"},
                                 ],
-                                className="twelve columns"
-                            )
+                                value="provided",
+                                labelStyle={
+                                    'margin': '0 0.5rem 0.5rem 0'},
+                                id="plot-species-source"
+                            ),
+                            html.Div(dcc.Dropdown(
+                                id="plot-species"
+                            ), id="plot-species-div")
                         ],
-                        className="row"
+                        className=""
                     ),
 
                     dcc.Graph(id="summary-plot"),
@@ -104,8 +99,7 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
         } for species in species_list]
     return [selected_species, species_list_options]
 
-def update_aggregate_fig(selected_species, sample_store, plot_species_source, ctx):
-    print("aggregate", ctx.triggered)
+def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     if len(sample_store) == 0:
         return {"data": []}, {"data": []}
     plot_values = global_vars.plot_values
@@ -119,11 +113,9 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source, ct
         species_col = "properties.detected_species"
 
     sample_ids = [s["_id"] for s in sample_store]
-    print("query start", len(sample_ids), selected_species)
     plot_df = import_data.filter_all(
         sample_ids=sample_ids,
         include_s_c=True)
-    print("query end", len(plot_df))
 
 
     plot_df.loc[pd.isnull(plot_df[species_col]),
@@ -372,11 +364,12 @@ def generate_sunburst(plot_df):
         labels.append(short_species(species))
         parents.append("samples")
         values.append(len(species_df))
-        unique_mlst = species_df["ariba_mlst_type"].unique()
-        for mlst in unique_mlst:
-            labels.append(mlst)
-            parents.append(short_species(species))
-            values.append(len(species_df[species_df.ariba_mlst_type == mlst]))
+        if "ariba_mlst_type" in species_df.columns:
+            unique_mlst = species_df["ariba_mlst_type"].unique()
+            for mlst in unique_mlst:
+                labels.append(mlst)
+                parents.append(short_species(species))
+                values.append(len(species_df[species_df.ariba_mlst_type == mlst]))
 
     trace = go.Sunburst(
         labels=labels,
