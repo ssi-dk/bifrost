@@ -88,9 +88,7 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
         species_col = "properties.detected_species"
 
     if species_col not in plot_df or plot_df[species_col].unique() is None:
-        return dcc.Dropdown(
-            id="plot-species"
-        )
+        return [None,[]]
     plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
     species_list = plot_df[species_col].unique()
     species_list = ["All species",] + list(species_list)
@@ -104,13 +102,10 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
             "label": species,
             "value": species
         } for species in species_list]
-    return dcc.Dropdown(
-        id="plot-species",
-        options=species_list_options,
-        value=selected_species
-    )
+    return [selected_species, species_list_options]
 
-def update_aggregate_fig(selected_species, sample_store, plot_species_source):
+def update_aggregate_fig(selected_species, sample_store, plot_species_source, ctx):
+    print("aggregate", ctx.triggered)
     if len(sample_store) == 0:
         return {"data": []}, {"data": []}
     plot_values = global_vars.plot_values
@@ -124,10 +119,12 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
         species_col = "properties.detected_species"
 
     sample_ids = [s["_id"] for s in sample_store]
-
+    print("query start", len(sample_ids), selected_species)
     plot_df = import_data.filter_all(
         sample_ids=sample_ids,
         include_s_c=True)
+    print("query end", len(plot_df))
+
 
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
@@ -385,6 +382,7 @@ def generate_sunburst(plot_df):
         labels=labels,
         parents=parents,
         values=values,
+        branchvalues="total",
         outsidetextfont={"size": 20, "color": "#377eb8"},
         marker={"line": {"width": 2}},
     )

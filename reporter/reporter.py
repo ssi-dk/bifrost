@@ -4,6 +4,7 @@ import sys
 import urllib.parse as urlparse
 import datetime
 from io import StringIO
+from flask_caching import Cache
 
 import dash
 import dash_core_components as dcc
@@ -107,6 +108,11 @@ app = dash.Dash(__name__,
 )
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': keys.cache_location
+})
+cache_timeout = 60
 
 if hasattr(keys, "pass_protected") and keys.pass_protected:
     dash_auth.BasicAuth(
@@ -253,21 +259,27 @@ def sidebar_toggle(n, is_open):
     return [is_open, "btn btn-outline-secondary shadow-sm mx-auto d-block"]
 
 
+@app.callback(
+    Output("param-store", "data"),
+    [Input("url", "search")]
+)
+def update_run_name(params):
+    if params is None:
+        raise dash.exceptions.PreventUpdate("Initial repeated params call")
+    pparse = urlparse.urlparse(params)
+    params = urlparse.parse_qs(pparse.query)
+    return params
 
 @app.callback(
     [Output("selected-view", "children"),
-     Output("param-store", "data"),
      Output("selected-view-buttons", "children"),
      Output("samples-panel", "className"),
      Output("samples-nav", "className"),
      Output("resequence-nav", "className")],
     [Input("url", "pathname")],
-    [State("url", "search"),
-     State("sample-store", "data")]
+    [State("sample-store", "data")]
 )
-def update_run_name(pathname, params, sample_store):
-    pparse = urlparse.urlparse(params)
-    params = urlparse.parse_qs(pparse.query)
+def update_run_name(pathname, sample_store):
 
     if pathname is None or pathname == "/":
         pathname = "/"
@@ -298,7 +310,7 @@ def update_run_name(pathname, params, sample_store):
     else:
         samples_panel = "d-none"
         view = "Not found"
-    return [view, params, samples_list(path[1]), samples_panel,
+    return [view, samples_list(path[1]), samples_panel,
             samples_nav, resequence_nav]
 
 @app.callback(
@@ -521,8 +533,7 @@ def update_report(lasso_selected):
 @app.callback(
     Output("sample-store", "data"),
     [Input("apply-filter-button", "n_clicks"),
-     Input("param-store", "data"),
-     Input("removed-samples-store", "data")],
+     Input("param-store", "data")],
     [State("run-list", "value"),
      State("species-list", "value"),
      State("form-species-source", "value"),
@@ -532,11 +543,11 @@ def update_report(lasso_selected):
      State("sample-store", "data")
      ]
 )
-def update_selected_samples(n_clicks, param_store, deleted_samples,
+def update_selected_samples(n_clicks, param_store,
                             run_names, species_list,
                             species_source, group_list, qc_list,
                             sample_names, prev_sample_store):
-
+    print('sample-store', dash.callback_context.triggered)
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
     else:
@@ -571,28 +582,28 @@ def update_selected_samples(n_clicks, param_store, deleted_samples,
         if "_id" in samples:
             samples["_id"] = samples["_id"].astype(str)
         samples = samples.to_dict('records')
-    if deleted_samples:
-        samples = [s for s in samples if s["_id"] not in deleted_samples]
+    # if deleted_samples:
+    #     samples = [s for s in samples if s["_id"] not in deleted_samples]
     
     return samples
 
 
-@app.callback(
-    [Output("removed-samples-store", "data"),
-     Output("datatable-ssi_stamper", "selected_rows")],
-    [Input("remove-selected", "n_clicks")],
-    [State("datatable-ssi_stamper", "derived_virtual_selected_rows"),
-     State("datatable-ssi_stamper", "derived_virtual_data"),
-     State("removed-samples-store", "data")]
-)
-def update_deleted_sample(n_clicks, selected, data, prev_deleted):
-    if not prev_deleted:
-        prev_deleted = ""
-    if not n_clicks or not selected:
-        raise dash.exceptions.PreventUpdate
-    else:
-        deleted = [str(data[i]["_id"]) for i in selected]
-        return [prev_deleted + "," + ",".join(deleted), []]
+# @app.callback(
+#     [Output("removed-samples-store", "data"),
+#      Output("datatable-ssi_stamper", "selected_rows")],
+#     [Input("remove-selected", "n_clicks")],
+#     [State("datatable-ssi_stamper", "derived_virtual_selected_rows"),
+#      State("datatable-ssi_stamper", "derived_virtual_data"),
+#      State("removed-samples-store", "data")]
+# )
+# def update_deleted_sample(n_clicks, selected, data, prev_deleted):
+#     if not prev_deleted:
+#         prev_deleted = ""
+#     if not n_clicks or not selected:
+#         raise dash.exceptions.PreventUpdate
+#     else:
+#         deleted = [str(data[i]["_id"]) for i in selected]
+#         return [prev_deleted + "," + ",".join(deleted), []]
 
 @app.callback(
     [Output("filter-sample-count", "children"),
@@ -715,12 +726,14 @@ def generate_download_button(download_button,
 
 
 @app.callback(
-    Output("plot-species-div", "children"),
+    [Output("plot-species", "value"),
+     Output("plot-species", "options")],
     [Input("sample-store", "data"),
      Input("plot-species-source", "value")],
     [State("plot-species", "value")]
 )
 def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
+    print('species value', dash.callback_context.triggered)
     return aggregate_species_dropdown(sample_store, plot_species, selected_species)
 
 
@@ -750,12 +763,14 @@ def pipeline_report_data_f(sample_store, ignore):
 @app.callback(
     [Output("summary-plot", "figure"),
      Output("mlst-plot", "figure")],
-    [Input("plot-species", "value"),
-     Input("sample-store", "data")],
-    [State("plot-species-source", "value")]
+    [Input("plot-species", "value")],
+    [State("sample-store", "data"),
+    State("plot-species-source", "value")]
 )
+# @cache.memoize(timeout=cache_timeout)  # in seconds
 def update_aggregate_fig_f(selected_species, samples, plot_species_source):
-    return update_aggregate_fig(selected_species, samples, plot_species_source)
+    ctx = dash.callback_context
+    return update_aggregate_fig(selected_species, samples, plot_species_source, ctx)
 
 
 def create_stamp(value, user):

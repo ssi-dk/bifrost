@@ -260,7 +260,8 @@ def pipeline_report_data(sample_data):
         qc_val = sample.get("stamps.ssi_stamper.value", "N/A")
 
         expert_check = False
-        if sample.get('stamps.supplying_lab_check.value') is not None:
+        expert_stamp = sample.get('stamps.supplying_lab_check.value')
+        if expert_stamp is not None and not pd.isna(expert_stamp):
             qc_val = sample.get('stamps.supplying_lab_check.value')
             expert_check = True
 
@@ -279,7 +280,10 @@ def pipeline_report_data(sample_data):
             qc_val = "OK"
 
         if expert_check:
-            qc_val += "*"
+            try:
+                qc_val += "*"
+            except:
+                print(sample)
 
         row["qc_val"] = qc_val
 
