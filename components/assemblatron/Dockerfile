@@ -24,7 +24,7 @@ RUN \
     pip install bifrostlib==1.2; \
     pip install quast==5.0.2; \
     conda install wget==1.20.1; \
-    mkdir bifrost_resources; \
+    mkdir bifrost_resources;
 RUN \
     cd /bifrost_resources; \
     wget https://raw.githubusercontent.com/ssi-dk/bifrost/dev/setup/adapters.fasta;
