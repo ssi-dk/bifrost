@@ -9,15 +9,20 @@ description: >
   are first filtered using bbduk. The species is then set for the sample from this.
 #---------------------------------------------------------------------------------------------------
 
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: "kimleeng/bifrost__whats_my_species:1.0"
+#---------------------------------------------------------------------------------------------------
+
 #-Options-------------------------------------------------------------------------------------------
 # None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path
-adapters_fasta: "resources/adapters.fasta"
-kraken_database: "resources/minikraken_20171019_8GB/"
-kraken_kmer_dist: "resources/minikraken_20171019_8GB/minikraken_8GB_100mers_distrib.txt"
+# Relative files are relative to this components folder if not using an absolute path.
+# Note paths are set up to the absolute locations in the docker container, if you want 
+# to overwrite these values be sure to mount the src folder to the docker image
+kraken_database: "bifrost_resources/minikraken_20171019_8GB/"
+kraken_kmer_dist: "bifrost_resources/minikraken_8GB_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

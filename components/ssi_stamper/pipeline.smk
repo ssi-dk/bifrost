@@ -19,6 +19,7 @@ component_file_name = "../components/" + component + ".yaml"
 if not os.path.isfile(component_file_name):
     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
 db_component = datahandling.load_component(component_file_name)
+singularity: db_component["dockerfile"]
 
 sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
 db_sample_component = datahandling.load_sample_component(sample_component_file_name)

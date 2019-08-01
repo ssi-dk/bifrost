@@ -11,13 +11,13 @@ description: >
   to use these contigs for downstream analysis.
 #---------------------------------------------------------------------------------------------------
 
-#-Options-------------------------------------------------------------------------------------------
-assembly_with: "skesa"  # Choices: skesa|spades
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: "kimleeng/bifrost__assemblatron:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-adapters_fasta: "resources/adapters.fasta"
+adapters_fasta: "bifrost_resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

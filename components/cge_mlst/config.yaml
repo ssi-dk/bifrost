@@ -15,6 +15,10 @@ description: >
   requires cge_mlst and kma available in your path.
 #---------------------------------------------------------------------------------------------------
 
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: "kimleeng/bifrost__cge_mlst:1.0"
+#---------------------------------------------------------------------------------------------------
+
 #-Options-------------------------------------------------------------------------------------------
 mlst_species_mapping:
   "Acinetobacter baumannii": [abaumannii,abaumannii_2]
@@ -163,7 +167,7 @@ mlst_species_mapping:
 # Relative files are relative to this components folder if not using an absolute path, a recommended
 # strategy for shrared resources is to symlink the resource from the root resources folder into
 # the component resources folder. This will prevent
-mlst_database_path: "resources/cge_mlst_db"
+mlst_database_path: "bifrost_resources/mlst_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

@@ -803,7 +803,7 @@ rule setup_sample_components_to_run:
                                         command.write(
                                             "if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
 
-                                    command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," +sample_db["reads"]["R2"] + "," + os.getcwd(), config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
+                                    command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd(), config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
 
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "queued to run"

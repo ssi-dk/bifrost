@@ -19,6 +19,7 @@ component_file_name = "../components/" + component + ".yaml"
 if not os.path.isfile(component_file_name):
     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
 db_component = datahandling.load_component(component_file_name)
+singularity: db_component["dockerfile"]
 
 sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
 db_sample_component = datahandling.load_sample_component(sample_component_file_name)
@@ -116,7 +117,7 @@ rule cge_mlst:
                 datahandling.log(log_out, "cge mlst species: {}\n".format(species))
                 shell("touch no_mlst_species_DB")
             else:
-                mlst_database_path = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"])
+                mlst_database_path = db_component["mlst_database_path"]
                 mlst_species = db_component["mlst_species_mapping"][species]
                 for mlst_entry in mlst_species:
                     mlst_entry_path = component + "/" + mlst_entry
