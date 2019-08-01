@@ -20,11 +20,14 @@ RUN \
     pip install bifrostlib==1.2; \
     conda install wget==1.20.1; \
     # Directory for static DBs
-    mkdir bifrost_resources; \
+    mkdir bifrost_resources;
 RUN \
     # Kraken mini DB and bracken
     cd /bifrost_resources; \
-    wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
-    tar -zxvf minikraken_20171019_8GB.tgz; \
-    wget https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt;
+    wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_4GB.tgz; \
+    # wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
+    tar -zxvf minikraken_20171019_4GB.tgz; \
+    # tar -zxvf minikraken_20171019_8GB.tgz; \
+    wget https://ccb.jhu.edu/software/bracken/dl/minikraken_4GB_100mers_distrib.txt;
+    # wget https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt;
 
