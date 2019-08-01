@@ -71,7 +71,7 @@ def extract_contig_variants(file_path, key, data_dict):
 def extract_contig_stats(file_path, key, data_dict):
     buffer = datahandling.read_buffer(file_path)
     for line in buffer.split("\n"):
-        data_dict["results"][re.sub('[^A-Za-z0-9\s]+', '', line.split("\t")[1]).replace(" ", "_").rstrip("_")] = line.split("\t")[2]
+        data_dict["results"][key][re.sub('[^A-Za-z0-9\s]+', '', line.split("\t")[1]).replace(" ", "_").rstrip("_")] = line.split("\t")[2]
     data_dict["summary"]["raw_total_sequences"] = data_dict["results"][key]["raw_total_sequences"]
     data_dict["summary"]["reads_mapped"] = data_dict["results"][key]["reads_mapped"]
     data_dict["summary"]["reads_unmapped"] = data_dict["results"][key]["reads_unmapped"]
