@@ -179,7 +179,7 @@ rule assembly_check__sketch_on_contigs:
     output:
         sketch = rules.setup.params.folder + "/contigs.sketch"
     shell:
-        "bbsketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} outsketch={output.sketch} 1> {log.out_file} 2> {log.err_file}"
+        "bbsketch.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.contigs} out={output.sketch} 1> {log.out_file} 2> {log.err_file}"
 
 
 rule_name = "post_assembly__stats"

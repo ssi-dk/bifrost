@@ -12,12 +12,12 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "kimleeng/bifrost-assemblatron:1.0"
+dockerfile: "docker://kimleeng/bifrost-assemblatron:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path
-adapters_fasta: "bifrost_resources/adapters.fasta"
+adapters_fasta: "/bifrost_resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
