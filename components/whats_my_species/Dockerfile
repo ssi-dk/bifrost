@@ -27,7 +27,8 @@ RUN \
     # NOTE: even though the file is dated 20171019 it's actually when unzipped 20171013
     wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_4GB.tgz; \
     # wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
-    tar -zxvf minikraken_20171019_4GB.tgz; \
+    mkdir minikraken; /
+    tar -zxf minikraken_20171019_4GB.tgz -C minikraken --strip-components=1; \
     # tar -zxvf minikraken_20171019_8GB.tgz; \
     rm minikraken_20171019_4GB.tgz; \
     wget https://ccb.jhu.edu/software/bracken/dl/minikraken_4GB_100mers_distrib.txt;

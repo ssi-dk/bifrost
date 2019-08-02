@@ -21,7 +21,7 @@ dockerfile: "docker://kimleeng/bifrost-whats_my_species:1.0"
 # Relative files are relative to this components folder if not using an absolute path.
 # Note paths are set up to the absolute locations in the docker container, if you want 
 # to overwrite these values be sure to mount the src folder to the docker image
-kraken_database: "/bifrost_resources/minikraken_20171019_4GB/"
+kraken_database: "/bifrost_resources/minikraken/"
 kraken_kmer_dist: "/bifrost_resources/minikraken_4GB_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
 
