@@ -7,7 +7,7 @@ def script__run_mlst(reads, sample_file_name, component_file_name, log):
         log_out = str(log.out_file)
         log_err = str(log.err_file)
 
-        datahandling.log(log_out, "Started {}\n".format(rule_name))
+        datahandling.log(log_out, "Started {}\n".format("script__run_mlst"))
         species = db_sample["properties"]["species"]
 
         mlst_species = []
@@ -23,7 +23,7 @@ def script__run_mlst(reads, sample_file_name, component_file_name, log):
                 shell("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path))
                 shell("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, mlst_database_path, input.reads[0], input.reads[1], mlst_entry_path, log.out_file, log.err_file))
         shell("touch {}".format(output.complete))
-        datahandling.log(log_out, "Done {}\n".format(rule_name))
+        datahandling.log(log_out, "Done {}\n".format("script__run_mlst"))
     except Exception as e:
         datahandling.log(log_err, str(traceback.format_exc()))
     return 0
