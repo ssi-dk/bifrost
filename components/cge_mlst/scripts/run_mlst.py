@@ -1,7 +1,5 @@
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
-
 def script__run_mlst(reads, sample_file_name, component_file_name, log):
     try:
         db_sample = datahandling.load_sample(sample_file_name)
@@ -29,6 +27,5 @@ def script__run_mlst(reads, sample_file_name, component_file_name, log):
     except Exception as e:
         datahandling.log(log_err, str(traceback.format_exc()))
     return 0
-
 
 script__run_mlst(snakemake.input.reads, snakemake.params.sample_file_name, snakemake.params.component_file_name, snakemake.log)
