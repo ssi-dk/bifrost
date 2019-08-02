@@ -107,7 +107,7 @@ rule cge_mlst:
         sample_file_name = sample_file_name,
         component_file_name = component_file_name
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "/scripts/run_mlst.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_mlst.py")
 
 
 rule_name = "datadump"
