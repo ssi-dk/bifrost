@@ -10,9 +10,6 @@ description: >
   species table in mongoDB via the mlst_species_mapping variable. Multiple mlst's can be run against 
   a single species by passing all mlst's via a list (or conversely none). This is done against the 
   cge_db using kma mode. 
-  Note - currently this module does not have a proper env.yaml file as cge_mlst and kma have to be
-  installed manually and not via conda currently. This will be handled in the future but currently
-  requires cge_mlst and kma available in your path.
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------

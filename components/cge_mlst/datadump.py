@@ -30,7 +30,7 @@ def script__datadump(folder, sample, sample_file_name, component_file_name):
         mlst_entry_db = datahandling.load_yaml("cge_mlst/" + mlst_entry + "/data.json")
         datadump_dict["results"][mlst_entry] = mlst_entry_db
         datadump_dict["summary"]["db"].append(mlst_entry)
-        datadump_dict["summary"]["strain"].append(mlst_entry_db["mlst"]["results"].get("sequence_type","NA"))
+        datadump_dict["summary"]["strain"].append(mlst_entry_db["mlst"]["results"].get("sequence_type", "NA"))
         datadump_dict["summary"]["alleles"].append(",".join([mlst_entry_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in [i for i in mlst_entry_db["mlst"]["results"]["allele_profile"]]]))
 
     db_sample["properties"]["mlst"] = datadump_dict["summary"]
