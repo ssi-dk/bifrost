@@ -32,4 +32,4 @@ def script__run_mlst(reads, folder, sample_file_name, component_file_name, log):
     return 0
 
 
-script__run_mlst(snakemake.input.reads, snakemake.input.folder, snakemake.params.sample_file_name, snakemake.params.component_file_name, snakemake.log)
+script__run_mlst(snakemake.input.reads, snakemake.params.folder, snakemake.params.sample_file_name, snakemake.params.component_file_name, snakemake.log)

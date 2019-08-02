@@ -101,6 +101,7 @@ rule cge_mlst:
     output:
         complete = rules.setup.params.folder + "/mlst_complete"
     params:
+        folder = component,
         sample = sample,
         sample_file_name = sample_file_name,
         component_file_name = component_file_name
