@@ -4,7 +4,7 @@ def script__run_mlst(reads, sample_file_name, component_file_name, log):
     try:
         db_sample = datahandling.load_sample(sample_file_name)
         db_component = datahandling.load_component(component_file_name)
-        print(db_sample)
+        print(component_file_name)
         print(db_component)
 
         log_out = str(log.out_file)
