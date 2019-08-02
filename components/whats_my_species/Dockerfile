@@ -24,6 +24,7 @@ RUN \
 RUN \
     # Kraken mini DB and bracken
     cd /bifrost_resources; \
+    # NOTE: even though the file is dated 20171019 it's actually when unzipped 20171013
     wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_4GB.tgz; \
     # wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
     tar -zxvf minikraken_20171019_4GB.tgz; \

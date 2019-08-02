@@ -88,8 +88,6 @@ rule cge_mlst:
         global_threads
     resources:
         memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
