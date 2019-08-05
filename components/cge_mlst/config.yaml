@@ -180,6 +180,7 @@ db_values_changes:
   sample:
     properties:
       mlst:
+        db:
         strain:
         alleles:
         component:
