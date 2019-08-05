@@ -261,13 +261,16 @@ def sidebar_toggle(n, is_open):
 
 @app.callback(
     Output("param-store", "data"),
-    [Input("url", "search")]
+    [Input("url", "search")],
+    [State("param-store", "data")]
 )
-def update_run_name(params):
+def update_run_name(params, prev_params):
     if params is None:
         raise dash.exceptions.PreventUpdate("Initial repeated params call")
     pparse = urlparse.urlparse(params)
     params = urlparse.parse_qs(pparse.query)
+    if params == prev_params:
+        raise dash.exceptions.PreventUpdate("No param change")
     return params
 
 @app.callback(
@@ -527,7 +530,6 @@ def update_report(lasso_selected):
         return []
     else:
         sample_n = lasso_selected.count(",") + 1
-        
 
 
 @app.callback(
@@ -583,7 +585,7 @@ def update_selected_samples(n_clicks, param_store,
         samples = samples.to_dict('records')
     # if deleted_samples:
     #     samples = [s for s in samples if s["_id"] not in deleted_samples]
-    
+    print('sample store callback')
     return samples
 
 
@@ -605,12 +607,17 @@ def update_selected_samples(n_clicks, param_store,
 #         return [prev_deleted + "," + ",".join(deleted), []]
 
 @app.callback(
-    [Output("filter-sample-count", "children"),
-     Output("datatable-ssi_stamper", "data"),
-     Output("datatable-ssi_stamper", "virtualization")],
-    [Input("sample-store", "data")]
+    [
+        Output("filter-sample-count", "children"),
+        Output("datatable-ssi_stamper", "data"),
+        Output("datatable-ssi_stamper", "virtualization")
+    ],
+    [
+     Input("placeholder0", "children"),
+     Input("sample-store", "data")
+    ],
 )
-def update_filter_table(sample_store):
+def update_filter_table(ignore, sample_store):
     if len(sample_store) == 0:
         return ["0", [{}], False]
     sample_ids = list(
@@ -626,8 +633,6 @@ def update_filter_table(sample_store):
     else:
         virtualization = False
     return [len(sample_store), samples.to_dict("rows"), virtualization]
-    # return [sample_count, tests_df.to_dict("rows"), samples]
-
 
 @app.callback(
     Output("tsv-download", "children"),
@@ -692,37 +697,6 @@ def generate_download_button(download_button,
                 download='report.csv')
     ]
 
-# @app.callback(
-#     Output("sample-store", "data"),
-#     [Input("save-samples-button", "n_clicks")],
-#     [State("sample-store", "data"),
-#      State("run-list", "value"),
-#      State("species-list", "value"),
-#      State("form-species-source", "value"),
-#      State("group-list", "value"),
-#      State("qc-list", "value"),
-#      State("samples-form", "value")]
-# )
-# def select_samples(n_clicks, sample_store, run_names, species_list,
-#                    species_source, group_list, qc_list,
-#                    sample_names):
-    
-#     else:
-#         tests_df, query_count = import_data.filter_all(species=species_list,
-#             species_source=species_source,
-#             group=group_list,
-#             qc_list=qc_list,
-#             run_names=run_names,
-#             sample_names=sample_names,
-#             pagination=None,
-#             projection={"name": 1})
-#     tests_df["_id"] = tests_df["_id"].astype(str)
-#     sample_store["selected_samples"] = tests_df.to_dict('records')
-#     return sample_store
-
-
-
-
 
 @app.callback(
     [Output("plot-species", "value"),
@@ -732,7 +706,6 @@ def generate_download_button(download_button,
     [State("plot-species", "value")]
 )
 def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
-    print('species value', dash.callback_context.triggered)
     return aggregate_species_dropdown(sample_store, plot_species, selected_species)
 
 
@@ -747,16 +720,6 @@ def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
 )
 def pipeline_report_data_f(sample_store, ignore):
     return pipeline_report_data(sample_store)
-
-# @app.callback(
-#     Output("summary-plot", "selectedData"),
-#     [Input("data-store", "data"),
-#      Input("plot-species", "value"),
-#      Input('datatable-ssi_stamper', 'derived_virtual_data'),
-#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
-# )
-# def reset_selection(sample_ids, plot_value, rows, selected_rows):
-#     return {"points":[]}
 
 
 @app.callback(

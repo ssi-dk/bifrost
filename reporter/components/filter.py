@@ -193,11 +193,6 @@ def html_div_filter():
     return html.Div([
         html.Div(
             [
-                
-            ]
-        ),
-        html.Div(
-            [
                 html.Div([
                     html.Div(
                         [
@@ -234,6 +229,7 @@ def html_div_filter():
                                 html.Div(id="tsv-download")
                             ], className="col-auto"),
                         ], className="row mb-3"),
+                        html.Div([], id="placeholder0"),
                         dash_table.DataTable(
                             data=[{}],
                             style_table={
