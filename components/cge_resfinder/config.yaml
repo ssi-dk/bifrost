@@ -1,25 +1,29 @@
 #-Information---------------------------------------------------------------------------------------
-name: ariba_mlst
-version: 1.1
+name: cge_mlst
+version: 1.0
 target: sample
 type: pipeline
 recommendation: recommended
 requires_db: True
 description: >
-  This preforms read based mapping against the mlst DB's. The mlst DB's are set via the species 
-  table in the mongoDB. This was previously a part of Analyzer, but is better maintained by 
-  splitting that component apart
+  This preforms read based mapping against the resfinder DB's. The options show the species entries 
+  which will be attempted for mlst with key originating from the species DB. This is done against 
+  the cge_db using kma mode. 
+#---------------------------------------------------------------------------------------------------
+
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: "docker://kimleeng/bifrost-cge_resfinder:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# None
+# - None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
 # Relative files are relative to this components folder if not using an absolute path, a recommended
 # strategy for shrared resources is to symlink the resource from the root resources folder into
 # the component resources folder. This will prevent
-mlst_database_path: "resources/ariba_mlst_db" 
+database_path: "/bifrost_resources/resfinder_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
@@ -31,5 +35,11 @@ requirements:
     properties:
       species:
 #-DB Value changes (excluding component output)-----------------------------------------------------
-# None
+db_values_changes:
+  sample:
+    properties:
+      resfinder:
+        genes:
+        component:
+          _id:
 #---------------------------------------------------------------------------------------------------

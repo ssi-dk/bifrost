@@ -13,17 +13,17 @@ global_threads = config["threads"]
 global_memory_in_GB = config["memory"]
 sample = config["Sample"]
 
-sample_file_name = sample
-db_sample = datahandling.load_sample(sample_file_name)
+sample_file = sample
+db_sample = datahandling.load_sample(sample_file)
 
-component_file_name = "../components/" + component + ".yaml"
-if not os.path.isfile(component_file_name):
-    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
-db_component = datahandling.load_component(component_file_name)
+component_file = "../components/" + component + ".yaml"
+if not os.path.isfile(component_file):
+    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file)
+db_component = datahandling.load_component(component_file)
 singularity: db_component["dockerfile"]
 
-sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
-db_sample_component = datahandling.load_sample_component(sample_component_file_name)
+sample_component_file = db_sample["name"] + "__" + component + ".yaml"
+db_sample_component = datahandling.load_sample_component(sample_component_file)
 
 if "reads" in db_sample:
     reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
@@ -69,15 +69,14 @@ rule check_requirements:
     # Dynamic
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = component_file_name
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
-        component = component_file_name,
-        sample = sample,
-        sample_component = sample_component_file_name
+        sample_file = sample_file,
+        component_file = component_file,
+        sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
+        check_requirements.script__initialization(params.sample_file, params.component_file, prams.sample_component_file, params.output.checkfile, params.log):
 
 
 rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
@@ -158,14 +157,14 @@ rule species_check__set_species:
     output:
         species = rules.setup.params.folder + "/species.txt",
     params:
-        sample = sample,
+        sample_file = sample_file,
     run:
         try:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
             datahandling.log(log_out, "Started {}\n".format(rule_name))
-            sample_db = datahandling.load_sample(sample)
+            sample_db = datahandling.load_sample(sample_file)
             with open(output.species, "w") as species_file:
                 df = pandas.read_table(input.bracken)
                 # This try-except will avoid a crash when no species is found by bracken.

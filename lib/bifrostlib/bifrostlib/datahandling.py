@@ -5,6 +5,32 @@ from bson.int64 import Int64
 from bifrostlib import mongo_interface
 import pymongo
 
+# -----Deciding whether to keep this --------
+# class DatadumpSampleComponentObj:
+#     def __init__(self, folder, sample_file, component_file, sample_component_file, log):
+#         self.folder = folder
+#         self.sample_file = sample_file
+#         self.component_file = component_file
+#         self.sample_component_file = sample_component_file
+#         self.log = log
+#         self.load()
+#
+#     def load(self):
+#         self.db_sample = load_sample(self.sample_file)
+#         self.db_component = load_component(self.component_file)
+#         self.db_sample_component = load_sample_component(self.sample_component_file)
+#         self.db_sample_component["summary"] = self.db_sample_component.get("summary", {})
+#         self.db_sample_component["results"] = self.db_sample_component.get("results", {})
+#
+#     def save(self):
+#         save_sample(self.db_sample, self.sample_file)
+#         save_sample_component(self.db_sample_component, self.sample_component_file)
+#
+#     def log_out(self, str(content)):
+#         log(self.log.out_file, content)
+#
+#     def log_err(self, str(content)):
+#         log(self.log.err_file, content)
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
 ObjectId.to_yaml = classmethod(
@@ -24,6 +50,7 @@ yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 yaml.register_class(ObjectId)
 yaml.register_class(Int64)
+
 
 def log(log_file, content):
     with open(log_file, "a+") as file_handle:
@@ -152,14 +179,12 @@ def read_buffer(file_path):
     return buffer
 
 
-def datadump_template(data_dict, component_folder,
-                      file_path, extraction_callback):
+def datadump_template(data_dict, component_folder, file_path, extraction_callback):
     file_path_key = file_path.replace(".", "_")
     if os.path.isfile(os.path.join(component_folder, file_path)):
         data_dict["results"][file_path_key] = {}
         try:
-            data_dict = extraction_callback(os.path.join(component_folder,
-                                                         file_path),
+            data_dict = extraction_callback(os.path.join(component_folder, file_path),
                                             file_path_key, data_dict)
         except Exception as e:
             print(file_path, e)
@@ -362,7 +387,7 @@ def delete_component(component_id):
     return mongo_interface.delete_component(ObjectId(component_id))
 
 
-# /species
+# species
 def get_mlst_species_DB(file_yaml):
     with open(file_yaml, "r") as file_handle:
         sample = yaml.load(file_handle)

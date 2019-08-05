@@ -2,15 +2,16 @@ import subprocess
 import traceback
 from bifrostlib import datahandling
 
-def script__run_mlst(reads, folder, sample_file_name, component_file_name, log):
+
+def script__run_cge_mlst(reads, folder, sample_file, component_file, log):
     try:
-        db_sample = datahandling.load_sample(sample_file_name)
-        db_component = datahandling.load_component(component_file_name)
+        db_sample = datahandling.load_sample(sample_file)
+        db_component = datahandling.load_component(component_file)
 
         log_out = str(log.out_file)
         log_err = str(log.err_file)
 
-        datahandling.log(log_out, "Started {}\n".format("script__run_mlst"))
+        datahandling.log(log_out, "Started {}\n".format("script__run_cge_mlst"))
         species = db_sample["properties"]["species"]
 
         mlst_species = []
@@ -26,10 +27,10 @@ def script__run_mlst(reads, folder, sample_file_name, component_file_name, log):
                 subprocess.Popen("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path), shell=True).communicate()
                 subprocess.Popen("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, mlst_database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), shell=True).communicate()
             subprocess.Popen("touch {}".format(folder + "/mlst_complete"), shell=True).communicate()
-        datahandling.log(log_out, "Done {}\n".format("script__run_mlst"))
+        datahandling.log(log_out, "Done {}\n".format("script__run_cge_mlst"))
     except Exception as e:
         datahandling.log(log_err, str(traceback.format_exc()))
     return 0
 
 
-script__run_mlst(snakemake.input.reads, snakemake.params.folder, snakemake.params.sample_file_name, snakemake.params.component_file_name, snakemake.log)
+script__run_cge_mlst(snakemake.input.reads, snakemake.params.folder, snakemake.params.sample_file, snakemake.params.component_file, snakemake.log)
