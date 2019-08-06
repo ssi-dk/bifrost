@@ -27,7 +27,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer
+from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector
 from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
@@ -131,6 +131,7 @@ app.layout = html.Div([
     dcc.Store(id="sample-store", data=[], storage_type='session'),
     dcc.Store(id="param-store", data={}),
     dcc.Store(id="removed-samples-store", data=None),
+    dcc.Store(id="selected-collection", data=None),
     html.Ul(
         [
             html.A(
@@ -155,9 +156,9 @@ app.layout = html.Div([
                 id="samples-nav"),
             html.Li(html.A([
                     html.I(className="fas fa-vials fa-fw"),
-                    html.Span("Collections (unavailable)")
+                    html.Span("Collections")
                     ], className="nav-link"),
-                    className="nav-item"),
+                    className="nav-item", id="collections-nav"),
             html.Hr(className="sidebar-divider"),
             html.Div("Reports", className="sidebar-heading"),
 
@@ -193,6 +194,7 @@ app.layout = html.Div([
                 className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"),
             html.Main([
                 html.Div([
+                    html_collection_selector(),
                     dbc.Collapse(
                         [
                             html_filter_drawer()
@@ -278,7 +280,9 @@ def update_run_name(params, prev_params):
      Output("selected-view-buttons", "children"),
      Output("samples-panel", "className"),
      Output("samples-nav", "className"),
-     Output("resequence-nav", "className")],
+     Output("resequence-nav", "className"),
+     Output("collections-nav", "className"),
+     Output("selected-collection", "data")],
     [Input("url", "pathname")],
     [State("sample-store", "data")]
 )
@@ -291,39 +295,51 @@ def update_run_name(pathname, sample_store):
     samples_panel = ""
     samples_nav = "nav-item"
     resequence_nav = "nav-item"
-    if path[1] == "":
+    collections_nav = "nav-item"
+    if path[1] == "collection" and len(path) > 2:
+        collection_name = path[2]
+        collections_nav += " active"
+        if len(path) > 3:
+            section = path[3]
+        else:
+            section = ""
+    else:
+        section = path[1]
+        collection_name = None
+        if section == "resequence-report":
+            resequence_nav += " active"
+        else:
+            samples_nav += " active"
+
+
+    if section == "":
         view = html_div_filter()
-        samples_nav += " active"
-    elif path[1] == "sample-report":
+    elif section == "sample-report":
         view = sample_report(sample_store)
-        samples_nav += " active"
-    elif path[1] == "aggregate":
+    elif section == "aggregate":
         view = aggregate_report(sample_store)
-        samples_nav += " active"
-    elif path[1] == "pipeline-report":
+    elif section == "pipeline-report":
         view = pipeline_report(sample_store)
-        samples_nav += " active"
-    elif path[1] == "resequence-report":
+    elif section == "resequence-report":
         samples_panel = "d-none"
-        resequence_nav += " active"
         view = resequence_report()
-    elif path[1] == "link-to-files":
+    elif section == "link-to-files":
         view = link_to_files(sample_store)
-        samples_nav += " active"
     else:
         samples_panel = "d-none"
         view = "Not found"
-    return [view, samples_list(path[1]), samples_panel,
-            samples_nav, resequence_nav]
+    return [view, samples_list(section), samples_panel,
+            samples_nav, resequence_nav, collections_nav, collection_name]
 
 @app.callback(
     [Output("run-list", "options"),
      Output("group-list", "options"),
      Output("species-list", "options")],
-    [Input("form-species-source", "value")]
+    [Input("form-species-source", "value"),
+    Input("selected-collection", "data")]
 )
-def update_run_options(form_species):
-    return filter_update_run_options(form_species)
+def update_run_options(form_species, selected_collection):
+    return filter_update_run_options(form_species, selected_collection)
 
 
 @app.callback(
@@ -542,13 +558,15 @@ def update_report(lasso_selected):
      State("group-list", "value"),
      State("qc-list", "value"),
      State("samples-form", "value"),
-     State("sample-store", "data")
+     State("sample-store", "data"),
+     State("collection-store", "data")
      ]
 )
 def update_selected_samples(n_clicks, param_store,
                             run_names, species_list,
                             species_source, group_list, qc_list,
-                            sample_names, prev_sample_store):
+                            sample_names, prev_sample_store,
+                            collection_name):
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
     else:
@@ -561,7 +579,10 @@ def update_selected_samples(n_clicks, param_store,
         species_list = param_store.get("species", [])
     if not qc_list:
         qc_list = param_store.get("qc", [])
-        
+
+    #override if selected collection
+    if collection_name is not None:
+        run_names = [collection_name]
 
     if (n_clicks == 0 and
         sample_names == [] and
@@ -571,7 +592,7 @@ def update_selected_samples(n_clicks, param_store,
         qc_list == []):
         samples = prev_sample_store
     else:
-
+        
         samples = import_data.filter_all(
             species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list,
@@ -585,7 +606,6 @@ def update_selected_samples(n_clicks, param_store,
         samples = samples.to_dict('records')
     # if deleted_samples:
     #     samples = [s for s in samples if s["_id"] not in deleted_samples]
-    print('sample store callback')
     return samples
 
 

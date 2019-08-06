@@ -39,8 +39,8 @@ def get_run_list():
 def get_group_list(run_name=None):
     return mongo_interface.get_group_list(run_name)
 
-def get_species_list(species_source):
-    return mongo_interface.get_species_list(species_source)
+def get_species_list(species_source, run_name=None):
+    return mongo_interface.get_species_list(species_source, run_name)
 
 def filter_name(species=None, group=None, qc_list=None, run_name=None):
     result = mongo_interface.filter({"name": 1, "sample_sheet.sample_name": 1},

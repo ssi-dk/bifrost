@@ -15,6 +15,65 @@ def format_selected_samples(filtered_df):
     "Returns a formatted string of selected samples"
     return "\n".join([row["name"] for index, row in filtered_df.iterrows()])
 
+
+def html_collection_selector():
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div(
+                                dbc.Label(
+                                    "Run", html_for="run-list", className="m-0 font-weight-bold text-primary h6 d-block"),
+                                # html.H6(
+                                #     "Collection selector",
+                                #     className=""
+                                # ),
+                                className="card-header py-3"
+                            ),
+                            html.Div(
+                                [
+                                    dbc.Row([
+                                        dbc.Col([
+                                            
+                                            dbc.FormGroup(
+                                                [
+                                                    
+                                                    dcc.Dropdown(
+                                                        id="run-lasdist",
+                                                        multi=True,
+                                                        value=[],
+                                                        placeholder="All runs selected",
+                                                    ),
+                                                ]
+                                            ),
+                                        ])
+                                    ]),
+                                    dbc.ButtonGroup([
+                                        dbc.Button("Search samples",
+                                                   id="apply-filtsdaer-button",
+                                                   color="primary",
+                                                   n_clicks=0),
+                                        # dbc.Button("Generate download link (1000 samples max.)",
+                                        #            id="generate-download-button",
+                                        #            color="secondary",
+                                        #            n_clicks=0)
+                                    ]),
+                                ],
+                                className="card-body"
+                            )
+                        ], className="card shadow mb-4"
+                    )
+                ],
+                className="col"
+            )
+
+            # html.Div(id="tsv-download")
+        ],
+        className="row"
+    )
+
 def html_filter_drawer():
     qc_list_options = [
         {"label": "OK", "value": "pass:OK"},
@@ -262,58 +321,6 @@ def html_div_filter():
                     ], className="card-body bigtable")
 
                 ], id="ssi_stamper-report", className="card shadow mb-4"),
-                # html.Div(
-                #     [
-                #         html.Div(
-                #             [
-                #                 html.Label("Plot species",
-                #                         htmlFor="plot-species"),
-                #                 dcc.RadioItems(
-                #                     options=[
-                #                         {"label": "Provided",
-                #                         "value": "provided"},
-                #                         {"label": "Detected",
-                #                         "value": "detected"},
-                #                     ],
-                #                     value="provided",
-                #                     labelStyle={
-                #                         'display': 'inline-block'},
-                #                     id="plot-species-source"
-                #                 ),
-                #                 html.Div(dcc.Dropdown(
-                #                     id="plot-species"
-                #                 ),id="plot-species-div")
-                                
-                #             ],
-                #             className="twelve columns"
-                #         )
-                #     ],
-                #     className="row"
-                # ),
-                # dcc.Graph(id="summary-plot"),
-                # html.Div(
-                #     [
-                #         html.Div(
-                #             [
-                #                 html.Div(
-                #                     [
-                #                         html.Div(
-                #                             [
-                #                                 html.Div("",
-                #                                         style={"display": "none"},
-                #                                         id="lasso-sample-ids")
-                #                             ],
-                #                             className="twelve columns",
-                #                             id="lasso-div"
-                #                         )
-                #                     ],
-                #                     className="row"
-                #                 )
-                #             ],
-                #             className="twelve columns"
-                #         )
-                #     ]
-                #     , className="row"),
             ]
         )
     ])
@@ -423,7 +430,7 @@ def generate_table(tests_df):
 
 
 # callback
-def filter_update_run_options(form_species):
+def filter_update_run_options(form_species, selected_collection):
     # Runs
     run_list = import_data.get_run_list()
     run_options = [
@@ -434,7 +441,7 @@ def filter_update_run_options(form_species):
         } for run in run_list]
 
     # Groups
-    group_list = import_data.get_group_list()
+    group_list = import_data.get_group_list(selected_collection)
     group_options = []
     for item in group_list:
         if pd.isnull(item["_id"]):
@@ -448,7 +455,8 @@ def filter_update_run_options(form_species):
                 "value": item["_id"]
             })
 
-    species_list = import_data.get_species_list(form_species)
+    species_list = import_data.get_species_list(
+        form_species, selected_collection)
 
     species_options = []
     for item in species_list:
