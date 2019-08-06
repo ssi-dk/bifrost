@@ -4,18 +4,19 @@ import os
 
 from bifrostlib import datahandling
 
+
 # TODO: refactor as requirements_file is the same as component, and component, sample and sample_component are all references to getting the DB entry for each. Currently these references are files and in the future will be ID's
-def script__initialization(sample_file, component_file, sample_component_file, output_file, log):
+def script__initialization(sample_file, component_file, sample_component_file, output_file, log_out, log_err):
     set_status_to_running(sample_component_file)
     component_db = datahandling.load_component(component_file)
     datahandling.save_component(component_db, component_file)
-    if requirements_met(component_file, sample_file, log.log_out, log.log_err) == True:
-        datahandling.log(log.log_out, "{}\n{}\n".format(os.getcwd(), output_file))
+    if requirements_met(component_file, sample_file, log_out, log_err) == True:
+        datahandling.log(log_out, "{}\n{}\n".format(os.getcwd(), output_file))
         with open(str(output_file), "w") as handle:
             handle.write("Requirements met")
             pass
     else:
-        datahandling.log(log.log_err, "Requirements not met")
+        datahandling.log(log_err, "Requirements not met")
         sample_component_entry = datahandling.load_sample_component(sample_component_file)
         sample_component_entry["status"] = "Requirements not met"
         datahandling.save_sample_component(sample_component_entry, sample_component_file)

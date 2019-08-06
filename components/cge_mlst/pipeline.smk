@@ -75,7 +75,7 @@ rule check_requirements:
         component_file = component_file,
         sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, prams.sample_component_file, params.output.checkfile, params.log):
+        check_requirements.script__initialization(params.sample_file, params.component_file, prams.sample_component_file, params.output.checkfile, params.log.out_file, params.log.err_file)
 
 
 rule_name = "cge_mlst"
