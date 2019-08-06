@@ -145,7 +145,7 @@ def dump_sample_component_info(data_dict):
     db = connection.get_database()
     sample_components_db = db.sample_components  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {'created_at': now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = sample_components_db.find_one_and_update(
@@ -164,8 +164,7 @@ def dump_sample_component_info(data_dict):
         data_dict = sample_components_db.find_one_and_update(
             filter=search_fields,
             update={
-                "$set": data_dict,
-                "$setOnInsert": {"metadata.created_at": now}
+                "$set": data_dict
             },
             return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
             upsert=True  # insert the document if it does not exist
