@@ -75,7 +75,7 @@ rule check_requirements:
         component_file = component_file,
         sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.checkfile, log)
+        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log)
 
 
 rule_name = "setup__filter_reads_with_bbduk"
