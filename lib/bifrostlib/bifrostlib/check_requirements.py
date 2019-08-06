@@ -6,7 +6,9 @@ from bifrostlib import datahandling
 
 
 # TODO: refactor as requirements_file is the same as component, and component, sample and sample_component are all references to getting the DB entry for each. Currently these references are files and in the future will be ID's
-def script__initialization(sample_file, component_file, sample_component_file, output_file, log_out, log_err):
+def script__initialization(sample_file, component_file, sample_component_file, output_file, log):
+    log_out = log.out_file
+    log_err = log.err_file
     set_status_to_running(sample_component_file)
     component_db = datahandling.load_component(component_file)
     datahandling.save_component(component_db, component_file)

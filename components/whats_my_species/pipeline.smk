@@ -76,7 +76,7 @@ rule check_requirements:
         component_file = component_file,
         sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, params.output.checkfile, params.log.out_file, params.log.err_file)
+        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.checkfile, log)
 
 
 rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
