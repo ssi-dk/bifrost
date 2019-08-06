@@ -25,54 +25,55 @@ def html_collection_selector():
                         [
                             html.Div(
                                 dbc.Label(
-                                    "Run", html_for="run-list", className="m-0 font-weight-bold text-primary h6 d-block"),
-                                # html.H6(
-                                #     "Collection selector",
-                                #     className=""
-                                # ),
+                                    "Select Collection", html_for="collection-selector", className="m-0 font-weight-bold text-primary h6 d-block"),
                                 className="card-header py-3"
                             ),
                             html.Div(
                                 [
                                     dbc.Row([
                                         dbc.Col([
-                                            
                                             dbc.FormGroup(
                                                 [
-                                                    
                                                     dcc.Dropdown(
-                                                        id="run-lasdist",
-                                                        multi=True,
-                                                        value=[],
-                                                        placeholder="All runs selected",
+                                                        id="collection-selector",
+                                                        value=None,
                                                     ),
                                                 ]
                                             ),
-                                        ])
-                                    ]),
-                                    dbc.ButtonGroup([
-                                        dbc.Button("Search samples",
-                                                   id="apply-filtsdaer-button",
-                                                   color="primary",
-                                                   n_clicks=0),
-                                        # dbc.Button("Generate download link (1000 samples max.)",
-                                        #            id="generate-download-button",
-                                        #            color="secondary",
-                                        #            n_clicks=0)
-                                    ]),
+                                        ], lg=9),
+                                        dbc.Col([
+                                            dbc.FormGroup(
+                                                [
+                                                    dcc.Link(
+                                                        "Load collection",
+                                                        id="collection-link",
+                                                        href="/collection",
+                                                        className="btn btn-primary"),
+                                                ]
+                                            )
+                                        ], lg=3),
+                                    ])
                                 ],
                                 className="card-body"
                             )
                         ], className="card shadow mb-4"
                     )
                 ],
-                className="col"
+                className="col-lg-9"
             )
 
             # html.Div(id="tsv-download")
         ],
-        className="row"
+        className="row", id="collection-selector-div"
     )
+
+#callback
+def update_collection_button(collection):
+    if collection is not None:
+        return "/collection/" + collection
+    else:
+        return "/collection"
+
 
 def html_filter_drawer():
     qc_list_options = [
@@ -113,7 +114,7 @@ def html_filter_drawer():
                                                                 ),
                                                             ]
                                                         ),
-                                                        width=6,
+                                                        width=6, id="run-list-div"
                                                     ),
                                                     dbc.Col(
                                                         dbc.FormGroup(
@@ -470,7 +471,7 @@ def filter_update_run_options(form_species, selected_collection):
                 "label": item["_id"],
                 "value": item["_id"]
             })
-    return [run_options, group_options, species_options]
+    return [run_options, run_options, group_options, species_options]
 
 
 # callback

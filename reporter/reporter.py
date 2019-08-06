@@ -27,7 +27,7 @@ import keys
 import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
-from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector
+from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector, update_collection_button
 from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
 from components.images import list_of_images, static_image_route, image_directory
 import components.global_vars as global_vars
@@ -46,7 +46,7 @@ def hex_to_rgb(value):
     lv = len(value)
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
-def samples_list(active):
+def samples_list(active, collection_name=None):
     links = [
         {
             "icon": "fa-list",
@@ -71,17 +71,20 @@ def samples_list(active):
     ]
     link_list = []
     for item in links:
+        href = "/" + item["href"]
+        if collection_name is not None:
+            href = "/collection/{}/{}".format(collection_name, item["href"])
         if active == item['href']:
             link_list.append(dcc.Link(
                 html.I(className="fas {} fa-fw".format(item['icon'])),
                 className="btn btn-outline-secondary active",
-                href="/" + item['href']
+                href=href
             ))
         else:
             link_list.append(dcc.Link(
                 html.I(className="fas {} fa-fw".format(item['icon'])),
                 className="btn btn-outline-secondary",
-                href="/" + item['href']
+                href=href
             ))
     return link_list
 
@@ -136,7 +139,7 @@ app.layout = html.Div([
         [
             html.A(
                 [
-                    html.Img(src="assets/img/bifrost-logo-white@2x.png",
+                    html.Img(src="/assets/img/bifrost-logo-white@2x.png",
                              className="navbar-logo ")
                     # html.Div("bifrost", className="sidebar-brand-text mx-3")
                 ],
@@ -154,10 +157,10 @@ app.layout = html.Div([
                 ], className="nav-link", href="/"),
                 className="nav-item",
                 id="samples-nav"),
-            html.Li(html.A([
+            html.Li(dcc.Link([
                     html.I(className="fas fa-vials fa-fw"),
                     html.Span("Collections")
-                    ], className="nav-link"),
+                    ], className="nav-link", href="/collection"),
                     className="nav-item", id="collections-nav"),
             html.Hr(className="sidebar-divider"),
             html.Div("Reports", className="sidebar-heading"),
@@ -282,7 +285,9 @@ def update_run_name(params, prev_params):
      Output("samples-nav", "className"),
      Output("resequence-nav", "className"),
      Output("collections-nav", "className"),
-     Output("selected-collection", "data")],
+     Output("selected-collection", "data"),
+     Output("collection-selector-div", "className"),
+     Output("run-list-div", "className")],
     [Input("url", "pathname")],
     [State("sample-store", "data")]
 )
@@ -296,16 +301,20 @@ def update_run_name(pathname, sample_store):
     samples_nav = "nav-item"
     resequence_nav = "nav-item"
     collections_nav = "nav-item"
-    if path[1] == "collection" and len(path) > 2:
-        collection_name = path[2]
-        collections_nav += " active"
-        if len(path) > 3:
-            section = path[3]
-        else:
+    collection_view = False
+    collection_name = None
+    if path[1] == "collection":
+        collection_view = True
+        if len(path) > 2: #/collection/collectionname
+            collection_name = path[2]
+            if len(path) > 3:  # /collection/collectionname/section
+                section = path[3]
+            else:  # /collection/collectionname
+                section = ""
+        else:  # /collection
             section = ""
-    else:
+    else:  # /section
         section = path[1]
-        collection_name = None
         if section == "resequence-report":
             resequence_nav += " active"
         else:
@@ -328,11 +337,22 @@ def update_run_name(pathname, sample_store):
     else:
         samples_panel = "d-none"
         view = "Not found"
-    return [view, samples_list(section), samples_panel,
-            samples_nav, resequence_nav, collections_nav, collection_name]
+    
+    if collection_view:
+        collection_selector_list = "row"
+        run_list = "d-none"
+        collections_nav += " active"
+    else:
+        collection_selector_list = "row d-none"
+        run_list = ""
+
+    return [view, samples_list(section, collection_name), samples_panel,
+            samples_nav, resequence_nav, collections_nav, collection_name,
+            collection_selector_list, run_list]
 
 @app.callback(
-    [Output("run-list", "options"),
+    [Output("run-list", "options"), 
+     Output("collection-selector", "options"),
      Output("group-list", "options"),
      Output("species-list", "options")],
     [Input("form-species-source", "value"),
@@ -353,111 +373,13 @@ def update_run_options(form_species, selected_collection):
 def update_filter_values(param_store):
     return filter_update_filter_values(param_store)
 
-# @app.callback(
-#     Output("lasso-div", "children"),
-#     [Input("summary-plot", "selectedData"),
-#      Input('datatable-ssi_stamper', 'derived_virtual_data'),
-#      Input('datatable-ssi_stamper', 'derived_virtual_selected_rows')]
-# )
-# def display_selected_data(selected_data, rows, selected_rows):
-#     # ignore_this is there so the function is called 
-#     # when the sample list is updated.
-#     if rows == [{}] or rows == [] or rows == None:
-#         return [
-#             html.Label(
-#                 [
-#                     "Selected from table/lasso (0):"
-#                 ],
-#                 htmlFor="selected-from-plot"),
-#             dcc.Textarea(
-#                 id="selected-from-plot",
-#                 className="u-full-width",
-#                 style={"resize": "none"},
-#                 readOnly=True,
-#                 value=""
-#             ),
-#             html.Div(style={"display": "none"},
-#                         id="lasso-sample-ids")
-#         ]
-#     dtdf = pd.DataFrame(rows)
-#     if selected_rows is not None and len(selected_rows) > 0:
-#         dtdf = dtdf.iloc[selected_rows]
-#     points = list(map(str, list(dtdf["name"])))
-#     sample_ids = list(dtdf["_id"])
-#     if selected_data is not None and len(selected_data["points"]):
-#         lasso_points = set([sample["text"]
-#                     for sample in selected_data["points"]])
-#         lasso_sample_ids = set([sample["customdata"]
-#                         for sample in selected_data["points"]])
-#         union_points = set(points).intersection(lasso_points)
-#         union_sample_ids = set(sample_ids).intersection(lasso_sample_ids)
-#         # This way we keep the table order.
-#         points = list(dtdf[dtdf["_id"].isin(lasso_sample_ids)]["name"])
-#         sample_ids = [sample_id for sample_id in sample_ids if sample_id in union_sample_ids]
-#     return [
-#         html.Label(
-#             [
-#                 "Selected from table/lasso (",
-#                     str(len(points)),
-#                 "):"
-#             ],
-#             htmlFor="selected-from-plot"),
-#         dcc.Textarea(
-#             id="selected-from-plot",
-#             className="u-full-width",
-#             style={"resize": "none"},
-#             readOnly=True,
-#             value=", ".join(points)
-#         ),
-#         html.Div(",".join(sample_ids),
-#                     style={"display": "none"},
-#                     id="lasso-sample-ids")
-#     ]
 
-
-
-
-
-# @app.callback(
-#     Output("run-table", "children"),
-#     [Input("run-name", "children"),
-#         Input("url", "pathname")]
-# )
-# def update_run_table(run_name, pathname):
-#     if run_name == "Loading...":
-#         return None
-#     if pathname is None:
-#         pathname = "/"
-#     path = pathname.split("/")
-#     if run_name == "Not found":
-#         run = "Run not found!"
-#     elif run_name == None or run_name == "":
-#         run = "No run selected"
-#     else:
-#         run = run_name
-#         year = run[:2]
-#         run_path = keys.run_path + "20{}/{}".format(year, run_name)
-#         run_link = "file:/" + run_path
-#         if hasattr(keys, "path_platform_windows") and keys.path_platform_windows:
-#             run_path = run_path.replace("/", "\\")
-#         run_a=html.A(run_path, href=run_link)
-#         run_checker_url = "{}/{}".format(keys.run_checker_url, run_name)
-#         run_checker_link = html.A(run_checker_url, href=run_checker_url)
-#         if len(path) > 2 and path[2] != "":
-#             group = path[2]
-#             return html_table([
-#                 ["Run Name", run],
-#                 ["Run Path", run_a],
-#                 ["Supplying lab", group],
-#                 ["Run Checker", run_checker_link]
-#             ])
-#         else:
-#             return html_table([
-#                 ["Run Name", run],
-#                 ["Run Path", run_a],
-#                 ["Run Checker", run_checker_link]
-#             ])
-#     return html_table([["Run Name", run]])
+@app.callback(
+    Output("collection-link", "href"),
+    [Input("collection-selector", "value")]
+)
+def update_collection_button_f(collection):
+    return update_collection_button(collection)
 
 @app.callback(
     Output("page-n",
@@ -511,29 +433,6 @@ def fill_sample_report(page_n, sample_store):
         )
     ]
 
-# @app.callback(
-#     Output("sample-folder-div", "children"),
-#     [
-#         Input("generate-folder", "n_clicks_timestamp")],
-#     [
-#         State("lasso-sample-ids", "children"),
-#         State("data-store", "data")]
-# )
-# def generate_sample_folder_div(n_generate_ts,
-#                   lasso_selected, data_store):
-
-#     if n_generate_ts == 0:
-#         return None
-
-#     if lasso_selected != "":
-#         samples = lasso_selected.split(",")  # lasso first
-#     elif data_store != None:
-#         #json_data = StringIO(data_store)
-#         samples = pd.DataFrame.from_dict(data_store)["_id"]
-#     else:
-#         samples = []
-
-#     return generate_sample_folder(samples)
 
 
 @app.callback(
@@ -551,7 +450,8 @@ def update_report(lasso_selected):
 @app.callback(
     Output("sample-store", "data"),
     [Input("apply-filter-button", "n_clicks"),
-     Input("param-store", "data")],
+     Input("param-store", "data"),
+     Input("selected-collection", "data")],
     [State("run-list", "value"),
      State("species-list", "value"),
      State("form-species-source", "value"),
@@ -559,14 +459,13 @@ def update_report(lasso_selected):
      State("qc-list", "value"),
      State("samples-form", "value"),
      State("sample-store", "data"),
-     State("collection-store", "data")
+     
      ]
 )
-def update_selected_samples(n_clicks, param_store,
+def update_selected_samples(n_clicks, param_store, collection_name,
                             run_names, species_list,
                             species_source, group_list, qc_list,
-                            sample_names, prev_sample_store,
-                            collection_name):
+                            sample_names, prev_sample_store):
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
     else:
@@ -608,23 +507,6 @@ def update_selected_samples(n_clicks, param_store,
     #     samples = [s for s in samples if s["_id"] not in deleted_samples]
     return samples
 
-
-# @app.callback(
-#     [Output("removed-samples-store", "data"),
-#      Output("datatable-ssi_stamper", "selected_rows")],
-#     [Input("remove-selected", "n_clicks")],
-#     [State("datatable-ssi_stamper", "derived_virtual_selected_rows"),
-#      State("datatable-ssi_stamper", "derived_virtual_data"),
-#      State("removed-samples-store", "data")]
-# )
-# def update_deleted_sample(n_clicks, selected, data, prev_deleted):
-#     if not prev_deleted:
-#         prev_deleted = ""
-#     if not n_clicks or not selected:
-#         raise dash.exceptions.PreventUpdate
-#     else:
-#         deleted = [str(data[i]["_id"]) for i in selected]
-#         return [prev_deleted + "," + ",".join(deleted), []]
 
 @app.callback(
     [
