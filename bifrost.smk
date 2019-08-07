@@ -656,7 +656,7 @@ rule initialize_run:
             unique_sample_names = {}
 
             run_db = datahandling.load_run(run_folder + "/run.yaml")
-            run_db["name"] = config.get("run_name", os.path.realpath(os.path.join(sample_folder)).split("/")[-1])
+            run_db["name"] = config.get("run_name", os.path.realpath(os.getcwd()))
             if "type" in config:
                 run_db["type"] = config["type"]
             else:

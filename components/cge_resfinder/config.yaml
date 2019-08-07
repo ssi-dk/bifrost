@@ -32,8 +32,6 @@ requirements:
     reads:
       R1:
       R2:
-    properties:
-      species:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   sample:
