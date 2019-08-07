@@ -33,7 +33,9 @@ ENV PATH $PATH":/bifrost_resources/kma/"
 RUN \
     cd /bifrost_resources; \
     # Install cge Resfinder
-    git clone --branch 3.2 https://bitbucket.org/genomicepidemiology/resfinder.git;
+    git clone https://bitbucket.org/genomicepidemiology/resfinder.git; \
+    cd resfinder; \
+    git checkout d210e15;
 ENV PATH $PATH":/bifrost_resources/resfinder/"
 RUN \
     cd /bifrost_resources; \
