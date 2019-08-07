@@ -176,21 +176,21 @@ def pipeline_report_data(sample_data):
         {
             "if": {
                 "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "CF"'
+                "filter_query": '{qc_val} contains "CF"'
             },
             "backgroundColor": "#ea6153"
         },
         {
             "if": {
                 "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "CF(LF)"'
+                "filter_query": '{qc_val} contains "CF(LF)"'
             },
             "backgroundColor": "#ea6153"
         },
         {
             "if": {
                 "column_id": "qc_val",
-                "filter_query": '{qc_val} eq "OK"'
+                "filter_query": '{qc_val} contains "OK"'
             },
             "backgroundColor": "#27ae60"
         },
@@ -258,6 +258,8 @@ def pipeline_report_data(sample_data):
         #     prio_display = "Low"
         row["priority"] = priority
         qc_val = sample.get("stamps.ssi_stamper.value", "N/A")
+        if pd.isna(qc_val):
+            qc_val = "N/A"
 
         expert_check = False
         expert_stamp = sample.get('stamps.supplying_lab_check.value')
@@ -266,6 +268,7 @@ def pipeline_report_data(sample_data):
             expert_check = True
 
         statusname = ""
+        print(row["sample"], qc_val)
         if qc_val == "fail:supplying lab":
             qc_val = "SL"
             statusname = "status-1"
@@ -275,7 +278,7 @@ def pipeline_report_data(sample_data):
                 qc_val == "fail:resequence"):
             statusname = "status--1"
             qc_val = "CF"
-        elif qc_val == "pass:OK":
+        elif qc_val == "pass:OK" or qc_val == "pass:accepted":
             statusname = "status-2"
             qc_val = "OK"
 
@@ -294,6 +297,9 @@ def pipeline_report_data(sample_data):
             else:
                 row[component] = "None"
         rows.append(row)
+    def sort_name(e):
+        return e["sample"]
+    rows.sort(key=sort_name)
     return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
 
 
