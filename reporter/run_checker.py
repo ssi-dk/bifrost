@@ -268,7 +268,6 @@ def pipeline_report_data(sample_data):
             expert_check = True
 
         statusname = ""
-        print(row["sample"], qc_val)
         if qc_val == "fail:supplying lab":
             qc_val = "SL"
             statusname = "status-1"
