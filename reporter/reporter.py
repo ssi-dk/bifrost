@@ -631,7 +631,7 @@ def pipeline_report_data_f(sample_store, ignore):
     [State("sample-store", "data"),
     State("plot-species-source", "value")]
 )
-# @cache.memoize(timeout=cache_timeout)  # in seconds
+@cache.memoize(timeout=cache_timeout)  # in seconds
 def update_aggregate_fig_f(selected_species, samples, plot_species_source):
     return update_aggregate_fig(selected_species, samples, plot_species_source)
 
