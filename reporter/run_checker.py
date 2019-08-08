@@ -102,7 +102,7 @@ def pipeline_report(sample_data):
                                 addon_type="append",
                             ),
                         ]),
-                        html.Label(html.Strong("Add all failed components"),
+                        html.Label(html.Strong("Add all failed or init. components"),
                                    className="mt-3"),
                         dbc.Button("Add", id="rerun-add-failed", block=True),
                         html.Div([
@@ -439,7 +439,7 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
         for row in table_data:
             for col in columns:
                 col = col["id"]
-                if row[col] == "Fail":
+                if row[col] == "Fail" or row[col] == "init.":
                     new_rows.append({"sample": row["sample"],
                                      "component": col,
                                      "sample_id": row["_id"]})
