@@ -76,7 +76,7 @@ rule check_requirements:
         component_file = component_file,
         sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log)
+        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 
 
 rule_name = "contaminant_check__classify_reads_kraken_minikraken_db"
@@ -137,49 +137,6 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         sort -r -t$'\t' -k7 {output.bracken} -o {output.bracken}
         """
 
-rule_name = "species_check__set_species"
-rule species_check__set_species:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        bracken = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken,
-    output:
-        species = rules.setup.params.folder + "/species.txt",
-    params:
-        sample_file = sample_file,
-    run:
-        try:
-            log_out = str(log.out_file)
-            log_err = str(log.err_file)
-
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
-            sample_db = datahandling.load_sample(sample_file)
-            with open(output.species, "w") as species_file:
-                df = pandas.read_table(input.bracken)
-                # This try-except will avoid a crash when no species is found by bracken.
-                try:
-                    sample_db["properties"]["detected_species"] = df["name"].iloc[0]
-                except IndexError:
-                    sample_db["properties"]["detected_species"] = None
-                sample_db["properties"]["provided_species"] = sample_db["properties"].get("provided_species",)
-                if sample_db["properties"]["provided_species"] is not None:
-                    sample_db["properties"]["species"] = sample_db["properties"]["provided_species"]
-                else:
-                    sample_db["properties"]["species"] = sample_db["properties"]["detected_species"]
-            datahandling.save_sample(sample_db, sample)
-        except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
 
 rule_name = "datadump_whats_my_species"
 rule datadump_whats_my_species:
@@ -197,7 +154,7 @@ rule datadump_whats_my_species:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        species = rules.species_check__set_species.output.species,
+        species = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.kraken_report_bracken,
     output:
         summary = touch(rules.all.input)
     params:

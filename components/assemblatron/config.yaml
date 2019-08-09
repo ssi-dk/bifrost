@@ -1,5 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: assemblatron
+category: de-novo assembly
 version: 1.0
 target: sample
 type: pipeline

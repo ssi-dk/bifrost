@@ -1,5 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
-name: cge_mlst
+name: cge_resfinder
+category: &category Resistance
 version: 1.0
 target: sample
 type: pipeline
@@ -12,7 +13,7 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "docker://ssidk/bifrost-cge_resfinder:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-cge_resfinder:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -36,8 +37,13 @@ requirements:
 db_values_changes:
   sample:
     properties:
-      resfinder:
-        genes:
+      resistance:
         component:
-          _id:
+          _id: "ObjectId"
+          date: "datetime"
+    reporter:
+      resistance:
+        title: *category
+        info: *dockerfile
+        content: [["gene", "%cov", "%id", "anti-biotic class", "pred. phenotype"]]  # headers
 #---------------------------------------------------------------------------------------------------

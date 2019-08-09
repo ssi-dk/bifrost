@@ -75,11 +75,11 @@ rule check_requirements:
         component_file = component_file,
         sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log)
+        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 
 
-rule_name = "cge_mlst"
-rule cge_mlst:
+rule_name = "cge_resfinder"
+rule cge_resfinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -98,6 +98,7 @@ rule cge_mlst:
         reads = (R1, R2)
     output:
         complete = rules.setup.params.folder + "/mlst_complete"
+        data_resfinder = rules.setup.params.folder + "/data_resfinder.json"
     params:
         folder = rules.setup.params.folder,
         sample_file = sample_file,

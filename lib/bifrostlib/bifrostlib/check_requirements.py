@@ -6,17 +6,14 @@ from bifrostlib import datahandling
 
 
 # TODO: refactor as requirements_file is the same as component, and component, sample and sample_component are all references to getting the DB entry for each. Currently these references are files and in the future will be ID's
-def script__initialization(sample_file, component_file, sample_component_file, output_file, log):
-    log_out = log.out_file
-    log_err = log.err_file
+def script__initialization(sample_file, component_file, sample_component_file, output_file, log_out, log_err):
     set_status_to_running(sample_component_file)
     component_db = datahandling.load_component(component_file)
     datahandling.save_component(component_db, component_file)
-    if requirements_met(component_file, sample_file, log_out, log_err) == True:
+    if requirements_met(component_file, sample_file, log_out, log_err):
         datahandling.log(log_out, "{}\n{}\n".format(os.getcwd(), output_file))
         with open(str(output_file), "w") as handle:
             handle.write("Requirements met")
-            pass
     else:
         datahandling.log(log_err, "Requirements not met")
         sample_component_entry = datahandling.load_sample_component(sample_component_file)
@@ -25,16 +22,17 @@ def script__initialization(sample_file, component_file, sample_component_file, o
     return 0
 
 
-def set_status_to_running(sample_component):
-    sample_component = str(sample_component)
-    sample_component_entry = datahandling.load_sample_component(sample_component)
-    sample_component_entry["status"] = "Running"
-    datahandling.save_sample_component(sample_component_entry, sample_component)
+def set_status_to_running(sample_component_file):
+    db_sample_component = datahandling.load_sample_component(sample_component_file)
+    db_sample_component["status"] = "Running"
+    datahandling.save_sample_component(db_sample_component, sample_component_file)
     return 0
 
 
-def requirements_met(requirements_file, sample, log_out, log_err):
-    requirements_file = datahandling.load_yaml(requirements_file)
+def requirements_met(component_file, sample, log_out, log_err):
+    doc_component = datahandling.load_component(component_file)
+    db_component_entry = datahandling.load_component(component_id)
+    component_file = datahandling.load_yaml(requirements_file)
     sample_name = datahandling.load_yaml(sample)["name"]
     if not passes_check_reads_pipeline(sample, requirements_file, log_err):
         return False

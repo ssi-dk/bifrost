@@ -1,5 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: cge_mlst
+category: &category MLST
 version: 1.0
 target: sample
 type: pipeline
@@ -13,7 +14,7 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "docker://ssidk/bifrost-cge_mlst:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-cge_mlst:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -180,9 +181,16 @@ db_values_changes:
   sample:
     properties:
       mlst:
-        db:
-        strain:
-        alleles:
+        species:  # str for mlst_db
+        results:
+          sequence_type:  #str
+          allele_profile: {}
         component:
-          _id:
+          _id: "ObjectId"
+          date: "datetime"
+    reporter:
+      mlst:
+        title: *category
+        info: *dockerfile
+        content: ["db", "strain", "alleles"]
 #---------------------------------------------------------------------------------------------------

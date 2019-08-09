@@ -2,35 +2,61 @@ import pkg_resources
 import datetime
 import os
 import re
-from bifrostlib import datahandling
 import sys
+import traceback
+from bifrostlib import datahandling
 
 config = datahandling.load_config()
 
 
+def extract_cge_mlst_data(file_path, key, data_dict):
+    buffer = datahandling.load_yaml(file_path)
+    data_dict["results"] = buffer
+    return data_dict
+
+
+def convert_summary_for_reporter(data_dict):
+    for mlst_db in data_dict["results"]["mlst"]:
+        strain = mlst_db["results"]["sequence_type"]
+        alleles = "".join([allele["allele_name"] for allele in mlst_db["results"]["allele_profile"]])
+        data_dict["reporter"]["content"].append([mlst_db, strain, alleles])
+    return data_dict
+
+
 def script__datadump(folder, sample_file, component_file, sample_component_file, log):
-    db_sample = datahandling.load_sample(sample_file)
-    db_component = datahandling.load_component(component_file)
-    db_sample_component = datahandling.load_sample_component(sample_component_file)
+    try:
+        log_out = str(log.out_file)
+        log_err = str(log.err_file)
+        db_sample = datahandling.load_sample(sample_file)
+        db_component = datahandling.load_component(component_file)
+        db_sample_component = datahandling.load_sample_component(sample_component_file)
+        this_function_name = sys._getframe().f_code.co_name
 
-    species = db_sample["properties"]["species"]
+        datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
-    db_sample_component["summary"] = {"db": [], "strain": [], "alleles": [], "component": {"id": db_component["_id"], "date": datetime.datetime.utcnow()}}
-    db_sample_component["results"] = {}
+        # Initialization of values, summary and reporter are also saved into the sample
+        db_sample_component["summary"] = {"component": {"id": db_component["_id"], "date": datetime.datetime.utcnow()}}
+        db_sample_component["results"] = {}
+        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
 
-    mlst_species = db_component["mlst_species_mapping"][species]
-    for mlst_entry in mlst_species:
-        mlst_entry_db = datahandling.load_yaml(folder + "/" + mlst_entry + "/data.json")
-        db_sample_component["results"][mlst_entry] = mlst_entry_db
-        db_sample_component["summary"]["db"].append(mlst_entry)
-        db_sample_component["summary"]["strain"].append(mlst_entry_db["mlst"]["results"].get("sequence_type", "NA"))
-        db_sample_component["summary"]["alleles"].append(",".join([mlst_entry_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in [i for i in mlst_entry_db["mlst"]["results"]["allele_profile"]]]))
+        # Data extractions
+        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "/data.yaml", extract_cge_mlst_data)
+        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", convert_summary_for_reporter)
 
-    db_sample["properties"]["mlst"] = db_sample_component["summary"]
-    datahandling.save_sample_component(db_sample_component, sample_component_file)
-    datahandling.save_sample(db_sample, sample_file)
+        # Save to sample component
+        datahandling.save_sample_component(db_sample_component, sample_component_file)
+        # Save summary and reporter results into sample
+        db_sample["properties"]["mlst"] = db_sample_component["summary"]
+        db_sample["reporter"]["mlst"] = db_sample_component["mlst"]
+        datahandling.save_sample(db_sample, sample_file)
 
-    return 0
+    except Exception:
+        datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
+        datahandling.log(log_err, str(traceback.format_exc()))
+
+    finally:
+        datahandling.log(log_out, "Done {}\n".format(this_function_name))
+        return 0
 
 
 script__datadump(

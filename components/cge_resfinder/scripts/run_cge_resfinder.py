@@ -18,12 +18,11 @@ def script__run_cge_resfinder(input, output, sample_file, component_file, folder
         # Variables being used
         database_path = db_component["database_path"]
         reads = input.reads  # expected a tuple of read locations
-        output_file = output  # a file to mark success for snakemake
 
         # Code to run
         subprocess.Popen("resfinder.py -x -matrix -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(database_path, reads[0], reads[1], folder, log_out, log_err), shell=True).communicate()
 
-    except Exception as e:
+    except Exception:
         datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
         datahandling.log(log_err, str(traceback.format_exc()))
 
