@@ -21,7 +21,7 @@ RUN \
     conda install minimap2==2.17; \
     conda install samtools==1.9; \
     conda install cyvcf2==0.11.4; \
-    pip install bifrostlib==1.3; \
+    pip install bifrostlib==1.4; \
     pip install quast==5.0.2; \
     conda install wget==1.20.1; \
     mkdir bifrost_resources;

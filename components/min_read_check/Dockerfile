@@ -16,7 +16,7 @@ RUN \
     conda config --add channels bioconda; \
     conda install pandas==0.25.0; \
     conda install bbmap==38.58; \
-    pip install bifrostlib==1.3; \
+    pip install bifrostlib==1.4; \
     conda install wget==1.20.1; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
