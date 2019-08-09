@@ -121,7 +121,7 @@ def get_run_list():
     runs = list(db.runs.find( {},#{"type": "routine"}, #Leave in routine
                                 {"name": 1,
                                 "_id": 0,
-                                "samples": 1}).sort([['name', pymongo.DESCENDING]]))
+                                "samples": 1}).sort([['metadata.created_at', pymongo.DESCENDING]]))
     return runs
 
 
@@ -504,8 +504,7 @@ def get_last_runs(run, n, runtype):
             query = {"type": runtype}
         else:
             query = {}
-    return list(db.runs.find(query, {"name": 1, "samples": 1}).sort(
-        [("_id", pymongo.DESCENDING)]).limit(n))
+    return list(db.runs.find(query, {"name": 1, "samples": 1}).sort([['metadata.created_at', pymongo.DESCENDING]]).limit(n))
 
 
 def get_sample(sample_id):

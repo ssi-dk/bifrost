@@ -68,11 +68,20 @@ def html_collection_selector():
     )
 
 #callback
-def update_collection_button(collection):
-    if collection is not None:
-        return "/collection/" + collection
+def update_collection_button(collection, pathname):
+    if pathname is None or pathname == "/":
+        pathname = "/"
+    path = pathname.split("/")
+    if path[1] == "resequence-report":
+        if collection is not None:
+            return "/resequence-report/" + collection
+        else:
+            return "/resequence-report"
     else:
-        return "/collection"
+        if collection is not None:
+            return "/collection/" + collection
+        else:
+            return "/collection"
 
 
 def html_filter_drawer():

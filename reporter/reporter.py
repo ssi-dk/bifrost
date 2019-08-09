@@ -196,8 +196,8 @@ app.layout = html.Div([
                 ],
                 className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"),
             html.Main([
+                html_collection_selector(),
                 html.Div([
-                    html_collection_selector(),
                     dbc.Collapse(
                         [
                             html_filter_drawer()
@@ -237,17 +237,7 @@ app.layout = html.Div([
 # We could make this one much faster by hiding the unused species with CSS
 # by adding a new hidden class.
 
-# @app.callback(
-#     Output("sidebar", "className"),
-#     [Input("sidebarToggle", "n_clicks")],
-#     [State("sidebar", "className")]
-# )
-# def sidebar_toggle(n_clicks, class_name):
-#     if n_clicks and not "toggled" in class_name:
-#         return "navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled"
-#     else:
-#         return "navbar-nav bg-gradient-primary sidebar sidebar-dark accordion"
-    
+
 
 @app.callback(
     [Output("filter_panel", "is_open"),
@@ -316,7 +306,9 @@ def update_run_name(pathname, sample_store):
     else:  # /section
         section = path[1]
         if section == "resequence-report":
-            resequence_nav += " active"
+            if len(path) == 3:  #/resequence-report/collectionname
+                collection_name = path[2]
+            resequence_nav += " active" 
         else:
             samples_nav += " active"
 
@@ -331,7 +323,7 @@ def update_run_name(pathname, sample_store):
         view = pipeline_report(sample_store)
     elif section == "resequence-report":
         samples_panel = "d-none"
-        view = resequence_report()
+        view = resequence_report(collection_name)
     elif section == "link-to-files":
         view = link_to_files(sample_store)
     else:
@@ -342,6 +334,9 @@ def update_run_name(pathname, sample_store):
         collection_selector_list = "row"
         run_list = "d-none"
         collections_nav += " active"
+    elif section == "resequence-report":
+        collection_selector_list = "row"
+        run_list = "d-none"
     else:
         collection_selector_list = "row d-none"
         run_list = ""
@@ -363,6 +358,13 @@ def update_run_options(form_species, selected_collection):
 
 
 @app.callback(
+    Output("collection-selector", "value"),
+    [Input("selected-collection", "data")]
+)
+def update_run_options(selected_collection):
+    return selected_collection
+
+@app.callback(
     [Output("run-list", "value"),
      Output("group-list", "value"),
      Output("species-list", "value"),
@@ -376,10 +378,11 @@ def update_filter_values(param_store):
 
 @app.callback(
     Output("collection-link", "href"),
-    [Input("collection-selector", "value")]
+    [Input("collection-selector", "value")],
+    [State("url", "pathname")]
 )
-def update_collection_button_f(collection):
-    return update_collection_button(collection)
+def update_collection_button_f(collection, pathname):
+    return update_collection_button(collection, pathname)
 
 @app.callback(
     Output("page-n",
