@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bifrostlib',
-    version='1.4',
+    version='1.5',
     description='Datahandling functions for bifrost (later to be API interface)',
     url='https://github.com/ssi-dk/bifrost-private/tree/master/lib/bifrostlib',
     author="Kim Ng, Martin Basterrechea",
