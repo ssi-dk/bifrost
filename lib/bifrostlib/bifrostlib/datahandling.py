@@ -3,6 +3,7 @@ import ruamel.yaml
 from bson.objectid import ObjectId
 from bson.int64 import Int64
 from bifrostlib import mongo_interface
+from datetime import datetime
 import pymongo
 
 # -----Deciding whether to keep this --------
@@ -184,8 +185,7 @@ def datadump_template(data_dict, component_folder, file_path, extraction_callbac
     if os.path.isfile(os.path.join(component_folder, file_path)):
         data_dict["results"][file_path_key] = {}
         try:
-            data_dict = extraction_callback(os.path.join(component_folder, file_path),
-                                            file_path_key, data_dict)
+            data_dict = extraction_callback(os.path.join(component_folder, file_path), file_path_key, data_dict)
         except Exception as e:
             print(file_path, e)
             data_dict["results"][file_path_key]["status"] = "datadumper error"
