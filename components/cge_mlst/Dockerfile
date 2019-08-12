@@ -19,7 +19,7 @@ RUN \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
     conda install -y biopython==1.74; \
-    pip install bifrostlib==1.4; \
+    pip install bifrostlib==1.6; \
     pip install cgecore==1.5.0; \
     pip install tabulate==0.8.3; \
     # Directory for static DBs

@@ -1,5 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: whats_my_species
+category: species_detection
 version: 1.0
 target: sample
 type: pipeline
@@ -36,7 +37,10 @@ db_values_changes:
   sample:
     properties:
       species:
-      component:
-        _id:
+      species_detection:
+        summary:
+        component:
+          _id: "ObjectId"
+          date: "datetime"
 #---------------------------------------------------------------------------------------------------
 
