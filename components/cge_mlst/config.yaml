@@ -165,7 +165,7 @@ mlst_species_mapping:
 # Relative files are relative to this components folder if not using an absolute path, a recommended
 # strategy for shrared resources is to symlink the resource from the root resources folder into
 # the component resources folder. This will prevent
-mlst_database_path: "/bifrost_resources/mlst_db"
+database_path: "/bifrost_resources/mlst_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
