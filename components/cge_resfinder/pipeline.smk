@@ -123,7 +123,7 @@ rule datadumpt:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.cge_mlst.output.complete,
+        rules.cge_resfinder.output.complete,
     output:
         summary = touch(rules.all.input)
     params:
