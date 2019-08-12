@@ -46,7 +46,7 @@ def script__run_cge_mlst(input, output, sample_file, component_file, folder, log
         return 0
 
 
-script__run_cge_resfinder(
+script__run_cge_mlst(
     snakemake.input,
     snakemake.output,
     snakemake.params.sample_file,
