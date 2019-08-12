@@ -18,18 +18,36 @@ def extract_bbuk_log(file_path, key, data_dict):
     return data_dict
 
 
-def script__datadump_min_read_check(folder, sample):
-    folder = str(folder)
-    sample = str(sample)
-    data_dict = datahandling.load_sample_component(sample)
-    data_dict["summary"] = data_dict.get("summary", {})
-    data_dict["results"] = data_dict.get("results", {})
+def script__datadump(folder, sample_file, component_file, sample_component_file, log):
+    try:
+        log_out = str(log.out_file)
+        log_err = str(log.err_file)
+        db_sample = datahandling.load_sample(sample_file)
+        db_component = datahandling.load_component(component_file)
+        db_sample_component = datahandling.load_sample_component(sample_component_file)
+        this_function_name = sys._getframe().f_code.co_name
 
-    data_dict = datahandling.datadump_template(data_dict, folder, "log/setup__filter_reads_with_bbduk.err.log", extract_bbuk_log)
+        datahandling.log(log_out, "Started {}\n".format(this_function_name))
+        
+        db_sample_component["summary"] = {"component": {"id": db_component["_id"], "date": datetime.datetime.utcnow()}}
+        db_sample_component["results"] = {}
 
-    datahandling.save_sample_component(data_dict, sample)
+        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "log/setup__filter_reads_with_bbduk.err.log", extract_bbuk_log)
 
-    return 0
+        datahandling.save_sample_component(db_sample_component, sample_component_file)
+
+    except Exception:
+        datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
+        datahandling.log(log_err, str(traceback.format_exc()))
+
+    finally:
+        datahandling.log(log_out, "Done {}\n".format(this_function_name))
+        return 0
 
 
-script__datadump_min_read_check(snakemake.params.folder, snakemake.params.sample)
+script__datadump(
+    snakemake.params.folder,
+    snakemake.params.sample_file,
+    snakemake.params.component_file,
+    snakemake.params.sample_component_file,
+    snakemake.log)

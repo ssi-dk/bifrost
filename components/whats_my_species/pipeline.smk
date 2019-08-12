@@ -158,7 +158,9 @@ rule datadump_whats_my_species:
     output:
         summary = touch(rules.all.input)
     params:
-        sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
-        folder = rules.setup.params.folder
+        folder = rules.setup.params.folder,
+        sample_file = sample_file,
+        component_file = component_file,
+        sample_component_file = sample_component_file
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
