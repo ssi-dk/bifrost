@@ -52,6 +52,7 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
     except Exception:
         datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
         datahandling.log(log_err, str(traceback.format_exc()))
+        raise Exception
 
     finally:
         datahandling.log(log_out, "Done {}\n".format(this_function_name))
