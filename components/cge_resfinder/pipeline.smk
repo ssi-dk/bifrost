@@ -97,7 +97,7 @@ rule cge_resfinder:
         rules.check_requirements.output.check_file,
         reads = (R1, R2)
     output:
-        complete = rules.setup.params.folder + "/mlst_complete"
+        complete = rules.setup.params.folder + "/mlst_complete",
         data_resfinder = rules.setup.params.folder + "/data_resfinder.json"
     params:
         folder = rules.setup.params.folder,
