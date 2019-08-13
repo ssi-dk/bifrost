@@ -2,6 +2,7 @@
 import sys
 import subprocess
 import traceback
+import re
 from bifrostlib import datahandling
 
 
