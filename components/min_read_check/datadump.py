@@ -11,10 +11,7 @@ config = datahandling.load_config()
 
 def extract_bbuk_log(file_path, key, db):
     buffer = datahandling.read_buffer(file_path)
-    db["results"][key]["input_reads_num"] = int(re.search("Input:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    db["results"][key]["filtered_reads_num"] = int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    db["results"][key]["input_reads_bases"] = int(re.search("Input:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
-    db["results"][key]["filtered_reads_bases"] = int(re.search("Result:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
+    db["results"][key]["min_read_num"] = int(re.search("min_read_num:\s*([0-9]+)", buffer, re.MULTILINE).group(1))
     return db
 
 
@@ -39,7 +36,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = {} # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_bbuk_log, db_sample_component, file_path=os.path.join(folder, "log/setup__filter_reads_with_bbduk.err.log"))
+        db_sample_component = datahandling.datadump_template(extract_bbuk_log, db_sample_component, file_path=os.path.join(folder, "has_min_num_of_reads"))
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
