@@ -124,7 +124,7 @@ rule datadumpt:
     input:
         rules.cge_resfinder.output.complete,
     output:
-        summary = touch(rules.all.input)
+        complete = rules.all.input
     params:
         folder = rules.setup.params.folder,
         sample_file = sample_file,

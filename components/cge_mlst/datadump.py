@@ -1,5 +1,4 @@
 import pkg_resources
-import datetime
 import os
 import re
 import sys
@@ -10,6 +9,7 @@ config = datahandling.load_config()
 
 
 def extract_cge_mlst_data(file_path, key, data_dict):
+
     buffer = datahandling.load_yaml(file_path)
     data_dict["results"] = buffer
     return data_dict
@@ -40,7 +40,7 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "/data.yaml", extract_cge_mlst_data)
+        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "data.yaml", extract_cge_mlst_data)
         db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", convert_summary_for_reporter)
 
         # Save to sample component

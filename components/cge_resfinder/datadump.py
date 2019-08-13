@@ -22,7 +22,7 @@ def convert_summary_for_reporter(data_dict):
     return data_dict
 
 
-def script__datadump(folder, sample_file, component_file, sample_component_file, log):
+def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
     try:
         log_out = str(log.out_file)
         log_err = str(log.err_file)
@@ -39,7 +39,7 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "/data_resfinder.json", extract_cge_resfinder_data)
+        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "data_resfinder.json", extract_cge_resfinder_data)
         db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", convert_summary_for_reporter)
 
         # Save to sample component
@@ -49,10 +49,13 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
         db_sample["reporter"]["resistance"] = db_sample_component["reporter"]
         datahandling.save_sample(db_sample, sample_file)
 
+        open(output, 'w').close()  # touch file
+
     except Exception:
         datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
         datahandling.log(log_err, str(traceback.format_exc()))
         raise Exception
+        return 1
 
     finally:
         datahandling.log(log_out, "Done {}\n".format(this_function_name))
@@ -60,6 +63,7 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
 
 
 script__datadump(
+    snakemake.output.complete,
     snakemake.params.folder,
     snakemake.params.sample_file,
     snakemake.params.component_file,
