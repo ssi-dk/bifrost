@@ -187,7 +187,6 @@ def datadump_template(extraction_callback, db, key=None, file_path=None):
                 if key is None:
                     key = file_path.replace(".", "_")
         if key is not None:
-            print("hello", key)
             db["results"][key] = {}
         db = extraction_callback(file_path, key, db)
 
