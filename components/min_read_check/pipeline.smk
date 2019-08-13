@@ -97,8 +97,8 @@ rule setup__filter_reads_with_bbduk:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_requirements.output.check_file,
-        reads = (R1, R2)
+        reads = (R1, R2),
+        rules.check_requirements.output.check_file
     output:
         stats_file = rules.setup.params.folder + "/stats.txt")
     params:
