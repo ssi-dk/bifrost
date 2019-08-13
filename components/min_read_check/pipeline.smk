@@ -97,10 +97,10 @@ rule setup__filter_reads_with_bbduk:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        reads = (R1, R2),
-        rules.check_requirements.output.check_file
+        rules.check_requirements.output.check_file,
+        reads = (R1, R2)
     output:
-        stats_file = rules.setup.params.folder + "/stats.txt")
+        stats_file = rules.setup.params.folder + "/stats.txt"
     params:
         adapters = db_component["adapters_fasta"]  # This is now done to the root of the continuum container
     shell:
