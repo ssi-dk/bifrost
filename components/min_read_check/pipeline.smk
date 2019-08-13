@@ -126,6 +126,10 @@ rule greater_than_min_reads_check:
     # Dynamic
     input:
         stats_file = rules.setup__filter_reads_with_bbduk.output.stats_file,
+    params:
+        folder = rules.setup.params.folder,
+        sample_file = sample_file,
+        component_file = component_file
     output:
         file = rules.setup.params.folder + "/has_min_num_of_reads"
     script:
