@@ -1,4 +1,5 @@
 import pymongo
+import gridfs
 import re
 import os
 from datetime import datetime
@@ -398,3 +399,37 @@ def delete_sample(sample_id):
     except Exception:
         print(traceback.format_exc())
         return None
+
+# GridFS filehandling
+
+def save_file_to_db(s_c_id, file_path):
+    """
+    Will raise an error if file doesn't exist
+    """
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+    with open(file_path, 'rb') as file_handle:
+
+        file_id = fs.put(file_handle,
+                        sample_component_id=s_c_id,
+                        full_path=file_path,
+                        filename=os.path.basename(file_path))
+    return file_id
+
+
+
+def load_file_from_db(file_id, save_to_path):
+    if os.path.isfile(save_to_path):
+        raise FileExistsError
+
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+
+    with open(save_to_path, 'wb') as file_handle:
+
+        fobj = fs.get(file_id)
+
+        file_handle.write(fobj.read())
+    return file_id

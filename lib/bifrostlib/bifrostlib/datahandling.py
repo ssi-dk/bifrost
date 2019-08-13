@@ -429,6 +429,18 @@ def delete_sample_from_runs(sample_id=None):
     return mongo_interface.delete_sample_from_runs(sample_id)
 
 
+
+def save_files_to_db(file_paths, sample_component_id):
+    file_ids = []
+    for file_path in file_paths:
+        file_ids.append(mongo_interface.save_file_to_db(
+            sample_component_id, file_path))
+    return file_ids
+
+
+def load_file_from_db(file_id, save_to_path):
+    return mongo_interface.load_file_from_db(file_id, save_to_path)
+
 def test():
     print("Hello")
     return (u'This is the bifrost lib')
