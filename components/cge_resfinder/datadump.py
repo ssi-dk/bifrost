@@ -15,7 +15,7 @@ def extract_cge_resfinder_data(file_path, key, data_dict):
     return data_dict
 
 
-def convert_summary_for_reporter(data_dict):
+def convert_summary_for_reporter(file_path, key, data_dict):
     for anti_biotic_class in data_dict["results"]["resfinder"]["results"]:
         for gene in anti_biotic_class:
             data_dict["reporter"]["content"].append([gene["resistance_gene"], gene["coverage"], gene["identity"], anti_biotic_class, gene["predicted_phenotype"]])  # table rows
@@ -24,6 +24,7 @@ def convert_summary_for_reporter(data_dict):
 
 def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
     try:
+        output = str(output)
         log_out = str(log.out_file)
         log_err = str(log.err_file)
         db_sample = datahandling.load_sample(sample_file)
@@ -39,8 +40,8 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "data_resfinder.json", extract_cge_resfinder_data)
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", convert_summary_for_reporter)
+        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"))
+        db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)

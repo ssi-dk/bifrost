@@ -3,8 +3,8 @@ import ruamel.yaml
 from bson.objectid import ObjectId
 from bson.int64 import Int64
 from bifrostlib import mongo_interface
-from datetime import datetime
 import pymongo
+import traceback
 
 # -----Deciding whether to keep this --------
 # class DatadumpSampleComponentObj:
@@ -180,20 +180,24 @@ def read_buffer(file_path):
     return buffer
 
 
-def datadump_template(data_dict, component_folder, file_path, extraction_callback):
-    file_path_key = file_path.replace(".", "_")
-    if os.path.isfile(os.path.join(component_folder, file_path)):
-        data_dict["results"][file_path_key] = {}
-        try:
-            data_dict = extraction_callback(os.path.join(component_folder, file_path), file_path_key, data_dict)
-        except Exception as e:
-            print(file_path, e)
-            data_dict["results"][file_path_key]["status"] = "datadumper error"
-        return data_dict
+def datadump_template(extraction_callback, db, key=None, file_path=None):
+    try:
+        if file_path is not None:
+            if os.path.isfile(file_path):
+                if key is None:
+                    key = file_path.replace(".", "_")
+        db["results"][key] = {}
+        db = extraction_callback(file_path, key, db)
+
+    except Exception:
+        print(traceback.format_exc())
+        db["results"][file_path_key]["status"] = "datadumper error"
+        raise Exception
+
+    return db
 
 
 # /runs
-
 def post_run(run):
     # Used only by test suite for now.
     # NOTE: dump_run_info acts like a PUT
