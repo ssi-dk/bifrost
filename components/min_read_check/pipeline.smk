@@ -152,7 +152,7 @@ rule datadumpt:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.setup__filter_reads_with_bbduk.output.filtered_reads
+        rules.greater_than_min_reads_check.output.file
     output:
         complete = rules.all.input
     params:
