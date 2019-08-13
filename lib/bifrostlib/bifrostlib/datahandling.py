@@ -186,12 +186,15 @@ def datadump_template(extraction_callback, db, key=None, file_path=None):
             if os.path.isfile(file_path):
                 if key is None:
                     key = file_path.replace(".", "_")
-        db["results"][key] = {}
+        if key is not None:
+            print("hello")
+            db["results"][key] = {}
         db = extraction_callback(file_path, key, db)
 
     except Exception:
         print(traceback.format_exc())
-        db["results"][file_path_key]["status"] = "datadumper error"
+        if key is not None:
+            db["results"][key]["status"] = "datadumper error"
         raise Exception
 
     return db
