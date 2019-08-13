@@ -5,7 +5,6 @@ version: 1.0
 target: sample
 type: pipeline
 recommendation: recommended
-requires_db: True
 description: >
   This preforms read based mapping against the resfinder DB's. The options show the species entries 
   which will be attempted for mlst with key originating from the species DB. This is done against 

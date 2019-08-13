@@ -1,5 +1,4 @@
 import pkg_resources
-import datetime
 import os
 import re
 import sys
@@ -9,21 +8,21 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
-def extract_cge_resfinder_data(file_path, key, data_dict):
+def extract_cge_resfinder_data(file_path, key, db):
     buffer = datahandling.load_yaml(file_path)
-    data_dict["results"][key] = buffer
-    return data_dict
+    db["results"][key] = buffer
+    return db
 
 
-def convert_summary_for_reporter(file_path, key, data_dict):
-    resfinder_dict = data_dict["results"]["data_resfinder_json"]["resfinder"]["results"]
+def convert_summary_for_reporter(file_path, key, db):
+    resfinder_dict = db["results"]["data_resfinder_json"]["resfinder"]["results"]
     for anti_biotic_class in resfinder_dict:
         for subclass in resfinder_dict[anti_biotic_class]:
             if resfinder_dict[anti_biotic_class][subclass] != "No hit found":
                 gene_dict = resfinder_dict[anti_biotic_class][subclass]
                 for gene in gene_dict:
-                    data_dict["reporter"]["content"].append([gene_dict[gene]["resistance_gene"], gene_dict[gene]["coverage"], gene_dict[gene]["identity"], anti_biotic_class, gene_dict[gene]["predicted_phenotype"]])  # table rows
-    return data_dict
+                    db["reporter"]["content"].append([gene_dict[gene]["resistance_gene"], gene_dict[gene]["coverage"], gene_dict[gene]["identity"], anti_biotic_class, gene_dict[gene]["predicted_phenotype"]])  # table rows
+    return db
 
 
 def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
@@ -39,15 +38,15 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        datahandling.save_files_to_db(["cge_resfinder/results.txt", "cge_resfinder/results_tab.txt"], sample_component_id=db_sample_component["_id"])
+        # datahandling.save_files_to_db(["cge_resfinder/results.txt", "cge_resfinder/results_tab.txt"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
-        db_sample_component["summary"] = {"component": {"id": db_component["_id"], "date": datetime.datetime.utcnow()}}
+        db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"), key="data_resfinder_json")
+        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component

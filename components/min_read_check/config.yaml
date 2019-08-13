@@ -1,5 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: min_read_check
+category: &category Size Check
 version: 1.0
 target: sample
 type: pipeline
@@ -9,7 +10,7 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "docker://ssidk/bifrost-min_read_check:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-min_read_check:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -30,5 +31,12 @@ requirements:
       R1:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
-# None
+db_values_changes:
+  sample:
+    properties:
+      size_check:
+        component:
+          _id: "ObjectId"
+          date: "datetime"
+  reporter:
 #---------------------------------------------------------------------------------------------------

@@ -1,7 +1,5 @@
 import os
 import sys
-import pandas
-import Bio.SeqIO
 import re
 import traceback
 import shutil
@@ -70,7 +68,7 @@ rule check_requirements:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        folder = rules.setup.output.init_file,
+        rules.setup.output.init_file,
     output:
         check_file = rules.setup.params.folder + "/requirements_met",
     params:
@@ -138,8 +136,8 @@ rule greater_than_min_reads_check:
                 output.write("min_read_num:{}".format(min_read_number))
 
 
-rule_name = "datadump_min_read_check"
-rule datadump_min_read_check:
+rule_name = "datadump"
+rule datadumpt:
     # Static
     message:
         "Running step:" + rule_name
@@ -156,7 +154,7 @@ rule datadump_min_read_check:
     input:
         rules.setup__filter_reads_with_bbduk.output.filtered_reads
     output:
-        summary = touch(rules.all.input)
+        complete = rules.all.input
     params:
         folder = rules.setup.params.folder,
         sample_file = sample_file,

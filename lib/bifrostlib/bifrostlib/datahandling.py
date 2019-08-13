@@ -185,7 +185,7 @@ def datadump_template(extraction_callback, db, key=None, file_path=None):
         if file_path is not None:
             if os.path.isfile(file_path):
                 if key is None:
-                    key = file_path.replace(".", "_")
+                    key = file_path.replace(".", "_").replace("$", "_")  # $ and . are special characters to be avoided in keys
         if key is not None:
             db["results"][key] = {}
         db = extraction_callback(file_path, key, db)
