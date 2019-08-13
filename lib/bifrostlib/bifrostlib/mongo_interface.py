@@ -2,6 +2,7 @@ import pymongo
 import gridfs
 import re
 import os
+import sys
 from datetime import datetime
 import ruamel.yaml
 import traceback
@@ -409,6 +410,18 @@ def save_file_to_db(s_c_id, file_path):
     connection = get_connection()
     db = connection.get_database()
     fs = gridfs.GridFS(db)
+
+    # check if file is there
+    existing = fs.find_one({
+        "sample_component_id":s_c_id,
+        "full_path": file_path
+    })
+    if existing:
+        print(("WARNING: File {} already exists in".format(file_path),
+        " the db for this component,",
+        " it was overwritten by the new file."), file=sys.stderr)
+        fs.delete(existing._id)
+
     with open(file_path, 'rb') as file_handle:
 
         file_id = fs.put(file_handle,
@@ -419,7 +432,8 @@ def save_file_to_db(s_c_id, file_path):
 
 
 
-def load_file_from_db(file_id, save_to_path):
+def load_file_from_db(file_id, save_to_path=None):
+
     if os.path.isfile(save_to_path):
         raise FileExistsError
 
@@ -427,9 +441,16 @@ def load_file_from_db(file_id, save_to_path):
     db = connection.get_database()
     fs = gridfs.GridFS(db)
 
+    fobj = fs.get(file_id)
+
+    if os.path.isdir(save_to_path):
+        save_to_path = os.path.join(save_to_path, fobj.filename)
+
+    if save_to_path is None:
+        save_to_path = fobj.filename
+
     with open(save_to_path, 'wb') as file_handle:
 
-        fobj = fs.get(file_id)
 
         file_handle.write(fobj.read())
     return file_id

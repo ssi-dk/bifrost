@@ -438,7 +438,7 @@ def save_files_to_db(file_paths, sample_component_id):
     return file_ids
 
 
-def load_file_from_db(file_id, save_to_path):
+def load_file_from_db(file_id, save_to_path=None):
     return mongo_interface.load_file_from_db(file_id, save_to_path)
 
 def test():
