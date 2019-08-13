@@ -129,7 +129,7 @@ rule greater_than_min_reads_check:
     output:
         file = rules.setup.params.folder + "/has_min_num_of_reads"
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_greater_than_min_reads_check.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/greater_than_min_reads_check.py")
 
 
 rule_name = "datadump"
