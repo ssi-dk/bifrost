@@ -128,12 +128,8 @@ rule greater_than_min_reads_check:
         stats_file = rules.setup__filter_reads_with_bbduk.output.stats_file,
     output:
         file = rules.setup.params.folder + "/has_min_num_of_reads"
-    run:
-        min_read_number = int(db_component["min_num_reads"])
-        buffer = datahandling.read_buffer(input.stats_file)
-        if int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1)) > min_read_number:
-            with open(output.file, "w") as output:
-                output.write("min_read_num:{}".format(min_read_number))
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_greater_than_min_reads_check.py")
 
 
 rule_name = "datadump"
