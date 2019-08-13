@@ -11,14 +11,18 @@ config = datahandling.load_config()
 
 def extract_cge_resfinder_data(file_path, key, data_dict):
     buffer = datahandling.load_yaml(file_path)
-    data_dict["results"] = buffer
+    data_dict["results"][key] = buffer
     return data_dict
 
 
 def convert_summary_for_reporter(file_path, key, data_dict):
-    for anti_biotic_class in data_dict["results"]["resfinder"]["results"]:
-        for gene in anti_biotic_class:
-            data_dict["reporter"]["content"].append([gene["resistance_gene"], gene["coverage"], gene["identity"], anti_biotic_class, gene["predicted_phenotype"]])  # table rows
+    resfinder_dict = data_dict["results"]["data_resfinder_json"]["resfinder"]["results"]
+    for anti_biotic_class in resfinder_dict:
+        for subclass in resfinder_dict[anti_biotic_class]:
+            if resfinder_dict[anti_biotic_class][subclass] != "No hit found":
+                gene_dict = resfinder_dict[anti_biotic_class][subclass]
+                for gene in gene_dict:
+                    data_dict["reporter"]["content"].append([gene_dict[gene]["resistance_gene"], gene_dict[gene]["coverage"], gene_dict[gene]["identity"], anti_biotic_class, gene_dict[gene]["predicted_phenotype"]])  # table rows
     return data_dict
 
 
@@ -40,7 +44,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"))
+        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"), key="data_resfinder_json")
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
@@ -49,8 +53,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample["properties"]["resistance"] = db_sample_component["summary"]
         db_sample["reporter"]["resistance"] = db_sample_component["reporter"]
         datahandling.save_sample(db_sample, sample_file)
-
-        open(output, 'w').close()  # touch file
+        open(output, 'w+').close()  # touch file
 
     except Exception:
         datahandling.log(log_out, "Exception in {}\n".format(this_function_name))

@@ -265,6 +265,7 @@ rule initialize_samples_from_sample_folder:
                                             md5sum.update(data)
                                         sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                         sample_db["properties"] = sample_db.get("properties", {})
+                        sample_db["reporter"] = sample_db.get("reporter", {})
                     datahandling.save_sample(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
