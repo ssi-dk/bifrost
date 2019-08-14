@@ -15,7 +15,7 @@ def extract_cge_mlst_data(file_path, key, db):
     return db
 
 
-def convert_summary_for_reporter(db):
+def convert_summary_for_reporter(file_path, key, db):
     for mlst_db in db["results"]["mlst"]:
         strain = mlst_db["results"]["sequence_type"]
         alleles = "".join([allele["allele_name"] for allele in mlst_db["results"]["allele_profile"]])
