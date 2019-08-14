@@ -10,7 +10,6 @@ config = datahandling.load_config()
 
 def extract_contigs_sum_cov(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
-    db["results"][key] = yaml
     for bin_value in GLOBAL_cov_bin_values:
         total_length = 0
         total_depth = 0
@@ -28,7 +27,6 @@ def extract_contigs_sum_cov(file_path, key, db):
 
 def extract_contigs_bin_cov(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
-    db["results"][key] = yaml
     for bin_value in GLOBAL_cov_bin_values:
         db["summary"]["raw_length_at_{}x".format(bin_value)] = yaml["binned_depth"][bin_value - 1]
     return db
@@ -58,7 +56,6 @@ def extract_quast_report(file_path, key, db):
 
 def extract_contig_variants(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
-    db["results"][key] = yaml
     db["summary"]["snp_filter_10x_10%"] = yaml["variant_table"][9][9]
     db["summary"]["snp_filter_indels"] = yaml["indels"]
     db["summary"]["snp_filter_deletions"] = yaml["deletions"]
@@ -75,12 +72,6 @@ def extract_contig_stats(file_path, key, db):
     db["summary"]["reads_unmapped"] = db["results"][key]["reads_unmapped"]
     db["summary"]["insert_size_average"] = db["results"][key]["insert_size_average"]
     db["summary"]["insert_size_standard_deviation"] = db["results"][key]["insert_size_standard_deviation"]
-    return db
-
-
-def extract_contig_sketch(file_path, key, db):
-    buffer = datahandling.read_buffer(file_path)
-    db["results"][key] = buffer.split("\n")
     return db
 
 
@@ -113,7 +104,6 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(extract_quast_report, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "quast/report.tsv"))
         db_sample_component = datahandling.datadump_template(extract_contig_variants, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "contigs.variants"))
         db_sample_component = datahandling.datadump_template(extract_contig_stats, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "contigs.stats"))
-        db_sample_component = datahandling.datadump_template(extract_contig_sketch, db_sample_component, file_path=os.path.join(GLOBAL_component_name,  "contigs.sketch"))
 
         datahandling.save_sample_component(db_sample_component, sample_component_file)
 
