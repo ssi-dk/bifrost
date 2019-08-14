@@ -60,9 +60,7 @@ def extract_quast_report(file_path, key, db):
 
 def extract_contig_variants(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
-    db["results"][key]["snp_filter_10x_10%"] = yaml["variant_table"][9][9]
-    db["results"][key]["snp_filter_indels"] = yaml["indels"]
-    db["results"][key]["snp_filter_deletions"] = yaml["deletions"]
+    db["results"][key] = yaml
     db["summary"]["snp_filter_10x_10%"] = yaml["variant_table"][9][9]
     db["summary"]["snp_filter_indels"] = yaml["indels"]
     db["summary"]["snp_filter_deletions"] = yaml["deletions"]
