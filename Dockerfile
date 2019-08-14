@@ -10,19 +10,19 @@ LABEL \
     DBversion="29/07/2019" \
     maintainer="mbas@ssi.dk;"
 
-RUN mkdir /run
+RUN mkdir /bifrost_run
 
 # Copying bifrost info
-COPY . /run/src
+COPY . /bifrost_run/src
 
 # Install requirements for bifrost
 RUN \
-    conda env create -f /run/src/envs/bifrost_for_install.yaml; \
+    conda env create -f /bifrost_run/src/envs/bifrost_for_install.yaml; \
     conda activate bifrost
 
 
 # Install bifrostlib
-RUN pip install /run/src/lib/bifrostlib/
+RUN pip install /bifrost_run/src/lib/bifrostlib/
 
 # Set up database connection
 ARG BIFROST_URI
@@ -34,13 +34,13 @@ ENV BIFROST_DB_KEY /bifrost_key.txt
 
 # Test stuff
 RUN \
-    mkdir -p /run/samples; \
-    cd /run/samples; \
+    mkdir -p /bifrost_run/samples; \
+    cd /bifrost_run/samples; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_1.fastq.gz; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_2.fastq.gz; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_1.fastq.gz; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
-    cd /run \
+    cd /bifrost_run \
     snakemake -s src/bifrost.smk --config \
         read_pattern=(?P<sample_name>.+?)_(?<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz) \
         run_name=test_run \
