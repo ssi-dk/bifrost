@@ -42,10 +42,10 @@ RUN \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
     cd /run \
     snakemake -s src/bifrost.smk --config \
-        read_pattern=(?P<sample_name>.+?)_(?<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)
-        run_name=test_run
-        grid=none
-        components=min_read_check
+        read_pattern=(?P<sample_name>.+?)_(?<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz) \
+        run_name=test_run \
+        grid=none \
+        components=min_read_check;
     # apt-get update -qq --fix-missing; \
 #     apt-get install -y -qq build-essential; \
 #     apt-get install -y -qq zlib1g-dev; \
