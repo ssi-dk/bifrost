@@ -16,9 +16,10 @@ def extract_cge_mlst_data(file_path, key, db):
 
 
 def convert_summary_for_reporter(file_path, key, db):
-    for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]["mlst"]:
-        strain = mlst_db["results"]["sequence_type"]
-        alleles = "".join([allele["allele_name"] for allele in mlst_db["results"]["allele_profile"]])
+    for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]:
+        strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]
+        strain = strain_db["mlst"]["results"]["sequence_type"]
+        alleles = ", ".join([strain_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in strain_db["mlst"]["results"]["allele_profile"]])
         db["reporter"]["content"].append([mlst_db, strain, alleles])
     return db
 
@@ -53,7 +54,6 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
         db_sample["properties"]["mlst"] = db_sample_component["summary"]
-        db_sample["reporter"]["mlst"] = db_sample_component["mlst"]
         datahandling.save_sample(db_sample, sample_file)
 
         open(output, 'w+').close()  # touch file

@@ -33,7 +33,7 @@ def script__run_cge_mlst(input, output, sample_file, component_file, folder, log
                 datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
                 subprocess.Popen("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path), shell=True).communicate()
                 subprocess.Popen("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), shell=True).communicate()
-                data_dict[mlst_entry] = datahandling.load_yaml(mlst_entry + "/data.json")
+                data_dict[mlst_entry] = datahandling.load_yaml(folder + "/" + mlst_entry + "/data.json")
             datahandling.save_yaml(data_dict, output_file)
 
     except Exception:
