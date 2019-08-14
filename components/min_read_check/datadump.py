@@ -9,8 +9,9 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
-def extract_bbuk_log(file_path, key, db):
+def has_min_num_of_reads(file_path, key, db):
     buffer = datahandling.read_buffer(file_path)
+    db["results"][key]["has_min_num_of_reads"] = True
     db["results"][key]["min_read_num"] = int(re.search("min_read_num:\s*([0-9]+)", buffer, re.MULTILINE).group(1))
     return db
 
