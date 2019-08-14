@@ -22,11 +22,11 @@ def script__run_cge_mlst(input, output, sample_file, component_file, folder, log
         species = db_sample["properties"]["species"]
 
         # Code to run
-        if species not in db_component["mlst_species_mapping"]:
+        if species not in db_component["options"]["mlst_species_mapping"]:
             datahandling.log(log_out, "cge mlst species: {}\n".format(species))
             subprocess.Popen("touch " + folder + "/no_mlst_species_DB").communicate()
         else:
-            mlst_species = db_component["mlst_species_mapping"][species]
+            mlst_species = db_component["options"]["mlst_species_mapping"][species]
             data_dict = {}
             for mlst_entry in mlst_species:
                 mlst_entry_path = folder + "/" + mlst_entry

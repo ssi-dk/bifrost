@@ -34,8 +34,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         this_function_name = sys._getframe().f_code.co_name
         global GLOBAL_component_name
         GLOBAL_component_name = db_component["name"]
-        global GLOBAL_cov_bin_values
-        GLOBAL_cov_bin_values = db_component["options"]["cov_bin_values"]
+
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
