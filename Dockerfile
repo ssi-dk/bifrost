@@ -13,6 +13,9 @@ LABEL \
 # Copying bifrost info
 COPY . /src
 
+# Install requirements for bifrost
+RUN conda env create -f /src/envs/bifrost_for_install.yaml
+
 # Install bifrostlib
 RUN pip install /src/lib/bifrostlib/
 
@@ -23,8 +26,6 @@ RUN echo $BIFROST_URI /bifrost_key.txt;
 
 ENV BIFROST_DB_KEY /bifrost_key.txt
 
-# Install requirements for bifrost
-RUN conda install -y --file /src/envs/bifrost_for_install.yaml
 
 
 RUN \
