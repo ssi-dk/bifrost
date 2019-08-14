@@ -107,7 +107,7 @@ rule cge_resfinder:
 
 
 rule_name = "datadump"
-rule datadumpt:
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name

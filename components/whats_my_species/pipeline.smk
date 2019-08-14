@@ -2,7 +2,6 @@ import os
 import sys
 import traceback
 import shutil
-import pandas
 from bifrostlib import datahandling
 from bifrostlib import check_requirements
 
@@ -138,8 +137,8 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
         """
 
 
-rule_name = "datadump_whats_my_species"
-rule datadump_whats_my_species:
+rule_name = "datadump"
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
@@ -154,9 +153,9 @@ rule datadump_whats_my_species:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        species = rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.kraken_report_bracken,
+        rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.kraken_report_bracken,
     output:
-        summary = touch(rules.all.input)
+        complete = rules.all.input
     params:
         folder = rules.setup.params.folder,
         sample_file = sample_file,

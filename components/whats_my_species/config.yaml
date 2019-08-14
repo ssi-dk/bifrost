@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: whats_my_species
-category: species_detection
+category: &category Species Detection
 version: 1.0
 target: sample
 type: pipeline
@@ -11,7 +11,7 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "docker://ssidk/bifrost-whats_my_species:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-whats_my_species:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
@@ -42,5 +42,6 @@ db_values_changes:
         component:
           _id: "ObjectId"
           date: "datetime"
+  reporter:
 #---------------------------------------------------------------------------------------------------
 

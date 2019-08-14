@@ -108,7 +108,7 @@ rule cge_mlst:
 
 
 rule_name = "datadump"
-rule datadumpt:
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name

@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 import traceback
 import shutil
 from bifrostlib import datahandling
@@ -135,7 +134,7 @@ rule greater_than_min_reads_check:
 
 
 rule_name = "datadump"
-rule datadumpt:
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
