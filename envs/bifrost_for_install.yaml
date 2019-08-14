@@ -1,5 +1,5 @@
 # In process of updating to a system where components have their own env's launched on top of bifrost's env. This should reduce dependencies here.
-name: bifrost
+# name: bifrost
 channels:
   - defaults
   - bioconda
