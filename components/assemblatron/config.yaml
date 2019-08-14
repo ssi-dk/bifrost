@@ -35,14 +35,14 @@ requirements:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files:
-    - contigs.fasta
-    - contigs.bin.cov
-    - contigs.gff
-    - contigs.pileup
-    - contigs.sketch
-    - contigs.stats
-    - contigs.sum.cov
-    - contigs.variants
+    - assemblatron/contigs.fasta
+    - assemblatron/contigs.bin.cov
+    - assemblatron/contigs.gff
+    - assemblatron/contigs.pileup
+    - assemblatron/contigs.sketch
+    - assemblatron/contigs.stats
+    - assemblatron/contigs.sum.cov
+    - assemblatron/contigs.variants
   sample:
     properties:
       species:
@@ -50,7 +50,7 @@ db_values_changes:
         summary:
         component:
           _id: "ObjectId"
-          date: "datetime"
+          _date: "datetime"
     reporter:
   sample_component:
     summary:

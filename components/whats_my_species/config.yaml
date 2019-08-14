@@ -45,7 +45,7 @@ db_values_changes:
         summary:
         component:
           _id: "ObjectId"
-          date: "datetime"
+          _date: "datetime"
     reporter:
   sample_component:
     summary:

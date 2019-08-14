@@ -40,7 +40,7 @@ db_values_changes:
       resistance:
         component:
           _id: "ObjectId"
-          date: "datetime"
+          _date: "datetime"
     reporter:
       resistance:
         title: *category
