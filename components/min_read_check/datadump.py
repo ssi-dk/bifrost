@@ -12,7 +12,7 @@ config = datahandling.load_config()
 def extract_has_min_num_of_reads(file_path, key, db):
     buffer = datahandling.read_buffer(file_path)
     db["results"][key]["min_read_num"] = int(re.search("min_read_num:\s*([0-9]+)", buffer, re.MULTILINE).group(1))
-    db["results"]["summary"]["has_min_num_of_reads"] = True
+    db["summary"]["has_min_num_of_reads"] = True
     return db
 
 
