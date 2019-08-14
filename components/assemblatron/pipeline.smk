@@ -415,8 +415,8 @@ rule rename_contigs:
         "sed -e 's/Contig/{params.sample_name}/' {input.contigs} > {output.contigs}"
 
 
-rule_name = "datadump_assemblatron"
-rule datadump_assemblatron:
+rule_name = "datadump"
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
@@ -441,7 +441,7 @@ rule datadump_assemblatron:
         rules.assembly_check__sketch_on_contigs.output.sketch,
         rules.rename_contigs.output.contigs,
     output:
-        summary = touch(rules.all.input)
+        complete = rules.all.input
     params:
         folder = rules.setup.params.folder,
         sample_file = sample_file,

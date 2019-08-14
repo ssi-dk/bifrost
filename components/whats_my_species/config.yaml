@@ -34,6 +34,10 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
+  files:
+    - whats_my_species/kraken_report.txt
+    - whats_my_species/bracken.txt
+    - whats_my_species/kraken_report_bracken.txt
   sample:
     properties:
       species:
@@ -43,5 +47,13 @@ db_values_changes:
           _id: "ObjectId"
           date: "datetime"
     reporter:
+  sample_component:
+    summary:
+      percent_unclassified:
+      percent_classified_species_1:
+      name_classified_species_1:
+      percent_classified_species_2:
+      name_classified_species_2 :
+      detected_species:
 #---------------------------------------------------------------------------------------------------
 

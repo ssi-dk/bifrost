@@ -31,12 +31,12 @@ def extract_kraken_report_bracken_txt(file_path, key, db):
 
 
 def species_math(file_path, key, db):
-    if "status" not in db["results"][component_name + "/kraken_report_bracken_txt"] and "status" not in db["results"][component_name + "/bracken_txt"] and "species_1_count" in db["results"][component_name + "/bracken_txt"] and "species_2_count" in db["results"][component_name + "/bracken_txt"]:
-        db["summary"]["percent_unclassified"] = db["results"][component_name + "/kraken_report_bracken_txt"]["unclassified_count"] / (db["results"][component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][component_name + "/kraken_report_bracken_txt"]["root"])
-        db["summary"]["percent_classified_species_1"] = db["results"][component_name + "/bracken_txt"]["species_1_count"] / (db["results"][component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][component_name + "/kraken_report_bracken_txt"]["root"])
-        db["summary"]["name_classified_species_1"] = db["results"][component_name + "/bracken_txt"]["species_1_name"]
-        db["summary"]["percent_classified_species_2"] = db["results"][component_name + "/bracken_txt"]["species_2_count"] / (db["results"][component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][component_name + "/kraken_report_bracken_txt"]["root"])
-        db["summary"]["name_classified_species_2"] = db["results"][component_name + "/bracken_txt"]["species_2_name"]
+    if "status" not in db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"] and "status" not in db["results"][GLOBAL_component_name + "/bracken_txt"] and "species_1_count" in db["results"][GLOBAL_component_name + "/bracken_txt"] and "species_2_count" in db["results"][GLOBAL_component_name + "/bracken_txt"]:
+        db["summary"]["percent_unclassified"] = db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] / (db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["root"])
+        db["summary"]["percent_classified_species_1"] = db["results"][GLOBAL_component_name + "/bracken_txt"]["species_1_count"] / (db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["root"])
+        db["summary"]["name_classified_species_1"] = db["results"][GLOBAL_component_name + "/bracken_txt"]["species_1_name"]
+        db["summary"]["percent_classified_species_2"] = db["results"][GLOBAL_component_name + "/bracken_txt"]["species_2_count"] / (db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["root"])
+        db["summary"]["name_classified_species_2"] = db["results"][GLOBAL_component_name + "/bracken_txt"]["species_2_name"]
         db["summary"]["detected_species"] = db["summary"]["name_classified_species_1"]
     return db
 
@@ -58,13 +58,13 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_component = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
-        global component_name
-        component_name = db_component["name"]
+        global GLOBAL_component_name
+        GLOBAL_component_name = db_component["name"]
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        datahandling.save_files_to_db([component_name + "/kraken_report.txt", component_name + "/bracken.txt", component_name + "/kraken_report_bracken.txt"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}

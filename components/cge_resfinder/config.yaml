@@ -34,6 +34,7 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
+  files:
   sample:
     properties:
       resistance:
@@ -45,4 +46,6 @@ db_values_changes:
         title: *category
         info: *dockerfile
         content: [["gene", "%cov", "%id", "anti-biotic class", "pred. phenotype"]]  # headers
+  sample_component:
+    summary:
 #---------------------------------------------------------------------------------------------------

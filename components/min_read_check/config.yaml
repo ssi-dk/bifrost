@@ -14,7 +14,8 @@ dockerfile: &dockerfile "docker://ssidk/bifrost-min_read_check:1.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-min_num_reads: 10000
+options:
+  min_num_reads: 10000
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
@@ -32,6 +33,7 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
+  files:
   sample:
     properties:
       size_check:
@@ -39,4 +41,7 @@ db_values_changes:
           _id: "ObjectId"
           date: "datetime"
     reporter:
+  sample_component:
+    summary:
+      has_min_num_of_reads: # Boolean
 #---------------------------------------------------------------------------------------------------

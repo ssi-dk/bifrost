@@ -17,7 +17,7 @@ def script__run_cge_resfinder(input, output, sample_file, component_file, folder
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Variables being used
-        min_read_number = int(db_component["min_num_reads"])
+        min_read_number = int(db_component["options"]["min_num_reads"])
         stats_data = datahandling.read_buffer(input.stats_file)
         output_file = str(output.file)
 

@@ -35,13 +35,13 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_component = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
-        global component_name
-        component_name = db_component["name"]
+        global GLOBAL_component_name
+        GLOBAL_component_name = db_component["name"]
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        # datahandling.save_files_to_db(["cge_resfinder/results.txt", "cge_resfinder/results_tab.txt"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
@@ -49,7 +49,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(component_name, "data_resfinder.json"))
+        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data_resfinder.json"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component

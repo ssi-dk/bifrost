@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: assemblatron
-category: de-novo assembly
+category: &category De-novo Assembly
 version: 1.0
 target: sample
 type: pipeline
@@ -13,7 +13,12 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: "docker://ssidk/bifrost-assemblatron:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-assemblatron:1.0"
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+options:
+  bin_values: [1, 10, 25]
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
@@ -28,5 +33,42 @@ requirements:
       R1:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
-# None
+db_values_changes:
+  files:
+    - contigs.fasta
+    - contigs.bin.cov
+    - contigs.gff
+    - contigs.pileup
+    - contigs.sketch
+    - contigs.stats
+    - contigs.sum.cov
+    - contigs.variants
+  sample:
+    properties:
+      species:
+      species_detection:
+        summary:
+        component:
+          _id: "ObjectId"
+          date: "datetime"
+    reporter:
+  sample_component:
+    summary:
+      bin_contigs_at_1x:
+      bin_contigs_at_10x:
+      bin_contigs_at_25x:
+      raw_length_at_1x:
+      raw_length_at_10x:
+      raw_length_at_25x:
+      filtered_reads_num:
+      GC:
+      N50:
+      snp_filter_10x_10%:
+      snp_filter_indels:
+      snp_filter_deletions:
+      raw_total_sequences:
+      reads_mapped:
+      reads_unmapped:
+      insert_size_average:
+      insert_size_standard_deviation:
 #---------------------------------------------------------------------------------------------------
