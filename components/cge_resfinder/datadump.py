@@ -16,7 +16,7 @@ def extract_cge_resfinder_data(file_path, key, db):
 
 
 def convert_summary_for_reporter(file_path, key, db):
-    resfinder_dict = db["results"]["data_resfinder_json"]["resfinder"]["results"]
+    resfinder_dict = db["results"]["cge_resfinder/data_resfinder_json"]["resfinder"]["results"]
     for anti_biotic_class in resfinder_dict:
         for subclass in resfinder_dict[anti_biotic_class]:
             if resfinder_dict[anti_biotic_class][subclass] != "No hit found":
