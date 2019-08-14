@@ -48,7 +48,7 @@ def set_sample_species(file_path, key, db):
     return db
 
 
-def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
+def script__datadump(output, sample_file, component_file, sample_component_file, log):
     try:
         output = str(output)
         log_out = str(log.out_file)
@@ -63,7 +63,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        datahandling.save_files_to_db([folder + "/kraken_report.txt", folder + "/bracken.txt", folder + "/kraken_report_bracken.txt"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db([component_name + "/kraken_report.txt", component_name + "/bracken.txt", component_name + "/kraken_report_bracken.txt"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
@@ -71,8 +71,8 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = {}  # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(folder, "bracken.txt"))
-        db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(folder, "kraken_report_bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(component_name, "bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(component_name, "kraken_report_bracken.txt"))
         db_sample_component = datahandling.datadump_template(species_math, db_sample_component)
 
         # Save to sample component
@@ -97,7 +97,6 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
 
 script__datadump(
     snakemake.output.complete,
-    snakemake.params.folder,
     snakemake.params.sample_file,
     snakemake.params.component_file,
     snakemake.params.sample_component_file,

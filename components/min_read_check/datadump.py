@@ -16,7 +16,7 @@ def extract_has_min_num_of_reads(file_path, key, db):
     return db
 
 
-def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
+def script__datadump(output, sample_file, component_file, sample_component_file, log):
     try:
         output = str(output)
         log_out = str(log.out_file)
@@ -25,6 +25,8 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_component = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
+        global component_name
+        component_name = db_component["name"]
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
@@ -37,7 +39,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = {} # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_has_min_num_of_reads, db_sample_component, file_path=os.path.join(folder, "has_min_num_of_reads"))
+        db_sample_component = datahandling.datadump_template(extract_has_min_num_of_reads, db_sample_component, file_path=os.path.join(component_name, "has_min_num_of_reads"))
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
@@ -60,7 +62,6 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
 
 script__datadump(
     snakemake.output.complete,
-    snakemake.params.folder,
     snakemake.params.sample_file,
     snakemake.params.component_file,
     snakemake.params.sample_component_file,

@@ -26,7 +26,7 @@ def convert_summary_for_reporter(file_path, key, db):
     return db
 
 
-def script__datadump(output, folder, sample_file, component_file, sample_component_file, log):
+def script__datadump(output, sample_file, component_file, sample_component_file, log):
     try:
         output = str(output)
         log_out = str(log.out_file)
@@ -35,6 +35,8 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_component = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
+        global component_name
+        component_name = db_component["name"]
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
@@ -47,7 +49,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(folder, "data_resfinder.json"))
+        db_sample_component = datahandling.datadump_template(extract_cge_resfinder_data, db_sample_component, file_path=os.path.join(component_name, "data_resfinder.json"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
@@ -71,7 +73,6 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
 
 script__datadump(
     snakemake.output.complete,
-    snakemake.params.folder,
     snakemake.params.sample_file,
     snakemake.params.component_file,
     snakemake.params.sample_component_file,

@@ -42,6 +42,6 @@ db_values_changes:
         component:
           _id: "ObjectId"
           date: "datetime"
-  reporter:
+    reporter:
 #---------------------------------------------------------------------------------------------------
 
