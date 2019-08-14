@@ -178,6 +178,7 @@ requirements:
       species:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
+  files: []
   sample:
     properties:
       mlst:

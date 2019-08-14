@@ -34,7 +34,7 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
-  files:
+  files: []
   sample:
     properties:
       resistance:

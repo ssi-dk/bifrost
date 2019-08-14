@@ -72,8 +72,8 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = {}  # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(component_name, "bracken.txt"))
-        db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(component_name, "kraken_report_bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "kraken_report_bracken.txt"))
         db_sample_component = datahandling.datadump_template(species_math, db_sample_component)
 
         # Save to sample component
