@@ -194,5 +194,5 @@ db_values_changes:
       mlst:
         title: *category
         info: *dockerfile
-        content: ["db", "strain", "alleles"]
+        content: [["db", "strain", "alleles"]]
 #---------------------------------------------------------------------------------------------------
