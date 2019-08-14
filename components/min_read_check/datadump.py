@@ -32,7 +32,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         # datahandling.save_files_to_db(["cge_resfinder/results.txt", "cge_resfinder/results_tab.txt"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
-        db_sample_component["summary"] = {"_component": {"id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
+        db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
         db_sample_component["reporter"] = {} # Currently unused, set to dict of component config path when used
 
