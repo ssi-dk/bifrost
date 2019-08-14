@@ -37,6 +37,7 @@ def species_math(file_path, key, db):
         db["summary"]["name_classified_species_1"] = db["results"][component_name + "/bracken_txt"]["species_1_name"]
         db["summary"]["percent_classified_species_2"] = db["results"][component_name + "/bracken_txt"]["species_2_count"] / (db["results"][component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][component_name + "/kraken_report_bracken_txt"]["root"])
         db["summary"]["name_classified_species_2"] = db["results"][component_name + "/bracken_txt"]["species_2_name"]
+        db["summary"]["detected_species"] = db["summary"]["name_classified_species_1"]
     return db
 
 
@@ -79,7 +80,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
         db_sample["properties"]["species_detection"] = db_sample_component["summary"]
-        db_sample["properties"]["detected_species"] = db_sample_component["summary"]["name_classified_species_1"]
+        db_sample["properties"]["detected_species"] = db_sample_component["summary"]["detected_species"]
         db_sample = datahandling.datadump_template(set_sample_species, db_sample)
         datahandling.save_sample(db_sample, sample_file)
         open(output, 'w+').close()  # touch file
