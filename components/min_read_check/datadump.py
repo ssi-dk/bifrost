@@ -37,7 +37,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = {} # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_bbuk_log, db_sample_component, file_path=os.path.join(folder, "has_min_num_of_reads"))
+        db_sample_component = datahandling.datadump_template(extract_has_min_num_of_reads, db_sample_component, file_path=os.path.join(folder, "has_min_num_of_reads"))
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
