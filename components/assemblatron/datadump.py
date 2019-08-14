@@ -19,6 +19,9 @@ def extract_contigs_sum_cov(file_path, key, db):
                 total_length += yaml["contig_depth"][contig]["total_length"]
                 total_depth += yaml["contig_depth"][contig]["total_depth"]
                 total_contigs += 1
+        db["results"][key]["bin_contigs_at_{}x".format(bin_value)] = total_contigs
+        db["results"][key]["bin_length_at_{}x".format(bin_value)] = total_length
+        db["results"][key]["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
         db["summary"]["bin_contigs_at_{}x".format(bin_value)] = total_contigs
         db["summary"]["bin_length_at_{}x".format(bin_value)] = total_length
         db["summary"]["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
@@ -27,6 +30,7 @@ def extract_contigs_sum_cov(file_path, key, db):
 
 def extract_contigs_bin_cov(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
+    db["results"][key] = yaml
     for bin_value in GLOBAL_cov_bin_values:
         db["summary"]["raw_length_at_{}x".format(bin_value)] = yaml["binned_depth"][bin_value - 1]
     return db
@@ -56,6 +60,7 @@ def extract_quast_report(file_path, key, db):
 
 def extract_contig_variants(file_path, key, db):
     yaml = datahandling.load_yaml(file_path)
+    db["results"][key] = yaml
     db["summary"]["snp_filter_10x_10%"] = yaml["variant_table"][9][9]
     db["summary"]["snp_filter_indels"] = yaml["indels"]
     db["summary"]["snp_filter_deletions"] = yaml["deletions"]
