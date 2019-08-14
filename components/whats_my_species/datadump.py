@@ -78,17 +78,17 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         db_sample_component["reporter"] = {}  # Currently unused, set to dict of component config path when used
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "bracken.txt", extract_bracken_txt)
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "kraken_report_bracken.txt", extract_kraken_report_bracken_txt)
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "kraken_report.txt", extract_kraken_report_txt)
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", species_math)
+        db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(folder, "bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(folder, "kraken_report_bracken.txt"))
+        db_sample_component = datahandling.datadump_template(extract_kraken_report_txt, db_sample_component, file_path=os.path.join(folder, "kraken_report.txt"))
+        db_sample_component = datahandling.datadump_template(species_math, db_sample_component)
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
         db_sample["properties"]["species_detection"] = db_sample_component["summary"]
         db_sample["properties"]["detected_species"] = db_sample_component["summary"]["name_classified_species_1"]
-        db_sample = datahandling.datadump_template(db_sample, folder, "", set_sample_species)
+        db_sample = datahandling.datadump_template(set_sample_species, db_sample)
         datahandling.save_sample(db_sample, sample_file)
         open(output, 'w+').close()  # touch file
 
