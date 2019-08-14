@@ -17,7 +17,7 @@ COPY . /run/src
 
 # Install requirements for bifrost
 RUN \
-    conda env create -f /run/src/envs/bifrost_for_install.yaml;
+    conda env create -f /run/src/envs/bifrost_for_install.yaml; \
     conda activate bifrost
 
 
