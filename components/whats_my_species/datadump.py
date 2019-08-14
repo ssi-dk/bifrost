@@ -12,8 +12,9 @@ config = datahandling.load_config()
 def extract_bracken_txt(file_path, key, db):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
-    if len(buffer) > 1:
-        for i in range(1, len(buffer) - 1 ):  # skip first line as it's header
+    number_of_entries = min(len(buffer) - 1, 2)
+    if number_of_entries > 0:
+        for i in range(1, 1 + number_of_entries):  # skip first line as it's header
             db["results"][key]["species_" + str(i) + "_name"] = buffer[i].split("\t")[0]
             db["results"][key]["species_" + str(i) + "_kraken_assigned_reads"] = buffer[i].split("\t")[3]
             db["results"][key]["species_" + str(i) + "_added_reads"] = buffer[i].split("\t")[4]
@@ -27,15 +28,6 @@ def extract_kraken_report_bracken_txt(file_path, key, db):
     if len(buffer) > 2:
         db["results"][key]["unclassified_count"] = int(buffer[0].split("\t")[1])
         db["results"][key]["root"] = int(buffer[1].split("\t")[1])
-    return db
-
-
-def extract_kraken_report_txt(file_path, key, db):
-    buffer = datahandling.read_buffer(file_path)
-    buffer = buffer.split("\n")
-    db["results"][key]["kraken_output"] = []
-    for item in buffer:
-        db["results"][key]["kraken_output"].append([value.strip() for value in item.split("\t")])
     return db
 
 
@@ -70,7 +62,7 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        # datahandling.save_files_to_db(["cge_resfinder/results.txt", "cge_resfinder/results_tab.txt"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db([folder + "/kraken_report.txt", folder + "/bracken.txt", folder + "/kraken_report_bracken.txt"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
@@ -80,7 +72,6 @@ def script__datadump(output, folder, sample_file, component_file, sample_compone
         # Data extractions
         db_sample_component = datahandling.datadump_template(extract_bracken_txt, db_sample_component, file_path=os.path.join(folder, "bracken.txt"))
         db_sample_component = datahandling.datadump_template(extract_kraken_report_bracken_txt, db_sample_component, file_path=os.path.join(folder, "kraken_report_bracken.txt"))
-        db_sample_component = datahandling.datadump_template(extract_kraken_report_txt, db_sample_component, file_path=os.path.join(folder, "kraken_report.txt"))
         db_sample_component = datahandling.datadump_template(species_math, db_sample_component)
 
         # Save to sample component
