@@ -1,4 +1,5 @@
 import pkg_resources
+import datetime
 import os
 import re
 import sys
@@ -8,19 +9,18 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
-def extract_cge_mlst_data(file_path, key, data_dict):
-
+def extract_cge_mlst_data(file_path, key, db):
     buffer = datahandling.load_yaml(file_path)
-    data_dict["results"] = buffer
-    return data_dict
+    db["results"] = buffer
+    return db
 
 
-def convert_summary_for_reporter(data_dict):
-    for mlst_db in data_dict["results"]["mlst"]:
+def convert_summary_for_reporter(db):
+    for mlst_db in db["results"]["mlst"]:
         strain = mlst_db["results"]["sequence_type"]
         alleles = "".join([allele["allele_name"] for allele in mlst_db["results"]["allele_profile"]])
-        data_dict["reporter"]["content"].append([mlst_db, strain, alleles])
-    return data_dict
+        db["reporter"]["content"].append([mlst_db, strain, alleles])
+    return db
 
 
 def script__datadump(folder, sample_file, component_file, sample_component_file, log):
@@ -31,6 +31,8 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
         db_component = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
+        global GLOBAL_component_name
+        GLOBAL_component_name = db_component["name"]
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 
@@ -40,8 +42,8 @@ def script__datadump(folder, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "data.yaml", extract_cge_mlst_data)
-        db_sample_component = datahandling.datadump_template(db_sample_component, folder, "", convert_summary_for_reporter)
+        db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
+        db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
