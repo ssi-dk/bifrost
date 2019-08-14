@@ -10,6 +10,23 @@ LABEL \
     DBversion="29/07/2019" \
     maintainer="mbas@ssi.dk;"
 
+# Copying bifrost info
+COPY . /src
+
+# Install bifrostlib
+RUN pip install /src/lib/bifrostlib/
+
+# Set up database connection
+ARG BIFROST_URI
+
+RUN echo $BIFROST_URI /bifrost_key.txt;
+
+ENV BIFROST_DB_KEY /bifrost_key.txt
+
+# Install requirements for bifrost
+RUN conda install -y --file /src/envs/bifrost_for_install.yaml
+
+
 RUN \
     # For 'make' needed for kma
     ls
