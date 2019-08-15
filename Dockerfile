@@ -22,7 +22,7 @@ RUN pip install /bifrost_run/src/lib/bifrostlib/
 # Set up database connection
 ARG BIFROST_URI
 
-RUN echo $BIFROST_URI /bifrost_key.txt;
+RUN echo $BIFROST_URI > /bifrost_key.txt;
 
 ENV BIFROST_DB_KEY /bifrost_key.txt
 
