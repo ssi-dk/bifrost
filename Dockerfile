@@ -38,7 +38,7 @@ RUN \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_2.fastq.gz; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_1.fastq.gz; \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
-    cd /bifrost_run \
+    cd /bifrost_run; \
     snakemake -s src/bifrost.smk --config \
         read_pattern="(?P<sample_name>.+?)_(?<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)" \
         run_name=test_run \
