@@ -23,7 +23,9 @@ stages:
     - task: Docker@2
       displayName: Build an image
       inputs:
-        command: build
+        command: buildAndPush
+        containerRegistry: 'Docker hub'
+        repository: 'ssidk/bifrost-test'
         dockerfile: 'Dockerfile'
         tags: |
           $(tag)
