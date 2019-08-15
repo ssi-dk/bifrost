@@ -27,5 +27,6 @@ stages:
         containerRegistry: 'Docker hub'
         repository: 'ssidk/bifrost-test'
         dockerfile: 'Dockerfile'
+        arguments: BIFROST_URI=$(BIFROST_URI)
         tags: |
           $(tag)
