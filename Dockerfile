@@ -1,7 +1,7 @@
 # Dockerfile to for:
 
 # Load miniconda Docker image to work off of
-FROM continuumio/miniconda3:4.6.14
+FROM ssidk/bifrost-base
 
 LABEL \
     name="bifrost-test" \
@@ -10,14 +10,11 @@ LABEL \
     DBversion="29/07/2019" \
     maintainer="mbas@ssi.dk;"
 
-RUN mkdir /bifrost_run
+RUN mkdir -p /bifrost_run
 
 # Copying bifrost info
 COPY . /bifrost_run/src
-
-# Install requirements for bifrost
-RUN \
-    conda env update -f /bifrost_run/src/envs/bifrost_for_install.yaml; 
+RUN cp /bifrost_run/src/setup/default_config.yaml /bifrost_run/src/config.yaml
 
 # Install bifrostlib
 RUN pip install /bifrost_run/src/lib/bifrostlib/
@@ -40,7 +37,7 @@ RUN \
     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
     cd /bifrost_run; \
     snakemake -s src/bifrost.smk --config \
-        read_pattern="(?P<sample_name>.+?)_(?<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)" \
+        read_pattern="(?P<sample_name>.+?)_(?P<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)" \
         run_name=test_run \
         grid=none \
         components=min_read_check;
