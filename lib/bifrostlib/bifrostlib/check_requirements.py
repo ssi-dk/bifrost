@@ -72,7 +72,7 @@ def all_requirements_met(component_file, sample_file, log_out, log_err):
                 datahandling.log(log_err, "Improper requirement {}".format(requirement))
                 no_failures = False
     else:
-        datahandling.log(log_err, "No requirements {}".format(requirement))
+        datahandling.log(log_err, "No requirements provided")
     if no_failures:
         return True
     else:
