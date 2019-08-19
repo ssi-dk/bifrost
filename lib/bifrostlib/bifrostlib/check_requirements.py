@@ -51,10 +51,9 @@ def all_requirements_met(component_file, sample_file, log_out, log_err):
     db_sample = datahandling.load_sample(sample_file)
 
     no_failures = True
-    db_component["requirements"] = db_component.get("requirements", {})
-
-    requirements = pandas.io.json.json_normalize(db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
-    if requirements is not None:
+    db_component["requirements"] = db_component.get("requirements", None)
+    if db_component["requirements"] is not None:
+        requirements = pandas.io.json.json_normalize(db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
         for requirement in requirements:
             category = requirement.split(".")[0]
             if category == "sample":
