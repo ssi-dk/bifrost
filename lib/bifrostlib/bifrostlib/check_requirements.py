@@ -52,26 +52,28 @@ def all_requirements_met(component_file, sample_file, log_out, log_err):
 
     no_failures = True
     db_component["requirements"] = db_component.get("requirements", {})
-    requirements = pandas.io.json.json_normalize(db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
-    
-    for requirement in requirements:
-        category = requirement.split(".")[0]
-        if category == "sample":
-            field = requirement.split(".")[1:]
-            expected_value = requirements[requirement]
-            if not requirement_met(db_sample, field, expected_value, log_out, log_err):
-                no_failures = False
-        elif category == "component":
-            sample_component_file = db_sample["name"] + "__" + requirement.split(".")[1] + ".yaml"
-            db_sample_component = datahandling.load_sample_component(sample_component_file)
-            field = requirement.split(".")[2:]
-            expected_value = requirements[requirement]
-            if not requirement_met(db_sample_component, field, expected_value, log_out, log_err):
-                no_failures = False
-        else:
-            datahandling.log(log_err, "Improper requirement {}".format(requirement))
-            no_failures = False
 
+    requirements = pandas.io.json.json_normalize(db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
+    if requirements is not None:
+        for requirement in requirements:
+            category = requirement.split(".")[0]
+            if category == "sample":
+                field = requirement.split(".")[1:]
+                expected_value = requirements[requirement]
+                if not requirement_met(db_sample, field, expected_value, log_out, log_err):
+                    no_failures = False
+            elif category == "component":
+                sample_component_file = db_sample["name"] + "__" + requirement.split(".")[1] + ".yaml"
+                db_sample_component = datahandling.load_sample_component(sample_component_file)
+                field = requirement.split(".")[2:]
+                expected_value = requirements[requirement]
+                if not requirement_met(db_sample_component, field, expected_value, log_out, log_err):
+                    no_failures = False
+            else:
+                datahandling.log(log_err, "Improper requirement {}".format(requirement))
+                no_failures = False
+    else:
+        datahandling.log(log_err, "No requirements {}".format(requirement))
     if no_failures:
         return True
     else:
