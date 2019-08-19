@@ -357,6 +357,7 @@ def evaluate_tests_and_stamp(db, file_path, key, temp_data):
             if db["results"][test]["effect"] == "supplying lab":
                 supplying_lab = True
             elif db["results"][test]["effect"] == "core facility":
+                core_facility = True
     if (db_sample["properties"]["provided_species"] == db_sample["properties"]["detected_species"] and \
         db["results"]["test__denovo_assembly__genome_average_coverage"]["status"] == "fail" and \
         db["results"]["test__denovo_assembly__genome_average_coverage"]["effect"] == "supplyinh lab" and \
