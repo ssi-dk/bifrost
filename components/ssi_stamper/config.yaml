@@ -86,7 +86,7 @@ options:
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  components:
+  component:
     assemblatron:
       status: Success
     whats_my_species:
