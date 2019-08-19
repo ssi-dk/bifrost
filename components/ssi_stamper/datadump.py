@@ -23,7 +23,7 @@ def test__sample__has_reads_files(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        if db_sample["reads"]["R1"] == ""
+        if db_sample["reads"]["R1"] == "":
             test["status"] = "fail"
             test["reason"] = "Read path is empty"
         else:
