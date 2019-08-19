@@ -20,7 +20,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - script: docker build -t ssidk/bifrost-test:$(tag) . --build-arg BIFROST_URI=$(BIFROST_URI)
+    - script: docker build -t ssidk/bifrost-test:$(tag) . --build-arg BIFROST_URI=ASDASDASDASDA
     - task: Docker@2
       inputs:
         containerRegistry: 'Docker hub'
