@@ -1,7 +1,7 @@
 #-Information---------------------------------------------------------------------------------------
 name: whats_my_species
 category: &category Species Detection
-version: 1.0
+version: 2.0
 target: sample
 type: pipeline
 recommendation: required

@@ -1,7 +1,7 @@
 #-Information---------------------------------------------------------------------------------------
 name: min_read_check
 category: &category Size Check
-version: 1.0
+version: 2.0
 target: sample
 type: pipeline
 recommendation: recommended

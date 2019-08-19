@@ -1,7 +1,7 @@
 #-Information---------------------------------------------------------------------------------------
 name: assemblatron
 category: &category De-novo Assembly
-version: 1.0
+version: 2.0
 target: sample
 type: pipeline
 recommendation: required
@@ -13,7 +13,7 @@ description: >
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: &dockerfile "docker://ssidk/bifrost-assemblatron:1.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-assemblatron:2.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------

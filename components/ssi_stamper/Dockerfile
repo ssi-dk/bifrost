@@ -14,4 +14,4 @@ RUN \
     conda install conda==4.7.10; \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
-    pip install bifrostlib==1.4; 
+    pip install bifrostlib==2.0; 
