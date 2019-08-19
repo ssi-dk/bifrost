@@ -415,7 +415,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Variables being used
         working_temp_data = {"db_sample": db_sample, "db_component": db_component}
 
-        db_sample_component = datahandling.datadump_template(test__sample__has_reads_files, db_sample_component, temp_data=working_temp_data)
+        db_sample_component = datahandling.datadump_template(test__sample__has_reads_files, db_sample_component, working_temp_data)
         db_sample_component = datahandling.datadump_template(test__species_detection__main_species_level, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__species_detection__unclassified_level, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__componenent__species_in_db, db_sample_component, temp_data=working_temp_data)
