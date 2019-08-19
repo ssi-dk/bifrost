@@ -429,7 +429,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
 
         db_sample["stamps"]["ssi_stamper"] = db_sample_component["stamp"]
         db_sample["stamps"]["stamp_list"].append(db_sample_component["stamp"])
-        db_sample["summary"]["properties"]["stamper"] = db_sample_component["summary"]
+        db_sample["properties"]["stamper"] = db_sample_component["summary"]
 
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         datahandling.save_sample(db_sample, sample_file)
