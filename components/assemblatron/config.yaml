@@ -45,30 +45,35 @@ db_values_changes:
     - assemblatron/contigs.variants
   sample:
     properties:
-      species:
-      species_detection:
-        summary:
+      denovo_assembly:
+        summary: # see sample_component summary
         component:
           _id: "ObjectId"
           _date: "datetime"
     reporter:
   sample_component:
-    summary:
-      bin_contigs_at_1x:
-      bin_contigs_at_10x:
-      bin_contigs_at_25x:
-      raw_length_at_1x:
-      raw_length_at_10x:
-      raw_length_at_25x:
-      filtered_reads_num:
-      GC:
-      N50:
-      snp_filter_10x_10%:
-      snp_filter_indels:
-      snp_filter_deletions:
-      raw_total_sequences:
-      reads_mapped:
-      reads_unmapped:
-      insert_size_average:
-      insert_size_standard_deviation:
+      summary:
+        bin_contigs_at_1x:
+        bin_length_at_1x:
+        bin_coverage_at_1x:
+        bin_contigs_at_10x:
+        bin_length_at_10x:
+        bin_coverage_at_10x:
+        bin_contigs_at_25x:
+        bin_length_at_25x:
+        bin_coverage_at_25x:
+        raw_length_at_1x:
+        raw_length_at_10x:
+        raw_length_at_25x:
+        filtered_reads_num:
+        GC:
+        N50:
+        snp_filter_10x_10%:
+        snp_filter_indels:
+        snp_filter_deletions:
+        raw_total_sequences:
+        reads_mapped:
+        reads_unmapped:
+        insert_size_average:
+        insert_size_standard_deviation:
 #---------------------------------------------------------------------------------------------------

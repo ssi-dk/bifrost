@@ -31,12 +31,12 @@ else:
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(sample_component_file, component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(sample_component_file, component)
 
 
 rule all:

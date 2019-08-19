@@ -42,7 +42,7 @@ db_values_changes:
     properties:
       species:
       species_detection:
-        summary:
+        summary: #see sample_component summary
         component:
           _id: "ObjectId"
           _date: "datetime"

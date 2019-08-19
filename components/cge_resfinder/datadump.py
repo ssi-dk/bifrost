@@ -9,13 +9,13 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
-def extract_cge_resfinder_data(file_path, key, db):
+def extract_cge_resfinder_data(db, file_path, key, temp_data):
     buffer = datahandling.load_yaml(file_path)
     db["results"][key] = buffer
     return db
 
 
-def convert_summary_for_reporter(file_path, key, db):
+def convert_summary_for_reporter(db, file_path, key, temp_data):
     resfinder_dict = db["results"]["cge_resfinder/data_resfinder_json"]["resfinder"]["results"]
     for anti_biotic_class in resfinder_dict:
         for subclass in resfinder_dict[anti_biotic_class]:

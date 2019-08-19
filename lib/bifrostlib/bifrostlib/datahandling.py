@@ -180,7 +180,7 @@ def read_buffer(file_path):
     return buffer
 
 
-def datadump_template(extraction_callback, db, key=None, file_path=None):
+def datadump_template(extraction_callback, db, temp_data=None, key=None, file_path=None):
     try:
         if file_path is not None:
             if os.path.isfile(file_path):
@@ -188,7 +188,7 @@ def datadump_template(extraction_callback, db, key=None, file_path=None):
                     key = file_path.replace(".", "_").replace("$", "_")  # $ and . are special characters to be avoided in keys
         if key is not None:
             db["results"][key] = {}
-        db = extraction_callback(file_path, key, db)
+        db = extraction_callback(db, file_path=file_path, key=key, temp_data=temp_data)
 
     except Exception:
         print(traceback.format_exc())

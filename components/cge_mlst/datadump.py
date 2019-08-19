@@ -9,13 +9,13 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
-def extract_cge_mlst_data(file_path, key, db):
+def extract_cge_mlst_data(db, file_path, key, temp_data):
     buffer = datahandling.load_yaml(file_path)
     db["results"][key] = buffer
     return db
 
 
-def convert_summary_for_reporter(file_path, key, db):
+def convert_summary_for_reporter(db, file_path, key, temp_data):
     for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]:
         strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]
         strain = strain_db["mlst"]["results"]["sequence_type"]
@@ -47,6 +47,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
 
         # Data extractions
+        working_temp_data = {datahandling.load_sample_component()}
         db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 

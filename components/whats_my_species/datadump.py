@@ -8,7 +8,8 @@ from bifrostlib import datahandling
 
 config = datahandling.load_config()
 
-def extract_bracken_txt(file_path, key, db):
+
+def extract_bracken_txt(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     number_of_entries = min(len(buffer) - 1, 2)
@@ -21,7 +22,7 @@ def extract_bracken_txt(file_path, key, db):
     return db
 
 
-def extract_kraken_report_bracken_txt(file_path, key, db):
+def extract_kraken_report_bracken_txt(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     if len(buffer) > 2:
@@ -30,7 +31,7 @@ def extract_kraken_report_bracken_txt(file_path, key, db):
     return db
 
 
-def species_math(file_path, key, db):
+def species_math(db, file_path, key, temp_data):
     if "status" not in db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"] and "status" not in db["results"][GLOBAL_component_name + "/bracken_txt"] and "species_1_count" in db["results"][GLOBAL_component_name + "/bracken_txt"] and "species_2_count" in db["results"][GLOBAL_component_name + "/bracken_txt"]:
         db["summary"]["percent_unclassified"] = db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] / (db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["root"])
         db["summary"]["percent_classified_species_1"] = db["results"][GLOBAL_component_name + "/bracken_txt"]["species_1_count"] / (db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["unclassified_count"] + db["results"][GLOBAL_component_name + "/kraken_report_bracken_txt"]["root"])
@@ -41,7 +42,7 @@ def species_math(file_path, key, db):
     return db
 
 
-def set_sample_species(file_path, key, db):
+def set_sample_species(db, file_path, key, temp_data):
     if db["properties"]["provided_species"] is not None:
         db["properties"]["species"] = db["properties"]["provided_species"]
     else:

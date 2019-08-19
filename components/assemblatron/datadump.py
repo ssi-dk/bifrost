@@ -8,7 +8,8 @@ from bifrostlib import datahandling
 
 config = datahandling.load_config()
 
-def extract_contigs_sum_cov(file_path, key, db):
+
+def extract_contigs_sum_cov(db, file_path, key, temp_data):
     yaml = datahandling.load_yaml(file_path)
     for bin_value in GLOBAL_cov_bin_values:
         total_length = 0
@@ -28,7 +29,7 @@ def extract_contigs_sum_cov(file_path, key, db):
     return db
 
 
-def extract_contigs_bin_cov(file_path, key, db):
+def extract_contigs_bin_cov(db, file_path, key, temp_data):
     yaml = datahandling.load_yaml(file_path)
     db["results"][key] = yaml
     for bin_value in GLOBAL_cov_bin_values:
@@ -36,7 +37,7 @@ def extract_contigs_bin_cov(file_path, key, db):
     return db
 
 
-def extract_bbuk_log(file_path, key, db):
+def extract_bbuk_log(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     db["results"][key]["input_reads_num"] = int(re.search("Input:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
     db["results"][key]["filtered_reads_num"] = int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
@@ -46,7 +47,7 @@ def extract_bbuk_log(file_path, key, db):
     return db
 
 
-def extract_quast_report(file_path, key, db):
+def extract_quast_report(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     db["results"][key]["GC"] = float(re.search("GC \(%\)\t([0-9]+[\.]?[0-9]*)", buffer, re.MULTILINE).group(1))
     db["results"][key]["N50"] = int(re.search("N50\t([0-9]+)", buffer, re.MULTILINE).group(1))
@@ -58,7 +59,7 @@ def extract_quast_report(file_path, key, db):
     return db
 
 
-def extract_contig_variants(file_path, key, db):
+def extract_contig_variants(db, file_path, key, temp_data):
     yaml = datahandling.load_yaml(file_path)
     db["results"][key] = yaml
     db["summary"]["snp_filter_10x_10%"] = yaml["variant_table"][9][9]
@@ -67,7 +68,7 @@ def extract_contig_variants(file_path, key, db):
     return db
 
 
-def extract_contig_stats(file_path, key, db):
+def extract_contig_stats(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     for line in buffer.split("\n"):
         if line.startswith("SN"):
@@ -111,7 +112,8 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(extract_contig_stats, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "contigs.stats"))
 
         datahandling.save_sample_component(db_sample_component, sample_component_file)
-
+        db_sample["properties"]["denovo_assembly"] = db_sample_component["summary"]
+        datahandling.save_sample(db_sample, sample_file)
         open(output, 'w+').close()  # touch file
 
     except Exception:

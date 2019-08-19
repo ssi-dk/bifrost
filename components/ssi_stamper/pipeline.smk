@@ -24,19 +24,15 @@ singularity: db_component["dockerfile"]
 sample_component_file = db_sample["name"] + "__" + component + ".yaml"
 db_sample_component = datahandling.load_sample_component(sample_component_file)
 
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
-else:
-    reads = R1, R2 = ("/dev/null", "/dev/null")
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_success(sample_component_file, component)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    datahandling.update_sample_component_failure(sample_component_file, component)
 
 
 rule all:
@@ -78,8 +74,8 @@ rule check_requirements:
         check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 
 
-rule_name = "run_ssi_stamper"
-rule run_ssi_stamper:
+rule_name = "datadump"
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
@@ -93,15 +89,14 @@ rule run_ssi_stamper:
     benchmark:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
-    params:
-        sample = db_sample,
-        sample_yaml = sample,
-        sample_component = db_sample.get("name", "ERROR") + \
-            "__" + component + ".yaml"
     input:
         check_file = rules.check_requirements.output.check_file,
     output:
-        complete = touch(rules.all.input)
+        complete = rules.all.input
+    params:
+        folder = rules.setup.params.folder,
+        sample_file = sample_file,
+        component_file = component_file,
+        sample_component_file = sample_component_file
     script:
-        # Should be refactored to a datadump
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/ssi_stamper.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
