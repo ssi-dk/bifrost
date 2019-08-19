@@ -115,7 +115,7 @@ def test__componenent__species_in_db(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        if species not in db_component["options"]["species_qc_value_mapping"]
+        if species not in db_component["options"]["species_qc_value_mapping"]:
             test["status"] = "fail"
             test["reason"] = "Detected species not in bifrost db. Can't estimate proper QC values."
         else:
