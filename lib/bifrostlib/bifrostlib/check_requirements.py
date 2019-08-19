@@ -33,8 +33,9 @@ def requirement_met(db, field, expected_value, log_out, log_err):
         if expected_value is None:
             datahandling.log(log_err, "Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
             return True
-        elif type(expected_value) is list:
-            if actual_value in expected_value:
+        elif type(expected_value) is not list:
+            expected_value = [expected_value]
+        if actual_value in expected_value:
                 datahandling.log(log_err, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
                 return True
             else:
@@ -72,7 +73,7 @@ def all_requirements_met(component_file, sample_file, log_out, log_err):
                 datahandling.log(log_err, "Improper requirement {}".format(requirement))
                 no_failures = False
     else:
-        datahandling.log(log_err, "No requirements provided")
+        datahandling.log(log_err, "No requirements provided\n")
     if no_failures:
         return True
     else:
