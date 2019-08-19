@@ -38,9 +38,9 @@ def requirement_met(db, field, expected_value, log_out, log_err):
         if actual_value in expected_value:
                 datahandling.log(log_err, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
                 return True
-            else:
-                datahandling.log(log_err, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
-                return False
+        else:
+            datahandling.log(log_err, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+            return False
     except Exception:
         datahandling.log(log_err, "Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
         datahandling.log(log_err, "Error: " + str(traceback.format_exc()))
