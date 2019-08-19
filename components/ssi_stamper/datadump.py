@@ -381,9 +381,8 @@ def evaluate_tests_and_stamp(db, file_path, key, temp_data):
 
 def generate_summary(db, file_path, key, temp_data):
     for test in db["results"]:
-        db["summary"][db["results"][test]["name"]] = db["results"][test]["status"] + ":" + db["results"][test]["reason"] + ":" + db["results"][test]["value"]
+        db["summary"][db["results"][test]["name"]] = "{}:{}:{}".format(db["results"][test]["status"], db["results"][test]["reason"], db["results"][test]["value"])
     return db
-
 
 
 def script__datadump(output, sample_file, component_file, sample_component_file, log):
@@ -429,7 +428,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(generate_summary, db_sample_component, temp_data=working_temp_data)
 
         db_sample["stamps"]["ssi_stamper"] = db_sample_component["stamp"]
-        db_sample["stamps"]["stamp_list"].append(db_sample["stamp"])
+        db_sample["stamps"]["stamp_list"].append(db_sample_component["stamp"])
         db_sample["summary"]["properties"]["stamper"] = db_sample_component["summary"]
 
         datahandling.save_sample_component(db_sample_component, sample_component_file)

@@ -97,9 +97,9 @@ db_values_changes:
   sample:
     properties:
       stamper: # see sample_component summary
-      component:
-        _id: "ObjectId"
-        _date: "datetime"
+        component:
+          _id: "ObjectId"
+          _date: "datetime"
     stamps:
       stamp_list:
       ssi_stamper:
