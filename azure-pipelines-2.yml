@@ -26,7 +26,7 @@ stages:
         command: build
         repository: 'ssidk/bifrost-test'
         dockerfile: 'Dockerfile'
-        arguments: BIFROST_URI=$(BIFROST_URI)
+        arguments: BIFROST_URI="$(BIFROST_URI)"
         tags: |
           $(tag)
     - task: Docker@2
