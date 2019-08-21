@@ -38,11 +38,11 @@ def extract_contigs_bin_cov(db, file_path, key, temp_data):
 
 
 def extract_bbuk_log(db, file_path, key, temp_data):
+    import json
     buffer = datahandling.read_buffer(file_path)
-    db["results"][key]["input_reads_num"] = int(re.search("Input:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    db["results"][key]["filtered_reads_num"] = int(re.search("Result:\s*([0-9]+)\sreads", buffer, re.MULTILINE).group(1))
-    db["results"][key]["input_reads_bases"] = int(re.search("Input:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
-    db["results"][key]["filtered_reads_bases"] = int(re.search("Result:.*?([0-9]+)\sbases", buffer, re.MULTILINE).group(1))
+    bbduk_dict = json.loads("{" + buffer.partition("{")[2])
+    db["results"][key] = bbduk_dict
+    db["results"][key]["filtered_reads_num"] = db["results"][key]["readsIn"] - db["results"][key]["readsRemoved"]
     db["summary"]["filtered_reads_num"] = db["results"][key]["filtered_reads_num"]
     return db
 

@@ -101,7 +101,7 @@ def test__species_detection__unclassified_level(db, file_path, key, temp_data):
         return db
 
 
-def test__componenent__species_in_db(db, file_path, key, temp_data):
+def test__component__species_in_db(db, file_path, key, temp_data):
     try:
         db_sample = temp_data["db_sample"]
         db_component = temp_data["db_component"]
@@ -417,7 +417,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(test__sample__has_reads_files, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__species_detection__main_species_level, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__species_detection__unclassified_level, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__componenent__species_in_db, db_sample_component, temp_data=working_temp_data)
+        db_sample_component = datahandling.datadump_template(test__component__species_in_db, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__sample__species_provided_is_detected, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_size_at_1x, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_size_at_10x, db_sample_component, temp_data=working_temp_data)
