@@ -19,28 +19,30 @@ RUN cp /bifrost_run/src/setup/default_config.yaml /bifrost_run/src/config.yaml
 # Install bifrostlib
 RUN pip install /bifrost_run/src/lib/bifrostlib/
 
-# Set up database connection
-ARG BIFROST_URI
+RUN mkdir /singularity
 
-RUN echo $BIFROST_URI > /bifrost_key.txt;
+# # Set up database connection
+# ARG BIFROST_URI
 
-ENV BIFROST_DB_KEY /bifrost_key.txt
+# RUN echo $BIFROST_URI > /bifrost_key.txt;
+
+# ENV BIFROST_DB_KEY /bifrost_key.txt
 
 
-# Test stuff
-RUN \
-    mkdir -p /bifrost_run/samples; \
-    cd /bifrost_run/samples; \
-    wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_1.fastq.gz; \
-    wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_2.fastq.gz; \
-    wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_1.fastq.gz; \
-    wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
-    cd /bifrost_run; \
-    snakemake -s src/bifrost.smk --config \
-        read_pattern="(?P<sample_name>.+?)_(?P<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)" \
-        run_name=test_run \
-        grid=none \
-        components=min_read_check;
+# # Test stuff
+# RUN \
+#     mkdir -p /bifrost_run/samples; \
+#     cd /bifrost_run/samples; \
+#     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_1.fastq.gz; \
+#     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801237/SRR801237_2.fastq.gz; \
+#     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_1.fastq.gz; \
+#     wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR801/SRR801202/SRR801202_2.fastq.gz; \
+#     cd /bifrost_run; \
+#     snakemake -s src/bifrost.smk --config \
+#         read_pattern="(?P<sample_name>.+?)_(?P<paired_read_number>[1|2])(?P<file_extension>\.fastq\.gz)" \
+#         run_name=test_run \
+#         grid=none \
+#         components=min_read_check;
     # apt-get update -qq --fix-missing; \
 #     apt-get install -y -qq build-essential; \
 #     apt-get install -y -qq zlib1g-dev; \
