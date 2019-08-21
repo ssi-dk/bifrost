@@ -20,9 +20,27 @@ RUN \
     conda install --name base --file /spec-file.txt; \
     ln -s /opt/conda/bin/python /usr/bin/python ; \
     wget -O- http://neuro.debian.net/lists/stretch.de-m.full | tee /etc/apt/sources.list.d/neurodebian.sources.list; \
-    apt-get install -y gnupg2; \
-    wget http://neuro.debian.net/_static/neuro.debian.net.asc ; \
-    apt-key add neuro.debian.net.asc ; \
-    apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9; \
-    apt-get update; \
-    apt-get install -y singularity-container
+    apt-get install -y \
+    build-essential \
+    libssl-dev \
+    uuid-dev \
+    libgpgme11-dev \
+    squashfs-tools \
+    libseccomp-dev \
+    pkg-config; \
+    export VERSION=1.11 OS=linux ARCH=amd64 && \
+    wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz && \
+    tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz && \
+    rm go$VERSION.$OS-$ARCH.tar.gz ; \
+    echo 'export GOPATH=${HOME}/go' >> ~/.bashrc && \
+    echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc && \
+    . ~/.bashrc ; \
+    export VERSION=3.3.0 && \
+    mkdir -p $GOPATH/src/github.com/sylabs && \
+    cd $GOPATH/src/github.com/sylabs && \
+    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
+    tar -xzf singularity-${VERSION}.tar.gz && \
+    cd ./singularity && \
+    ./mconfig && \
+    make -C ./builddir && \
+    make -C ./builddir install
