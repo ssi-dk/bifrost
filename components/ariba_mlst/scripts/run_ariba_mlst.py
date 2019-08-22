@@ -3,6 +3,7 @@
 import sys
 import subprocess
 import traceback
+import os
 from bifrostlib import datahandling
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start ***********************************************************************
