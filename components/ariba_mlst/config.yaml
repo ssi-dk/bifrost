@@ -1,0 +1,198 @@
+#-Information---------------------------------------------------------------------------------------
+name: ariba_mlst
+category: &category MLST
+version: 2.0
+schema_version: 2.0
+target: sample
+type: pipeline
+recommendation: recommended
+requires_db: True
+description: >
+  This preforms read based mapping against the mlst DB's. The mlst DB's are mapped against the 
+  species table in mongoDB via the mlst_species_mapping variable. Multiple mlst's can be run against 
+  a single species by passing all mlst's via a list (or conversely none). This is done against the 
+  cge_db using ariba. 
+#---------------------------------------------------------------------------------------------------
+
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: &dockerfile "docker://ssidk/bifrost-ariba_mlst:1.0"
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+options:
+  mlst_species_mapping:
+    "Acinetobacter baumannii": [Acinetobacter_baumannii_1,Acinetobacter_baumannii_2]
+    "Achromobacter": [Achromobacter_spp_]
+    "Aeromonas": [Aeromonas_spp_]
+    "Aspergillus fumigatus": [Aspergillus_fumigatus]
+    "Anaplasma phagocytophilum": [Anaplasma_phagocytophilum]
+    "Arcobacter": [Arcobacter_spp_]
+    "Bartonella bacilliformis": [Bartonella_bacilliformis]
+    "Burkholderia cepacia complex": [Burkholderia_cepacia_complex]
+    "Bacillus cereus": [Bacillus_cereus]
+    "Brachyspira hampsonii": [Brachyspira_hampsonii]
+    "Bartonella henselae": [Bartonella_henselae]
+    "Brachyspira hyodysenteriae": [Brachyspira_hyodysenteriae]
+    "Brachyspira intermedia": [Brachyspira_intermedia]
+    "Bacillus licheniformis": [Bacillus_licheniformis]
+    "Bordetella pertussis": [Bordetella_spp_]
+    "Streptococcus pseudopneumoniae": [Bordetella_spp_]
+    "Borrelia": [Borrelia_spp_]
+    "Brachyspira pilosicoli": [Brachyspira_pilosicoli]
+    "Burkholderia pseudomallei": [Burkholderia_pseudomallei]
+    "Brachyspira": [Brachyspira_spp_]
+    "Brucella": [Brucella_spp_]
+    "Bacillus subtilis": [Bacillus_subtilis]
+    "Candida albicans": [Candida_albicans]
+    "Campylobacter coli": [Campylobacter_jejuni]
+    "Campylobacter jejuni": [Campylobacter_jejuni]
+    "Clostridium botulinum": [Clostridium_botulinum]
+    "Campylobacter concisus": [Campylobacter_concisus_curvus]
+    "Campylobacter curvus": [Campylobacter_concisus_curvus]
+    "Clostridioides difficile": [Clostridium_difficile]
+    "Corynebacterium diphtheriae": [Corynebacterium_diphtheriae]
+    "Campylobacter fetus": [Campylobacter_fetus]
+    "Citrobacter freundii": [Citrobacter_freundii]
+    "Candida glabrata": [Candida_glabrata]
+    "Campylobacter helveticu": [Campylobacter_helveticus]
+    "Chlamydiales": [Chlamydiales_spp_]
+    "Campylobacter hyointestinalis": [Campylobacter_hyointestinalis]
+    "Campylobacter insulaenigrae": [Campylobacter_insulaenigrae]
+    "Candidatus Liberibacter solanacearum": [Candidatus_Liberibacter_solanacearum]
+    "Candida krusei": [Candida_krusei]
+    "Campylobacter lanienae": [Campylobacter_lanienae]
+    "Campylobacter lari": [Campylobacter_lari]
+    "Carnobacterium maltaromaticum": [Carnobacterium_maltaromaticum]
+    "Cronobacter sakazakii": [Cronobacter_spp_]
+    "Clostridium septicum": [Clostridium_septicum]
+    "Clonorchis sinensis": [Clonorchis_sinensis]
+    "Campylobacter sputorum": [Campylobacter_sputorum]
+    "Candida tropicalis": [Candida_tropicalis]
+    "Campylobacter upsaliensis": [Campylobacter_upsaliensis]
+    "Dichelobacter nodosus": [Dichelobacter_nodosus]
+    "Enterobacter cloacae": [Enterobacter_cloacae]
+    "Escherichia coli": [Escherichia_coli_1,Escherichia_coli_2]
+    "Edwardsiella": [Edwardsiella_spp_]
+    "Enterococcus faecalis": [Enterococcus_faecalis]
+    "Enterococcus faecium": [Enterococcus_faecium]
+    "Flavobacterium psychrophilum": [Flavobacterium_psychrophilum]
+    "Gallibacterium anatis": [Gallibacterium_anatis]
+    "Helicobacter cinaedi": [Helicobacter_cinaedi]
+    "Haemophilus influenzae": [Haemophilus_influenzae]
+    "Haemophilus parasuis": [Haemophilus_parasuis]
+    "Helicobacter pylori": [Helicobacter_pylori]
+    "Helicobacter suis": [Helicobacter_suis]
+    "Klebsiella aerogenes": [Klebsiella_aerogenes]
+    "Kingella kingae": [Kingella_kingae]
+    "Klebsiella oxytoca": [Klebsiella_oxytoca]
+    "Klebsiella pneumoniae": [Klebsiella_pneumoniae]
+    "Kudoa septempunctata": [Kudoa_septempunctata]
+    "Leptospira": [Leptospira_spp_,Leptospira_spp__2,Leptospira_spp__3]
+    "Listeria monocytogenes": [Listeria_monocytogenes]
+    "Lactobacillus salivarius": [Lactobacillus_salivarius]
+    "Mycobacterium abscessus": [Mycobacterium_abscessus]
+    "Mycoplasma agalactiae": [Mycoplasma_agalactiae]
+    "Mycoplasma bovis": [Mycoplasma_bovis]
+    "Macrococcus canis": [Macrococcus_canis]
+    "Macrococcus caseolyticus": [Macrococcus_caseolyticus]
+    "Moraxella catarrhalis": [Moraxella_catarrhalis]
+    "Mannheimia haemolytica": [Mannheimia_haemolytica]
+    "Mycoplasma hyopneumoniae": [Mycoplasma_hyopneumoniae]
+    "Mycoplasma hyorhinis": [Mycoplasma_hyorhinis]
+    "Mycoplasma iowae": [Mycoplasma_iowae]
+    "Mycobacterium massiliense": [Mycobacterium_massiliense]
+    "Melissococcus plutonius": [Melissococcus_plutonius]
+    "Mycoplasma pneumoniae": [Mycoplasma_pneumoniae]
+    "Mycoplasma synoviae": [Mycoplasma_synoviae]
+    "Mycobacteria": [Mycobacteria_spp_]
+    "Neisseria gonorrhoeae": [Neisseria_spp_]
+    "Neisseria meningitidis": [Neisseria_spp_]
+    "Ornithobacterium rhinotracheale": [Ornithobacterium_rhinotracheale]
+    "Orientia tsutsugamushi": [Orientia_tsutsugamushi]
+    "Propionibacterium acnes": [Propionibacterium_acnes]
+    "Pseudomonas aeruginosa": [Pseudomonas_aeruginosa]
+    "Photobacterium damselae": [Photobacterium_damselae]
+    "Pseudomonas fluorescens": [Pseudomonas_fluorescens]
+    "Porphyromonas gingivalis": [Porphyromonas_gingivalis]
+    "Paenibacillus larvae": [Paenibacillus_larvae]
+    "Pasteurella multocida": [Pasteurella_multocida_1,Pasteurella_multocida_2]
+    "Pediococcus pentosaceus": [Pediococcus_pentosaceus]
+    "Pseudomonas putida": [Pseudomonas_putida]
+    "Piscirickettsia salmonis": [Piscirickettsia_salmonis]
+    "Riemerella anatipestifer": [Riemerella_anatipestifer]
+    "Rhodococcus": [Rhodococcus_spp_]
+    "Streptococcus agalactiae": [Streptococcus_agalactiae]
+    "Staphylococcus aureus": [Staphylococcus_aureus]
+    "Streptococcus bovis equinus complex_ SBSEC": [Streptococcus_bovis_equinus_complex__SBSEC_]
+    "Streptococcus canis": [Streptococcus_canis]
+    "Streptococcus dysgalactiae equisimilis": [Streptococcus_dysgalactiae_equisimilis]
+    "Salmonella enterica": [Salmonella_enterica]
+    "Staphylococcus epidermidis": [Staphylococcus_epidermidis]
+    "Streptococcus gallolyticus": [Streptococcus_gallolyticus]
+    "Staphylococcus haemolyticus": [Staphylococcus_haemolyticus]
+    "Stapylococcus hominis": [Staphylococcus_hominis]
+    "Sinorhizobium": [Sinorhizobium_spp_]
+    "Staphylococcus lugdunensis": [Staphylococcus_lugdunensis]
+    "Stenotrophomonas maltophilia": [Stenotrophomonas_maltophilia]
+    "Streptococcus oralis": [Streptococcus_oralis]
+    "Saprolegnia parasitica": [Saprolegnia_parasitica]
+    "Streptococcus pneumoniae": [Streptococcus_pneumoniae]
+    "Staphylococcus pseudintermedius": [Staphylococcus_pseudintermedius]
+    "Streptococcus pyogenes": [Streptococcus_pyogenes]
+    "Streptococcus suis": [Streptococcus_suis]
+    "Streptococcus thermophilus": [Streptococcus_thermophilus,Streptococcus_thermophilus_2]
+    "Streptomyces": [Streptomyces_spp]
+    "Streptococcus uberis": [Streptococcus_uberis]
+    "Streptococcus zooepidemicus": [Streptococcus_zooepidemicus]
+    "Taylorella": [Taylorella_spp_]
+    "Tenacibaculum": [Tenacibaculum_spp_]
+    "Treponema pallidum": [Treponema_pallidum]
+    "Trichomonas vaginalis": [Trichomonas_vaginalis]
+    "Ureaplasma": [Ureaplasma_spp_]
+    "Vibrio cholerae": [Vibrio_cholerae,Vibrio_cholerae_2]
+    "Vibrio": [Vibrio_spp_]
+    "Vibrio parahaemolyticus": [Vibrio_parahaemolyticus]
+    "Vibrio tapetis": [Vibrio_tapetis]
+    "Vibrio vulnificus": [Vibrio_vulnificus]
+    "Wolbachia": [Wolbachia]
+    "Xylella fastidiosa": [Xylella_fastidiosa]
+    "Yersinia aleksiciae": [Yersinia_spp_]
+    "Yersinia enterocolitica": [Yersinia_spp_]
+    "Yersinia pseudotuberculosis": [Yersinia_pseudotuberculosis]
+    "Yersinia ruckeri": [Yersinia_ruckeri]
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+# Relative files are relative to this components folder if not using an absolute path, a recommended
+# strategy for shrared resources is to symlink the resource from the root resources folder into
+# the component resources folder. This will prevent
+database_path: "/bifrost_resources/mlst_db"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  sample:
+    reads:
+      R1:
+      R2:
+    properties:
+      species:
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  files: ["mlst_report.tsv", "mlst_report.details.tsv", "version_info.txt"]
+  sample:
+    properties:
+      mlst:
+        species:  # str for mlst_db
+        results:
+          sequence_type:  #str
+          allele_profile: {}
+        component:
+          _id: "ObjectId"
+          date: "datetime"
+    reporter:
+      mlst:
+        title: *category
+        info: *dockerfile
+        content: [["db", "strain", "alleles]]
+#---------------------------------------------------------------------------------------------------
