@@ -85,8 +85,8 @@ rule check_requirements:
 #---- Templated section: end -----------------------------------------------------------------------
 
 #**** Dynamic section: start ***********************************************************************
-rule_name = "cge_mlst"
-rule cge_mlst:
+rule_name = "ariba_mlst"
+rule ariba_mlst:
     # Static
     message:
         "Running step:" + rule_name
@@ -132,7 +132,7 @@ rule datadump:
     input:
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start ***********************************************************************
-        rules.cge_mlst.output.complete,
+        rules.ariba_mlst.output.complete,
 #**** Dynamic section: end *************************************************************************
 #---- Templated section: start ---------------------------------------------------------------------
     output:
