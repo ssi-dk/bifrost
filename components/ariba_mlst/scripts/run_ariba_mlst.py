@@ -35,7 +35,7 @@ def script__run_ariba_mlst(input, output, sample_file, component_file, folder, l
             data_dict = {}
             for mlst_entry in mlst_species:
                 mlst_entry_path = folder + "/" + mlst_entry
-                mlst_database_path = os.path.join(database_path, mlst_entry)
+                mlst_database_path = os.path.join(database_path, mlst_entry, "ref_db")
                 datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
                 command = "if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path)
                 subprocess.Popen(command, shell=True).communicate()
