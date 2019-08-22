@@ -365,11 +365,11 @@ def evaluate_tests_and_stamp(db, file_path, key, temp_data):
         db["results"]["test__sample__species_provided_is_detected"]["status"] == "pass" and \
         db["results"]["test__denovo_assembly__genome_size_at_1x"]["status"] == "pass"):
             core_facility = True
-    action = "pass: OK"
+    action = "pass:OK"
     if supplying_lab:
-        action = "fail: supplying lab"
+        action = "fail:supplying lab"
     if core_facility:
-        action = "fail: core facility"
+        action = "fail:core facility"
 
     db["stamp"] = {
         "name": "ssi_stamper",

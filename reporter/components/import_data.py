@@ -83,32 +83,16 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 print("No sample sheet here: ", item)
                 sample_sheet_name = "UNNAMED_" + str(unnamed_count)
                 unnamed_count += 1
-        try:
-            clean_result[str(item["_id"])] = {
-                "_id": str(item["_id"]),
-                "name": item.get("name", sample_sheet_name),
-                "species": item.get("properties", {}).get("species", "Not classified"),
-                "R1": str(item.get("reads", {}).get("R1", ""))
-            }
-            if "properties" in item:
-                for summary_key, summary_value in item["properties"].items():
-                    clean_result[str(item["_id"])]["properties." +
-                                        summary_key] = summary_value
-            if "stamps" in item:
-                for key, stamp in item["stamps"].items():
-                    if key == "stamp_list":
-                        continue
-                    else:
-                        clean_result[str(item["_id"])]["stamp." +
-                                                       key + ".value"] = stamp["value"]
+    
+    return query_result
 
 
-        except KeyError as e:
-            # we'll just ignore this for now
-            sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
-        if "sample_sheet" in item:
-            for key, value in item["sample_sheet"].items():
-                clean_result[str(item["_id"])]["sample_sheet." + key] = value
+    # except KeyError as e:
+    #     # we'll just ignore this for now
+    #     sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
+    # if "sample_sheet" in item:
+    #     for key, value in item["sample_sheet"].items():
+    #         clean_result[str(item["_id"])]["sample_sheet." + key] = value
         
     component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:

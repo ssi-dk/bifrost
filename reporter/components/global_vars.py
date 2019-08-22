@@ -30,11 +30,11 @@ COLUMNS = [
     },
     {
         "name": "Supplying_lab_feedback",
-        "id": "stamp.supplying_lab_check.value",
+        "id": "stamps.supplying_lab_check.value",
     },
     {
         "name": "QC_action",
-        "id": "stamp.ssi_stamper.value",
+        "id": "stamps.ssi_stamper.value",
         # "id": "ssi_stamper.assemblatron:action"
     },
     {
@@ -55,43 +55,43 @@ COLUMNS = [
     },
     {
         "name": "Genome_size_1x",
-        "id": "assemblatron.bin_length_at_1x"
+        "id": "properties.denovo_assembly.bin_length_at_1x"
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_10x"
+        "id": "properties.denovo_assembly.bin_length_at_10x"
     },
     {
         "name": "G_size_diff_1x_10",
-        "id": "ssi_stamper.assemblatron:1x10xsizediff_text"
+        "id": "properties.stamper.test__denovo_assembly__genome_size_difference_1x_10x_text"
     },
     {
         "name": "Avg_coverage",
-        "id": "assemblatron.bin_coverage_at_1x"
+        "id": "properties.denovo_assembly.bin_coverage_at_1x"
     },
     {
         "name": "Num_contigs",
-        "id": "assemblatron.bin_contigs_at_1x"
+        "id": "properties.denovo_assembly.bin_contigs_at_1x"
     },
     {
         "name": "Ambiguous_sites",
-        "id": "assemblatron.snp_filter_10x_10%"
+        "id": "properties.denovo_assembly.snp_filter_10x_10%"
     },
     {
         "name": "Num_reads",
-        "id": "assemblatron.filtered_reads_num"
+        "id": "properties.denovo_assembly.filtered_reads_num"
     },
-    {
-        "name": "mlst_type",
-        "id": "ariba_mlst_type"
-    },
+    # {
+    #     "name": "mlst_type",
+    #     "id": "properties.mlst.strain"
+    # },
     {
         "name": "Main_sp_plus_uncl",
-        "id": "ssi_stamper.whats_my_species:minspecies_text"
+        "id": "properties.stamper.test__species_detection__main_species_level_text"
     },
     {
         "name": "Unclassified_reads",
-        "id": "whats_my_species.percent_unclassified"
+        "id": "properties.species_detection.percent_unclassified"
     },
     {
         "name": "DB_ID",
@@ -106,43 +106,43 @@ COLUMNS = [
 plot_values = [
     {
         "name": "Genome_size_1x",
-        "id": "assemblatron.bin_length_at_1x",
+        "id": "properties.denovo_assembly.bin_length_at_1x",
         "limits": [1500000, 6000000]
     },
     {
         "name": "Genome_size_10x",
-        "id": "assemblatron.bin_length_at_10x",
+        "id": "properties.denovo_assembly.bin_length_at_10x",
         "limits": [1500000, 6000000],
         "xaxis": "x"
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "ssi_stamper.assemblatron:1x10xsizediff_text",
+        "id": "properties.stamper.test__denovo_assembly__genome_size_difference_1x_10x_text",
         "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",
-        "id": "assemblatron.bin_coverage_at_1x",
+        "id": "properties.denovo_assembly.bin_coverage_at_1x",
         "limits": [0, 200]
     },
     {
         "name": "Contig_num_1x",
-        "id": "assemblatron.bin_contigs_at_1x",
+        "id": "properties.denovo_assembly.bin_contigs_at_1x",
         "limits": [0, 700]
     },
     {
         "name": "Num_reads",
-        "id": "assemblatron.filtered_reads_num",
+        "id": "properties.denovo_assembly.filtered_reads_num",
         "limits": [1000, 8000000]
     },
     {
         "name": "Main_sp_plus_unclassified",
-        "id": "ssi_stamper.whats_my_species:minspecies_text",
+        "id": "properties.stamper.test__species_detection__main_species_level_text",
         "limits": [0.75, 1]
     },
     {
         "name": "Unclassified_reads",
-        "id": "whats_my_species.percent_unclassified",
+        "id": "properties.species_detection.percent_unclassified",
         "limits": [0, 0.25]
     }
 ]
