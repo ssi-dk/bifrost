@@ -6,7 +6,7 @@ FROM continuumio/miniconda3:4.6.14
 LABEL \
     name="bifrost__cge_mlst" \
     description="Docker environment for cge_mlst in bifrost" \
-    version="1.0" \
+    version="2.0" \
     DBversion="29/07/2019" \
     maintainer="kimn@ssi.dk;"
 

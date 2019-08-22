@@ -6,7 +6,7 @@ FROM continuumio/miniconda3:4.6.14
 LABEL \
     name="bifrost__whats_my_species_check" \
     description="Docker environment for whats_my_species in bifrost" \
-    version="1.0" \
+    version="2.0" \
     DBversion="31/07/19" \
     maintainer="kimn@ssi.dk;"
 

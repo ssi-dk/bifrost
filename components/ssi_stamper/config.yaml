@@ -2,6 +2,7 @@
 name: ssi_stamper
 category: &category Stamper
 version: 2.0
+schema_version: 2.0
 target: sample
 type: stamper
 recommendation: required

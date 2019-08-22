@@ -2,6 +2,7 @@
 name: min_read_check
 category: &category Size Check
 version: 2.0
+schema_version: 2.0
 target: sample
 type: pipeline
 recommendation: recommended

@@ -4,9 +4,9 @@
 FROM continuumio/miniconda3:4.6.14
 
 LABEL \
-    name="bifrost__cge_mlst" \
-    description="Docker environment for cge_mlst in bifrost" \
-    version="1.0" \
+    name="bifrost__cge_resfinder" \
+    description="Docker environment for cge_resfinder in bifrost" \
+    version="2.0" \
     DBversion="19/07/2019" \
     maintainer="kimn@ssi.dk;"
 

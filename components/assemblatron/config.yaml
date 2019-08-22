@@ -2,6 +2,7 @@
 name: assemblatron
 category: &category De-novo Assembly
 version: 2.0
+schema_version: 2.0
 target: sample
 type: pipeline
 recommendation: required

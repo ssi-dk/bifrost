@@ -6,7 +6,7 @@ FROM continuumio/miniconda3:4.6.14
 LABEL \
     name="bifrost__min_read_check" \
     description="Docker environment for min_read_check in bifrost" \
-    version="1.0" \
+    version="2.0" \
     DBversion="31/07/2019" \
     maintainer="kimn@ssi.dk;"
 

@@ -2,6 +2,7 @@
 name: cge_mlst
 category: &category MLST
 version: 2.0
+schema_version: 2.0
 target: sample
 type: pipeline
 recommendation: recommended
@@ -57,6 +58,7 @@ options:
     "Chlamydiales": [chlamydiales]
     "Campylobacter hyointestinalis": [chyointestinalis]
     "Campylobacter insulaenigrae": [cinsulaenigrae]
+    "Candidatus Liberibacter solanacearum": [liberibacter]
     "Candida krusei": [ckrusei]
     "Campylobacter lanienae": [clanienae]
     "Campylobacter lari": [clari]
@@ -86,7 +88,6 @@ options:
     "Klebsiella pneumoniae": [kpneumoniae]
     "Kudoa septempunctata": [kseptempunctata]
     "Leptospira": [leptospira,leptospira_2,leptospira_3]
-    "Candidatus Liberibacter solanacearum": [liberibacter]
     # llactis
     "Listeria monocytogenes": [lmonocytogenes]
     "Lactobacillus salivarius": [lsalivarius]
@@ -107,7 +108,7 @@ options:
     "Mycobacteria": [mycobacteria]
     "Neisseria gonorrhoeae": [neisseria]
     "Neisseria meningitidis": [neisseria]
-    "Ornithobacteriumrhinotracheale": [orhinotracheale]
+    "Ornithobacterium rhinotracheale": [orhinotracheale]
     "Orientia tsutsugamushi": [otsutsugamushi]
     "Propionibacterium acnes": [pacnes]
     "Pseudomonas aeruginosa": [paeruginosa]
