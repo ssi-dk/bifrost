@@ -18,7 +18,7 @@ def script__run_ariba_mlst(input, output, sample_file, component_file, folder, l
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 #---- Templated section: end -----------------------------------------------------------------------
-#***** Dynamic section: start **********************************************************************
+#**** Dynamic section: start ***********************************************************************
         # Variables being used
         database_path = db_component["database_path"]
         reads = input.reads  # expected a tuple of read locations
@@ -34,13 +34,14 @@ def script__run_ariba_mlst(input, output, sample_file, component_file, folder, l
             data_dict = {}
             for mlst_entry in mlst_species:
                 mlst_entry_path = folder + "/" + mlst_entry
+                mlst_database_path = os.path.join(database_path, mlst_entry)
                 datahandling.log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
                 subprocess.Popen("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path), shell=True).communicate()
-                subprocess.Popen("mkdir {}; ariba.py run {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), shell=True).communicate()
+                subprocess.Popen("mkdir {}; ariba.py run {} {} {} {} 1> {} 2> {}".format(mlst_entry, mlst_database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), shell=True).communicate()
                 data_dict[mlst_entry] = datahandling.load_yaml(folder + "/" + mlst_entry + "/data.json")
             datahandling.save_yaml(data_dict, output_file)
-#***** Dynamic section: end ************************************************************************
-#----- Templated section: start --------------------------------------------------------------------
+#**** Dynamic section: end *************************************************************************
+#---- Templated section: start ---------------------------------------------------------------------
     except Exception:
         datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
         datahandling.log(log_err, str(traceback.format_exc()))
@@ -58,4 +59,4 @@ script__run_ariba_mlst(\
     snakemake.params.component_file,
     snakemake.params.folder,
     snakemake.log)
-#----- Templated section: end ----------------------------------------------------------------------
+#---- Templated section: end -----------------------------------------------------------------------
