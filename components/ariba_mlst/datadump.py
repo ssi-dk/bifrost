@@ -19,9 +19,9 @@ def extract_mlst_report_and_details(db, file_path, key, temp_data):
 def convert_summary_for_reporter(db, file_path, key, temp_data):
     strains = []
     for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]:
-        strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]
+        strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]["report"]
         alleles = []
-        strain = strain_db["report"]["ST"]
+        strain = strain_db["ST"]
         strains.append(strain)
         for gene in strain_db:
             if gene is not "ST":
