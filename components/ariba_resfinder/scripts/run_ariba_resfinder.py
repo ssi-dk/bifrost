@@ -27,7 +27,6 @@ def script__run_ariba_resfinder(input, output, sample_file, component_file, fold
         database_path = db_component["database_path"]
         reads = input.reads  # expected a tuple of read locations
         output_file = output.complete  # a file to mark success for snakemake
-        species = db_sample["properties"]["species"]
 
         # Code to run
         command = "ariba run --force {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], folder, log_out, log_err)
