@@ -187,6 +187,11 @@ app.layout = html.Div([
                 [
                     html.Ul([
                         html.Li(
+                            html.Span("This view is in Beta. Please report any feedback/bugs to mbas@ssi.dk :)"), className="nav-item mx-1"
+                        ),
+                    ], className="navbar-nav"),
+                    html.Ul([
+                        html.Li(
                             html.A("Documentation", href="https://ssi-dk.github.io/bifrost/"), className="nav-item dropdown no-arrow mx-1"
                         ),
                         html.Li(
