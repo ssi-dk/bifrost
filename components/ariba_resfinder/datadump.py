@@ -16,8 +16,8 @@ def extract_cge_mlst_data(db, file_path, key, temp_data):
 
 
 def convert_summary_for_reporter(db, file_path, key, temp_data):
-    for mlst_db in db["results"][GLOBAL_component_name + "/resistance/report_yaml"]:
-        strain_db = db["results"][GLOBAL_component_name + "/resistance/report_yaml"][mlst_db]
+    for mlst_db in db["results"][GLOBAL_component_name + "/resistance/report_tsv"]:
+        strain_db = db["results"][GLOBAL_component_name + "/resistance/report_tsv"][mlst_db]
         strain = strain_db["mlst"]["results"]["sequence_type"]
         alleles = ", ".join([strain_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in strain_db["mlst"]["results"]["allele_profile"]])
         db["reporter"]["content"].append([mlst_db, strain, alleles])
