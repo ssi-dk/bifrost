@@ -49,8 +49,6 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
-        db_sample["properties"]["mlst"] = db_sample_component["summary"]
-        db_sample["reporter"]["mlst"] = db_sample_component["reporter"]
         datahandling.save_sample(db_sample, sample_file)
 
         open(output, 'w+').close()  # touch file
