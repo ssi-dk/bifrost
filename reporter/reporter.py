@@ -69,6 +69,12 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
 app.css.append_css(
     {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
 
+if hasattr(keys, "beta_link"):
+    beta_link = html.H6(html.A("Try out the new reporter (beta)",
+                               href=keys.beta_link), className="u-pull-left")
+else:
+    beta_link = None
+
 app.layout = html.Div([
     html.Div(className="container", children=[
         html.Div(id="placeholder0", style={"display": "none"}),
@@ -87,7 +93,7 @@ app.layout = html.Div([
         ),
         html.H2("Loading...", id="run-name", style={"display": "none"}),
         html.Div([
-            html.Div(id="report-link", className="u-pull-left"),
+            beta_link,
             html.H6(html.A("Wiki", href="https://teams.microsoft.com/l/channel/19%3a7b0b9a088602419e9f84630bacc84c2e%40thread.skype/tab%3a%3a9098abb1-75f5-410a-9011-87db7d42f3c2?label=Wiki&groupId=16852743-838a-400e-921d-6c50cc495b2f&tenantId=d0155445-8a4c-4780-9c13-33c78f22890e"), className="u-pull-right"),
         ], className="row"),
         html.Details([
