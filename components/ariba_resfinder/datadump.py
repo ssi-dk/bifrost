@@ -10,17 +10,14 @@ config = datahandling.load_config()
 
 
 def extract_ariba_resfinder_data(db, file_path, key, temp_data):
-    buffer = datahandling.read_buffer(file_path)
+    import pandas
+    df = pandas.read_csv(file_path, sep="\t")
+    df.to_dict()
     db["results"][key] = buffer
     return db
 
 
 def convert_summary_for_reporter(db, file_path, key, temp_data):
-    for mlst_db in db["results"][GLOBAL_component_name + "/resistance/report_tsv"]:
-        strain_db = db["results"][GLOBAL_component_name + "/resistance/report_tsv"][mlst_db]
-        strain = strain_db["mlst"]["results"]["sequence_type"]
-        alleles = ", ".join([strain_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in strain_db["mlst"]["results"]["allele_profile"]])
-        db["reporter"]["content"].append([mlst_db, strain, alleles])
     return db
 
 
