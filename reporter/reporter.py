@@ -643,7 +643,6 @@ def update_test_table(data_store):
     for c in add_if_missing:
         if c not in tests_df:
             tests_df[c] = np.nan
-    print(tests_df)
     no_reads_mask = tests_df["reads.R1"] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
@@ -742,7 +741,6 @@ def update_test_table(data_store):
             "column_id": qc_action, "filter_query": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
     tests_df = tests_df[[c['id'] for c in COLUMNS]]
-    print(tests_df.to_dict("rows"))
 
     table = dash_table.DataTable(
 
