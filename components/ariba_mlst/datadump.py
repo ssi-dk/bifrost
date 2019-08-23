@@ -10,7 +10,7 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start ***********************************************************************
-def extract_cge_mlst_data(db, file_path, key, temp_data):
+def extract_mlst_report_and_details(db, file_path, key, temp_data):
     buffer = datahandling.load_yaml(file_path)
     db["results"][key] = buffer
     return db
@@ -49,7 +49,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start************************************************************************
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
+        db_sample_component = datahandling.datadump_template(extract_mlst_report_and_details, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
