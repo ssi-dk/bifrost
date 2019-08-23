@@ -12,8 +12,7 @@ config = datahandling.load_config()
 def extract_ariba_resfinder_data(db, file_path, key, temp_data):
     import pandas
     df = pandas.read_csv(file_path, sep="\t")
-    df.to_dict()
-    db["results"][key] = buffer
+    db["results"][key] = df.to_dict()
     return db
 
 
