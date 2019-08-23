@@ -5,7 +5,7 @@ import shutil
 from bifrostlib import datahandling
 from bifrostlib import check_requirements
 
-component = "cge_mlst"
+component = "ariba_resfinder"
 
 configfile: "../config.yaml"  # Relative to run directory
 global_threads = config["threads"]
@@ -78,8 +78,8 @@ rule check_requirements:
         check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 
 
-rule_name = "cge_mlst"
-rule cge_mlst:
+rule_name = "ariba_resfinder"
+rule ariba_resfinder:
     # Static
     message:
         "Running step:" + rule_name
@@ -104,7 +104,7 @@ rule cge_mlst:
         sample_file = sample_file,
         component_file = component_file
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_cge_mlst.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_ariba_resfinder.py")
 
 
 rule_name = "datadump"
@@ -123,7 +123,7 @@ rule datadump:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.cge_mlst.output.complete,
+        rules.ariba_resfinder.output.complete,
     output:
         complete = rules.all.input
     params:
