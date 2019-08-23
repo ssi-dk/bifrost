@@ -7,10 +7,7 @@ import os
 from bifrostlib import datahandling
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start ***********************************************************************
-
-
 def script__run_ariba_resfinder(input, output, sample_file, component_file, folder, log):
-    import pandas
 #**** Dynamic section: end *************************************************************************
 #---- Templated section: start ---------------------------------------------------------------------
     try:

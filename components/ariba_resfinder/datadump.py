@@ -9,10 +9,49 @@ from bifrostlib import datahandling
 config = datahandling.load_config()
 
 
+def test(row):
+    l = len(row["ctg_start"])
+    out = []
+    for i in range(l):
+        out.append({'start': row["ref_start"][i], 'end': row["ref_end"][i]})
+    return out
+
 def extract_ariba_resfinder_data(db, file_path, key, temp_data):
     import pandas
+
+    # all the rows are turned into a subelement of one gene, all subelements are expected to be the same size
+    def snp_info_parser(row):
+        var_info = []
+        num_of_snp_elements = len(row["has_known_var"])
+        for i in range(num_of_snp_elements):
+            var_info.append({
+                "known_var": row["known_var"][i],
+                "var_type": row["var_type"][i],
+                "var_seq_type": row["var_seq_type"][i],
+                "known_var_change": row["known_var_change"][i],
+                "has_known_var": row["has_known_var"][i],
+                "ref_ctg_change": row["ref_ctg_change"][i],
+                "ref_ctg_effect": row["ref_ctg_effect"][i],
+                "ref_start": row["ref_start"][i],
+                "ref_end": row["ref_end"][i],
+                "ref_nt": row["ref_nt"][i],
+                "ctg_start": row["ctg_start"][i],
+                "ctg_end": row["ctg_end"][i],
+                "ctg_nt": row["ctg_nt"][i],
+                "smtls_total_depth": row["smtls_total_depth"][i],
+                "smtls_nts": row["smtls_nts"][i],
+                "smtls_nts_depth": row["smtls_nts_depth"][i]})
+        return var_info
+
     df = pandas.read_csv(file_path, sep="\t")
-    db["results"][key] = df.to_dict()
+    grouped_df = df.groupby(["#ariba_ref_name", "ref_name", "gene", "var_only", "flag", "reads", "cluster", "ref_len", "ref_base_assembled", "pc_ident", "ctg", "ctg_len", "ctg_cov", "var_description", "free_text"])
+    flattened_df = grouped_df.agg(lambda x: list(x)).reset_index()
+    flattened_df["var_info"] = flattened_df.apply(snp_info_parser, axis=1)
+    # Drop the columns used to make the combined value
+    flattened_df = flattened_df.drop(columns=["known_var", "var_type", "var_seq_type", "known_var_change", "has_known_var", "ref_ctg_change", "ref_ctg_effect", "ref_start", "ref_end", "ref_nt", "ctg_start", "ctg_end", "ctg_nt", "smtls_total_depth", "smtls_nts", "smtls_nts_depth"])
+    flattened_df = flattened_df.set_index("ref_name")
+
+    db["results"][key] = flattened_df.to_dict(orient="index")
     return db
 
 
