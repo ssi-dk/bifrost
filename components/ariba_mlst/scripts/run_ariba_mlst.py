@@ -45,8 +45,8 @@ def script__run_ariba_mlst(input, output, sample_file, component_file, folder, l
                 command = "ariba run {} {} {} {} 1> {} 2> {}".format(mlst_database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err)
                 datahandling.log(log_out, "Running:{}".format(command))
                 subprocess.Popen(command, shell=True).communicate()
-                data_dict[mlst_entry]["report"] = pandas.read_csv("mlst_report.tsv", sep="\t").to_dict(orient="records")[0]
-                data_dict[mlst_entry]["report_details"] = pandas.read_csv("mlst_report.details.tsv", sep="\t", index_col="gene").to_dict(orient="index")
+                data_dict[mlst_entry]["report"] = pandas.read_csv(os.path.join(mlst_entry_path, "mlst_report.tsv"), sep="\t").to_dict(orient="records")[0]
+                data_dict[mlst_entry]["report_details"] = pandas.read_csv(os.path.join(mlst_entry_path, "mlst_report.details.tsv"), sep="\t", index_col="gene").to_dict(orient="index")
             datahandling.save_yaml(data_dict, output_file)
 #**** Dynamic section: end *************************************************************************
 #---- Templated section: start ---------------------------------------------------------------------
