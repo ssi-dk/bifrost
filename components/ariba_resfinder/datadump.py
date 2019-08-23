@@ -47,7 +47,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
 
         # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
+        db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "resistance/data.yaml"))
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
