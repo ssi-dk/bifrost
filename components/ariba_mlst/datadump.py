@@ -19,8 +19,13 @@ def extract_mlst_report_and_details(db, file_path, key, temp_data):
 def convert_summary_for_reporter(db, file_path, key, temp_data):
     for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]:
         strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]
-        strain = strain_db["mlst"]["results"]["sequence_type"]
-        alleles = ", ".join([strain_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in strain_db["mlst"]["results"]["allele_profile"]])
+        alleles = []
+        for gene in report:
+            if gene == "ST":
+                strain = strain_db["report"]["ST"]
+            else:
+                alleles.append("{}_{}".format(gene, report[gene]))
+        alleles = ", ".join(alleles)
         db["reporter"]["content"].append([mlst_db, strain, alleles])
     return db
 #**** Dynamic section: end *************************************************************************
