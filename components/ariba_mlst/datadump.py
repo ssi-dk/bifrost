@@ -24,7 +24,7 @@ def convert_summary_for_reporter(db, file_path, key, temp_data):
         strain = strain_db["ST"]
         strains.append(strain)
         for gene in strain_db:
-            if gene is not "ST":
+            if gene != "ST":
                 alleles.append("{}_{}".format(gene, strain_db[gene]))
         alleles = ", ".join(alleles)
         db["reporter"]["content"].append([mlst_db, strain, alleles])
