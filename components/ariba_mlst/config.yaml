@@ -179,7 +179,7 @@ requirements:
       species:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
-  files: ["mlst_report.tsv", "mlst_report.details.tsv", "version_info.txt"]
+  files: []
   sample:
     properties:
       mlst:
