@@ -26,7 +26,7 @@ def script__run_ariba_resfinder(input, output, sample_file, component_file, fold
         output_file = output.complete  # a file to mark success for snakemake
 
         # Code to run
-        command = "ariba run --force {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], os.path.join(folder, "resistance"), log_out, log_err)
+        command = "ariba run --force {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], folder, log_out, log_err)
         datahandling.log(log_out, "Running:{}".format(command))
         subprocess.Popen(command, shell=True).communicate()
 #**** Dynamic section: end *************************************************************************
