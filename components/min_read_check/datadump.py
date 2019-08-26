@@ -6,7 +6,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 
 
 def extract_has_min_num_of_reads(db, file_path, key, temp_data):

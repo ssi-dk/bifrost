@@ -7,7 +7,7 @@ def script__summarize_depth(depth_file, summarize_contig_depth_yaml, summarize_b
     summarize_contig_depth_yaml = str(summarize_contig_depth_yaml)
     summarize_binned_depth_yaml = str(summarize_binned_depth_yaml)
 
-    config = datahandling.load_config()
+    
     """
     Break this into 2?
     """

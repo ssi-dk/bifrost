@@ -1,58 +1,53 @@
 #-Information---------------------------------------------------------------------------------------
-name: ariba_resfinder
-category: resistance
+name: template
+category: test
 version: 2.0
 schema_version: 2.0
-target: sample
+target: sample # sample | sample_collection
 type: pipeline
-recommendation: recommended
-requires_db: false
+recommendation: recommended # recommended | required | optional
+requires_db: true # true (if it uses the species db) | false (otherwise for now)
 description: >
-  This preforms read based mapping against the resfinder DB's. The options show the species entries 
-  which will be attempted for mlst with key originating from the species DB. This is done against 
-  the cge_db using ariba.
+  This is a template for a empty component which can be used to start a new component 
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
-dockerfile: &dockerfile "docker://ssidk/bifrost-ariba_resfinder:2.0"
+dockerfile: &dockerfile "docker://ssidk/bifrost-template:2.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
 options:
+  option_1: [value_1, value2]
+  option_2: value_3
 #---------------------------------------------------------------------------------------------------
 
-#-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path, a recommended
-# strategy for shrared resources is to symlink the resource from the root resources folder into
-# the component resources folder. This will prevent
-database_path: "/bifrost_resources/resfinder/ref_db/"
+#-Required resource files (relative to docker image)------------------------------------------------
+database_path: "/bifrost_resources/mlst"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
-  files: ["ariba_resfinder/resistance/report.tsv"]
+  files: []  # files are relative to sample directory
   sample:
     properties:
-      resistance:
+      template: # same as category above
         component:
+          summary: # see sample_component below
           _id: "ObjectId"
           date: "datetime"
     reporter:
-      resistance:
-        title: Resistance
+      template:
+        title: "Template"
         info: *dockerfile
-        columns:  # headers, these values are statically present in datadump
-          - {id: "gene", name: "gene"}
-          - {id: "coverage", name: "%cov"}
-          - {id: "identity", name: "%id"}
-          - {id: "variants", name: "# of variants"}
-        data: []  # list of dicts parsed in datadump
+        columns:
+          - {id: "column1", value: "display value for column 1"}
+          - {id: "column2", value: "display value for column 2"}
+        data:
+          # Data is the rows of values associated with the columns from the reporter
   sample_component:
     summary:
+    results:
 #---------------------------------------------------------------------------------------------------

@@ -100,7 +100,7 @@ db_values_changes:
       stamper: # see sample_component summary
         component:
           _id: "ObjectId"
-          _date: "datetime"
+          date: "datetime"
     stamps:
       stamp_list:
       ssi_stamper:

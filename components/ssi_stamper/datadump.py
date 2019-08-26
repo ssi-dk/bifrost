@@ -6,7 +6,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 
 
 def test__sample__has_reads_files(db, file_path, key, temp_data):

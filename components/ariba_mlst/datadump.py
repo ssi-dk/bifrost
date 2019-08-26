@@ -7,7 +7,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start ***********************************************************************
 def extract_mlst_report_and_details(db, file_path, key, temp_data):

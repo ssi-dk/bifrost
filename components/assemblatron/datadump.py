@@ -6,7 +6,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 
 
 def extract_contigs_sum_cov(db, file_path, key, temp_data):

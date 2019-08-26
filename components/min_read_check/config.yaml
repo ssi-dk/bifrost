@@ -40,7 +40,7 @@ db_values_changes:
       size_check:
         component:
           _id: "ObjectId"
-          _date: "datetime"
+          date: "datetime"
     reporter:
   sample_component:
     summary:

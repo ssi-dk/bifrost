@@ -6,7 +6,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 
 
 def test(row):
@@ -69,7 +69,7 @@ def convert_summary_for_reporter(db, file_path, key, temp_data):
             variant_count = variant_count + 1
         db["reporter"]["data"].append({
             "gene": gene,
-            "coverage": report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1),
+            "coverage": round(report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1), 3),
             "identity": report_results[gene]["pc_ident"],
             "variants": variant_count
         })

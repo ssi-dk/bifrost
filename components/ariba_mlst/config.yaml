@@ -6,7 +6,7 @@ schema_version: 2.0
 target: sample
 type: pipeline
 recommendation: recommended
-requires_db: True
+requires_db: true # uses species db
 description: >
   This preforms read based mapping against the mlst DB's. The mlst DB's are mapped against the 
   species table in mongoDB via the mlst_species_mapping variable. Multiple mlst's can be run against 

@@ -6,7 +6,7 @@ import sys
 import traceback
 from bifrostlib import datahandling
 
-config = datahandling.load_config()
+
 
 
 def extract_bracken_txt(db, file_path, key, temp_data):
