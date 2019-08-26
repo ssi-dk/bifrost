@@ -254,7 +254,7 @@ rule initialize_samples_from_sample_folder:
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                             if sample_name == str(result.group("sample_name")):
-                                sample_db["reads"][result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                                sample_db["reads"]["R"+result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
                                 md5sum_key = result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
                                     pass
@@ -468,7 +468,7 @@ rule set_sample_species:
                             species_db = datahandling.get_ncbi_species(
                                 provided_species)
                             if species_db is None:
-                                provided_species = "*" + str(provided_species)
+                                provided_species = str(provided_species)
                             else:
                                 provided_species = species_db # Use proper name if exists.
                         sample_db["properties"]["provided_species"] = provided_species
