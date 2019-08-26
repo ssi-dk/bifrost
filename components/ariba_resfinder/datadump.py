@@ -55,13 +55,19 @@ def extract_ariba_resfinder_data(db, file_path, key, temp_data):
     # Drop the columns used to make the combined value from the function
     flattened_df = flattened_df.drop(columns=["known_var", "var_type", "var_seq_type", "known_var_change", "has_known_var", "ref_ctg_change", "ref_ctg_effect", "ref_start", "ref_end", "ref_nt", "ctg_start", "ctg_end", "ctg_nt", "smtls_total_depth", "smtls_nts", "smtls_nts_depth"])
     # Set the reference id back to a variable for the dict to be in proper format
-    flattened_df = flattened_df.set_index("ref_name")
+    flattened_df = flattened_df.set_index("#ariba_ref_name")
 
     db["results"][key] = flattened_df.to_dict(orient="index")
     return db
 
 
 def convert_summary_for_reporter(db, file_path, key, temp_data):
+    report_results = db["results"]["ariba_resfinder/resistance/report_tsv"]
+    for gene in report_results:
+        variant_count = 0
+        for variant in report_results[gene]["var_info"]:
+            variant_count = variant_count + 1
+        db["reporter"]["content"].append([gene, report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1), report_results[gene]["pc_ident"], variant_count])
     return db
 
 
@@ -76,6 +82,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         this_function_name = sys._getframe().f_code.co_name
         global GLOBAL_component_name
         GLOBAL_component_name = db_component["name"]
+
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
 

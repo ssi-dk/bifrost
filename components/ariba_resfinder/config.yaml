@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: ariba_resfinder
-category: &category Resistance
+category: resistance
 version: 2.0
 schema_version: 2.0
 target: sample
@@ -36,20 +36,18 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
-  files: []
+  files: ["resistance/report.tsv"]
   sample:
     properties:
-      mlst:
-        species:  # str for mlst_db
-        results:
-          sequence_type:  #str
-          allele_profile: {}
+      resistance:
         component:
           _id: "ObjectId"
-          date: "datetime"
+          _date: "datetime"
     reporter:
-      mlst:
-        title: *category
+      resistance:
+        title: Resistance
         info: *dockerfile
-        content: [["db", "strain", "alleles"]]
+        content: [["gene", "%cov", "%id", "# of variants"]]  # headers
+  sample_component:
+    summary:
 #---------------------------------------------------------------------------------------------------
