@@ -24,18 +24,18 @@ class DatadumpSampleComponentObj:
         self.db_sample_component["properties"] = {
             "summary": {},
             "component": {
-                "_id": db_component["_id"],
+                "_id": self.db_component["_id"],
                 "_date": datetime.datetime.utcnow()
             }
         }
         self.db_sample_component["results"] = {}
-        self.db_sample_component["report"] = db_component["db_values_changes"]["sample"]["report"][db_component["category"]]
+        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["category"]]
         self.write_log_out("Starting datadump")
         self.save_files_to_sample_component()
 
     def save_files_to_sample_component(self):
         try:
-            datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
+            datahandling.save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
             self.write_log_out("Files saved")
         except:
             self.write_log_err(str(traceback.format_exc()))
@@ -47,7 +47,7 @@ class DatadumpSampleComponentObj:
             self.write_log_err(str(traceback.format_exc()))
 
     def generate_summary_from_results(self):
-        self.db_sample["properties"][db_component["category"]] = self.db_sample_component["properties"]
+        self.db_sample["properties"][self.db_component["category"]] = self.db_sample_component["properties"]
 
     def generate_report(self, generate_report_function):
         try:
