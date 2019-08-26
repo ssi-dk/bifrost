@@ -67,7 +67,12 @@ def convert_summary_for_reporter(db, file_path, key, temp_data):
         variant_count = 0
         for variant in report_results[gene]["var_info"]:
             variant_count = variant_count + 1
-        db["reporter"]["content"].append([gene, report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1), report_results[gene]["pc_ident"], variant_count])
+        db["reporter"]["data"].append({
+            "gene": gene,
+            "coverage": report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1),
+            "identity": report_results[gene]["pc_ident"],
+            "variants": variant_count
+        })
     return db
 
 
