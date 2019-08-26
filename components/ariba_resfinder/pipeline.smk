@@ -98,7 +98,7 @@ rule ariba_resfinder:
         folder = rules.setup.output.init_file,
         reads = (R1, R2)
     output:
-        complete = rules.setup.params.folder + "report.tsv"
+        complete = rules.setup.params.folder + "/report.tsv"
     params:
         folder = component,
         sample_file = sample_file,
