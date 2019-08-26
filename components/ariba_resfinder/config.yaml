@@ -48,10 +48,10 @@ db_values_changes:
         title: Resistance
         info: *dockerfile
         columns:  # headers, these values are statically present in datadump
-          - {id:"gene", name:"gene"}
-          - {id:"coverage", name:"%cov"}
-          - {id:"identity", name:"%id"}
-          - {id:"variants", name:"# of variants"}
+          - {id: "gene", name: "gene"}
+          - {id: "coverage", name: "%cov"}
+          - {id: "identity", name: "%id"}
+          - {id: "variants", name: "# of variants"}
         data: []  # list of dicts parsed in datadump
   sample_component:
     summary:
