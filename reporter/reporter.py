@@ -436,8 +436,9 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
         )
 def sample_report(page_n, lasso_selected, data_store):
     page_n = int(page_n)
-    #json_data = StringIO(data_store)
-    data = pd.io.json.json_normalize(loads(data_store))
+    json_data = loads(data_store)
+    reporter_json = {str(x["_id"]) :x.get("reporter", {}) for x in json_data}
+    data=pd.io.json.json_normalize(json_data)
     data["_id"] = data["_id"].astype(str)
     if lasso_selected != "" and lasso_selected is not None:
         lasso = lasso_selected.split(",")  # lasso first
@@ -461,7 +462,7 @@ def sample_report(page_n, lasso_selected, data_store):
     ) for n_sample in range(len(page), PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page)),
+        html.Div(children_sample_list_report(page, reporter_json)),
         html_fake_radio_buttons,
         admin.html_qc_expert_form(),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),

@@ -55,6 +55,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name" : 1,
                 "properties": 1,
                 "sample_sheet": 1,
+                "reporter": 1,
                 "reads": 1,
                 "stamps": 1
             },
@@ -65,51 +66,14 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name": 1,
                 "properties": 1,
                 "sample_sheet": 1,
+                "reporter": 1,
+
                 "reads": 1,
                 "stamps": 1
             },
             samples=sample_ids)
 
-    clean_result = {}
-    sample_ids = []
-    unnamed_count = 0
-    for item in query_result:
-        sample_ids.append(item["_id"])
-        sample_sheet_name = ""
-        if "name" not in item:
-            if "sample_sheet" in item:
-                sample_sheet_name = item["sample_sheet"]["sample_name"]
-            else:
-                print("No sample sheet here: ", item)
-                sample_sheet_name = "UNNAMED_" + str(unnamed_count)
-                unnamed_count += 1
-    
     return query_result
-
-
-    # except KeyError as e:
-    #     # we'll just ignore this for now
-    #     sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
-    # if "sample_sheet" in item:
-    #     for key, value in item["sample_sheet"].items():
-    #         clean_result[str(item["_id"])]["sample_sheet." + key] = value
-        
-    component_result = mongo_interface.get_results(sample_ids)
-    for item in component_result:
-        item_id = str(item["sample"]["_id"])
-        component = item["component"]["name"]
-        if "summary" in item:
-            for summary_key, summary_value in item["summary"].items():
-                clean_result[item_id][component + "." +
-                                      summary_key] = summary_value
-        else:
-            pass
-            # print("Missing summary", item)
-        if "status" in item:
-            clean_result[item_id][component + ".status"] = item["status"]
-        for func in global_vars.FUNCS:
-            clean_result[item_id] = func(clean_result[item_id])
-    return pd.DataFrame.from_dict(clean_result, orient="index")
 
 def add_sample_runs(sample_df):
     """Returns the runs each sample belongs to"""

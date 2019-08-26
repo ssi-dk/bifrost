@@ -35,7 +35,8 @@ def get_species_img(sample_data):
         img = None
     return img
 
-def generate_sample_report(sample, n_sample):
+
+def generate_sample_report(sample, n_sample, reporter_json):
     img = get_species_img(sample)
     if img is not None:
         img_div = html.Div(img, className="box-title bact grey-border")
@@ -50,7 +51,7 @@ def generate_sample_report(sample, n_sample):
                     className="box-title"
                 ),
                 img_div,
-                html_sample_tables(sample, className="row"),
+                html_sample_tables(sample, reporter_json, className="row"),
                 admin.sample_radio_feedback(sample, n_sample)
             ],
             className="border-box"
@@ -58,12 +59,12 @@ def generate_sample_report(sample, n_sample):
     )
 
 
-def html_species_report(dataframe, species, row_index, **kwargs):
+def html_species_report(dataframe, species, row_index, reporter_json, **kwargs):
     report = []
     for index, sample in \
             dataframe.loc[dataframe["properties.species"] == species].iterrows():
         report.append(generate_sample_report(sample,
-                                             row_index))
+                                             row_index, reporter_json[sample["_id"]]))
         row_index += 1
     return (html.Div(report, **kwargs), row_index)
 
@@ -162,7 +163,7 @@ def html_test_tables(sample_data, **kwargs):
         ], className="six columns"),
     ], **kwargs)
 
-def html_sample_tables(sample_data, **kwargs):
+def html_sample_tables(sample_data, reporter_json, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
 
@@ -270,95 +271,34 @@ def html_sample_tables(sample_data, **kwargs):
             ] 
         ])
     ])
-    resresults = False
-    resfinder = sample_data.get('ariba_resfinder.ariba_resfinder', [])
-    if type(resfinder) == list and len(resfinder):
-        resresults = True
-        resfinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
+    expected_results = global_vars.expected_results
+    any_results = False
+    results = []
+    for entry in expected_results:
+        if entry in reporter_json:
+            any_results = True
+            results.append(html.Div([
+                html.H6(reporter_json[entry]["title"], className="table-header"),
+                html.Div(
+                    dt.DataTable(
+                        style_table={
+                            'overflowX': 'scroll',
+                            'overflowY': 'scroll',
+                            'maxHeight': '480'
+                        },
 
-                columns=global_vars.finder_columns,
-                data=resfinder,
-                page_action='none'
-            ), className="grey-border")
-    elif (sample_data.get("ariba_resfinder.status", "") == "Success" and
-         (type(resfinder) == float or resfinder is None or not len(resfinder))):
-        resfinder_div = html.P("No antibiotic resistance genes found")
-    else:
-        resfinder_div = html.P("Resfinder not run")
-    
-    plasmidfinder = sample_data.get('ariba_plasmidfinder.ariba_plasmidfinder', [])
-    if type(plasmidfinder) == list and len(plasmidfinder):
-        resresults = True
-        plasmidfinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=global_vars.finder_columns,
-                data=plasmidfinder,
-                page_action='none'
-            ), className="grey-border")
-    elif (sample_data.get("ariba_plasmidfinder.status", "") == "Success" and
-         (type(plasmidfinder) == float or
-          plasmidfinder is None or
-          not len(plasmidfinder))):
-        plasmidfinder_div = html.P("No replicons found")
-    else:
-        plasmidfinder_div = html.P("Plasmidfinder not run")
+                        columns=reporter_json[entry]["columns"],
+                        data=reporter_json[entry]["data"],
+                        page_action='none'
+                    ), className="grey-border")
+            ], className="six columns"))
+        else:
+            results.append(html.Div([
+                html.H6("{} not run".format(entry.capitalize()), className="table-header")
+            ], className="six columns"))
 
-    virulencefinder = sample_data.get('ariba_virulencefinder.ariba_virulencefinder', [])
-    if type(virulencefinder) == list and len(virulencefinder):
-        resresults = True
-        virulencefinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=global_vars.finder_columns,
-                data=virulencefinder,
-                page_action='none'
-            ), className="grey-border")
-    elif sample_data.get("ariba_virulencefinder.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
-        virulencefinder_div = html.P("No virulence markers found")
-    else:
-        virulencefinder_div = html.P("Virulencefinder not run")
 
-    mlst_data = sample_data.get(
-        'ariba_mlst.mlst_report', "")
-    if type(mlst_data) == str and len(mlst_data):
-        resresults = True
-        mlst_dict = {}
-        mlst_fields = mlst_data.split(",")
-        for field in mlst_fields:
-            key, value = field.split(":")
-            mlst_dict[key] = value
-
-        columns = [{"name": i, "id": i} for i in mlst_dict.keys()]
-        mlst_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=columns,
-                data=[mlst_dict],
-                page_action='none'
-            ), className="grey-border")
-    else:
-        mlst_div = html.P("MLST not run")
-
-    mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
+    # mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
 
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if (sample_data.get("ariba_resfinder.status", "") == "Success" or
@@ -369,37 +309,16 @@ def html_sample_tables(sample_data, **kwargs):
     else:
         res_analysis_not_run = True
 
-    if resresults:
+    if any_results:
         res_div = html.Details([
             html.Summary("ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
             html.Div([
-                html.Div([
-                    html.Div([
-                        html.H6("ResFinder", className="table-header"),
-                        resfinder_div
-                    ], className="six columns"),
-                    html.Div([
-                        html.H6("VirulenceFinder", className="table-header"),
-                        virulencefinder_div
-                    ], className="six columns")
-                ], className="row"),
-                html.Div([
-                    html.Div([
-                        html.H6("PlasmidFinder", className="table-header"),
-                        plasmidfinder_div
-                    ], className="six columns"),
-                    html.Div([
-                        html.H6("MLST ({})".format(mlst_db), className="table-header"),
-                        mlst_div
-                    ], className="six columns")
-                ], className="row")
+                html.Div(results, className="row"),
             ])
         ])
-    elif not resresults and not res_analysis_not_run:
-        res_div = html.Div(html.P("No antibiotic resistances, replicons or virulence markers found for this sample."))
     else:
         res_div = html.Div(
-            html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
+            html.P("Resfinder, plasmidfinder, MLST and virulencefinder were not run."))
 
     mlst_type = "ND"
     if "ariba_mlst.mlst_report" in sample_data and sample_data["ariba_mlst.mlst_report"] is not None:
@@ -428,12 +347,12 @@ def html_sample_tables(sample_data, **kwargs):
     ], **kwargs)
 
 
-def children_sample_list_report(filtered_df):
+def children_sample_list_report(filtered_df, reporter_json):
     report = []
     result_index = 0
     for species in filtered_df["properties.species"].unique():
         species_report_div, result_index = html_species_report(
-            filtered_df, species, result_index)
+            filtered_df, species, result_index, reporter_json)
         report.append(html.Div([
             html.A(id="species-cat-" + str(species).replace(" ", "-")),
             html.H4(html.I(str(species))),
