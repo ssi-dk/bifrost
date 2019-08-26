@@ -36,7 +36,7 @@ requirements:
       R2:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
-  files: ["resistance/report.tsv"]
+  files: ["ariba_resfinder/resistance/report.tsv"]
   sample:
     properties:
       resistance:
