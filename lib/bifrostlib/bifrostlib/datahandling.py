@@ -66,13 +66,13 @@ class DatadumpSampleComponentObj:
         except Exception:
             self.write_log_err(str(traceback.format_exc()))
 
-    def write_log_out(self, str(content)):
+    def write_log_out(self, content):
         with open(self.log.out_file, "a+") as file_handle:
-            file_handle.write(content)
+            file_handle.write(str(content))
 
-    def write_log_err(self, str(content)):
+    def write_log_err(self, content):
         with open(self.log.err_file, "a+") as file_handle:
-            file_handle.write(content)
+            file_handle.write(str(content))
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
 ObjectId.to_yaml = classmethod(
