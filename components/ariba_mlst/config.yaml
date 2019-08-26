@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: ariba_mlst
-category: &category MLST
+category: &category mlst
 version: 2.0
 schema_version: 2.0
 target: sample

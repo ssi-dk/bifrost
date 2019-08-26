@@ -92,7 +92,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
-        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
+        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
 
         # Data extractions
         db_sample_component = datahandling.datadump_template(extract_ariba_resfinder_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "resistance/report.tsv"))
