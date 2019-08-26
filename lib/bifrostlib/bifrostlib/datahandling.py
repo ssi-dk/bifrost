@@ -1,4 +1,5 @@
 import os
+import datetime
 import ruamel.yaml
 from bson.objectid import ObjectId
 from bson.int64 import Int64
@@ -7,31 +8,71 @@ import pymongo
 import traceback
 
 # -----Deciding whether to keep this --------
-# class DatadumpSampleComponentObj:
-#     def __init__(self, folder, sample_file, component_file, sample_component_file, log):
-#         self.folder = folder
-#         self.sample_file = sample_file
-#         self.component_file = component_file
-#         self.sample_component_file = sample_component_file
-#         self.log = log
-#         self.load()
-#
-#     def load(self):
-#         self.db_sample = load_sample(self.sample_file)
-#         self.db_component = load_component(self.component_file)
-#         self.db_sample_component = load_sample_component(self.sample_component_file)
-#         self.db_sample_component["summary"] = self.db_sample_component.get("summary", {})
-#         self.db_sample_component["results"] = self.db_sample_component.get("results", {})
-#
-#     def save(self):
-#         save_sample(self.db_sample, self.sample_file)
-#         save_sample_component(self.db_sample_component, self.sample_component_file)
-#
-#     def log_out(self, str(content)):
-#         log(self.log.out_file, content)
-#
-#     def log_err(self, str(content)):
-#         log(self.log.err_file, content)
+class DatadumpSampleComponentObj:
+    def __init__(self, sample_file, component_file, sample_component_file, log, output="datadump_complete.txt"):
+        self.output = output
+        self.sample_file = sample_file
+        self.component_file = component_file
+        self.sample_component_file = sample_component_file
+        self.log = log
+        self.load()
+
+    def load(self):
+        self.db_sample = load_sample(self.sample_file)
+        self.db_component = load_component(self.component_file)
+        self.db_sample_component = load_sample_component(self.sample_component_file)
+        self.db_sample_component["properties"] = {
+            "summary": {},
+            "component": {
+                "_id": db_component["_id"],
+                "_date": datetime.datetime.utcnow()
+            }
+        }
+        self.db_sample_component["results"] = {}
+        self.db_sample_component["report"] = db_component["db_values_changes"]["sample"]["report"][db_component["category"]]
+        self.write_log_out("Starting datadump")
+        self.save_files_to_sample_component()
+
+    def save_files_to_sample_component(self):
+        try:
+            datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
+            self.write_log_out("Files saved")
+        except:
+            self.write_log_err(str(traceback.format_exc()))
+
+    def retrieve_data(self, data_extraction_function):
+        try:
+            self.db_sample_component["properties"]["summary"], self.db_sample_component["results"] = data_extraction_function(self)
+        except Exception:
+            self.write_log_err(str(traceback.format_exc()))
+
+    def generate_summary_from_results(self):
+        self.db_sample["properties"][db_component["category"]] = self.db_sample_component["properties"]
+
+    def generate_report(self, generate_report_function):
+        try:
+            self.db_sample["report"] = generate_report_function(self)
+        except Exception:
+            self.write_log_err(str(traceback.format_exc()))
+
+    def save(self):
+        try:
+            save_sample(self.db_sample, self.sample_file)
+            self.write_log_out("sample {} saved".format(self.db_sample["_id"]))
+            save_sample_component(self.db_sample_component, self.sample_component_file)
+            self.write_log_out("sample_component {} saved".format(self.db_sample_component["_id"]))
+            open(self.output, "w+").close()
+            self.write_log_out("Done datadump")
+        except Exception:
+            self.write_log_err(str(traceback.format_exc()))
+
+    def write_log_out(self, str(content)):
+        with open(self.log.out_file, "a+") as file_handle:
+            file_handle.write(content)
+
+    def write_log_err(self, str(content)):
+        with open(self.log.err_file, "a+") as file_handle:
+            file_handle.write(content)
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
 ObjectId.to_yaml = classmethod(
