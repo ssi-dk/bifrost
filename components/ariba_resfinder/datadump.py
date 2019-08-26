@@ -82,6 +82,8 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         this_function_name = sys._getframe().f_code.co_name
         global GLOBAL_component_name
         GLOBAL_component_name = db_component["name"]
+        global GLOBAL_category_name
+        GLOBAL_category_name = db_component["category"]
 
 
         datahandling.log(log_out, "Started {}\n".format(this_function_name))
@@ -92,7 +94,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Initialization of values, summary and reporter are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
-        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["resistance"]
+        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"][GLOBAL_category_name]
 
         # Data extractions
         db_sample_component = datahandling.datadump_template(extract_ariba_resfinder_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "resistance/report.tsv"))
@@ -101,6 +103,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Save to sample component
         datahandling.save_sample_component(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
+        db_sample["reporter"][GLOBAL_category_name] = db_sample_component["reporter"]
         datahandling.save_sample(db_sample, sample_file)
 
         open(output, 'w+').close()  # touch file
