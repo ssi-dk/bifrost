@@ -15,7 +15,8 @@ sample_file = sample
 db_sample = datahandling.load_sample(sample_file)
 
 component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
-db_component = datahandling.load_component(component_file)
+component_config = datahandling.load_yaml(component_file)
+db_component = datahandling.get_components(component_names = [component_config["name"]], component_versions = [component_config["version"]])
 
 singularity: db_component["dockerfile"]
 
