@@ -92,7 +92,7 @@ class DatadumpSampleComponentObj:
     def save(self, generate_report_function=lambda x: None):
         try:
             self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
-            self.db_sample["report"] = generate_report_function(self)
+            self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
             self.write_log_err(str(traceback.format_exc()))
             save_sample(self.db_sample, self.sample_file)
             self.write_log_out("sample {} saved\n".format(self.db_sample["_id"]))
