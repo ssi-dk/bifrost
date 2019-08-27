@@ -13,7 +13,7 @@ def extract_has_min_num_of_reads(datadumpObj):
 
 def datadump(sample_file, component_file, sample_component_file, log):
     datadumpObj = datahandling.DatadumpSampleComponentObj(sample_file, component_file, sample_component_file, log)
-    datadumpObj.retrieve_data(extract_has_min_num_of_reads)
+    datadumpObj.set_summary_and_results_from_function(extract_has_min_num_of_reads)
     datadumpObj.save()
 
 
