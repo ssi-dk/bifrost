@@ -16,7 +16,10 @@ db_sample = datahandling.load_sample(sample_file)
 
 component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 component_config = datahandling.load_yaml(component_file)
-db_component = datahandling.get_components(component_names = [component_config["name"]], component_versions = [component_config["version"]])
+db_component = datahandling.get_components(component_names=[component_config["name"]], component_versions=[component_config["version"]])
+if len(db_component) != 1:
+    print("Error with component and database interaction {} instances found in DB".format(len(db_component)))
+db_component = db_component[0]
 
 singularity: db_component["dockerfile"]
 
