@@ -6,10 +6,11 @@ from bifrostlib import datahandling
 
 
 def rule__greater_than_min_reads_check(input, output, sample_file, component_file, log):
-    this_function_name = sys._getframe().f_code.co_name
-    ruleObj = datahandling.snakemakeRuleScriptObj(input, output, sample_file, component_file, log, this_function_name)
-    db_sample, db_component = ruleObj.get_sample_and_component_dbs()
     try:
+        this_function_name = sys._getframe().f_code.co_name
+        ruleObj = datahandling.snakemakeRuleScriptObj(input, output, sample_file, component_file, log, this_function_name)
+        db_sample, db_component = ruleObj.get_sample_and_component_dbs()
+
         # Variables being used
         min_read_number = int(db_component["options"]["min_num_reads"])
         stats_data = datahandling.read_buffer(input.stats_file)
