@@ -133,12 +133,13 @@ def dump_component_info(data_dict):
         )
     else:
         data_dict["metadata"]["created_at"] = now
-        component = get_components(component_names=[data_dict["name"]], component_versions=[data_dict["version"]])
-        if len(component) == 0:
-            result = components_db.insert_one(data_dict)
-            data_dict["_id"] = result.inserted_id
-        if len(component) == 1:
-            data_dict["_id"] = component[0]["_id"]
+
+        data_dict = components_db.find_one_and_update(
+            filter={"name": data_dict["name"], "version": data_dict["version"]},
+            update={"$setOnInsert": data_dict},
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True
+        )
 
     return data_dict
 
