@@ -61,7 +61,7 @@ class DatadumpSampleComponentObj:
             "summary": {},
             "component": {
                 "_id": self.db_component["_id"],
-                "_date": datetime.datetime.utcnow()
+                "date": datetime.datetime.utcnow()
             }
         }
         self.db_sample_component["results"] = {}
