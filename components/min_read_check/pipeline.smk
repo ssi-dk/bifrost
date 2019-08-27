@@ -121,7 +121,7 @@ rule greater_than_min_reads_check:
         sample_file = sample_file,
         component_file = component_file
     output:
-        file = rules.setup.params.folder + "/has_min_num_of_reads"
+        rule_complete = rules.setup.params.folder + "/has_min_num_of_reads"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__greater_than_min_reads_check.py")
 
@@ -145,7 +145,7 @@ rule datadump:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
-        rules.greater_than_min_reads_check.output.complete  # Needs to be output of final rule
+        rules.greater_than_min_reads_check.output.rule_complete  # Needs to be output of final rule
         #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input

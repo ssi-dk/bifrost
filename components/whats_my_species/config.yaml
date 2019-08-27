@@ -40,13 +40,14 @@ db_values_changes:
     - whats_my_species/kraken_report_bracken.txt
   sample:
     properties:
-      species:
       species_detection:
+        species:
         summary: #see sample_component summary
         component:
           _id: "ObjectId"
           date: "datetime"
     report:
+      species_detection:
   sample_component:
     summary:
       percent_unclassified:
@@ -55,5 +56,6 @@ db_values_changes:
       percent_classified_species_2:
       name_classified_species_2 :
       detected_species:
+    results:
 #---------------------------------------------------------------------------------------------------
 
