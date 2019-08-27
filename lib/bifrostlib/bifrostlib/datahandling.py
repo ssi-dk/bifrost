@@ -166,10 +166,9 @@ def save_component(component_dict, file_yaml):
 
 
 def load_component(file_yaml):
-    if not os.path.isfile(file_yaml):
-        return {}
     with open(file_yaml, "r") as file_handle:
-        return yaml.load(file_handle)
+        temp = yaml.load(file_handle)
+    return get_components(component_ids=None, component_names=[temp["name"]], component_versions=[temp["version"]])[0]
 
 
 def save_sample(sample_dict, file_yaml):
