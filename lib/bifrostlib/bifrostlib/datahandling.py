@@ -458,11 +458,7 @@ def get_components(component_ids=None, component_names=None, component_versions=
     """
     if component_ids is not None:
         component_ids = list(map(ObjectId, component_ids))
-    if component_names is not None:
-        component_names = list(map(ObjectId, component_names))
-    if component_versions is not None:
-        component_versions = list(map(ObjectId, component_versions))
-    return mongo_interface.get_components(component_ids=component_ids)
+    return mongo_interface.get_components(component_ids=component_ids, component_names=component_names, component_versions=component_versions)
 
 
 def post_component(component):
