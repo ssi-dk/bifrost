@@ -35,7 +35,7 @@ class DatadumpSampleComponentObj:
 
     def save_files_to_sample_component(self):
         try:
-            save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
+            save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
             self.write_log_out("Files saved")
         except:
             self.write_log_err(str(traceback.format_exc()))
