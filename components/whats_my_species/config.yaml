@@ -47,7 +47,7 @@ db_values_changes:
         component:
           _id: "ObjectId"
           date: "datetime"
-    reporter:
+    report:
   sample_component:
     summary:
       percent_unclassified:

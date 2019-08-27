@@ -9,7 +9,7 @@ import traceback
 
 # -----Deciding whether to keep this --------
 class DatadumpSampleComponentObj:
-    def __init__(self, sample_file, component_file, sample_component_file, log, output="datadump_complete.txt"):
+    def __init__(self, sample_file, component_file, sample_component_file, log, output="component_complete.txt"):
         self.output = output
         self.sample_file = sample_file
         self.component_file = component_file
@@ -40,23 +40,23 @@ class DatadumpSampleComponentObj:
         except:
             self.write_log_err(str(traceback.format_exc()))
 
+    def load_summary_and_results(self):
+        return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
+
+    def load_category(self):
+        return self.db_component["category"]
+
     def retrieve_data(self, data_extraction_function):
         try:
-            self.db_sample_component["properties"]["summary"], self.db_sample_component["results"] = data_extraction_function(self)
+            (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"]) = data_extraction_function(self)
         except Exception:
             self.write_log_err(str(traceback.format_exc()))
 
-    def generate_summary_from_results(self):
-        self.db_sample["properties"][self.db_component["category"]] = self.db_sample_component["properties"]
-
-    def generate_report(self, generate_report_function):
+    def save(self, report=lambda x: None):
         try:
+            self.db_sample["properties"][self.db_component["category"]] = self.db_sample_component["properties"]
             self.db_sample["report"] = generate_report_function(self)
-        except Exception:
             self.write_log_err(str(traceback.format_exc()))
-
-    def save(self):
-        try:
             save_sample(self.db_sample, self.sample_file)
             self.write_log_out("sample {} saved".format(self.db_sample["_id"]))
             save_sample_component(self.db_sample_component, self.sample_component_file)

@@ -38,10 +38,11 @@ db_values_changes:
   sample:
     properties:
       size_check:
+        summary:  # see sample_component: summary for content
         component:
           _id: "ObjectId"
           date: "datetime"
-    reporter:
+    report:
   sample_component:
     summary:
       has_min_num_of_reads: # Boolean

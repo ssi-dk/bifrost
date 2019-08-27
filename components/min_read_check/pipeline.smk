@@ -41,7 +41,7 @@ onerror:
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        component + "/component_complete"
 
 
 rule setup:
