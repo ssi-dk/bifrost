@@ -43,8 +43,8 @@ class DatadumpSampleComponentObj:
     def load_summary_and_results(self):
         return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
 
-    def load_category(self):
-        return self.db_component["category"]
+    def load_component_name(self):
+        return self.db_component["name"]
 
     def retrieve_data(self, data_extraction_function):
         try:

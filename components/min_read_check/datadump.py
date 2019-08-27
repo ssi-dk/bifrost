@@ -10,7 +10,7 @@ from bifrostlib import datahandling
 def extract_has_min_num_of_reads(datadumpObj):
     import re
     summary, results = datadumpObj.load_summary_and_results()
-    file_path = os.path.join(datadumpObj.load_category(), "has_min_num_of_reads")
+    file_path = os.path.join(datadumpObj.load_component_name(), "has_min_num_of_reads")
     buffer = datahandling.read_buffer(file_path)
     results[file_path]["min_read_num"] = int(re.search("min_read_num:\s*([0-9]+)", buffer, re.MULTILINE).group(1))
     summary["has_min_num_of_reads"] = True
