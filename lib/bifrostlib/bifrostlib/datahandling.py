@@ -52,7 +52,7 @@ class DatadumpSampleComponentObj:
         except Exception:
             self.write_log_err(str(traceback.format_exc()))
 
-    def save(self, report=lambda x: None):
+    def save(self, generate_report_function=lambda x: None):
         try:
             self.db_sample["properties"][self.db_component["category"]] = self.db_sample_component["properties"]
             self.db_sample["report"] = generate_report_function(self)
