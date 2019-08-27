@@ -133,7 +133,7 @@ def dump_component_info(data_dict):
         )
     else:
         data_dict["metadata"]["created_at"] = now
-        print(data_dict)
+
         data_dict = components_db.find_one_and_update(
             filter={"name": data_dict["name"], "version": data_dict["version"]},
             update={"$setOnInsert": data_dict},

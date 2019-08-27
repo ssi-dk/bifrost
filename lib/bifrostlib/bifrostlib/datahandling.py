@@ -169,6 +169,7 @@ def load_component(file_yaml):
     with open(file_yaml, "r") as file_handle:
         temp = yaml.load(file_handle)
     components = get_components(component_names=[temp["name"]], component_versions=[temp["version"]])
+    print(len(components), temp)
     if len(components) == 1:
         return components[0]
     else:
