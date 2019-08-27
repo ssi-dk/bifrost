@@ -172,7 +172,7 @@ def load_component(file_yaml):
     if len(components) == 1:
         return components[0]
     else:
-        return {}
+        return temp
 
 
 def save_sample(sample_dict, file_yaml):
