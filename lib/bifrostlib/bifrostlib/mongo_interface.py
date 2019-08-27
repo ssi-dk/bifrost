@@ -94,13 +94,18 @@ def dump_sample_info(data_dict):
         data_dict["_id"] = result.inserted_id
     return data_dict
 
-def get_components(component_ids=None):
+
+def get_components(component_ids=None, component_names=None, component_versions=None):
     """
     Return components based on query
     """
     query = []
     if component_ids is not None:
         query.append({"_id": {"$in": component_ids}})
+    if component_names is not None:
+        query.append({"component.name": {"$in": component_names}})
+    if component_versions is not None:
+        query.append({"component.version": {"$in": component_versions}})
     connection = get_connection()
     db = connection.get_database()
     if len(query) == 0:

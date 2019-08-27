@@ -65,7 +65,7 @@ class DatadumpSampleComponentObj:
             }
         }
         self.db_sample_component["results"] = {}
-        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["category"]]
+        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["details"]["category"]]
         self.write_log_out("Starting datadump\n")
         self.output_path = os.path.join(self.db_component["name"], self.output_file)
         self.save_files_to_sample_component()
@@ -452,12 +452,16 @@ def delete_sample_component(s_c_id=None, sample_id=None):
 
 # /component
 
-def get_components(component_ids=None):
+def get_components(component_ids=None, component_names=None, component_versions=None):
     """
     Get components from db
     """
     if component_ids is not None:
         component_ids = list(map(ObjectId, component_ids))
+    if component_names is not None:
+        component_names = list(map(ObjectId, component_names))
+    if component_versions is not None:
+        component_versions = list(map(ObjectId, component_versions))
     return mongo_interface.get_components(component_ids=component_ids)
 
 
