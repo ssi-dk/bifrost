@@ -7,7 +7,6 @@
 import os
 from bifrostlib import datahandling
 
-
 def extract_has_min_num_of_reads(datadumpObj):
     import re
     summary, results = datadumpObj.load_summary_and_results()

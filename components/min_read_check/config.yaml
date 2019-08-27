@@ -1,6 +1,6 @@
 #-Information---------------------------------------------------------------------------------------
 name: min_read_check
-category: &category Size Check
+category: size_check
 version: 2.0
 schema_version: 2.0
 target: sample
@@ -43,6 +43,7 @@ db_values_changes:
           _id: "ObjectId"
           date: "datetime"
     report:
+      size_check:
   sample_component:
     summary:
       has_min_num_of_reads: # Boolean
