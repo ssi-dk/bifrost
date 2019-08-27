@@ -20,6 +20,7 @@ class snakemakeRuleScriptObj:
         self.component_file = component_file
         self.log = log
         self.function_name = function_name
+        self.load()
 
     def load(self):
         self.db_sample = load_sample(self.sample_file)
