@@ -9,8 +9,8 @@ import traceback
 
 # -----Deciding whether to keep this --------
 class DatadumpSampleComponentObj:
-    def __init__(self, sample_file, component_file, sample_component_file, log, output="component_complete.txt"):
-        self.output = output
+    def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
+        self.output_file = output_file
         self.sample_file = sample_file
         self.component_file = component_file
         self.sample_component_file = sample_component_file
@@ -21,6 +21,7 @@ class DatadumpSampleComponentObj:
         self.db_sample = load_sample(self.sample_file)
         self.db_component = load_component(self.component_file)
         self.db_sample_component = load_sample_component(self.sample_component_file)
+
         self.db_sample_component["properties"] = {
             "summary": {},
             "component": {
@@ -31,6 +32,7 @@ class DatadumpSampleComponentObj:
         self.db_sample_component["results"] = {}
         self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["category"]]
         self.write_log_out("Starting datadump")
+        self.output_path = os.path.join(self.db_component["name"], self.output)
         self.save_files_to_sample_component()
 
     def save_files_to_sample_component(self):
@@ -61,7 +63,7 @@ class DatadumpSampleComponentObj:
             self.write_log_out("sample {} saved".format(self.db_sample["_id"]))
             save_sample_component(self.db_sample_component, self.sample_component_file)
             self.write_log_out("sample_component {} saved".format(self.db_sample_component["_id"]))
-            open(self.output, "w+").close()
+            open(self.output_path, "w+").close()
             self.write_log_out("Done datadump")
         except Exception:
             self.write_log_err(str(traceback.format_exc()))
