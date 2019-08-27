@@ -168,8 +168,8 @@ def save_component(component_dict, file_yaml):
 def load_component(file_yaml):
     with open(file_yaml, "r") as file_handle:
         temp = yaml.load(file_handle)
-    components = get_components(component_ids=None, component_names=[temp["name"]], component_versions=[temp["version"]])
-    if len(components) = 1:
+    components = get_components(component_names=[temp["name"]], component_versions=[temp["version"]])
+    if len(components) == 1:
         return components[0]
     else:
         return {}
