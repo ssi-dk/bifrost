@@ -7,7 +7,10 @@ from bifrostlib import mongo_interface
 import pymongo
 import traceback
 
-# -----Deciding whether to keep this --------
+
+class snakemakeScriptObj:
+    def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
+
 class DatadumpSampleComponentObj:
     def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
         self.output_file = output_file
@@ -32,7 +35,7 @@ class DatadumpSampleComponentObj:
         self.db_sample_component["results"] = {}
         self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["category"]]
         self.write_log_out("Starting datadump")
-        self.output_path = os.path.join(self.db_component["name"], self.output)
+        self.output_path = os.path.join(self.db_component["name"], self.output_file)
         self.save_files_to_sample_component()
 
     def save_files_to_sample_component(self):
