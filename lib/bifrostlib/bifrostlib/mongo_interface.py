@@ -103,9 +103,9 @@ def get_components(component_ids=None, component_names=None, component_versions=
     if component_ids is not None:
         query.append({"_id": {"$in": component_ids}})
     if component_names is not None:
-        query.append({"component.name": {"$in": component_names}})
+        query.append({"name": {"$in": component_names}})
     if component_versions is not None:
-        query.append({"component.version": {"$in": component_versions}})
+        query.append({"version": {"$in": component_versions}})
     connection = get_connection()
     db = connection.get_database()
     if len(query) == 0:
