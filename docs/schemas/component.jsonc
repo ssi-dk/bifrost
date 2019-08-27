@@ -1,0 +1,30 @@
+{
+    "_id": "<objectid>",
+    "name": "<string>",
+    "version": "<string>",
+    "details": {
+        "category": "<string>",
+        "schema_version": "<string>",
+        "target": "<string>",
+        "type": "<string>",
+        "recommendation": "<string>",
+        "description": "<string>"
+    },
+    "dockerfile": "<string>",
+    "options": { //[0, 1, 10]
+    },
+    "resources": { //[0, 1, 10]
+    },
+    "requeriments": { //[1, 2, 5]
+    },
+    "db_values_changes": { // [0, 10, 30]
+        "files": ["<string>"], // [0, 5, 30]
+        "sample": "<object>",
+        "sample_component": "<object>",
+        
+    },
+    "metadata": {
+        "created_at": "<date>",
+        "updated_at": "<date>"
+    }
+}
