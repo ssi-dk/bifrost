@@ -67,7 +67,6 @@ def script__datadump(sample_file, component_file, sample_component_file, log):
 
 
 script__datadump(
-    snakemake.output.complete,
     snakemake.params.sample_file,
     snakemake.params.component_file,
     snakemake.params.sample_component_file,
