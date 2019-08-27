@@ -1,13 +1,17 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: min_read_check
-category: size_check
 version: 2.0
-schema_version: 2.0
-target: sample
-type: pipeline
-recommendation: recommended
-description: >
-  Checks that there's a minimum number of reads after trimming to run.
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: size_check
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    Checks that there's a minimum number of reads after trimming to run.
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -20,10 +24,8 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path.
-# Note paths are set up to the absolute locations in the docker container, if you want 
-# to overwrite these values be sure to mount the src folder to the docker image
-adapters_fasta: "/bifrost_resources/adapters.fasta"
+resources:
+  adapters_fasta: "/bifrost_resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

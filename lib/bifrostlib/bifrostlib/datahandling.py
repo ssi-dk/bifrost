@@ -8,9 +8,43 @@ import pymongo
 import traceback
 
 
+"""
+Class to be used as a template for rules which require python scripts. Can be tightened up to only
+allow access to parts of the document if needed in the future, ie options.
+"""
+class snakemakeRuleScriptObj:
+    def __init__(self, input, output, sample_file, component_file, log, function_name):
+        self.input = input
+        self.output = output
+        self.sample_file = sample_file
+        self.component_file = component_file
+        self.log = log
+        self.function_name = function_name
+
+    def load(self):
+        self.db_sample = load_sample(self.sample_file)
+        self.db_component = load_component(self.component_file)
+        self.write_log_out("{} has started\n".format(self.function_name))
+
+    def get_sample_and_component_dbs(self):
+        return (self.db_sample, self.db_component)
+
+    def get_folder(self):
+        return self.db_component["name"]
+
+    def rule_done(self):
+        self.write_log_out("{} has finished\n".format(self.function_name))
+        return 0
+
+    def write_log_out(self, content):
+        log(self.log.out_file, content)
+
+    def write_log_err(self, content):
+        log(self.log.err_file, content)
+
 class DatadumpSampleComponentObj:
-    def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
-        self.output_file = output_file
+    def __init__(self, sample_file, component_file, sample_component_file, log):
+        self.output_file = "component_complete"
         self.sample_file = sample_file
         self.component_file = component_file
         self.sample_component_file = sample_component_file
@@ -31,7 +65,7 @@ class DatadumpSampleComponentObj:
         }
         self.db_sample_component["results"] = {}
         self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["category"]]
-        self.write_log_out("Starting datadump")
+        self.write_log_out("Starting datadump\n")
         self.output_path = os.path.join(self.db_component["name"], self.output_file)
         self.save_files_to_sample_component()
 
@@ -42,13 +76,13 @@ class DatadumpSampleComponentObj:
         except:
             self.write_log_err(str(traceback.format_exc()))
 
-    def load_summary_and_results(self):
+    def get_summary_and_results(self):
         return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
 
-    def load_component_name(self):
+    def get_component_name(self):
         return self.db_component["name"]
 
-    def retrieve_data(self, data_extraction_function):
+    def set_summary_and_results_from_function(self, data_extraction_function):
         try:
             (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"]) = data_extraction_function(self)
         except Exception:
@@ -56,25 +90,23 @@ class DatadumpSampleComponentObj:
 
     def save(self, generate_report_function=lambda x: None):
         try:
-            self.db_sample["properties"][self.db_component["category"]] = self.db_sample_component["properties"]
+            self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
             self.db_sample["report"] = generate_report_function(self)
             self.write_log_err(str(traceback.format_exc()))
             save_sample(self.db_sample, self.sample_file)
-            self.write_log_out("sample {} saved".format(self.db_sample["_id"]))
+            self.write_log_out("sample {} saved\n".format(self.db_sample["_id"]))
             save_sample_component(self.db_sample_component, self.sample_component_file)
-            self.write_log_out("sample_component {} saved".format(self.db_sample_component["_id"]))
+            self.write_log_out("sample_component {} saved\n".format(self.db_sample_component["_id"]))
             open(self.output_path, "w+").close()
-            self.write_log_out("Done datadump")
+            self.write_log_out("Done datadump\n")
         except Exception:
             self.write_log_err(str(traceback.format_exc()))
 
     def write_log_out(self, content):
-        with open(self.log.out_file, "a+") as file_handle:
-            file_handle.write(str(content))
+        log(self.log.out_file, content)
 
     def write_log_err(self, content):
-        with open(self.log.err_file, "a+") as file_handle:
-            file_handle.write(str(content))
+        log(self.log.err_file, content)
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
 ObjectId.to_yaml = classmethod(

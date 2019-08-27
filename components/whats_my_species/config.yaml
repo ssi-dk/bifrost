@@ -20,9 +20,6 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path.
-# Note paths are set up to the absolute locations in the docker container, if you want 
-# to overwrite these values be sure to mount the src folder to the docker image
 kraken_database: "/bifrost_resources/minikraken/"
 kraken_kmer_dist: "/bifrost_resources/minikraken_4GB_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
@@ -33,6 +30,8 @@ requirements:
     reads:
       R1:
       R2:
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files:

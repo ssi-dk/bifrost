@@ -1,20 +1,15 @@
 # script for use with snakemake
 import sys
-import subprocess
 import traceback
 import re
 from bifrostlib import datahandling
 
 
-def script__run_cge_resfinder(input, output, sample_file, component_file, folder, log):
+def rule__greater_than_min_reads_check(input, output, sample_file, component_file, log):
     try:
-        log_out = str(log.out_file)
-        log_err = str(log.err_file)
-        db_sample = datahandling.load_sample(sample_file)
-        db_component = datahandling.load_component(component_file)
         this_function_name = sys._getframe().f_code.co_name
-
-        datahandling.log(log_out, "Started {}\n".format(this_function_name))
+        ruleObj = datahandling.snakemakeRuleScriptObj(input, output, sample_file, component_file, log, this_function_name)
+        db_sample, db_component = ruleObj.get_sample_and_component_dbs()
 
         # Variables being used
         min_read_number = int(db_component["options"]["min_num_reads"])
@@ -27,18 +22,15 @@ def script__run_cge_resfinder(input, output, sample_file, component_file, folder
                 output.write("min_read_num:{}".format(min_read_number))
 
     except Exception:
-        datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.log(log_err, str(traceback.format_exc()))
+        ruleObj.write_log_err(str(traceback.format_exc()))
 
     finally:
-        datahandling.log(log_out, "Done {}\n".format(this_function_name))
-        return 0
+        return ruleObj.rule_done()
 
 
-script__run_cge_resfinder(
+rule__greater_than_min_reads_check(
     snakemake.input,
     snakemake.output,
     snakemake.params.sample_file,
     snakemake.params.component_file,
-    snakemake.params.folder,
     snakemake.log)
