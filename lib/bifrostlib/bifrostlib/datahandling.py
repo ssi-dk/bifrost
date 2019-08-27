@@ -8,9 +8,6 @@ import pymongo
 import traceback
 
 
-class snakemakeScriptObj:
-    def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
-
 class DatadumpSampleComponentObj:
     def __init__(self, sample_file, component_file, sample_component_file, log, output_file="component_complete.txt"):
         self.output_file = output_file
