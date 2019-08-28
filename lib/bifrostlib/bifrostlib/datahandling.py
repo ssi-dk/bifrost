@@ -10,6 +10,25 @@ import pymongo
 import traceback
 
 
+ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
+ObjectId.to_yaml = classmethod(
+    lambda cls, representer, node: representer.represent_scalar(
+        cls.yaml_tag, u'{}'.format(node)))
+ObjectId.from_yaml = classmethod(
+    lambda cls, constructor, node: cls(node.value))
+
+Int64.yaml_tag = u'!bson.int64.Int64'
+Int64.to_yaml = classmethod(
+    lambda cls, representer, node: representer.represent_scalar(
+        cls.yaml_tag, u'{}'.format(node)))
+Int64.from_yaml = classmethod(
+    lambda cls, constructor, node: cls(node.value))
+
+yaml = ruamel.yaml.YAML(typ="safe")
+yaml.default_flow_style = False
+yaml.register_class(ObjectId)
+yaml.register_class(Int64)
+
 """
 Class to be used as a template for rules which require python scripts. Can be tightened up to only
 allow access to parts of the document if needed in the future, ie options.
@@ -209,25 +228,6 @@ class DatadumpSampleComponentObj:
 
     def write_log_err(self, content):
         log(self.log.err_file, content)
-
-ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
-ObjectId.to_yaml = classmethod(
-    lambda cls, representer, node: representer.represent_scalar(
-        cls.yaml_tag, u'{}'.format(node)))
-ObjectId.from_yaml = classmethod(
-    lambda cls, constructor, node: cls(node.value))
-
-Int64.yaml_tag = u'!bson.int64.Int64'
-Int64.to_yaml = classmethod(
-    lambda cls, representer, node: representer.represent_scalar(
-        cls.yaml_tag, u'{}'.format(node)))
-Int64.from_yaml = classmethod(
-    lambda cls, constructor, node: cls(node.value))
-
-yaml = ruamel.yaml.YAML(typ="safe")
-yaml.default_flow_style = False
-yaml.register_class(ObjectId)
-yaml.register_class(Int64)
 
 
 def log(log_file, content):
