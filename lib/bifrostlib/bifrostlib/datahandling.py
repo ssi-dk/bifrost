@@ -95,9 +95,9 @@ class SampleComponentObj:
     def save_files_to_sample_component(self):
         try:
             save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
-            self.write_log_out("Files saved")
+            write_log_out(log, "Files saved")
         except:
-            self.write_log_err(str(traceback.format_exc()))
+            write_log_err(log, str(traceback.format_exc()))
     def get_summary_and_results(self):
         return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
     def get_component_name(self):
