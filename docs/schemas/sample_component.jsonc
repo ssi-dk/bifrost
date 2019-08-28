@@ -1,0 +1,20 @@
+{
+    "_id": "<objectid>",
+    "sample": {
+        "name": "<string>",
+        "_id": "<string>"
+    },
+    "component": {
+        "name": "<string>",
+        "_id": "<string>"
+    },
+    "path": "<string>",
+    "results": "<object>",
+    "summary": "<object>", // [0,10,30]
+    "status": "<string>",
+    "setup_date" : "<date>",
+    "metadata": {
+        "created_at": "<date>",
+        "updated_at": "<date>"
+    }
+}

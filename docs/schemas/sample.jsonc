@@ -1,0 +1,44 @@
+{
+    "_id": "<objectid>",
+    "name": "<string>",
+    "path": "<string>",
+    "properties": { //[0, 10, 30] same as components?
+        "category": {
+            "summary": { // [0, 10, 30]
+            },
+            "component": {
+                "name": "<string>",
+                "_id": "<string>",
+                "date": "<date>", //?
+                "status": "<string>" //?
+            }
+        }
+    },
+    "reporter": { //[0, 10, 30]
+        "category": {
+            "title": "<string>",
+            "info": "<string>",
+            "columns": [ //[1, 7, 20]
+                {
+                    "id": "<string>",
+                    "name": "<string>"
+                }
+            ],
+            "data": [ // [1, 5, 30]
+                { // [same as columns]
+                    "col_id": "<string/number>"
+                }
+            ]
+        }
+    },
+    "components": [ // [0, 10, 30]
+        {
+            "name": "<string>",
+            "_id": "<string>"
+        }
+    ],
+    "metadata": {
+        "created_at": "<date>",
+        "updated_at": "<date>"
+    }
+}
