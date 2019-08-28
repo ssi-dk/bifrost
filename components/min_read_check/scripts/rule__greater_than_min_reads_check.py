@@ -5,10 +5,10 @@ import re
 from bifrostlib import datahandling
 
 
-def rule__greater_than_min_reads_check(input, output, bifrost_sample_component_object,log):
+def rule__greater_than_min_reads_check(input, output, SampleComponentObj, log):
     try:
         this_function_name = sys._getframe().f_code.co_name
-        db_sample, db_component = bifrost_sample_component_object.start_rule(this_function_name, log)
+        db_sample, db_component = SampleComponentObj.start_rule(this_function_name, log)
         # Variables being used
         min_read_number = int(db_component["options"]["min_num_reads"])
         stats_data = datahandling.read_buffer(input.stats_file)
@@ -20,14 +20,14 @@ def rule__greater_than_min_reads_check(input, output, bifrost_sample_component_o
                 output.write("min_read_num:{}".format(min_read_number))
 
     except Exception:
-        bifrost_sample_component_object.write_log_err(log, str(traceback.format_exc()))
+        SampleComponentObj.write_log_err(log, str(traceback.format_exc()))
 
     finally:
-        return bifrost_sample_component_object.end_rule()
+        return SampleComponentObj.end_rule()
 
 
 rule__greater_than_min_reads_check(
     snakemake.input,
     snakemake.output,
-    snakemake.params.bifrost_sample_component_object,
+    snakemake.params.SampleComponentObj,
     snakemake.log)

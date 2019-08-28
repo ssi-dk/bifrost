@@ -125,7 +125,7 @@ rule greater_than_min_reads_check:
     input:
         stats_file = rules.setup__filter_reads_with_bbduk.output.stats_file,
     params:
-        bifrost_sample_component_object
+        SampleComponentObj=bifrost_sample_component_object
         # sample_file = sample_file,
         # component_file = component_file
     output:
@@ -156,7 +156,7 @@ rule datadump:
     output:
         complete = rules.all.input
     params:
-        bifrost_sample_component_object
+        SampleComponentObj=bifrost_sample_component_object
         # folder = db_component["name"],
         # sample_file = sample_file,
         # component_file = component_file,
