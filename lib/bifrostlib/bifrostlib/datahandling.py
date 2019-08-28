@@ -140,10 +140,10 @@ def requirement_met(db, field, expected_value):
         sys.stderr.write("Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
         sys.stderr.write("Error: " + str(traceback.format_exc()))
         return False
-def write_log_out(log, content):
-    log(log.out_file, content)
-def write_log_err(log, content):
-    log(log.err_file, content)
+def write_log_out(a_log, content):
+    log(a_log.out_file, content)
+def write_log_err(a_log, content):
+    log(a_log.err_file, content)
 
 
 
