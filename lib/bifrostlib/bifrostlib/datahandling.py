@@ -141,53 +141,9 @@ def requirement_met(db, field, expected_value):
         sys.stderr.write("Error: " + str(traceback.format_exc()))
         return False
 def write_log_out(a_log, content):
-    log(a_log.out_file, content)
+    write_log(log.out_file, content)
 def write_log_err(a_log, content):
-    log(a_log.err_file, content)
-
-
-
-
-
-class SampleComponentRuleObj:
-    def __init__(self, input, output, sample_file, component_file, log, function_name):
-        self.input = input
-        self.output = output
-        self.sample_file = sample_file
-        self.component_file = component_file
-        self.log = log
-        self.function_name = function_name
-        self.load()
-
-    def load(self):
-        self.db_sample = load_sample(self.sample_file)
-        self.db_component = load_component(self.component_file)
-        self.write_log_out("{} has started\n".format(self.function_name))
-
-    def get_sample_and_component_dbs(self):
-        return (self.db_sample, self.db_component)
-
-    def get_folder(self):
-        return self.db_component["name"]
-
-    def rule_done(self):
-        self.write_log_out("{} has finished\n".format(self.function_name))
-        return 0
-
-class DatadumpSampleComponentObj:
-    def __init__(self, sample_file, component_file, sample_component_file, log):
-        self.output_file = "component_complete"
-        self.sample_file = sample_file
-        self.component_file = component_file
-        self.sample_component_file = sample_component_file
-        self.log = log
-        self.load()
-
-    def load(self):
-        self.db_sample = load_sample(self.sample_file)
-        self.db_component = load_component(self.component_file)
-        self.db_sample_component = load_sample_component(self.sample_component_file)
-
+    write_log(log.err_file, content)
 
 
     def save_files_to_sample_component(self):
@@ -224,13 +180,13 @@ class DatadumpSampleComponentObj:
             self.write_log_err(str(traceback.format_exc()))
 
     def write_log_out(self, content):
-        log(self.log.out_file, content)
+        write_log(self.log.out_file, content)
 
     def write_log_err(self, content):
-        log(self.log.err_file, content)
+        write_log(self.log.err_file, content)
 
 
-def log(log_file, content):
+def write_log(log_file, content):
     with open(log_file, "a+") as file_handle:
         file_handle.write(content)
 
