@@ -480,8 +480,8 @@ def get_components(component_ids=None, component_names=None, component_versions=
 
 
 def get_component(component_id=None):
-    if component_ids is not None:
-        component_ids = [ObjectId(component_id)]
+    if component_id is not None:
+        component_id = [ObjectId(component_id)]
     return next(iter(mongo_interface.get_components(component_ids=component_id)), None)
 
 
