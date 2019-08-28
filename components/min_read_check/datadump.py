@@ -15,7 +15,7 @@ def extract_has_min_num_of_reads(SampleComponentObj):
 
 def datadump(SampleComponentObj, log):
     SampleComponentObj.start_data_dump(log)
-    SampleComponentObj.run_data_dump_on_function(extract_has_min_num_of_reads)
+    SampleComponentObj.run_data_dump_on_function(extract_has_min_num_of_reads, log)
     SampleComponentObj(extract_has_min_num_of_reads, log)
     SampleComponentObj.end_data_dump(log)
 
