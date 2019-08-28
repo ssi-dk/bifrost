@@ -341,8 +341,8 @@ def update_status_in_sample_and_sample_component(sample_component_id, status):
     sample_component_db["status"] = status
     status_set = False
     for component in sample_db["components"]:
-        if sample_db["components"][component]["_id"] == component_db["_id"]:
-            sample_db["components"][component]["status"] = status
+        if component["_id"] == component_db["_id"]:
+            component["status"] = status
             status_set = True
     if not status_set:
         sample_db["components"].append([{"_id":component_db["_id"], "name":component_db["name"], "status":status}])
