@@ -76,7 +76,7 @@ rule check_requirements:
         # component_file = component_file,
         # sample_component_file = sample_component_file
     run:
-        bifrost_sample_component_object.check_requirements(log)
+        bifrost_sample_component_object.check_requirements()
         # check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 #- Templated section: end --------------------------------------------------------------------------
 

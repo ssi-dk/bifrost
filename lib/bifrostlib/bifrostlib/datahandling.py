@@ -8,6 +8,7 @@ from bson.int64 import Int64
 from bifrostlib import mongo_interface
 import pymongo
 import traceback
+import sys
 
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
@@ -44,7 +45,7 @@ class SampleComponentObj:
         self.db_sample_component = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.db_sample_component["_id"]
         self.started()
-    def check_requirements(self, log=None, output_file="requirements_met"):
+    def check_requirements(self, output_file="requirements_met"):
         no_failures = True
         if self.db_component["requirements"] is not None:
             requirements = pandas.io.json.json_normalize(self.db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
@@ -53,15 +54,14 @@ class SampleComponentObj:
                 if category == "sample":
                     field = requirement.split(".")[1:]
                     expected_value = requirements[requirement]
-                    if not requirement_met(self.db_sample, field, expected_value, log):
+                    if not requirement_met(self.db_sample, field, expected_value):
                         no_failures = False
                 elif category == "component":
                     field = requirement.split(".")[2:]
                     expected_value = requirements[requirement]
-                    if not requirement_met(self.db_component, field, expected_value, log):
+                    if not requirement_met(self.db_component, field, expected_value):
                         no_failures = False
                 else:
-                    write_log_err(log, "Improper requirement {}".format(requirement))
                     no_failures = False
         if no_failures:
             open(os.path.join(self.db_component["name"], output_file), "w+").close()
@@ -122,23 +122,23 @@ class SampleComponentObj:
         except Exception:
             write_log_err(log, str(traceback.format_exc()))
 
-def requirement_met(db, field, expected_value, log):
+def requirement_met(db, field, expected_value):
     try:
         actual_value = functools.reduce(dict.get, field, db)
         if expected_value is None:
-            write_log_err(log, "Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+            sys.stderr.write("Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
             return True
         elif type(expected_value) is not list:
             expected_value = [expected_value]
         if actual_value in expected_value:
-                write_log_err(log, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+                sys.stderr.write("Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
                 return True
         else:
-            write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+            sys.stderr.write("Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
             return False
     except Exception:
-        write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
-        write_log_err(log, "Error: " + str(traceback.format_exc()))
+        sys.stderr.write("Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
+        sys.stderr.write("Error: " + str(traceback.format_exc()))
         return False
 def write_log_out(log, content):
     log(log.out_file, content)
