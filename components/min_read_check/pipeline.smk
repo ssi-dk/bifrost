@@ -10,7 +10,7 @@ num_of_threads, memory_in_GB = config["threads"], config["memory"]
 memory_in_GB = config["memory"]
 
 #db_sample = datahandling.load_sample(sample_file)
-bifrost_sample_component_object = SampleComponentObj(config["sample_id"], config["component_id"])
+bifrost_sample_component_object = datahandling.SampleComponentObj(config["sample_id"], config["component_id"])
 db_sample = bifrost_sample_component_object.db_sample
 db_component = bifrost_sample_component_object.db_component
 # db_sample = datahandling.get_sample(sample_id=config["sample_id"])
