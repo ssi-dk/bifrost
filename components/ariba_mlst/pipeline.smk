@@ -64,7 +64,7 @@ rule check_requirements:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -92,7 +92,7 @@ rule ariba_mlst:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -121,7 +121,7 @@ rule datadump:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",

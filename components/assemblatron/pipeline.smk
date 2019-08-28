@@ -58,7 +58,7 @@ rule check_requirements:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -85,7 +85,7 @@ rule setup__filter_reads_with_bbduk:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -111,7 +111,7 @@ rule assembly__skesa:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -134,7 +134,7 @@ rule assembly_check__quast_on_contigs:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -157,7 +157,7 @@ rule assembly_check__sketch_on_contigs:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -180,7 +180,7 @@ rule post_assembly__stats:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -205,7 +205,7 @@ rule post_assembly__mapping:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -229,7 +229,7 @@ rule post_assembly__samtools_stats:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -252,7 +252,7 @@ rule post_assembly__pileup:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -276,7 +276,7 @@ rule summarize__depth:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -300,7 +300,7 @@ rule post_assembly__call_variants:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -324,7 +324,7 @@ rule summarize__variants:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -347,7 +347,7 @@ rule post_assembly__annotate:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -375,7 +375,7 @@ rule rename_contigs:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -400,7 +400,7 @@ rule datadump:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",

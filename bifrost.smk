@@ -129,7 +129,7 @@ rule copy_run_info:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -161,7 +161,7 @@ rule initialize_components:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -208,7 +208,7 @@ rule initialize_samples_from_sample_folder:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -278,7 +278,7 @@ rule check__provided_sample_info:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -355,7 +355,7 @@ rule set_samples_from_sample_info:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -423,7 +423,7 @@ rule set_sample_species:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -487,7 +487,7 @@ rule add_components_to_samples:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -554,7 +554,7 @@ rule initialize_sample_components_for_each_sample:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -623,7 +623,7 @@ rule initialize_run:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -707,7 +707,7 @@ rule setup_sample_components_to_run:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",

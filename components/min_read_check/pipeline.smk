@@ -57,7 +57,7 @@ rule check_requirements:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
         err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
@@ -84,7 +84,7 @@ rule setup__filter_reads_with_bbduk:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
         err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
@@ -110,7 +110,7 @@ rule greater_than_min_reads_check:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
         err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
@@ -137,7 +137,7 @@ rule datadump:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
         err_file = db_component["name"] + "/log/" + rule_name + ".err.log",

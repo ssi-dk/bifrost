@@ -60,7 +60,7 @@ rule check_requirements:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -87,7 +87,7 @@ rule contaminant_check__classify_reads_kraken_minikraken_db:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -113,7 +113,7 @@ rule contaminant_check__determine_species_bracken_on_minikraken_results:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -143,7 +143,7 @@ rule datadump:
     threads:
         num_of_threads
     resources:
-        memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
