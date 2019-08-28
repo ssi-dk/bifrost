@@ -8,8 +8,7 @@ from bifrostlib import check_requirements
 component = "ssi_stamper"  # Depends on component name, should be same as folder
 
 configfile: "../config.yaml"  # Relative to run directory
-global_threads = config["threads"]
-global_memory_in_GB = config["memory"]
+threads, memory = config["threads"], config["memory"]
 sample = config["Sample"]
 
 sample_file = sample
@@ -53,9 +52,9 @@ rule check_requirements:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -80,9 +79,9 @@ rule datadump:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",

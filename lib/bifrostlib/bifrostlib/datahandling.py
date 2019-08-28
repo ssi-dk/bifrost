@@ -221,7 +221,7 @@ def load_sample_component(file_yaml):
             return content
 
 
-def sample_component_success(file_yaml, component):
+def sample_component_success(file_yaml):
     sample_component_dict = load_sample_component(file_yaml)
     if sample_component_dict["status"] != "Success":
         return False
@@ -229,13 +229,13 @@ def sample_component_success(file_yaml, component):
         return True
 
 
-def update_sample_component_success(file_yaml, component):
+def update_sample_component_success(file_yaml):
     sample_component_dict = load_sample_component(file_yaml)
     sample_component_dict["status"] = "Success"
     save_sample_component(sample_component_dict, file_yaml)
 
 
-def update_sample_component_failure(file_yaml, component):
+def update_sample_component_failure(file_yaml):
     sample_component_dict = load_sample_component(file_yaml)
     if sample_component_dict["status"] != "Requirements not met":
         sample_component_dict["status"] = "Failure"
@@ -398,10 +398,7 @@ def post_run_export(import_dict):
         return imported
 
 # /samples
-
-
-def get_samples(sample_ids=None, run_names=None,
-                component_ids=None):
+def get_samples(sample_ids=None, run_names=None, component_ids=None):
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
     if component_ids is not None:
@@ -409,6 +406,12 @@ def get_samples(sample_ids=None, run_names=None,
     return mongo_interface.get_samples(sample_ids=sample_ids,
                                        run_names=run_names,
                                        component_ids=component_ids)
+
+
+def get_sample(sample_id=None):
+    if sample_id is not None:
+        sample_id = [ObjectId(sample_id)]
+    return next(iter(mongo_interface.get_samples(sample_ids=sample_id)), None)
 
 
 def post_sample(sample):
@@ -429,17 +432,28 @@ def delete_sample(sample_id):
 #  /sample/{id}/sample_components
 
 
-def get_sample_components(sample_component_ids=None,
-                          sample_ids=None, component_names=None):
+def get_sample_components(sample_component_ids=None, sample_ids=None, component_ids=None, component_names=None):
     # Should be smarter
     if sample_component_ids is not None:
         sample_component_ids = [ObjectId(id) for id in sample_component_ids]
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
+    if component_ids is not None:
+        component_ids = [ObjectId(id) for id in component_ids]
     return mongo_interface.get_sample_components(
         sample_component_ids=sample_component_ids,
         sample_ids=sample_ids,
         component_names=component_names)
+
+
+def get_sample_component(sample_component_id=None, sample_id=None, component_id=None):
+    if sample_component_id is not None:
+        sample_component_id = [ObjectId(sample_component_id)]
+    if sample_id is not None:
+        sample_id = [ObjectId(sample_id)]
+    if component_id is not None:
+        component_id = [ObjectId(component_id)]
+    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id)), None)
 
 
 def post_sample_component(sample_component):
@@ -463,6 +477,12 @@ def get_components(component_ids=None, component_names=None, component_versions=
     if component_ids is not None:
         component_ids = list(map(ObjectId, component_ids))
     return mongo_interface.get_components(component_ids=component_ids, component_names=component_names, component_versions=component_versions)
+
+
+def get_component(component_id=None):
+    if component_ids is not None:
+        component_ids = [ObjectId(component_id)]
+    return next(iter(mongo_interface.get_components(component_ids=component_id)), None)
 
 
 def post_component(component):

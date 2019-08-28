@@ -36,8 +36,7 @@ sample_folder = config["sample_folder"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
-global_threads = config["threads"]
-global_memory_in_GB = config["memory"]
+threads, memory = config["threads"], config["memory"]
 
 
 onsuccess:
@@ -85,9 +84,9 @@ rule make_components_dir:
 #     message:
 #         "Running step:" + rule_name
 #     threads:
-#         global_threads
+#         threads
 #     resources:
-#         memory_in_GB = global_memory_in_GB
+#         memory_in_GB
 #     log:
 #         out_file = component + "/log/" + rule_name + ".out.log",
 #         err_file = component + "/log/" + rule_name + ".err.log",
@@ -129,9 +128,9 @@ rule copy_run_info:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -161,9 +160,9 @@ rule initialize_components:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -208,9 +207,9 @@ rule initialize_samples_from_sample_folder:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -278,9 +277,9 @@ rule check__provided_sample_info:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -355,9 +354,9 @@ rule set_samples_from_sample_info:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -423,9 +422,9 @@ rule set_sample_species:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -487,9 +486,9 @@ rule add_components_to_samples:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -554,9 +553,9 @@ rule initialize_sample_components_for_each_sample:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -623,9 +622,9 @@ rule initialize_run:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -707,9 +706,9 @@ rule setup_sample_components_to_run:
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -803,13 +802,11 @@ rule setup_sample_components_to_run:
                                         # Only delete directory on non unlock mode
                                         command.write(
                                             "if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-
-                                    command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, "sample.yaml"))
-
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "queued to run"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={} sample_id={} component_id={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, "sample.yaml", sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
