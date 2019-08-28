@@ -13,8 +13,25 @@
     "summary": "<object>", // [0,10,30]
     "status": "<string>",
     "setup_date" : "<date>",
+    "reporter": { //[0, 10, 30]
+        "category": {
+            "title": "<string>",
+            "info": "<string>",
+            "columns": [ //[1, 7, 20]
+                {
+                    "id": "<string>",
+                    "name": "<string>"
+                }
+            ],
+            "data": [ // [1, 5, 30]
+                { // [same as columns]
+                    "col_id": "<string/number>"
+                }
+            ]
+        }
+    },
     "metadata": {
         "created_at": "<date>",
         "updated_at": "<date>"
-    }
+    },
 }

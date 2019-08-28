@@ -1,0 +1,29 @@
+Name: Sample list/sample table/sample plots
+Accepts: List of sample ids, supplying labs, runs, any parameter
+Returns: List of samples and properties
+Amount of data: Large
+Frequency: High
+Required latency: Low
+
+Name: Sample reports
+Accepts: List of sample ids
+Returns: List of sample properties and sample reports
+Required latency: Low
+
+
+Name: Pipeline Status
+Accepts: List of sample ids
+Returns: List of sample components and their status, and sample QC status
+Required latency: Low
+
+
+Name: Resequence reports
+Accepts: Run name/id
+Returns: List of samples in the provided run and N runs back and their status across those runs
+Could be split into 2: Get last N runs and get sample status across those runs.
+Required latency: Medium
+
+Name: Links
+Accepts: List of sample ids
+Returns: List of paths to assemblies/reads
+Required latency: Medium

@@ -7,10 +7,7 @@
             "summary": { // [0, 10, 30]
             },
             "component": {
-                "name": "<string>",
                 "_id": "<string>",
-                "date": "<date>", //?
-                "status": "<string>" //?
             }
         }
     },
@@ -34,7 +31,8 @@
     "components": [ // [0, 10, 30]
         {
             "name": "<string>",
-            "_id": "<string>"
+            "_id": "<string>",
+            "status": "<string>"
         }
     ],
     "metadata": {
