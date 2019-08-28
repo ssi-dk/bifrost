@@ -113,9 +113,9 @@ class SampleComponentObj:
             self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
             self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
             write_log_err(log, str(traceback.format_exc()))
-            save_sample_to_file(self.db_sample, self.sample_file)
+            save_sample(self.db_sample)
             write_log_out(log, "sample {} saved\n".format(self.db_sample["_id"]))
-            save_sample_component_to_file(self.db_sample_component, self.sample_component_file)
+            save_sample_component(self.db_sample_component)
             write_log_out(log, "sample_component {} saved\n".format(self.db_sample_component["_id"]))
             open(os.path.join(self.db_component["name"], output_file), "w+").close()
             write_log_out(log, "Done datadump\n")
