@@ -46,7 +46,6 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
                                     run_name, species, group, qc_list)
     return list(result)
 
-##NOTE SPLIT/SHORTEN THIS FUNCTION
 def filter_all(species=None, species_source=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
 
     if sample_ids is None:
@@ -55,7 +54,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name" : 1,
                 "properties": 1,
                 "sample_sheet": 1,
-                "reporter": 1,
+                "report": 1,
                 "reads": 1,
                 "stamps": 1
             },
@@ -66,14 +65,54 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name": 1,
                 "properties": 1,
                 "sample_sheet": 1,
-                "reporter": 1,
-
+                "report": 1,
                 "reads": 1,
                 "stamps": 1
             },
             samples=sample_ids)
 
-    return query_result
+    # Check if any sample belongs to the old schema.
+    old_schema = []
+    new_schema = []
+    for result in query_result:
+        if not result.get("report"):
+            old_schema.append(result)
+        else:
+            new_schema.append(result)
+    if not old_schema:
+        return query_result
+    # clean_result = {}
+    sample_ids = [x["_id"] for x in old_schema]
+    samples_by_ids = {str(x["_id"]):x for x in old_schema}
+    # unnamed_count = 0
+
+    category_dict = {
+        "assemblatron": "denovo_assembly",
+        "ariba_mlst": "mlst",
+        "ariba_resfinder": "resistance",
+        "cge_mlst": "mlst",
+        "cge_resfinder": "resistance",
+        "min_read_check": "size_check",
+        "ssi_stamper": "stamper",
+        "whats_my_species": "species_detection"
+    }
+
+    component_result = mongo_interface.get_results(sample_ids)
+    for item in component_result:
+        item_id = str(item["sample"]["_id"])
+        component = item["component"]["name"]
+        if component in category_dict:
+            category = category_dict[component]
+            if "summary" in item:
+                samples_by_ids[item_id]["properties"][category] = {
+                    "summary": item["summary"]
+                }
+    for sample in samples_by_ids:
+        new_schema.append(samples_by_ids[sample])
+
+    return new_schema
+
+
 
 def add_sample_runs(sample_df):
     """Returns the runs each sample belongs to"""
