@@ -119,7 +119,7 @@ def post_stamps(stamplist):
         stamps["stamp_list"] = stamp_list
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
-        mongo_interface.save_sample(sample_db)
+        mongo_interface.save_sample_to_file(sample_db)
     return "Feedback saved"
 
 def get_run(run_name):

@@ -528,7 +528,7 @@ def get_sample(sample_id):
     return db.samples.find_one({"_id": sample_id})
 
 
-def save_sample(data_dict):
+def save_sample_to_file(data_dict):
     """COPIED FROM BIFROSTLIB Insert sample dict into mongodb.
     Return the dict with an _id element"""
     connection = get_connection()

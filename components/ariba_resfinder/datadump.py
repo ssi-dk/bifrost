@@ -106,10 +106,10 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
 
         # Save to sample component
-        datahandling.save_sample_component(db_sample_component, sample_component_file)
+        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
         db_sample["reporter"][GLOBAL_category_name] = db_sample_component["reporter"]
-        datahandling.save_sample(db_sample, sample_file)
+        datahandling.save_sample_to_file(db_sample, sample_file)
 
         open(output, 'w+').close()  # touch file
 

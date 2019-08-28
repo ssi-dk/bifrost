@@ -1,6 +1,8 @@
 import os
 import datetime
 import ruamel.yaml
+import pandas
+import functools
 from bson.objectid import ObjectId
 from bson.int64 import Int64
 from bifrostlib import mongo_interface
@@ -12,7 +14,123 @@ import traceback
 Class to be used as a template for rules which require python scripts. Can be tightened up to only
 allow access to parts of the document if needed in the future, ie options.
 """
-class snakemakeRuleScriptObj:
+class SampleComponentObj:
+    def __init__(self, sample_id, component_id):
+        self.sample_id = sample_id
+        self.component_id = component_id
+        self.load()
+    def load(self):
+        self.db_sample = get_sample(sample_id=self.sample_id)
+        self.db_component = get_component(component_id=self.component_id)
+        self.db_sample_component = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
+        self.sample_component_id = self.db_sample_component["_id"]
+        self.started()
+    def check_requirements(self, log=None, output_file="requirements_met"):
+        no_failures = True
+        if self.db_component["requirements"] is not None:
+            requirements = pandas.io.json.json_normalize(self.db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
+            for requirement in requirements:
+                category = requirement.split(".")[0]
+                if category == "sample":
+                    field = requirement.split(".")[1:]
+                    expected_value = requirements[requirement]
+                    if not requirement_met(self.db_sample, field, expected_value, log):
+                        no_failures = False
+                elif category == "component":
+                    field = requirement.split(".")[2:]
+                    expected_value = requirements[requirement]
+                    if not requirement_met(self.db_component, field, expected_value, log):
+                        no_failures = False
+                else:
+                    write_log_err(log, "Improper requirement {}".format(requirement))
+                    no_failures = False
+        if no_failures:
+            open(os.path.join(self.db_component["name"], output_file), "w+").close()
+        else:
+            self.requirements_not_met()
+    def requirements_not_met(self):
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
+    def started(self):
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Running")
+    def success(self):
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
+    def failure(self):
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
+    def start_rule(self, rule_name, log):
+        write_log_out(log, "{} has started\n".format(rule_name))
+        return (self.db_sample, self.db_component)
+    def end_rule(self, rule_name, log):
+        write_log_out(log, "{} has finished\n".format(rule_name))
+        return 0
+    def start_data_dump(self, log)
+        self.db_sample_component["properties"] = {
+            "summary": {},
+            "component": {
+                "_id": self.db_component["_id"]
+            }
+        }
+        self.db_sample_component["results"] = {}
+        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["details"]["category"]]
+        write_log_out(log, "Starting datadump\n")
+        self.save_files_to_sample_component()
+    def save_files_to_sample_component(self):
+        try:
+            save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
+            self.write_log_out("Files saved")
+        except:
+            self.write_log_err(str(traceback.format_exc()))
+    def get_summary_and_results(self):
+        return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
+    def get_component_name(self):
+        return self.db_component["name"]
+    def run_data_dump_on_function(self, data_extraction_function, log):
+        try:
+            (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"]) = data_extraction_function(self)
+        except Exception:
+            write_log_err(log, str(traceback.format_exc()))
+
+    def end_data_dump(self, log, output_file="datadump_complete", generate_report_function=lambda x: None):
+        try:
+            self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
+            self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
+            write_log_err(log, str(traceback.format_exc()))
+            save_sample_to_file(self.db_sample, self.sample_file)
+            write_log_out(log, "sample {} saved\n".format(self.db_sample["_id"]))
+            save_sample_component_to_file(self.db_sample_component, self.sample_component_file)
+            write_log_out(log, "sample_component {} saved\n".format(self.db_sample_component["_id"]))
+            open(os.path.join(self.db_component["name"], output_file), "w+").close()
+            write_log_out(log, "Done datadump\n")
+        except Exception:
+            write_log_err(log, str(traceback.format_exc()))
+
+def requirement_met(db, field, expected_value, log):
+    try:
+        actual_value = functools.reduce(dict.get, field, db)
+        if expected_value is None:
+            write_log_err(log, "Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+            return True
+        elif type(expected_value) is not list:
+            expected_value = [expected_value]
+        if actual_value in expected_value:
+                write_log_err(log, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+                return True
+        else:
+            write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+            return False
+    except Exception:
+        write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
+        write_log_err(log, "Error: " + str(traceback.format_exc()))
+        return False
+def write_log_out(log, content):
+    log(log.out_file, content)
+def write_log_err(log, content):
+    log(log.err_file, content)
+
+
+
+
+
+class SampleComponentRuleObj:
     def __init__(self, input, output, sample_file, component_file, log, function_name):
         self.input = input
         self.output = output
@@ -37,12 +155,6 @@ class snakemakeRuleScriptObj:
         self.write_log_out("{} has finished\n".format(self.function_name))
         return 0
 
-    def write_log_out(self, content):
-        log(self.log.out_file, content)
-
-    def write_log_err(self, content):
-        log(self.log.err_file, content)
-
 class DatadumpSampleComponentObj:
     def __init__(self, sample_file, component_file, sample_component_file, log):
         self.output_file = "component_complete"
@@ -57,18 +169,7 @@ class DatadumpSampleComponentObj:
         self.db_component = load_component(self.component_file)
         self.db_sample_component = load_sample_component(self.sample_component_file)
 
-        self.db_sample_component["properties"] = {
-            "summary": {},
-            "component": {
-                "_id": self.db_component["_id"],
-                "date": datetime.datetime.utcnow()
-            }
-        }
-        self.db_sample_component["results"] = {}
-        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["details"]["category"]]
-        self.write_log_out("Starting datadump\n")
-        self.output_path = os.path.join(self.db_component["name"], self.output_file)
-        self.save_files_to_sample_component()
+
 
     def save_files_to_sample_component(self):
         try:
@@ -94,9 +195,9 @@ class DatadumpSampleComponentObj:
             self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
             self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
             self.write_log_err(str(traceback.format_exc()))
-            save_sample(self.db_sample, self.sample_file)
+            save_sample_to_file(self.db_sample, self.sample_file)
             self.write_log_out("sample {} saved\n".format(self.db_sample["_id"]))
-            save_sample_component(self.db_sample_component, self.sample_component_file)
+            save_sample_component_to_file(self.db_sample_component, self.sample_component_file)
             self.write_log_out("sample_component {} saved\n".format(self.db_sample_component["_id"]))
             open(self.output_path, "w+").close()
             self.write_log_out("Done datadump\n")
@@ -175,8 +276,10 @@ def load_component(file_yaml):
     else:
         return temp
 
+def save_sample(sample_db):
+    return mongo_interface.dump_sample_info(sample_db)
 
-def save_sample(sample_dict, file_yaml):
+def save_sample_to_file(sample_dict, file_yaml):
     config = load_config()
     if (len(file_yaml.split("/")) >= 2 and
             os.path.isdir("/".join(file_yaml.split("/")[:-1])) is False):
@@ -197,8 +300,10 @@ def load_sample(file_yaml):
         else:
             return content
 
+def save_sample_component(sample_component_db):
+    return mongo_interface.dump_sample_component_info(sample_component_db)
 
-def save_sample_component(sample_component_dict, file_yaml):
+def save_sample_component_to_file(sample_component_dict, file_yaml):
     config = load_config()
     if (len(file_yaml.split("/")) >= 2 and
             os.path.isdir("/".join(file_yaml.split("/")[:-1])) is False):
@@ -229,17 +334,27 @@ def sample_component_success(file_yaml):
         return True
 
 
-def update_sample_component_success(file_yaml):
-    sample_component_dict = load_sample_component(file_yaml)
-    sample_component_dict["status"] = "Success"
-    save_sample_component(sample_component_dict, file_yaml)
+def update_status_in_sample_and_sample_component(sample_component_id, status):
+    sample_component_db = get_sample_component(sample_component_id=sample_component_id)
+    component_db = get_component(component_id=sample_component_db["component"]["_id"])
+    sample_db = get_sample(sample_id=sample_component_db["sample"]["_id"])
+    sample_component_db["status"] = status
+    status_set = False
+    for component in sample_db["components"]:
+        if sample_db["components"][component]["_id"] == component_db["_id"]:
+            sample_db["components"][component]["status"] = status
+            status_set = True
+    if not status_set:
+        sample_db["components"].append([{"_id":component_db["_id"], "name":component_db["name"], "status":status}])
+    save_sample(sample_db)
+    save_sample_component(sample_component_db)
 
 
 def update_sample_component_failure(file_yaml):
     sample_component_dict = load_sample_component(file_yaml)
     if sample_component_dict["status"] != "Requirements not met":
         sample_component_dict["status"] = "Failure"
-    save_sample_component(sample_component_dict, file_yaml)
+    save_sample_component_to_file(sample_component_dict, file_yaml)
 
 
 def save_yaml(content_dict, file_yaml):

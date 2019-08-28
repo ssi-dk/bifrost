@@ -416,7 +416,7 @@ def delete_sample(sample_id):
 
 # GridFS filehandling
 
-def save_file_to_db(s_c_id, file_path):
+def save_file_to_db(sample_component_id, file_path):
     """
     Will raise an error if file doesn't exist
     """
@@ -426,7 +426,7 @@ def save_file_to_db(s_c_id, file_path):
 
     # check if file is there
     existing = fs.find_one({
-        "sample_component_id":s_c_id,
+        "sample_component_id": sample_component_id,
         "full_path": file_path
     })
     if existing:
@@ -434,11 +434,14 @@ def save_file_to_db(s_c_id, file_path):
         " the db for this component,",
         " it was overwritten by the new file."), file=sys.stderr)
         fs.delete(existing._id)
+    
+    db_sample_component = next(iter(get_sample_components(sample_component_ids=[sample_component_id])), None)
 
     with open(file_path, 'rb') as file_handle:
-
         file_id = fs.put(file_handle,
-                        sample_component_id=s_c_id,
+                        sample_component_id=sample_component_id,
+                        sample_id=db_sample_component["sample"]["_id"],
+                        component_id=db_sample_component["component"]["_id"],
                         full_path=file_path,
                         filename=os.path.basename(file_path))
     return file_id

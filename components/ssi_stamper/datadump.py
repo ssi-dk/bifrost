@@ -433,8 +433,8 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample["stamps"]["stamp_list"].append(db_sample_component["stamp"])
         db_sample["properties"]["stamper"] = db_sample_component["summary"]
 
-        datahandling.save_sample_component(db_sample_component, sample_component_file)
-        datahandling.save_sample(db_sample, sample_file)
+        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
+        datahandling.save_sample_to_file(db_sample, sample_file)
 #---Unique to component: end------------------------------------------------------------------------
         open(output, 'w+').close()  # touch file
 
