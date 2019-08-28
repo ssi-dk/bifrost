@@ -91,8 +91,8 @@ class SampleComponentObj:
         self.db_sample_component["results"] = {}
         self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["details"]["category"]]
         write_log_out(log, "Starting datadump\n")
-        self.save_files_to_sample_component()
-    def save_files_to_sample_component(self):
+        self.save_files_to_sample_component(log)
+    def save_files_to_sample_component(self, log):
         try:
             save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
             write_log_out(log, "Files saved")
