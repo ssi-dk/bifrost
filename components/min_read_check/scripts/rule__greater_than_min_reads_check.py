@@ -23,7 +23,7 @@ def rule__greater_than_min_reads_check(input, output, SampleComponentObj, log):
         SampleComponentObj.write_log_err(log, str(traceback.format_exc()))
 
     finally:
-        return SampleComponentObj.end_rule()
+        return SampleComponentObj.end_rule(this_function_name, log)
 
 
 rule__greater_than_min_reads_check(
