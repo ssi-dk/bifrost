@@ -7,7 +7,7 @@ from bifrostlib import datahandling
 from bifrostlib import check_requirements
 
 configfile: "../config.yaml"  # Relative to run directory
-threads, memory = config["threads"], config["memory"]
+threads, memory_in_GB = config["threads"], config["memory"]
 sample = config["Sample"]
 
 sample_file = sample
