@@ -56,7 +56,7 @@ rule check_requirements:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -83,7 +83,7 @@ rule setup__filter_reads_with_bbduk:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -109,7 +109,7 @@ rule assembly__skesa:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -132,7 +132,7 @@ rule assembly_check__quast_on_contigs:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -155,7 +155,7 @@ rule assembly_check__sketch_on_contigs:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -178,7 +178,7 @@ rule post_assembly__stats:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -203,7 +203,7 @@ rule post_assembly__mapping:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -227,7 +227,7 @@ rule post_assembly__samtools_stats:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -250,7 +250,7 @@ rule post_assembly__pileup:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -274,7 +274,7 @@ rule summarize__depth:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -298,7 +298,7 @@ rule post_assembly__call_variants:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -322,7 +322,7 @@ rule summarize__variants:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -345,7 +345,7 @@ rule post_assembly__annotate:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -373,7 +373,7 @@ rule rename_contigs:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -398,7 +398,7 @@ rule datadump:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:

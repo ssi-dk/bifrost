@@ -52,7 +52,7 @@ rule check_requirements:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -79,7 +79,7 @@ rule datadump:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:

@@ -84,8 +84,7 @@ rule make_components_dir:
 #     message:
 #         "Running step:" + rule_name
 #     threads:
-#         threads
-#     resources:
+#         num_of_threads#     resources:
 #         memory_in_GB
 #     log:
 #         out_file = component + "/log/" + rule_name + ".out.log",
@@ -128,7 +127,7 @@ rule copy_run_info:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -160,7 +159,7 @@ rule initialize_components:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -207,7 +206,7 @@ rule initialize_samples_from_sample_folder:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -277,7 +276,7 @@ rule check__provided_sample_info:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -354,7 +353,7 @@ rule set_samples_from_sample_info:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -422,7 +421,7 @@ rule set_sample_species:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -486,7 +485,7 @@ rule add_components_to_samples:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -553,7 +552,7 @@ rule initialize_sample_components_for_each_sample:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -622,7 +621,7 @@ rule initialize_run:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
@@ -706,7 +705,7 @@ rule setup_sample_components_to_run:
     message:
         "Running step:" + rule_name
     threads:
-        threads
+        num_of_threads
     resources:
         memory_in_GB
     log:
