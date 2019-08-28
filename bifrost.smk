@@ -36,7 +36,7 @@ sample_folder = config["sample_folder"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
-threads, memory_in_GB = config["threads"], config["memory"]
+num_of_threads, memory_in_GB = config["threads"], config["memory"]
 
 
 onsuccess:

@@ -8,7 +8,7 @@ from bifrostlib import check_requirements
 component = "ariba_resfinder"
 
 configfile: "../config.yaml"  # Relative to run directory
-threads, memory_in_GB = config["threads"], config["memory"]
+num_of_threads, memory_in_GB = config["threads"], config["memory"]
 sample = config["Sample"]
 
 sample_file = sample
