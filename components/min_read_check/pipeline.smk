@@ -20,7 +20,7 @@ db_sample_component = datahandling.get_sample_component(sample_id=config["sample
 
 # # TODO: Update db code to be ID based, component has no ID to pass right now and name/version are used instead. Probably a helper function to load the 3
 # db_sample = datahandling.load_sample(sample_file)
-# component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
+component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
 # component_config = datahandling.load_yaml(component_file)
 # db_component = datahandling.get_components(component_names=[component_config["name"]], component_versions=[component_config["version"]])[0]
 sample_component_file = db_sample["name"] + "__" + db_component["name"] + ".yaml"
