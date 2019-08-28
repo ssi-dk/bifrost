@@ -62,7 +62,7 @@ class SampleComponentObj:
     def end_rule(self, rule_name, log):
         write_log_out(log, "{} has finished\n".format(rule_name))
         return 0
-    def start_data_dump(self, log)
+    def start_data_dump(self, log):
         self.db_sample_component["properties"] = {
             "summary": {},
             "component": {
