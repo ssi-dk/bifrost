@@ -111,9 +111,9 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(extract_contig_variants, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "contigs.variants"))
         db_sample_component = datahandling.datadump_template(extract_contig_stats, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "contigs.stats"))
 
-        datahandling.save_sample_component(db_sample_component, sample_component_file)
+        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
         db_sample["properties"]["denovo_assembly"] = db_sample_component["summary"]
-        datahandling.save_sample(db_sample, sample_file)
+        datahandling.save_sample_to_file(db_sample, sample_file)
         open(output, 'w+').close()  # touch file
 
     except Exception:

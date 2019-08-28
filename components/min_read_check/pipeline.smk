@@ -4,26 +4,22 @@ import sys
 import traceback
 import shutil
 from bifrostlib import datahandling
-from bifrostlib import check_requirements
 
 configfile: "../config.yaml"  # Relative to run directory
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
 memory_in_GB = config["memory"]
-sample = config["Sample"]
-
-sample_file = sample
 
 #db_sample = datahandling.load_sample(sample_file)
-db_sample = datahandling.get_sample(sample_id=config["sample_id"])
-db_component = datahandling.get_component(component_id=config["component_id"])
-db_sample_component = datahandling.get_sample_component(sample_id=config["sample_id"], component_id=config["component_id"])
+bifrost_sample_component_object = datahandling.SampleComponentObj(config["sample_id"], config["component_id"])
+db_sample = bifrost_sample_component_object.db_sample
+db_component = bifrost_sample_component_object.db_component
+# db_sample = datahandling.get_sample(sample_id=config["sample_id"])
+# db_component = datahandling.get_component(component_id=config["component_id"])
+# db_sample_component = datahandling.get_sample_component(sample_id=config["sample_id"], component_id=config["component_id"])
 
-# # TODO: Update db code to be ID based, component has no ID to pass right now and name/version are used instead. Probably a helper function to load the 3
-# db_sample = datahandling.load_sample(sample_file)
-component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
-# component_config = datahandling.load_yaml(component_file)
-# db_component = datahandling.get_components(component_names=[component_config["name"]], component_versions=[component_config["version"]])[0]
-sample_component_file = db_sample["name"] + "__" + db_component["name"] + ".yaml"
+# sample_id = db_sample["_id"]
+# component_id = db_component["_id"]
+# sample_component_id = db_sample_component["_id"]
 
 singularity: db_component["dockerfile"]
 
@@ -35,17 +31,19 @@ else:
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(sample_component_file)
+    bifrost_sample_component_object.success()
+    # datahandling.set_status_success_in_sample_and_sample_component(sample_component_id)
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(sample_component_file)
+    bifrost_sample_component_object.failure()
+    # datahandling.set_status_failure_in_sample_and_sample_component(sample_component_id)
 
 
 rule all:
     input:
-        db_component["name"] + "/component_complete"
+        db_component["name"] + "/datadump_complete"
 
 
 rule setup:
@@ -73,11 +71,13 @@ rule check_requirements:
     output:
         check_file = db_component["name"] + "/requirements_met",
     params:
-        sample_file = sample_file,
-        component_file = component_file,
-        sample_component_file = sample_component_file
+        bifrost_sample_component_object
+        # sample_file = sample_file,
+        # component_file = component_file,
+        # sample_component_file = sample_component_file
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
+        bifrost_sample_component_object.check_requirements(log)
+        # check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
 #- Templated section: end --------------------------------------------------------------------------
 
 #* Dynamic section: end ****************************************************************************
@@ -125,8 +125,9 @@ rule greater_than_min_reads_check:
     input:
         stats_file = rules.setup__filter_reads_with_bbduk.output.stats_file,
     params:
-        sample_file = sample_file,
-        component_file = component_file
+        bifrost_sample_component_object
+        # sample_file = sample_file,
+        # component_file = component_file
     output:
         file = db_component["name"] + "/has_min_num_of_reads"
     script:
@@ -155,10 +156,11 @@ rule datadump:
     output:
         complete = rules.all.input
     params:
-        folder = db_component["name"],
-        sample_file = sample_file,
-        component_file = component_file,
-        sample_component_file = sample_component_file
+        bifrost_sample_component_object
+        # folder = db_component["name"],
+        # sample_file = sample_file,
+        # component_file = component_file,
+        # sample_component_file = sample_component_file
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
 #- Templated section: end --------------------------------------------------------------------------

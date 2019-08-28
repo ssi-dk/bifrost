@@ -16,14 +16,14 @@ def script__initialization(sample_file, component_file, sample_component_file, o
         datahandling.log(log_out, "Requirements not met")
         sample_component_entry = datahandling.load_sample_component(sample_component_file)
         sample_component_entry["status"] = "Requirements not met"
-        datahandling.save_sample_component(sample_component_entry, sample_component_file)
+        datahandling.save_sample_component_to_file(sample_component_entry, sample_component_file)
     return 0
 
 
 def set_status_to_running(sample_component_file):
     db_sample_component = datahandling.load_sample_component(sample_component_file)
     db_sample_component["status"] = "Running"
-    datahandling.save_sample_component(db_sample_component, sample_component_file)
+    datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
     return 0
 
 

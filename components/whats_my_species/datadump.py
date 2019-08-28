@@ -7,8 +7,6 @@ import traceback
 from bifrostlib import datahandling
 
 
-
-
 def extract_bracken_txt(db, file_path, key, temp_data):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
@@ -78,12 +76,12 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(species_math, db_sample_component)
 
         # Save to sample component
-        datahandling.save_sample_component(db_sample_component, sample_component_file)
+        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
         db_sample["properties"]["species_detection"] = db_sample_component["summary"]
         db_sample["properties"]["detected_species"] = db_sample_component["summary"]["detected_species"]
         db_sample = datahandling.datadump_template(set_sample_species, db_sample)
-        datahandling.save_sample(db_sample, sample_file)
+        datahandling.save_sample_to_file(db_sample, sample_file)
         open(output, 'w+').close()  # touch file
 
     except Exception:

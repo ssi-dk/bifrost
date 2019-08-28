@@ -264,7 +264,7 @@ rule initialize_samples_from_sample_folder:
                                         sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                         sample_db["properties"] = sample_db.get("properties", {})
                         sample_db["report"] = sample_db.get("report", {})
-                    datahandling.save_sample(sample_db, sample_config)
+                    datahandling.save_sample_to_file(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
@@ -407,7 +407,7 @@ rule set_samples_from_sample_info:
                                 unnamed_sample_count += 1
                                 sample_db["name"] = "Unnamed_" + unnamed_sample_count
                         sample_db["path"] = os.path.realpath(sample_db["name"])
-                        datahandling.save_sample(sample_db, sample_config)
+                        datahandling.save_sample_to_file(sample_db, sample_config)
             except pandas.io.common.EmptyDataError:
                 datahandling.log(log_err, ("No samplesheet data\n"))
             datahandling.log(log_out, "Done {}\n".format(rule_name))
@@ -470,7 +470,7 @@ rule set_sample_species:
                             else:
                                 provided_species = species_db # Use proper name if exists.
                         sample_db["properties"]["provided_species"] = provided_species
-                        datahandling.save_sample(sample_db, sample_config)
+                        datahandling.save_sample_to_file(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
                 datahandling.log(log_err, "No samplesheet data\n")
@@ -540,7 +540,7 @@ rule add_components_to_samples:
                                     insert_component = False
                             if insert_component is True:
                                 sample_db["components"].append({"name": component_name, "_id": component_id})
-                    datahandling.save_sample(sample_db, sample_config)
+                    datahandling.save_sample_to_file(sample_db, sample_config)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
@@ -609,7 +609,7 @@ rule initialize_sample_components_for_each_sample:
                             sample_component_db["component"] = {"name": component_name, "_id": component_id}
                             sample_component_db["status"] = "initialized"
                             sample_component_db["path"] = sample_component_folder_path
-                            datahandling.save_sample_component(sample_component_db, sample_component_path)
+                            datahandling.save_sample_component_to_file(sample_component_db, sample_component_path)
             datahandling.log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
             datahandling.log(log_err, str(traceback.format_exc()))
@@ -792,7 +792,7 @@ rule setup_sample_components_to_run:
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "skipped"
                                     sample_component_db["setup_date"] = current_time
-                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                 elif os.path.isfile(component_file):
                                     unlock = ""
                                     if config["unlock"]:
@@ -804,14 +804,14 @@ rule setup_sample_components_to_run:
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "queued to run"
                                     sample_component_db["setup_date"] = current_time
-                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={} sample_id={} component_id={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, "sample.yaml", sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "component missing"
                                     sample_component_db["setup_date"] = current_time
-                                    datahandling.save_sample_component(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                    datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
 
                         os.chmod(os.path.join(sample_name, "cmd_{}_{}.sh".format(component, current_time)), 0o777)
                         if os.path.islink(os.path.join(sample_name, "cmd_{}.sh").format(component)):

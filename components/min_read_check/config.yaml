@@ -43,7 +43,6 @@ db_values_changes:
         summary:  # see sample_component: summary for content
         component:
           _id: "ObjectId"
-          date: "datetime"
     report:
       size_check:
   sample_component:
