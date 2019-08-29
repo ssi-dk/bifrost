@@ -14,15 +14,18 @@ RUN \
     conda install conda==4.7.10; \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
-    conda install prokka==1.13.7; \
-    conda install pandas==0.25.0; \
-    conda install bbmap==38.58; \
-    conda install skesa==2.3.0; \
-    conda install minimap2==2.17; \
-    conda install samtools==1.9; \
-    conda install cyvcf2==0.11.4; \
-    pip install bifrostlib==2.0.1; \
-    pip install quast==5.0.2; \
+    conda install -yq ruamel.yaml==0.16.5; \
+    conda install -yq pymongo==3.8.0; \
+    conda install -yq pandas==0.25.0; \
+    conda install -yq python-magic==0.4.15; \
+    conda install -yq prokka==1.13.7; \
+    conda install -yq bbmap==38.58; \
+    conda install -yq skesa==2.3.0; \
+    conda install -yq minimap2==2.17; \
+    conda install -yq samtools==1.9; \
+    conda install -yq cyvcf2==0.11.4; \
+    pip install -q bifrostlib==2.0.1; \
+    pip install -q quast==5.0.2; \
     conda install wget==1.20.1; \
     mkdir bifrost_resources;
 RUN \

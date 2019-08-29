@@ -18,10 +18,13 @@ RUN \
     conda install -y conda==4.7.10; \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
-    conda install -y biopython==1.74; \
-    pip install bifrostlib==2.0; \
-    pip install cgecore==1.5.0; \
-    pip install tabulate==0.8.3; \
+    conda install -yq ruamel.yaml==0.16.5; \
+    conda install -yq pymongo==3.8.0; \
+    conda install -yq pandas==0.25.0; \
+    conda install -yq python-magic==0.4.15; \
+    pip install -q bifrostlib==2.0.1; \
+    pip install -q cgecore==1.5.0; \
+    pip install -q tabulate==0.8.3; \
     # Directory for static DBs
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
