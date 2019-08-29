@@ -261,7 +261,7 @@ rule initialize_samples_from_sample_folder:
                                         md5sum = hashlib.md5()
                                         for data in iter(lambda: fh.read(4096), b""):
                                             md5sum.update(data)
-                                        sample_db["reads"][result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
+                                        sample_db["reads"]["R"+result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
                         sample_db["properties"] = sample_db.get("properties", {})
                         sample_db["report"] = sample_db.get("report", {})
                     datahandling.save_sample_to_file(sample_db, sample_config)
