@@ -1,17 +1,20 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: ariba_mlst
-category: &category mlst
 version: 2.0
-schema_version: 2.0
-target: sample
-type: pipeline
-recommendation: recommended
-requires_db: true # uses species db
-description: >
-  This preforms read based mapping against the mlst DB's. The mlst DB's are mapped against the 
-  species table in mongoDB via the mlst_species_mapping variable. Multiple mlst's can be run against 
-  a single species by passing all mlst's via a list (or conversely none). This is done against the 
-  cge_db using ariba. 
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: mlst
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    This preforms read based mapping against the mlst DB's. The mlst DB's are mapped against the 
+    species table in mongoDB via the mlst_species_mapping variable. Multiple mlst's can be run against 
+    a single species by passing all mlst's via a list (or conversely none). This is done against the 
+    cge_db using ariba. 
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -163,20 +166,18 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path, a recommended
-# strategy for shrared resources is to symlink the resource from the root resources folder into
-# the component resources folder. This will prevent
-database_path: "/bifrost_resources/mlst"
+resources:
+  database_path: "/bifrost_resources/mlst"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
     properties:
-      species:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files: []
@@ -189,10 +190,13 @@ db_values_changes:
           allele_profile: {}
         component:
           _id: "ObjectId"
-          date: "datetime"
     reporter:
       mlst:
-        title: *category
+        title: MLST
         info: *dockerfile
-        content: [["db", "strain", "alleles"]]
+        columns: 
+          - {id: "db", name: "db"}
+          - {id: "strain", name: "strain"}
+          - {id: "alleles", name: "alleles"}
+        data: []
 #---------------------------------------------------------------------------------------------------

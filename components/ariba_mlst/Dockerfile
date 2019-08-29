@@ -14,7 +14,7 @@ RUN \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
     conda install ariba==2.14.1; \
-    pip install bifrostlib==2.0; \
+    pip install bifrostlib==2.0.1; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
     mkdir mlst; \

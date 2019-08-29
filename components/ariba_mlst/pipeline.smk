@@ -1,64 +1,42 @@
-
-#---- Templated section: start ---------------------------------------------------------------------
+#- Templated section: start ------------------------------------------------------------------------
 import os
-import sys
-import traceback
-import shutil
 from bifrostlib import datahandling
-from bifrostlib import check_requirements
-#---- Templated section: end -----------------------------------------------------------------------
 
-#**** Dynamic section: start ***********************************************************************
-component = "ariba_mlst"  # 
-#**** Dynamic section: end *************************************************************************
-
-#---- Templated section: start ---------------------------------------------------------------------
 configfile: "../config.yaml"  # Relative to run directory
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
-sample = config["Sample"]
 
-sample_file = sample
-db_sample = datahandling.load_sample(sample_file)
+bifrost_sampleComponentObj = datahandling.SampleComponentObj()
+(sample_db, component_db) = bifrost_sampleComponentObj.load(
+    config["sample_id"], config["component_id"])
 
-component_file = "../components/" + component + ".yaml"
-if not os.path.isfile(component_file):
-    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file)
-db_component = datahandling.load_component(component_file)
-singularity: db_component["dockerfile"]
+singularity: component_db["dockerfile"]
 
-sample_component_file = db_sample["name"] + "__" + component + ".yaml"
-db_sample_component = datahandling.load_sample_component(sample_component_file)
-
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
-else:
-    reads = R1, R2 = ("/dev/null", "/dev/null")
+reads = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
-    print("Workflow complete")
-    datahandling.update_sample_component_success(sample_component_file, component)
+    bifrost_sampleComponentObj.success()
 
 
 onerror:
-    print("Workflow error")
-    datahandling.update_sample_component_failure(sample_component_file, component)
+    bifrost_sampleComponentObj.failure()
 
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        # file is defined by datadump function
+        component_db["name"] + "/datadump_complete"
 
 
 rule setup:
     output:
-        init_file = touch(temp(component + "/" + component + "_initialized")),
+        init_file = touch(
+            temp(component_db["name"] + "/" + component_db["name"] + "_initialized")),
     params:
-        folder = component
+        folder = component_db["name"]
 
 
 rule_name = "check_requirements"
 rule check_requirements:
-    # Static
     message:
         "Running step:" + rule_name
     threads:
@@ -66,22 +44,19 @@ rule check_requirements:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
     output:
-        check_file = rules.setup.params.folder + "/requirements_met",
+        check_file = component_db["name"] + "/requirements_met",
     params:
-        sample_file = sample_file,
-        component_file = component_file,
-        sample_component_file = sample_component_file
+        bifrost_sampleComponentObj
     run:
-        check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
-#---- Templated section: end -----------------------------------------------------------------------
+        bifrost_sampleComponentObj.check_requirements()
+#- Templated section: end --------------------------------------------------------------------------
 
 #**** Dynamic section: start ***********************************************************************
 rule_name = "ariba_mlst"
@@ -102,17 +77,16 @@ rule ariba_mlst:
     input:
         check_file = rules.check_requirements.output.check_file,
         folder = rules.setup.output.init_file,
-        reads = (R1, R2)
+        reads = reads
     output:
         complete = rules.setup.params.folder + "/data.yaml"
     params:
-        folder = component,
-        sample_file = sample_file,
-        component_file = component_file
+        sampleComponentObj = bifrost_sampleComponentObj
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/run_ariba_mlst.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__run_ariba_mlst.py")
 #**** Dynamic section: end *************************************************************************
-#---- Templated section: start ---------------------------------------------------------------------
+
+#- Templated section: start ------------------------------------------------------------------------
 rule_name = "datadump"
 rule datadump:
     # Static
@@ -123,24 +97,18 @@ rule datadump:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     input:
-#---- Templated section: end -----------------------------------------------------------------------
-#**** Dynamic section: start ***********************************************************************
-        rules.ariba_mlst.output.complete,
-#**** Dynamic section: end *************************************************************************
-#---- Templated section: start ---------------------------------------------------------------------
+        #* Dynamic section: start ******************************************************************
+        rules.ariba_mlst.output.file  # Needs to be output of final rule
+        #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input
     params:
-        folder = rules.setup.params.folder,
-        sample_file = sample_file,
-        component_file = component_file,
-        sample_component_file = sample_component_file
+        sampleComponentObj = bifrost_sampleComponentObj
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
-#---- Templated section: end -----------------------------------------------------------------------
+#- Templated section: end --------------------------------------------------------------------------
