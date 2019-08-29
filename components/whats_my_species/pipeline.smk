@@ -128,7 +128,7 @@ rule datadump:
         component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
-        rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.file  # Needs to be output of final rule
+        rules.contaminant_check__determine_species_bracken_on_minikraken_results.output.bracken  # Needs to be output of final rule
         #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input
