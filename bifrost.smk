@@ -248,11 +248,14 @@ rule initialize_samples_from_sample_folder:
                     sample_db["name"] = sample_name
                     sample_db["reads"] = sample_db.get("reads", {})
                     sample_db["path"] = os.path.realpath(sample_name)
+                    sample_db["properties"] = sample_db.get("properties", {"sample_info":{}, "datafiles":{}})
+                    sample_db["report"] = sample_db.get("report", {})
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                             if sample_name == str(result.group("sample_name")):
-                                sample_db["reads"]["R"+result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                                sample_db["reads"]["R" + result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                                sample_db["properties"]["datafiles"]["R" + result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
                                 md5sum_key = "R" + result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
                                     pass
@@ -262,8 +265,6 @@ rule initialize_samples_from_sample_folder:
                                         for data in iter(lambda: fh.read(4096), b""):
                                             md5sum.update(data)
                                         sample_db["reads"]["R"+result.group("paired_read_number") + "_md5sum"] = md5sum.hexdigest()
-                        sample_db["properties"] = sample_db.get("properties", {})
-                        sample_db["report"] = sample_db.get("report", {})
                     datahandling.save_sample_to_file(sample_db, sample_config)
             datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -314,33 +315,33 @@ rule check__provided_sample_info:
                 df = pandas.read_table(sample_sheet)
             
             #Convert sample name to string in case all sample names are numbers
-            df["SampleID"] = df["SampleID"].astype(str)
+            df[config["samplesheet_column_mapping"]["sample_name"]] = df[config["samplesheet_column_mapping"]["sample_name"]].astype(str)
             # Dropping rows with no sample name.
-            noname_index = df[df["SampleID"].isna()].index
+            noname_index = df[df[config["samplesheet_column_mapping"]["sample_name"]].isna()].index
             df.drop(noname_index, inplace=True)
 
             item_rename_dict = {}
-            badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
-            for item in badly_named_samples["SampleID"].tolist():
+            badly_named_samples = df[df[config["samplesheet_column_mapping"]["sample_name"]].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
+            for item in badly_named_samples[config["samplesheet_column_mapping"]["sample_name"]].tolist():
                 datahandling.write_log(log_out, "Renaming '{}' to '{}'".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())))
-            for item in df["SampleID"].tolist():
+            for item in df[config["samplesheet_column_mapping"]["sample_name"]].tolist():
                 item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())
-            df["SampleID"] = df["SampleID"].map(item_rename_dict)
+            df[config["samplesheet_column_mapping"]["sample_name"]] = df[config["samplesheet_column_mapping"]["sample_name"]].map(item_rename_dict)
             duplicates = {}
-            for item in df["SampleID"].tolist():
-                if df["SampleID"].tolist().count(item) > 1:
+            for item in df[config["samplesheet_column_mapping"]["sample_name"]].tolist():
+                if df[config["samplesheet_column_mapping"]["sample_name"]].tolist().count(item) > 1:
                     datahandling.write_log(log_out, "Duplicate SampleID's exist {}".format(item))
-                    duplicates[item] = df["SampleID"].tolist().count(item)
+                    duplicates[item] = df[config["samplesheet_column_mapping"]["sample_name"]].tolist().count(item)
                     # duplicates have to be done on id basis
             ridiculous_count = 0
             for i, row in df.iterrows():
-                if df.loc[i, "SampleID"] in duplicates:
-                    if df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]]) in df["SampleID"].tolist():
+                if df.loc[i, config["samplesheet_column_mapping"]["sample_name"]] in duplicates:
+                    if df.loc[i, config["samplesheet_column_mapping"]["sample_name"]] + "_RENAMED-" + str(duplicates[df.loc[i, config["samplesheet_column_mapping"]["sample_name"]]]) in df[config["samplesheet_column_mapping"]["sample_name"]].tolist():
                         ridiculous_count += 1
-                        df.loc[i, "SampleID"] = "VERY_BAD_SAMPLE_NAME_" + str(ridiculous_count)
+                        df.loc[i, config["samplesheet_column_mapping"]["sample_name"]] = "VERY_BAD_SAMPLE_NAME_" + str(ridiculous_count)
                     else:
-                        df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
-                    duplicates[row["SampleID"]] -= 1
+                        df.loc[i, config["samplesheet_column_mapping"]["sample_name"]] = df.loc[i, config["samplesheet_column_mapping"]["sample_name"]] + "_RENAMED-" + str(duplicates[df.loc[i, config["samplesheet_column_mapping"]["sample_name"]]])
+                    duplicates[row[config["samplesheet_column_mapping"]["sample_name"]]] -= 1
             df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
             datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
@@ -383,12 +384,12 @@ rule set_samples_from_sample_info:
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
                 #Convert sample name to string in case all sample names are numbers
-                df["SampleID"] = df["SampleID"].astype(str)
+                df[config["samplesheet_column_mapping"]["sample_name"]] = df[config["samplesheet_column_mapping"]["sample_name"]].astype(str)
                 unnamed_sample_count = 0
                 for index, row in df.iterrows():
-                    sample_config = row["SampleID"] + "/sample.yaml"
+                    sample_config = row[config["samplesheet_column_mapping"]["sample_name"]] + "/sample.yaml"
                     # NOTE Sample name can be changed to Unnamed_ following the logic below (no name in sample sheet) however the .yaml path uses the value in the sample sheet
-                    if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
+                    if config.get("samples_to_include", None) is None or row[config["samplesheet_column_mapping"]["sample_name"]] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
                         sample_db["sample_sheet"] = {}
                         for column in df:
@@ -397,6 +398,8 @@ rule set_samples_from_sample_info:
                                 if config["samplesheet_column_mapping"][rename_column] == column:
                                     column_name = rename_column
                             sample_db["sample_sheet"][column_name] = row[column]
+                            sample_db["properties"]["sample_info"] = row[column]
+                            
                         # If sample has no name (most likely because there were no reads
                         # in the sample folder) we have to specify a name.
                         if "name" not in sample_db:
@@ -452,13 +455,13 @@ rule set_sample_species:
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
                 #Convert sample name to string in case all sample names are numbers
-                df["SampleID"] = df["SampleID"].astype(str)
+                df[config["samplesheet_column_mapping"]["sample_name"]] = df[config["samplesheet_column_mapping"]["sample_name"]].astype(str)
                 for index, row in df.iterrows():
-                    sample_config = row["SampleID"] + "/sample.yaml"
-                    if config.get("samples_to_include", None) is None or row["SampleID"] in config["samples_to_include"].split(","):
+                    sample_config = row[config["samplesheet_column_mapping"]["sample_name"]] + "/sample.yaml"
+                    if config.get("samples_to_include", None) is None or row[config["samplesheet_column_mapping"]["sample_name"]] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
 
-                        sample_db["properties"] = sample_db.get("properties", {})
+                        sample_db["properties"] = sample_db.get("properties", {"sample_info": {}, "datafiles": {}})
                         provided_species = sample_db["sample_sheet"].get("provided_species")
                         if pandas.isna(provided_species):
                             provided_species = None
@@ -469,7 +472,7 @@ rule set_sample_species:
                                 provided_species = str(provided_species)
                             else:
                                 provided_species = species_db # Use proper name if exists.
-                        sample_db["properties"]["provided_species"] = provided_species
+                        sample_db["properties"]["sample_info"]["provided_species"] = provided_species
                         datahandling.save_sample_to_file(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
