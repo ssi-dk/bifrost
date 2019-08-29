@@ -192,8 +192,8 @@ rule initialize_components:
                 component_file = os.path.join(components_dir, component_name + ".yaml")
                 if not os.path.isfile(component_file):
                     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "components", component_name, "config.yaml"), component_file)
-                db_component = datahandling.load_component(component_file)
-                datahandling.save_component(db_component, component_file)
+                component_db = datahandling.load_component(component_file)
+                datahandling.save_component(component_db, component_file)
 
             datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:

@@ -11,8 +11,8 @@ from bifrostlib import datahandling
 
 def test__sample__has_reads_files(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -23,7 +23,7 @@ def test__sample__has_reads_files(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        if db_sample["reads"]["R1"] == "":
+        if sample_db["reads"]["R1"] == "":
             test["status"] = "fail"
             test["reason"] = "Read path is empty"
         else:
@@ -41,8 +41,8 @@ def test__sample__has_reads_files(db, file_path, key, temp_data):
 
 def test__species_detection__main_species_level(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -53,10 +53,10 @@ def test__species_detection__main_species_level(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = round(db_sample["properties"]["species_detection"]["percent_classified_species_1"] + db_sample["properties"]["species_detection"]["percent_unclassified"], 3)
-        if test["value"] < db_component["options"]["min_species"]:
+        test["value"] = round(sample_db["properties"]["species_detection"]["percent_classified_species_1"] + sample_db["properties"]["species_detection"]["percent_unclassified"], 3)
+        if test["value"] < component_db["options"]["min_species"]:
             test["status"] = "fail"
-            test["reason"] = "Value ({}) is below threshold ({})".format(test["value"], db_component["options"]["min_species"])
+            test["reason"] = "Value ({}) is below threshold ({})".format(test["value"], component_db["options"]["min_species"])
         else:
             test["status"] = "pass"
             test["reason"] = ""
@@ -72,8 +72,8 @@ def test__species_detection__main_species_level(db, file_path, key, temp_data):
 
 def test__species_detection__unclassified_level(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -84,10 +84,10 @@ def test__species_detection__unclassified_level(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = round(db_sample["properties"]["species_detection"]["percent_unclassified"], 3)
-        if test["value"] >= db_component["options"]["max_unclassified"]:
+        test["value"] = round(sample_db["properties"]["species_detection"]["percent_unclassified"], 3)
+        if test["value"] >= component_db["options"]["max_unclassified"]:
             test["status"] = "fail"
-            test["reason"] = "Value ({}) is above threshold ({})".format(test["value"], db_component["options"]["max_unclassified"])
+            test["reason"] = "Value ({}) is above threshold ({})".format(test["value"], component_db["options"]["max_unclassified"])
         else:
             test["status"] = "pass"
             test["reason"] = ""
@@ -103,8 +103,8 @@ def test__species_detection__unclassified_level(db, file_path, key, temp_data):
 
 def test__component__species_in_db(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -115,9 +115,9 @@ def test__component__species_in_db(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"].get("species", None)
+        test["value"] = sample_db["properties"].get("species", None)
 
-        if test["value"] not in db_component["options"]["species_qc_value_mapping"]:
+        if test["value"] not in component_db["options"]["species_qc_value_mapping"]:
             test["status"] = "fail"
             test["reason"] = "Detected species not in bifrost db. Can't estimate proper QC values."
         else:
@@ -135,8 +135,8 @@ def test__component__species_in_db(db, file_path, key, temp_data):
 
 def test__sample__species_provided_is_detected(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -147,12 +147,12 @@ def test__sample__species_provided_is_detected(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"].get("provided_species", None)
-        species = temp_data["db_sample"]["properties"]["species"]
+        test["value"] = sample_db["properties"].get("provided_species", None)
+        species = temp_data["sample_db"]["properties"]["species"]
         if test["value"] is None:
             test["status"] = "pass"
             test["reason"] = "No submitted species"
-        elif test["value"] not in db_component["options"]["species_qc_value_mapping"]:
+        elif test["value"] not in component_db["options"]["species_qc_value_mapping"]:
             test["status"] = "pass"
             test["reason"] = "Submitted species not in db"
         elif species != test["value"]:
@@ -173,8 +173,8 @@ def test__sample__species_provided_is_detected(db, file_path, key, temp_data):
 
 def test__denovo_assembly__genome_size_at_1x(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -185,12 +185,12 @@ def test__denovo_assembly__genome_size_at_1x(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"]["denovo_assembly"]["bin_contigs_at_1x"]
-        species = temp_data["db_sample"]["properties"]["species"]
-        if species not in db_component["options"]["species_qc_value_mapping"]:
+        test["value"] = sample_db["properties"]["denovo_assembly"]["bin_contigs_at_1x"]
+        species = temp_data["sample_db"]["properties"]["species"]
+        if species not in component_db["options"]["species_qc_value_mapping"]:
             species = "default"
-        min_length = db_component["options"]["species_qc_value_mapping"][species]["min_length"]
-        max_length = db_component["options"]["species_qc_value_mapping"][species]["max_length"]
+        min_length = component_db["options"]["species_qc_value_mapping"][species]["min_length"]
+        max_length = component_db["options"]["species_qc_value_mapping"][species]["max_length"]
         if min_length < test["value"] < max_length:
             test["status"] = "pass"
             test["reason"] = ""
@@ -209,8 +209,8 @@ def test__denovo_assembly__genome_size_at_1x(db, file_path, key, temp_data):
 
 def test__denovo_assembly__genome_size_at_10x(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -221,12 +221,12 @@ def test__denovo_assembly__genome_size_at_10x(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"]["denovo_assembly"]["bin_contigs_at_10x"]
-        species = temp_data["db_sample"]["properties"]["species"]
-        if species not in db_component["options"]["species_qc_value_mapping"]:
+        test["value"] = sample_db["properties"]["denovo_assembly"]["bin_contigs_at_10x"]
+        species = temp_data["sample_db"]["properties"]["species"]
+        if species not in component_db["options"]["species_qc_value_mapping"]:
             species = "default"
-        min_length = db_component["options"]["species_qc_value_mapping"][species]["min_length"]
-        max_length = db_component["options"]["species_qc_value_mapping"][species]["max_length"]
+        min_length = component_db["options"]["species_qc_value_mapping"][species]["min_length"]
+        max_length = component_db["options"]["species_qc_value_mapping"][species]["max_length"]
         if min_length < test["value"] < max_length:
             test["status"] = "pass"
             test["reason"] = ""
@@ -245,8 +245,8 @@ def test__denovo_assembly__genome_size_at_10x(db, file_path, key, temp_data):
 
 def test__denovo_assembly__genome_size_difference_1x_10x(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -257,8 +257,8 @@ def test__denovo_assembly__genome_size_difference_1x_10x(db, file_path, key, tem
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"]["denovo_assembly"]["bin_contigs_at_1x"] - db_sample["properties"]["denovo_assembly"]["bin_contigs_at_10x"]
-        max_size_difference = db_component["options"]["max_size_difference_for_1x_and_10x"]
+        test["value"] = sample_db["properties"]["denovo_assembly"]["bin_contigs_at_1x"] - sample_db["properties"]["denovo_assembly"]["bin_contigs_at_10x"]
+        max_size_difference = component_db["options"]["max_size_difference_for_1x_and_10x"]
         if test["value"] < max_size_difference:
             test["status"] = "pass"
             test["reason"] = ""
@@ -277,8 +277,8 @@ def test__denovo_assembly__genome_size_difference_1x_10x(db, file_path, key, tem
 
 def test__denovo_assembly__genome_average_coverage(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -289,10 +289,10 @@ def test__denovo_assembly__genome_average_coverage(db, file_path, key, temp_data
             "status": "",
             "reason": ""
         }
-        test["value"] = round(db_sample["properties"]["denovo_assembly"]["bin_coverage_at_1x"], 3)
-        average_coverage_fail = db_component["options"]["average_coverage_fail"]
-        average_coverage_low = db_component["options"]["average_coverage_low"]
-        average_coverage_warn = db_component["options"]["average_coverage_warn"]
+        test["value"] = round(sample_db["properties"]["denovo_assembly"]["bin_coverage_at_1x"], 3)
+        average_coverage_fail = component_db["options"]["average_coverage_fail"]
+        average_coverage_low = component_db["options"]["average_coverage_low"]
+        average_coverage_warn = component_db["options"]["average_coverage_warn"]
 
         if test["value"] < average_coverage_fail:
             test["status"] = "fail"
@@ -319,8 +319,8 @@ def test__denovo_assembly__genome_average_coverage(db, file_path, key, temp_data
 
 def test__denovo_assembly__minimum_read_number(db, file_path, key, temp_data):
     try:
-        db_sample = temp_data["db_sample"]
-        db_component = temp_data["db_component"]
+        sample_db = temp_data["sample_db"]
+        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
 
         test = {
@@ -331,8 +331,8 @@ def test__denovo_assembly__minimum_read_number(db, file_path, key, temp_data):
             "status": "",
             "reason": ""
         }
-        test["value"] = db_sample["properties"]["denovo_assembly"]["filtered_reads_num"]
-        number_of_reads_fail = db_component["options"]["number_of_reads_fail"]
+        test["value"] = sample_db["properties"]["denovo_assembly"]["filtered_reads_num"]
+        number_of_reads_fail = component_db["options"]["number_of_reads_fail"]
 
         if test["value"] < number_of_reads_fail:
             test["status"] = "fail"
@@ -351,7 +351,7 @@ def test__denovo_assembly__minimum_read_number(db, file_path, key, temp_data):
 
 
 def evaluate_tests_and_stamp(db, file_path, key, temp_data):
-    db_sample = temp_data["db_sample"]
+    sample_db = temp_data["sample_db"]
     core_facility = False
     supplying_lab = False
     for test in db["results"]:
@@ -360,7 +360,7 @@ def evaluate_tests_and_stamp(db, file_path, key, temp_data):
                 supplying_lab = True
             elif db["results"][test]["effect"] == "core facility":
                 core_facility = True
-    if (db_sample["properties"]["provided_species"] == db_sample["properties"]["detected_species"] and \
+    if (sample_db["properties"]["provided_species"] == sample_db["properties"]["detected_species"] and \
         db["results"]["test__denovo_assembly__genome_average_coverage"]["status"] == "fail" and \
         db["results"]["test__denovo_assembly__genome_average_coverage"]["effect"] == "supplyinh lab" and \
         db["results"]["test__denovo_assembly__genome_size_difference_1x_10x"]["status"] == "fail" and \
@@ -392,29 +392,29 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         output = str(output)
         log_out = str(log.out_file)
         log_err = str(log.err_file)
-        db_sample = datahandling.load_sample(sample_file)
-        db_component = datahandling.load_component(component_file)
+        sample_db = datahandling.load_sample(sample_file)
+        component_db = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
         global GLOBAL_component_name
-        GLOBAL_component_name = db_component["name"]
+        GLOBAL_component_name = component_db["name"]
 
         datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
-        db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
+        db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
         db_sample_component["reporter"] = {}  # Currently unused, set to dict of component config path when used
 #---Unique to component: start----------------------------------------------------------------------
         db_sample_component["tests"] = {}
-        db_sample["stamps"] = db_sample.get("stamps", {})
-        db_sample["stamps"]["stamp_list"] = db_sample["stamps"].get("stamp_list", [])
+        sample_db["stamps"] = sample_db.get("stamps", {})
+        sample_db["stamps"]["stamp_list"] = sample_db["stamps"].get("stamp_list", [])
 
         # Variables being used
-        working_temp_data = {"db_sample": db_sample, "db_component": db_component}
+        working_temp_data = {"sample_db": sample_db, "component_db": component_db}
 
         db_sample_component = datahandling.datadump_template(test__sample__has_reads_files, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(test__species_detection__main_species_level, db_sample_component, temp_data=working_temp_data)
@@ -429,12 +429,12 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         db_sample_component = datahandling.datadump_template(evaluate_tests_and_stamp, db_sample_component, temp_data=working_temp_data)
         db_sample_component = datahandling.datadump_template(generate_summary, db_sample_component, temp_data=working_temp_data)
 
-        db_sample["stamps"]["ssi_stamper"] = db_sample_component["stamp"]
-        db_sample["stamps"]["stamp_list"].append(db_sample_component["stamp"])
-        db_sample["properties"]["stamper"] = db_sample_component["summary"]
+        sample_db["stamps"]["ssi_stamper"] = db_sample_component["stamp"]
+        sample_db["stamps"]["stamp_list"].append(db_sample_component["stamp"])
+        sample_db["properties"]["stamper"] = db_sample_component["summary"]
 
         datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
-        datahandling.save_sample_to_file(db_sample, sample_file)
+        datahandling.save_sample_to_file(sample_db, sample_file)
 #---Unique to component: end------------------------------------------------------------------------
         open(output, 'w+').close()  # touch file
 

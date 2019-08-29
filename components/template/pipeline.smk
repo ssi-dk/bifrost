@@ -11,41 +11,41 @@ num_of_threads, memory_in_GB = config["threads"], config["memory"]
 sample = config["Sample"]
 
 sample_file = sample
-db_sample = datahandling.load_sample(sample_file)
+sample_db = datahandling.load_sample(sample_file)
 
 component_file = os.path.join(os.path.dirname(workflow.snakefile), "config.yaml")
-db_component = datahandling.load_component(component_file)
+component_db = datahandling.load_component(component_file)
 
-singularity: db_component["dockerfile"]
+singularity: component_db["dockerfile"]
 
-sample_component_file = db_sample["name"] + "__" + db_component["name"] + ".yaml"
+sample_component_file = sample_db["name"] + "__" + component_db["name"] + ".yaml"
 db_sample_component = datahandling.load_sample_component(sample_component_file)
 
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
+if "reads" in sample_db:
+    reads = R1, R2 = sample_db["reads"]["R1"], sample_db["reads"]["R2"]
 else:
     reads = R1, R2 = ("/dev/null", "/dev/null")
 
 onsuccess:
     print("Workflow complete")
-    datahandling.update_sample_component_success(sample_component_file, db_component["name"])
+    datahandling.update_sample_component_success(sample_component_file, component_db["name"])
 
 
 onerror:
     print("Workflow error")
-    datahandling.update_sample_component_failure(sample_component_file, db_component["name"])
+    datahandling.update_sample_component_failure(sample_component_file, component_db["name"])
 
 
 rule all:
     input:
-        db_component["name"] + "/" + db_component["name"] + "_complete"
+        component_db["name"] + "/" + component_db["name"] + "_complete"
 
 
 rule setup:
     output:
-        init_file = touch(temp(db_component["name"] + "/" + db_component["name"] + "_initialized")),
+        init_file = touch(temp(component_db["name"] + "/" + component_db["name"] + "_initialized")),
     params:
-        folder = db_component["name"]
+        folder = component_db["name"]
 
 
 rule_name = "check_requirements"
@@ -98,7 +98,7 @@ rule rule_1:
     output:
         file = rules.setup.params.folder + "/data.json"
     params:
-        folder = db_component["name"],
+        folder = component_db["name"],
         sample_file = sample_file,
         component_file = component_file
     script:

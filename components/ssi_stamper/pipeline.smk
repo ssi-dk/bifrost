@@ -12,15 +12,15 @@ num_of_threads, memory_in_GB = config["threads"], config["memory"]
 sample = config["Sample"]
 
 sample_file = sample
-db_sample = datahandling.load_sample(sample_file)
+sample_db = datahandling.load_sample(sample_file)
 
 component_file = "../components/" + component + ".yaml"
 if not os.path.isfile(component_file):
     shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file)
-db_component = datahandling.load_component(component_file)
-singularity: db_component["dockerfile"]
+component_db = datahandling.load_component(component_file)
+singularity: component_db["dockerfile"]
 
-sample_component_file = db_sample["name"] + "__" + component + ".yaml"
+sample_component_file = sample_db["name"] + "__" + component + ".yaml"
 db_sample_component = datahandling.load_sample_component(sample_component_file)
 
 

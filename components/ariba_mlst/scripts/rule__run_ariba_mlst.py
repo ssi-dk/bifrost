@@ -13,17 +13,17 @@ def rule__run_ariba_mlst(input, output, sampleComponentObj, log):
 
         sampleComponentObj.write_log_out(log, "Started {}\n".format(this_function_name))
         # Variables being used
-        database_path = db_component["database_path"]
+        database_path = component_db["database_path"]
         reads = input.reads  # expected a tuple of read locations
         output_file = output.complete  # a file to mark success for snakemake
-        species = db_sample["properties"]["species"]
+        species = sample_db["properties"]["species"]
 
         # Code to run
-        if species not in db_component["options"]["mlst_species_mapping"]:
+        if species not in component_db["options"]["mlst_species_mapping"]:
             sampleComponentObj.write_log_out(log, "cge mlst species: {}\n".format(species))
             subprocess.Popen("touch " + folder + "/no_mlst_species_DB").communicate()
         else:
-            mlst_species = db_component["options"]["mlst_species_mapping"][species]
+            mlst_species = component_db["options"]["mlst_species_mapping"][species]
             data_dict = {}
             for mlst_entry in mlst_species:
                 data_dict[mlst_entry] = {}

@@ -33,22 +33,22 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         output = str(output)
         log_out = str(log.out_file)
         log_err = str(log.err_file)
-        db_sample = datahandling.load_sample(sample_file)
-        db_component = datahandling.load_component(component_file)
+        sample_db = datahandling.load_sample(sample_file)
+        component_db = datahandling.load_component(component_file)
         db_sample_component = datahandling.load_sample_component(sample_component_file)
         this_function_name = sys._getframe().f_code.co_name
         global GLOBAL_component_name
-        GLOBAL_component_name = db_component["name"]
+        GLOBAL_component_name = component_db["name"]
 
         datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
-        datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
+        datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
         # Initialization of values, summary and reporter are also saved into the sample
-        db_sample_component["summary"] = {"component": {"_id": db_component["_id"], "_date": datetime.datetime.utcnow()}}
+        db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
-        db_sample_component["reporter"] = db_component["db_values_changes"]["sample"]["reporter"]["mlst"]
+        db_sample_component["reporter"] = component_db["db_values_changes"]["sample"]["reporter"]["mlst"]
 
         # Data extractions
         db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
@@ -57,9 +57,9 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Save to sample component
         datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
         # Save summary and reporter results into sample
-        db_sample["properties"]["mlst"] = db_sample_component["summary"]
-        db_sample["reporter"]["mlst"] = db_sample_component["reporter"]
-        datahandling.save_sample_to_file(db_sample, sample_file)
+        sample_db["properties"]["mlst"] = db_sample_component["summary"]
+        sample_db["reporter"]["mlst"] = db_sample_component["reporter"]
+        datahandling.save_sample_to_file(sample_db, sample_file)
 
         open(output, 'w+').close()  # touch file
 
