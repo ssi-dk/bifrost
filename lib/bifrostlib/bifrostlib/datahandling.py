@@ -136,18 +136,18 @@ class SampleComponentObj:
         try:
             actual_value = functools.reduce(dict.get, field, db)
             if expected_value is None:
-                self.write_log_err(log, "Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+                self.write_log_err(log, "Found required entry (value not checked) for entry: {}\n".format(":".join(field), expected_value))
                 return True
             elif type(expected_value) is not list:
                 expected_value = [expected_value]
             if actual_value in expected_value:
-                    self.write_log_err(log, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+                    self.write_log_err(log, "Found required entry for entry: {} value:{}\n".format(":".join(field), actual_value))
                     return True
             else:
-                self.write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+                self.write_log_err(log, "Requirements not met for entry: {} allowed_values: {} value:{}\n".format(":".join(field), expected_value, actual_value))
                 return False
         except Exception:
-            self.write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
+            self.write_log_err(log, "Requirements not met for entry: {}\ndb was:{}\n".format(":".join(field), db))
             self.write_log_err(log, str(traceback.format_exc()))
             return False
     def write_log_out(self, log, content):
