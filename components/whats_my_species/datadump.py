@@ -6,7 +6,7 @@ def extract_bracken_txt(sampleComponentObj):
     summary, results = sampleComponentObj.get_summary_and_results()
     file_path = os.path.join(sampleComponentObj.get_component_name(), "bracken.txt")
     key = file_path.replace(".","_").replace("$","_")
-    results[file_path] = {}
+    results[key] = {}
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     number_of_entries = min(len(buffer) - 1, 2)
@@ -23,7 +23,7 @@ def extract_kraken_report_bracken_txt(sampleComponentObj):
     summary, results = sampleComponentObj.get_summary_and_results()
     file_path = os.path.join(sampleComponentObj.get_component_name(), "bracken.txt")
     key = file_path.replace(".", "_").replace("$", "_")
-    results[file_path] = {}
+    results[key] = {}
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     if len(buffer) > 2:
