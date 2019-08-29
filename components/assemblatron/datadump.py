@@ -1,17 +1,16 @@
-import pkg_resources
-import datetime
 import os
-import re
-import sys
-import traceback
 from bifrostlib import datahandling
 
 
+def extract_contigs_sum_cov(sampleComponentObj):
+    summary, results = sampleComponentObj.get_summary_and_results()
+    options = sampleComponentObj.get_options()
+    file_path = os.path.join(sampleComponentObj.get_component_name(), "contigs.sum.cov")
+    key = file_path.replace(".","_").replace("$","_")
+    results[key] = {}
 
-
-def extract_contigs_sum_cov(db, file_path, key, temp_data):
     yaml = datahandling.load_yaml(file_path)
-    for bin_value in GLOBAL_cov_bin_values:
+    for bin_value in options["cov_bin_values"]:
         total_length = 0
         total_depth = 0
         total_contigs = 0
@@ -20,21 +19,27 @@ def extract_contigs_sum_cov(db, file_path, key, temp_data):
                 total_length += yaml["contig_depth"][contig]["total_length"]
                 total_depth += yaml["contig_depth"][contig]["total_depth"]
                 total_contigs += 1
-        db["results"][key]["bin_contigs_at_{}x".format(bin_value)] = total_contigs
-        db["results"][key]["bin_length_at_{}x".format(bin_value)] = total_length
-        db["results"][key]["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
-        db["summary"]["bin_contigs_at_{}x".format(bin_value)] = total_contigs
-        db["summary"]["bin_length_at_{}x".format(bin_value)] = total_length
-        db["summary"]["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
-    return db
+        results[key]["bin_contigs_at_{}x".format(bin_value)] = total_contigs
+        results[key]["bin_length_at_{}x".format(bin_value)] = total_length
+        results[key]["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
+        summary["bin_contigs_at_{}x".format(bin_value)] = total_contigs
+        summary["bin_length_at_{}x".format(bin_value)] = total_length
+        summary["bin_coverage_at_{}x".format(bin_value)] = float(total_depth / total_length)
+    return (summary, results)
 
 
 def extract_contigs_bin_cov(db, file_path, key, temp_data):
+    summary, results = sampleComponentObj.get_summary_and_results()
+    options = sampleComponentObj.get_options()
+    file_path = os.path.join(sampleComponentObj.get_component_name(), "contigs.bin.cov")
+    key = file_path.replace(".", "_").replace("$", "_")
+    results[key] = {}
+
     yaml = datahandling.load_yaml(file_path)
-    db["results"][key] = yaml
+    results[key] = yaml
     for bin_value in GLOBAL_cov_bin_values:
-        db["summary"]["raw_length_at_{}x".format(bin_value)] = yaml["binned_depth"][bin_value - 1]
-    return db
+        summary["raw_length_at_{}x".format(bin_value)] = yaml["binned_depth"][bin_value - 1]
+    return (summary, results)
 
 
 def extract_bbuk_log(db, file_path, key, temp_data):
@@ -127,9 +132,17 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         return 0
 
 
-script__datadump(
-    snakemake.output.complete,
-    snakemake.params.sample_file,
-    snakemake.params.component_file,
-    snakemake.params.sample_component_file,
+def datadump(sampleComponentObj, log):
+    sampleComponentObj.start_data_dump(log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_contigs_sum_cov, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_contigs_bin_cov, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_bbuk_log, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_quast_report, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_contig_variants, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_contig_stats, log=log)
+    sampleComponentObj.end_data_dump(log=log)
+
+
+datadump(
+    snakemake.params.sampleComponentObj,
     snakemake.log)

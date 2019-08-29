@@ -1,16 +1,20 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: assemblatron
-category: &category De-novo Assembly
 version: 2.0
-schema_version: 2.0
-target: sample
-type: pipeline
-recommendation: required
-description: >
-  This does de-novo assembly on a sample and then maps the reads back against the denovo assembly
-  for variant calling. In the process it gathers metrics on many aspects for the use of QC. This
-  generates the same metrics as qcquickie but should yield better contigs and it is recommended
-  to use these contigs for downstream analysis.
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: denovo_assembly
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: required
+  description: >
+    This does de-novo assembly on a sample and then maps the reads back against the denovo assembly
+    for variant calling. In the process it gathers metrics on many aspects for the use of QC. This
+    generates the same metrics as qcquickie but should yield better contigs and it is recommended
+    to use these contigs for downstream analysis.
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -23,16 +27,18 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path
-adapters_fasta: "/bifrost_resources/adapters.fasta"
+resources:
+  adapters_fasta: "/bifrost_resources/adapters.fasta"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
+    properties:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files:
@@ -50,8 +56,7 @@ db_values_changes:
         summary: # see sample_component summary
         component:
           _id: "ObjectId"
-          date: "datetime"
-    reporter:
+    report:
   sample_component:
       summary:
         bin_contigs_at_1x:
@@ -77,4 +82,5 @@ db_values_changes:
         reads_unmapped:
         insert_size_average:
         insert_size_standard_deviation:
+      results:
 #---------------------------------------------------------------------------------------------------

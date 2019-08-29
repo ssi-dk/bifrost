@@ -27,7 +27,7 @@ def extract_kraken_report_bracken_txt(sampleComponentObj):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     if len(buffer) > 2:
-        results[key]["unclassified_count"] = int(buffer[0].split("\t")[1])
+        results["NOTAREALKEY"]["unclassified_count"] = int(buffer[0].split("\t")[1])
         results[key]["root"] = int(buffer[1].split("\t")[1])
     return (summary, results)
 
@@ -55,12 +55,15 @@ def set_sample_species(sampleComponentObj):
 
 
 def datadump(sampleComponentObj, log):
-    sampleComponentObj.start_data_dump(log=log)
-    sampleComponentObj.run_data_dump_on_function(extract_bracken_txt, log=log)
-    sampleComponentObj.run_data_dump_on_function(extract_kraken_report_bracken_txt, log=log)
-    sampleComponentObj.run_data_dump_on_function(species_math, log=log)
-    sampleComponentObj.run_data_dump_on_function(set_sample_species, log=log)
-    sampleComponentObj.end_data_dump(log=log)
+    try:
+        sampleComponentObj.start_data_dump(log=log)
+        sampleComponentObj.run_data_dump_on_function(extract_bracken_txt, log=log)
+        sampleComponentObj.run_data_dump_on_function(extract_kraken_report_bracken_txt, log=log)
+        sampleComponentObj.run_data_dump_on_function(species_math, log=log)
+        sampleComponentObj.run_data_dump_on_function(set_sample_species, log=log)
+        sampleComponentObj.end_data_dump(log=log)
+    except Exception:
+        print("datadump failure")
 
 
 datadump(
