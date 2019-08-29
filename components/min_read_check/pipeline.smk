@@ -8,7 +8,7 @@ from bifrostlib import datahandling
 configfile: "../config.yaml"  # Relative to run directory
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
 
-bifrost_sampleComponentObj = datahandling.sampleComponentObj()
+bifrost_sampleComponentObj = datahandling.SampleComponentObj()
 (sample_db, component_db) = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
 
 singularity: component_db["dockerfile"]
