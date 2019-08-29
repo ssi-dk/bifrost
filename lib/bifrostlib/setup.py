@@ -8,5 +8,5 @@ setup(
     author="Kim Ng, Martin Basterrechea",
     author_email="kimn@ssi.dk",
     packages=find_packages(),
-    install_requires=['ruamel.yaml', 'pymongo', 'pandas']
+    install_requires=['ruamel.yaml', 'pymongo', 'pandas', 'python-magic']
     )
