@@ -49,7 +49,7 @@ class SampleComponentObj:
         return (self.sample_db, self.component_db)
     def get_reads(self):
         if "reads" in self.sample_db:
-            return (self.sample_db["R1"], self.sample_db["R2"])
+            return (self.sample_db["reads"]["R1"], self.sample_db["reads"]["R2"])
         else:
             return ("/dev/null", "/dev/null")
     def check_requirements(self, output_file="requirements_met", log=None):
