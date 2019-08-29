@@ -398,7 +398,7 @@ rule set_samples_from_sample_info:
                                 if config["samplesheet_column_mapping"][rename_column] == column:
                                     column_name = rename_column
                             sample_db["sample_sheet"][column_name] = row[column]
-                            sample_db["properties"]["sample_info"] = row[column]
+                            sample_db["properties"]["sample_info"][column_name] = row[column]
                             
                         # If sample has no name (most likely because there were no reads
                         # in the sample folder) we have to specify a name.
