@@ -211,6 +211,10 @@ def load_component(file_yaml):
         return temp
 
 def save_sample(sample_db):
+    #TODO: This writing to a file is temporary and should be removed with bifrost.smk refactoring
+    with open(sample_db["path"] + "/sample.yaml") as file_handle:
+        yaml.dump(sample_db, file_handle)
+
     return mongo_interface.dump_sample_info(sample_db)
 
 def save_sample_to_file(sample_dict, file_yaml):
@@ -235,6 +239,11 @@ def load_sample(file_yaml):
             return content
 
 def save_sample_component(sample_component_db):
+    #TODO: This writing to a file is temporary and should be removed with bifrost.smk refactoring
+    sample_db = get_sample(sample_component_db["sample"]["_id"])
+    with open(sample_db["path"] + "/{}__{}.yaml".format(sample_component_db["sample"]["name"], sample_component_db["component"]["name"])) as file_handle:
+        yaml.dump(sample_component_db, file_handle)
+
     return mongo_interface.dump_sample_component_info(sample_component_db)
 
 def save_sample_component_to_file(sample_component_dict, file_yaml):

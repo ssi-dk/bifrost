@@ -1,8 +1,5 @@
 #- Templated section: start ------------------------------------------------------------------------
 import os
-import sys
-import traceback
-import shutil
 from bifrostlib import datahandling
 
 configfile: "../config.yaml"  # Relative to run directory
@@ -58,7 +55,7 @@ rule check_requirements:
         bifrost_sampleComponentObj.check_requirements()
 #- Templated section: end --------------------------------------------------------------------------
 
-#* Dynamic section: end ****************************************************************************
+#* Dynamic section: start **************************************************************************
 rule_name = "setup__filter_reads_with_bbduk"
 rule setup__filter_reads_with_bbduk:
     # Static
