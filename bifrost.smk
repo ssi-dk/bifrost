@@ -248,14 +248,14 @@ rule initialize_samples_from_sample_folder:
                     sample_db["name"] = sample_name
                     sample_db["reads"] = sample_db.get("reads", {})
                     sample_db["path"] = os.path.realpath(sample_name)
-                    sample_db["properties"] = sample_db.get("properties", {"sample_info":{}, "datafiles":{}})
+                    sample_db["properties"] = sample_db.get("properties", {"sample_info":{}, "datafiles":{"paired_reads":[]}})
                     sample_db["report"] = sample_db.get("report", {})
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                             if sample_name == str(result.group("sample_name")):
                                 sample_db["reads"]["R" + result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
-                                sample_db["properties"]["datafiles"]["R" + result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
+                                sample_db["properties"]["datafiles"]["paired_reads"].append(os.path.realpath(os.path.join(sample_folder, file)))
                                 md5sum_key = "R" + result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
                                     pass

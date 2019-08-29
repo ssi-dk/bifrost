@@ -50,8 +50,9 @@ class SampleComponentObj:
     def get_sample_properties_by_category(self, category):
         return self.sample_db["properties"].get(category, None)
     def get_reads(self):
-        if "reads" in self.sample_db:
-            return (self.sample_db["reads"]["R1"], self.sample_db["reads"]["R2"])
+        datafiles = self.get_sample_properties_by_category("datafiles")
+        if "paired_reads" in datafiles:
+            return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
         else:
             return ("/dev/null", "/dev/null")
     def check_requirements(self, output_file="requirements_met", log=None):

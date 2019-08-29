@@ -31,9 +31,9 @@ resources:
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
+    properties:
+      datafiles:
+        paired_reads:
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------
