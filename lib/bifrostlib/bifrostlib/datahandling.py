@@ -139,7 +139,8 @@ class SampleComponentObj:
 
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
         self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
-        self.sample_db["report"][self.component_db["details"]["category"]] = generate_report_function(self)
+        self.sample_db["report"][self.component_db["details"]["category"]]["data"] = generate_report_function(self)
+        assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
         save_sample(self.sample_db)
         self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
