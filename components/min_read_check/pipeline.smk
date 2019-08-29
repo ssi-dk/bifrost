@@ -7,50 +7,32 @@ from bifrostlib import datahandling
 
 configfile: "../config.yaml"  # Relative to run directory
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
-memory_in_GB = config["memory"]
 
-#db_sample = datahandling.load_sample(sample_file)
-bifrost_sample_component_object = datahandling.SampleComponentObj(config["sample_id"], config["component_id"])
-db_sample = bifrost_sample_component_object.db_sample
-db_component = bifrost_sample_component_object.db_component
-# db_sample = datahandling.get_sample(sample_id=config["sample_id"])
-# db_component = datahandling.get_component(component_id=config["component_id"])
-# db_sample_component = datahandling.get_sample_component(sample_id=config["sample_id"], component_id=config["component_id"])
+bifrost_sampleComponentObj = datahandling.sampleComponentObj()
+(sample_db, component_db) = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
 
-# sample_id = db_sample["_id"]
-# component_id = db_component["_id"]
-# sample_component_id = db_sample_component["_id"]
+singularity: component_db["dockerfile"]
 
-singularity: db_component["dockerfile"]
-
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
-else:
-    reads = R1, R2 = ("/dev/null", "/dev/null")
-
+reads = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
-    print("Workflow complete")
-    bifrost_sample_component_object.success()
-    # datahandling.set_status_success_in_sample_and_sample_component(sample_component_id)
+    bifrost_sampleComponentObj.success()
 
 
 onerror:
-    print("Workflow error")
-    bifrost_sample_component_object.failure()
-    # datahandling.set_status_failure_in_sample_and_sample_component(sample_component_id)
+    bifrost_sampleComponentObj.failure()
 
 
 rule all:
     input:
-        db_component["name"] + "/datadump_complete"
+        component_db["name"] + "/datadump_complete"  # file is defined by datadump function
 
 
 rule setup:
     output:
-        init_file = touch(temp(db_component["name"] + "/" + db_component["name"] + "_initialized")),
+        init_file = touch(temp(component_db["name"] + "/" + component_db["name"] + "_initialized")),
     params:
-        folder = db_component["name"]
+        folder = component_db["name"]
 
 
 rule_name = "check_requirements"
@@ -62,22 +44,18 @@ rule check_requirements:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
-        err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        db_component["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
     output:
-        check_file = db_component["name"] + "/requirements_met",
+        check_file = component_db["name"] + "/requirements_met",
     params:
-        bifrost_sample_component_object
-        # sample_file = sample_file,
-        # component_file = component_file,
-        # sample_component_file = sample_component_file
+        bifrost_sampleComponentObj
     run:
-        bifrost_sample_component_object.check_requirements()
-        # check_requirements.script__initialization(params.sample_file, params.component_file, params.sample_component_file, output.check_file, log.out_file, log.err_file)
+        bifrost_sampleComponentObj.check_requirements()
 #- Templated section: end --------------------------------------------------------------------------
 
 #* Dynamic section: end ****************************************************************************
@@ -91,18 +69,18 @@ rule setup__filter_reads_with_bbduk:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
-        err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        db_component["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         rules.check_requirements.output.check_file,
         reads = (R1, R2)
     output:
-        stats_file = db_component["name"] + "/stats.txt"
+        stats_file = component_db["name"] + "/stats.txt"
     params:
-        adapters = db_component["resources"]["adapters_fasta"]  # This is now done to the root of the continuum container
+        adapters = component_db["resources"]["adapters_fasta"]  # This is now done to the root of the continuum container
     shell:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo qtrim=r minlength=30 1> {log.out_file} 2> {output.stats_file}"
 
@@ -117,19 +95,17 @@ rule greater_than_min_reads_check:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
-        err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        db_component["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
         stats_file = rules.setup__filter_reads_with_bbduk.output.stats_file,
     params:
-        SampleComponentObj=bifrost_sample_component_object
-        # sample_file = sample_file,
-        # component_file = component_file
+        sampleComponentObj=bifrost_sampleComponentObj
     output:
-        file = db_component["name"] + "/has_min_num_of_reads"
+        file = component_db["name"] + "/has_min_num_of_reads"
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__greater_than_min_reads_check.py")
 #* Dynamic section: end ****************************************************************************
@@ -145,10 +121,10 @@ rule datadump:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = db_component["name"] + "/log/" + rule_name + ".out.log",
-        err_file = db_component["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
+        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
     benchmark:
-        db_component["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
         rules.greater_than_min_reads_check.output.file  # Needs to be output of final rule
@@ -156,11 +132,7 @@ rule datadump:
     output:
         complete = rules.all.input
     params:
-        SampleComponentObj=bifrost_sample_component_object
-        # folder = db_component["name"],
-        # sample_file = sample_file,
-        # component_file = component_file,
-        # sample_component_file = sample_component_file
+        sampleComponentObj=bifrost_sampleComponentObj
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
 #- Templated section: end --------------------------------------------------------------------------

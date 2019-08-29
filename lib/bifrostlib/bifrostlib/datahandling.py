@@ -35,160 +35,134 @@ Class to be used as a template for rules which require python scripts. Can be ti
 allow access to parts of the document if needed in the future, ie options.
 """
 class SampleComponentObj:
-    def __init__(self, sample_id, component_id):
+    def __init__(self):
+        self.sample_id = None
+        self.component_id = None
+    def load(self, sample_id, component_id):
         self.sample_id = sample_id
         self.component_id = component_id
-        self.load()
-    def load(self):
-        self.db_sample = get_sample(sample_id=self.sample_id)
-        self.db_component = get_component(component_id=self.component_id)
-        self.db_sample_component = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
-        self.sample_component_id = self.db_sample_component["_id"]
+        self.sample_db = get_sample(sample_id=self.sample_id)
+        self.component_db = get_component(component_id=self.component_id)
+        self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
+        self.sample_component_id = self.sample_component_db["_id"]
         self.started()
-    def check_requirements(self, output_file="requirements_met"):
+        return (self.sample_db, self.component_db)
+    def get_reads(self):
+        if "reads" in self.sample_db:
+            return (self.sample_db["R1"], self.sample_db["R2"])
+        else:
+            return ("/dev/null", "/dev/null")
+    def check_requirements(self, output_file="requirements_met", log=None):
         no_failures = True
-        if self.db_component["requirements"] is not None:
-            requirements = pandas.io.json.json_normalize(self.db_component["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from db_component, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
+        if self.component_db["requirements"] is not None:
+            requirements = pandas.io.json.json_normalize(self.component_db["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from component_db, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
             for requirement in requirements:
                 category = requirement.split(".")[0]
                 if category == "sample":
                     field = requirement.split(".")[1:]
                     expected_value = requirements[requirement]
-                    if not requirement_met(self.db_sample, field, expected_value):
+                    if not self.requirement_met(self.sample_db, field, expected_value, log):
                         no_failures = False
                 elif category == "component":
                     field = requirement.split(".")[2:]
                     expected_value = requirements[requirement]
-                    if not requirement_met(self.db_component, field, expected_value):
+                    if not self.requirement_met(self.component_db, field, expected_value, log):
                         no_failures = False
                 else:
                     no_failures = False
         if no_failures:
-            open(os.path.join(self.db_component["name"], output_file), "w+").close()
+            open(os.path.join(self.component_db["name"], output_file), "w+").close()
         else:
             self.requirements_not_met()
     def requirements_not_met(self):
+        sys.stdout.write("Workflow stopped due to requirements\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
     def started(self):
+        sys.stdout.write("Workflow processing\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Running")
     def success(self):
+        sys.stdout.write("Workflow complete\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
     def failure(self):
+        sys.stdout.write("Workflow error\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
-    def start_rule(self, rule_name, log):
-        write_log_out(log, "{} has started\n".format(rule_name))
-        return (self.db_sample, self.db_component)
-    def end_rule(self, rule_name, log):
-        write_log_out(log, "{} has finished\n".format(rule_name))
+    def start_rule(self, rule_name, log=None):
+        self.write_log_out(log, "{} has started\n".format(rule_name))
+        return (self.sample_db, self.component_db)
+    def end_rule(self, rule_name, log=None):
+        self.write_log_out(log, "{} has finished\n".format(rule_name))
         return 0
-    def start_data_dump(self, log):
-        self.db_sample_component["properties"] = {
+    def start_data_dump(self, log=None):
+        self.sample_component_db["properties"] = {
             "summary": {},
             "component": {
-                "_id": self.db_component["_id"]
+                "_id": self.component_db["_id"]
             }
         }
-        self.db_sample_component["results"] = {}
-        self.db_sample_component["report"] = self.db_component["db_values_changes"]["sample"]["report"][self.db_component["details"]["category"]]
-        write_log_out(log, "Starting datadump\n")
+        self.sample_component_db["results"] = {}
+        self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+        self.write_log_out(log, "Starting datadump\n")
         self.save_files_to_sample_component(log)
-    def save_files_to_sample_component(self, log):
+    def save_files_to_sample_component(self, log=None):
         try:
-            save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
-            write_log_out(log, "Files saved")
+            save_files_to_db(self.component_db["db_values_changes"]["files"], sample_component_id=self.sample_component_db["_id"])
+            self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
         except:
-            write_log_err(log, str(traceback.format_exc()))
+            self.write_log_err(log, str(traceback.format_exc()))
     def get_summary_and_results(self):
-        return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
+        return (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"])
     def get_component_name(self):
-        return self.db_component["name"]
-    def run_data_dump_on_function(self, data_extraction_function, log):
+        return self.component_db["name"]
+    def run_data_dump_on_function(self, data_extraction_function, log=None):
         try:
-            (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"]) = data_extraction_function(self)
+            (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
         except Exception:
-            write_log_err(log, str(traceback.format_exc()))
+            self.write_log_err(log, str(traceback.format_exc()))
 
-    def end_data_dump(self, log, output_file="datadump_complete", generate_report_function=lambda x: None):
+    def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
         try:
-            self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
-            self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
-            write_log_err(log, str(traceback.format_exc()))
-            save_sample(self.db_sample)
-            write_log_out(log, "sample {} saved\n".format(self.db_sample["_id"]))
-            save_sample_component(self.db_sample_component)
-            write_log_out(log, "sample_component {} saved\n".format(self.db_sample_component["_id"]))
-            open(os.path.join(self.db_component["name"], output_file), "w+").close()
-            write_log_out(log, "Done datadump\n")
+            self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
+            self.sample_db["report"][self.component_db["details"]["category"]] = generate_report_function(self)
+            self.write_log_err(log, str(traceback.format_exc()))
+            save_sample(self.sample_db)
+            self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
+            save_sample_component(self.sample_component_db)
+            self.write_log_out(log, "sample_component {} saved\n".format(self.sample_component_db["_id"]))
+            open(os.path.join(self.component_db["name"], output_file), "w+").close()
+            self.write_log_out(log, "Done datadump\n")
         except Exception:
-            write_log_err(log, str(traceback.format_exc()))
-
-def requirement_met(db, field, expected_value):
-    try:
-        actual_value = functools.reduce(dict.get, field, db)
-        if expected_value is None:
-            sys.stderr.write("Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
-            return True
-        elif type(expected_value) is not list:
-            expected_value = [expected_value]
-        if actual_value in expected_value:
-                sys.stderr.write("Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+            self.write_log_err(log, str(traceback.format_exc()))
+    def requirement_met(self, db, field, expected_value, log):
+        try:
+            actual_value = functools.reduce(dict.get, field, db)
+            if expected_value is None:
+                self.write_log_err(log, "Found required entry (value not checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
                 return True
-        else:
-            sys.stderr.write("Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+            elif type(expected_value) is not list:
+                expected_value = [expected_value]
+            if actual_value in expected_value:
+                    self.write_log_err(log, "Found required entry (value checked) for\ndb: {}\nentry: {}\n".format(":".join(field), db))
+                    return True
+            else:
+                self.write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\ndesired_entry: {}\n".format(":".join(field), db, expected_value))
+                return False
+        except Exception:
+            self.write_log_err(log, "Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
+            self.write_log_err(log, str(traceback.format_exc()))
             return False
-    except Exception:
-        sys.stderr.write("Requirements not met for\ndb: {}\nentry: {}\n".format(db, ":".join(field)))
-        sys.stderr.write("Error: " + str(traceback.format_exc()))
-        return False
-def write_log_out(a_log, content):
-    write_log(log.out_file, content)
-def write_log_err(a_log, content):
-    write_log(log.err_file, content)
-
-
-    def save_files_to_sample_component(self):
-        try:
-            save_files_to_db(self.db_component["db_values_changes"]["files"], sample_component_id=self.db_sample_component["_id"])
-            self.write_log_out("Files saved")
-        except:
-            self.write_log_err(str(traceback.format_exc()))
-
-    def get_summary_and_results(self):
-        return (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"])
-
-    def get_component_name(self):
-        return self.db_component["name"]
-
-    def set_summary_and_results_from_function(self, data_extraction_function):
-        try:
-            (self.db_sample_component["properties"]["summary"], self.db_sample_component["results"]) = data_extraction_function(self)
-        except Exception:
-            self.write_log_err(str(traceback.format_exc()))
-
-    def save(self, generate_report_function=lambda x: None):
-        try:
-            self.db_sample["properties"][self.db_component["details"]["category"]] = self.db_sample_component["properties"]
-            self.db_sample["report"][self.db_component["details"]["category"]] = generate_report_function(self)
-            self.write_log_err(str(traceback.format_exc()))
-            save_sample_to_file(self.db_sample, self.sample_file)
-            self.write_log_out("sample {} saved\n".format(self.db_sample["_id"]))
-            save_sample_component_to_file(self.db_sample_component, self.sample_component_file)
-            self.write_log_out("sample_component {} saved\n".format(self.db_sample_component["_id"]))
-            open(self.output_path, "w+").close()
-            self.write_log_out("Done datadump\n")
-        except Exception:
-            self.write_log_err(str(traceback.format_exc()))
-
-    def write_log_out(self, content):
-        write_log(self.log.out_file, content)
-
-    def write_log_err(self, content):
-        write_log(self.log.err_file, content)
-
-
-def write_log(log_file, content):
-    with open(log_file, "a+") as file_handle:
-        file_handle.write(content)
+    def write_log_out(self, log, content):
+        if log is not None:
+            self.write_log(log.out_file, content)
+        else:
+            sys.stdout.write(content)
+    def write_log_err(self, log, content):
+        if log is not None:
+            self.write_log(log.err_file, content)
+        else:
+            sys.stderr.write(content)
+    def write_log(self, log_file, content):
+        with open(log_file, "a+") as file_handle:
+            file_handle.write(content)
 
 
 def load_config():
