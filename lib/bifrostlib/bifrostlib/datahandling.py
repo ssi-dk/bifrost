@@ -121,6 +121,7 @@ class SampleComponentObj:
             (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
         except Exception:
             self.write_log_err(log, str(traceback.format_exc()))
+            raise Exception
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
         try:
             self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
