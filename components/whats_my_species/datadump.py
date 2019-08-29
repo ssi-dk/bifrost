@@ -21,7 +21,7 @@ def extract_bracken_txt(sampleComponentObj):
 
 def extract_kraken_report_bracken_txt(sampleComponentObj):
     summary, results = sampleComponentObj.get_summary_and_results()
-    file_path = os.path.join(sampleComponentObj.get_component_name(), "bracken.txt")
+    file_path = os.path.join(sampleComponentObj.get_component_name(), "kraken_report_bracken.txt")
     key = file_path.replace(".", "_").replace("$", "_")
     results[key] = {}
     buffer = datahandling.read_buffer(file_path)
