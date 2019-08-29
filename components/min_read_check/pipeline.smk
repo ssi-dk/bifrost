@@ -13,7 +13,7 @@ bifrost_sampleComponentObj = datahandling.SampleComponentObj()
 
 singularity: component_db["dockerfile"]
 
-reads = bifrost_sampleComponentObj.get_reads()
+reads = (R1, R2) = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
     bifrost_sampleComponentObj.success()
