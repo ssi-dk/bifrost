@@ -55,15 +55,12 @@ def set_sample_species(sampleComponentObj):
 
 
 def datadump(sampleComponentObj, log):
-    try:
-        sampleComponentObj.start_data_dump(log=log)
-        sampleComponentObj.run_data_dump_on_function(extract_bracken_txt, log=log)
-        sampleComponentObj.run_data_dump_on_function(extract_kraken_report_bracken_txt, log=log)
-        sampleComponentObj.run_data_dump_on_function(species_math, log=log)
-        sampleComponentObj.run_data_dump_on_function(set_sample_species, log=log)
-        sampleComponentObj.end_data_dump(log=log)
-    except Exception:
-        print("datadump failure")
+    sampleComponentObj.start_data_dump(log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_bracken_txt, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_kraken_report_bracken_txt, log=log)
+    sampleComponentObj.run_data_dump_on_function(species_math, log=log)
+    sampleComponentObj.run_data_dump_on_function(set_sample_species, log=log)
+    sampleComponentObj.end_data_dump(log=log)
 
 
 datadump(

@@ -9,6 +9,7 @@ from bifrostlib import mongo_interface
 import pymongo
 import traceback
 import sys
+import subprocess
 
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
@@ -38,6 +39,7 @@ class SampleComponentObj:
     def __init__(self):
         self.sample_id = None
         self.component_id = None
+
     def load(self, sample_id, component_id):
         self.sample_id = sample_id
         self.component_id = component_id
@@ -47,14 +49,17 @@ class SampleComponentObj:
         self.sample_component_id = self.sample_component_db["_id"]
         self.started()
         return (self.sample_db, self.component_db)
+
     def get_sample_properties_by_category(self, category):
         return self.sample_db["properties"].get(category, None)
+
     def get_reads(self):
         datafiles = self.get_sample_properties_by_category("datafiles")
         if "paired_reads" in datafiles:
             return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
         else:
             return ("/dev/null", "/dev/null")
+
     def check_requirements(self, output_file="requirements_met", log=None):
         no_failures = True
         if self.component_db["requirements"] is not None:
@@ -77,24 +82,36 @@ class SampleComponentObj:
             open(os.path.join(self.component_db["name"], output_file), "w+").close()
         else:
             self.requirements_not_met()
+
     def requirements_not_met(self):
         sys.stdout.write("Workflow stopped due to requirements\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
+
     def started(self):
         sys.stdout.write("Workflow processing\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Running")
+
     def success(self):
         sys.stdout.write("Workflow complete\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
+
     def failure(self):
         sys.stdout.write("Workflow error\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
+
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
         return (self.sample_db, self.component_db)
+
+    def rule_run_cmd(self, command, log):
+        self.write_log_out(log, "Running:{}\n".format(command))
+        command_log_out, command_log_err = subprocess.Popen(command, shell=True).communicate()
+        self.write_log_out(log, command_log_out)
+        self.write_log_err(log, command_log_err)
+
     def end_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has finished\n".format(rule_name))
-        return 0
+
     def start_data_dump(self, log=None):
         self.sample_component_db["properties"] = {
             "summary": {},
@@ -106,35 +123,31 @@ class SampleComponentObj:
         self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
         self.write_log_out(log, "Starting datadump\n")
         self.save_files_to_sample_component(log)
+
     def save_files_to_sample_component(self, log=None):
-        try:
-            save_files_to_db(self.component_db["db_values_changes"]["files"], sample_component_id=self.sample_component_db["_id"])
-            self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
-        except:
-            self.write_log_err(log, str(traceback.format_exc()))
+        save_files_to_db(self.component_db["db_values_changes"]["files"], sample_component_id=self.sample_component_db["_id"])
+        self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
+
     def get_summary_and_results(self):
         return (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"])
+
     def get_component_name(self):
         return self.component_db["name"]
+
     def run_data_dump_on_function(self, data_extraction_function, log=None):
-        try:
-            (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
-        except Exception:
-            self.write_log_err(log, str(traceback.format_exc()))
-            raise Exception
+        (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
+
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
-        try:
-            self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
-            self.sample_db["report"][self.component_db["details"]["category"]] = generate_report_function(self)
-            self.write_log_err(log, str(traceback.format_exc()))
-            save_sample(self.sample_db)
-            self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
-            save_sample_component(self.sample_component_db)
-            self.write_log_out(log, "sample_component {} saved\n".format(self.sample_component_db["_id"]))
-            open(os.path.join(self.component_db["name"], output_file), "w+").close()
-            self.write_log_out(log, "Done datadump\n")
-        except Exception:
-            self.write_log_err(log, str(traceback.format_exc()))
+        self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
+        self.sample_db["report"][self.component_db["details"]["category"]] = generate_report_function(self)
+        self.write_log_err(log, str(traceback.format_exc()))
+        save_sample(self.sample_db)
+        self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
+        save_sample_component(self.sample_component_db)
+        self.write_log_out(log, "sample_component {} saved\n".format(self.sample_component_db["_id"]))
+        open(os.path.join(self.component_db["name"], output_file), "w+").close()
+        self.write_log_out(log, "Done datadump\n")
+
     def requirement_met(self, db, field, expected_value, log):
         try:
             actual_value = functools.reduce(dict.get, field, db)
@@ -153,16 +166,19 @@ class SampleComponentObj:
             self.write_log_err(log, "Requirements not met for entry: {}\ndb was:{}\n".format(":".join(field), db))
             self.write_log_err(log, str(traceback.format_exc()))
             return False
+
     def write_log_out(self, log, content):
         if log is not None:
             self.write_log(log.out_file, content)
         else:
             sys.stdout.write(content)
+
     def write_log_err(self, log, content):
         if log is not None:
             self.write_log(log.err_file, content)
         else:
             sys.stderr.write(content)
+
     def write_log(self, log_file, content):
         with open(log_file, "a+") as file_handle:
             file_handle.write(content)
