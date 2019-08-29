@@ -142,7 +142,7 @@ class SampleComponentObj:
         report_data = generate_report_function(self)
         if report_data is not None:
             self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
-        assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
+            assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
         save_sample(self.sample_db)
         self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
