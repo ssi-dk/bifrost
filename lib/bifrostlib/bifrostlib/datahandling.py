@@ -47,6 +47,8 @@ class SampleComponentObj:
         self.sample_component_id = self.sample_component_db["_id"]
         self.started()
         return (self.sample_db, self.component_db)
+    def get_sample_properties_by_category(self, category):
+        return self.sample_db["properties"].get(category, None)
     def get_reads(self):
         if "reads" in self.sample_db:
             return (self.sample_db["reads"]["R1"], self.sample_db["reads"]["R2"])
@@ -118,7 +120,6 @@ class SampleComponentObj:
             (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
         except Exception:
             self.write_log_err(log, str(traceback.format_exc()))
-
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
         try:
             self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]

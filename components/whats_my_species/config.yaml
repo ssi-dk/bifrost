@@ -1,14 +1,18 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: whats_my_species
-category: &category Species Detection
 version: 2.0
-schema_version: 2.0
-target: sample
-type: pipeline
-recommendation: required
-description: >
-  This runs kraken/bracken on a sample in order to determine the species found in the sample. Reads
-  are first filtered using bbduk. The species is then set for the sample from this.
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: species_detection
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: required
+  description: >
+    This runs kraken/bracken on a sample in order to determine the species found in the sample. Reads
+    are first filtered using bbduk. The species is then set for the sample from this.
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -20,8 +24,9 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-kraken_database: "/bifrost_resources/minikraken/"
-kraken_kmer_dist: "/bifrost_resources/minikraken_4GB_100mers_distrib.txt"
+resources:
+  kraken_database: "/bifrost_resources/minikraken/"
+  kraken_kmer_dist: "/bifrost_resources/minikraken_4GB_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
@@ -41,7 +46,6 @@ db_values_changes:
   sample:
     properties:
       species_detection:
-        species:
         summary: #see sample_component summary
         component:
           _id: "ObjectId"
@@ -56,6 +60,7 @@ db_values_changes:
       percent_classified_species_2:
       name_classified_species_2 :
       detected_species:
+      species:
     results:
 #---------------------------------------------------------------------------------------------------
 
