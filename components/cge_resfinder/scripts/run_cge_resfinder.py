@@ -13,7 +13,7 @@ def script__run_cge_resfinder(input, output, sample_file, component_file, folder
         db_component = datahandling.load_component(component_file)
         this_function_name = sys._getframe().f_code.co_name
 
-        datahandling.log(log_out, "Started {}\n".format(this_function_name))
+        datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
 
         # Variables being used
         database_path = db_component["database_path"]
@@ -23,11 +23,11 @@ def script__run_cge_resfinder(input, output, sample_file, component_file, folder
         subprocess.Popen("resfinder.py -x -matrix -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(database_path, reads[0], reads[1], folder, log_out, log_err), shell=True).communicate()
 
     except Exception:
-        datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.log(log_err, str(traceback.format_exc()))
+        datahandling.write_log(log_out, "Exception in {}\n".format(this_function_name))
+        datahandling.write_log(log_err, str(traceback.format_exc()))
 
     finally:
-        datahandling.log(log_out, "Done {}\n".format(this_function_name))
+        datahandling.write_log(log_out, "Done {}\n".format(this_function_name))
         return 0
 
 

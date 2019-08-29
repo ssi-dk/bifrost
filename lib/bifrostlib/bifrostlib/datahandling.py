@@ -165,6 +165,11 @@ class SampleComponentObj:
             file_handle.write(content)
 
 
+def write_log(log_file, content):
+    with open(log_file, "a+") as file_handle:
+        file_handle.write(content)
+
+
 def load_config():
     config_file = "config.yaml"
     if not os.path.isfile("config.yaml"):

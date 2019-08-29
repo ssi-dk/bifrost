@@ -186,7 +186,7 @@ rule initialize_components:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
 
             for component_name in components:
                 component_file = os.path.join(components_dir, component_name + ".yaml")
@@ -195,9 +195,9 @@ rule initialize_components:
                 db_component = datahandling.load_component(component_file)
                 datahandling.save_component(db_component, component_file)
 
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_samples_from_sample_folder"
@@ -232,7 +232,7 @@ rule initialize_samples_from_sample_folder:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
 
             unique_sample_names = {}
             for file in sorted(os.listdir(sample_folder)):
@@ -265,9 +265,9 @@ rule initialize_samples_from_sample_folder:
                         sample_db["properties"] = sample_db.get("properties", {})
                         sample_db["report"] = sample_db.get("report", {})
                     datahandling.save_sample_to_file(sample_db, sample_config)
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "check__provided_sample_info"
@@ -303,7 +303,7 @@ rule check__provided_sample_info:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             if not os.path.isfile(sample_sheet):
                 df = pandas.DataFrame()
                 df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
@@ -322,14 +322,14 @@ rule check__provided_sample_info:
             item_rename_dict = {}
             badly_named_samples = df[df["SampleID"].str.contains("^[a-zA-Z0-9\-_]+$") == False]  # samples which fail this have inappropriate characters
             for item in badly_named_samples["SampleID"].tolist():
-                datahandling.log(log_out, "Renaming '{}' to '{}'".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())))
+                datahandling.write_log(log_out, "Renaming '{}' to '{}'".format(item, re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())))
             for item in df["SampleID"].tolist():
                 item_rename_dict[item] = re.sub(r'[^a-zA-Z0-9\-_]', "_", str(item).strip())
             df["SampleID"] = df["SampleID"].map(item_rename_dict)
             duplicates = {}
             for item in df["SampleID"].tolist():
                 if df["SampleID"].tolist().count(item) > 1:
-                    datahandling.log(log_out, "Duplicate SampleID's exist {}".format(item))
+                    datahandling.write_log(log_out, "Duplicate SampleID's exist {}".format(item))
                     duplicates[item] = df["SampleID"].tolist().count(item)
                     # duplicates have to be done on id basis
             ridiculous_count = 0
@@ -342,9 +342,9 @@ rule check__provided_sample_info:
                         df.loc[i, "SampleID"] = df.loc[i, "SampleID"] + "_RENAMED-" + str(duplicates[df.loc[i, "SampleID"]])
                     duplicates[row["SampleID"]] -= 1
             df.to_csv(corrected_sample_sheet_tsv, sep="\t", index=False)
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "set_samples_from_sample_info"
@@ -378,7 +378,7 @@ rule set_samples_from_sample_info:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
@@ -409,10 +409,10 @@ rule set_samples_from_sample_info:
                         sample_db["path"] = os.path.realpath(sample_db["name"])
                         datahandling.save_sample_to_file(sample_db, sample_config)
             except pandas.io.common.EmptyDataError:
-                datahandling.log(log_err, ("No samplesheet data\n"))
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+                datahandling.write_log(log_err, ("No samplesheet data\n"))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "set_sample_species"
@@ -447,7 +447,7 @@ rule set_sample_species:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             try:
                 df = pandas.read_table(corrected_sample_sheet_tsv)
@@ -473,10 +473,10 @@ rule set_sample_species:
                         datahandling.save_sample_to_file(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
-                datahandling.log(log_err, "No samplesheet data\n")
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+                datahandling.write_log(log_err, "No samplesheet data\n")
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "add_components_to_samples"
@@ -514,7 +514,7 @@ rule add_components_to_samples:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
 
@@ -541,9 +541,9 @@ rule add_components_to_samples:
                             if insert_component is True:
                                 sample_db["components"].append({"name": component_name, "_id": component_id})
                     datahandling.save_sample_to_file(sample_db, sample_config)
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_sample_components_for_each_sample"
@@ -579,7 +579,7 @@ rule initialize_sample_components_for_each_sample:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
             # I changed this to include all samples, even those with no data.
@@ -610,9 +610,9 @@ rule initialize_sample_components_for_each_sample:
                             sample_component_db["status"] = "initialized"
                             sample_component_db["path"] = sample_component_folder_path
                             datahandling.save_sample_component_to_file(sample_component_db, sample_component_path)
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "initialize_run"
@@ -650,7 +650,7 @@ rule initialize_run:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
 
@@ -694,9 +694,9 @@ rule initialize_run:
                         run_db["components"].append({"name": component_name, "_id": component_id})
 
             datahandling.save_run(run_db, component + "/run.yaml")
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule_name = "setup_sample_components_to_run"
@@ -734,7 +734,7 @@ rule setup_sample_components_to_run:
             log_out = str(log.out_file)
             log_err = str(log.err_file)
 
-            datahandling.log(log_out, "Started {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Started {}\n".format(rule_name))
             config = datahandling.load_config()
             unique_sample_names = {}
             # I changed this to include all samples, even those with no data.
@@ -807,7 +807,7 @@ rule setup_sample_components_to_run:
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config Sample={} sample_id={} component_id={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, "sample.yaml", sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
-                                    datahandling.log(log_err, "Error component not found:{} {}".format(component_name, component_file))
+                                    datahandling.write_log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "component missing"
                                     sample_component_db["setup_date"] = current_time
@@ -837,9 +837,9 @@ rule setup_sample_components_to_run:
                 elif config["grid"] == "slurm":
                     run_cmd_handle.write("scontrol release JobId=${bifrost__job_ids//:/ };\n")
 
-            datahandling.log(log_out, "Done {}\n".format(rule_name))
+            datahandling.write_log(log_out, "Done {}\n".format(rule_name))
         except Exception as e:
-            datahandling.log(log_err, str(traceback.format_exc()))
+            datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
 rule create_end_file:

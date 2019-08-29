@@ -91,7 +91,7 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         GLOBAL_category_name = db_component["category"]
 
 
-        datahandling.log(log_out, "Started {}\n".format(this_function_name))
+        datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
 
         # Save files to DB
         datahandling.save_files_to_db(db_component["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
@@ -114,13 +114,13 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         open(output, 'w+').close()  # touch file
 
     except Exception:
-        datahandling.log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.log(log_err, str(traceback.format_exc()))
+        datahandling.write_log(log_out, "Exception in {}\n".format(this_function_name))
+        datahandling.write_log(log_err, str(traceback.format_exc()))
         raise Exception
         return 1
 
     finally:
-        datahandling.log(log_out, "Done {}\n".format(this_function_name))
+        datahandling.write_log(log_out, "Done {}\n".format(this_function_name))
         return 0
 
 
