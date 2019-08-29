@@ -13,7 +13,7 @@ bifrost_sampleComponentObj = datahandling.SampleComponentObj()
 
 singularity: component_db["dockerfile"]
 
-reads = (R1, R2) = bifrost_sampleComponentObj.get_reads()
+reads = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
     bifrost_sampleComponentObj.success()
@@ -76,7 +76,7 @@ rule setup__filter_reads_with_bbduk:
     # Dynamic
     input:
         rules.check_requirements.output.check_file,
-        reads = (R1, R2)
+        reads
     output:
         stats_file = component_db["name"] + "/stats.txt"
     params:
