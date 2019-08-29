@@ -236,3 +236,7 @@ def get_comment(run_id):
 
 def set_comment(run_id, comment):
     return mongo_interface.set_comment(run_id, comment)
+
+
+def load_file_from_db(file_id=None):
+    return mongo_interface.load_file_from_db(file_id)

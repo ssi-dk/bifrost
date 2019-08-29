@@ -7,6 +7,7 @@ import time
 from io import StringIO
 
 import dash
+import flask
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
@@ -58,6 +59,21 @@ def short_species(species):
 app = dash.Dash()
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
+
+server = app.server
+
+
+@server.route('/get-file/<fileid>')
+def get_file(fileid=None):
+    if fileid is not None:
+        try:
+            f = import_data.load_file_from_db(fileid)
+        except ValueError:
+            return flask.abort(404)
+        # mimetype = f.content_type
+        return flask.send_file(f,as_attachment=True,attachment_filename=f.filename)
+    return flask.abort(404)
+
 
 if hasattr(keys, "pass_protected") and keys.pass_protected:
     dash_auth.BasicAuth(

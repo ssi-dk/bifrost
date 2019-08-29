@@ -1,4 +1,4 @@
-{
+[{
     "_id": "<objectid>",
     "name": "<string>",
     "path": "<string>",
@@ -39,4 +39,15 @@
         "created_at": "<date>",
         "updated_at": "<date>"
     }
-}
+},
+{
+    "assemblatron": "denovo_assembly",
+    "ariba_mlst": "mlst",
+    "ariba_resfinder": "resistance",
+    "cge_mlst": "mlst",
+    "cge_resfinder": "resistance",
+    "min_read_check": "size_check",
+    "ssi_stamper": "stamper",
+    "whats_my_species": "species_detection",
+    "bifrost": ["datafiles", "sample_info"]
+}]
