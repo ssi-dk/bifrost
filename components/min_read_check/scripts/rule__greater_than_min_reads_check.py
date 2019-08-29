@@ -21,7 +21,7 @@ def rule__greater_than_min_reads_check(input, output, sampleComponentObj, log):
             with open(output_file, "w") as output:
                 output.write("min_read_num:{}".format(min_read_number))
         else:
-            sampleComponentObj.write_log_out(log, "Doesn't have min reads {}reads found\n".format(num_of_reads)))
+            sampleComponentObj.write_log_out(log, "Doesn't have min reads {}reads found\n".format(num_of_reads))
 
     except Exception:
         sampleComponentObj.write_log_err(log, str(traceback.format_exc()))
