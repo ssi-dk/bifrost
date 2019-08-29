@@ -7,6 +7,7 @@ from datetime import datetime
 import ruamel.yaml
 import traceback
 import atexit
+import magic
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
@@ -437,13 +438,16 @@ def save_file_to_db(sample_component_id, file_path):
     
     db_sample_component = next(iter(get_sample_components(sample_component_ids=[sample_component_id])), None)
 
+    mimetype = magic.from_file(file_path, mime=True)
+
     with open(file_path, 'rb') as file_handle:
         file_id = fs.put(file_handle,
                         sample_component_id=sample_component_id,
                         sample_id=db_sample_component["sample"]["_id"],
                         component_id=db_sample_component["component"]["_id"],
                         full_path=file_path,
-                        filename=os.path.basename(file_path))
+                        filename=os.path.basename(file_path),
+                        mimetype=mimetype)
     return file_id
 
 
