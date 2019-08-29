@@ -76,7 +76,7 @@ rule setup__filter_reads_with_bbduk:
     # Dynamic
     input:
         rules.check_requirements.output.check_file,
-        reads
+        reads = reads
     output:
         stats_file = component_db["name"] + "/stats.txt"
     params:
