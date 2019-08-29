@@ -1,5 +1,7 @@
 import os
 import pymongo
+import gridfs
+
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
 from bson.son import SON
@@ -585,3 +587,19 @@ def set_comment(run_id, comment):
         return 1
     else:
         return 0
+
+
+def load_file_from_db(file_id):
+
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+    try:
+        f = fs.get(ObjectId(file_id))
+        print(f)
+        if f is None:
+            raise ValueError("File not found!")
+        else:
+            return f
+    except gridfs.errors.NoFile:
+        raise ValueError("File not found!")
