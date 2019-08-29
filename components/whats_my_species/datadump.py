@@ -12,10 +12,10 @@ def extract_bracken_txt(sampleComponentObj):
     number_of_entries = min(len(buffer) - 1, 2)
     if number_of_entries > 0:
         for i in range(1, 1 + number_of_entries):  # skip first line as it's header
-            results[file_path]["species_" + str(i) + "_name"] = buffer[i].split("\t")[0]
-            results[file_path]["species_" + str(i) + "_kraken_assigned_reads"] = buffer[i].split("\t")[3]
-            results[file_path]["species_" + str(i) + "_added_reads"] = buffer[i].split("\t")[4]
-            results[file_path]["species_" + str(i) + "_count"] = int(buffer[i].split("\t")[5].strip())
+            results[key]["species_" + str(i) + "_name"] = buffer[i].split("\t")[0]
+            results[key]["species_" + str(i) + "_kraken_assigned_reads"] = buffer[i].split("\t")[3]
+            results[key]["species_" + str(i) + "_added_reads"] = buffer[i].split("\t")[4]
+            results[key]["species_" + str(i) + "_count"] = int(buffer[i].split("\t")[5].strip())
     return (summary, results)
 
 
@@ -27,8 +27,8 @@ def extract_kraken_report_bracken_txt(sampleComponentObj):
     buffer = datahandling.read_buffer(file_path)
     buffer = buffer.split("\n")
     if len(buffer) > 2:
-        results[file_path]["unclassified_count"] = int(buffer[0].split("\t")[1])
-        results[file_path]["root"] = int(buffer[1].split("\t")[1])
+        results[key]["unclassified_count"] = int(buffer[0].split("\t")[1])
+        results[key]["root"] = int(buffer[1].split("\t")[1])
     return (summary, results)
 
 
