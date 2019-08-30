@@ -248,14 +248,14 @@ rule initialize_samples_from_sample_folder:
                     sample_db["name"] = sample_name
                     sample_db["reads"] = sample_db.get("reads", {})
                     sample_db["path"] = os.path.realpath(sample_name)
-                    sample_db["properties"] = sample_db.get("properties", {"sample_info":{}, "datafiles":{"paired_reads":[]}})
+                    sample_db["properties"] = sample_db.get("properties", {"sample_info": {"summary": {}}, "datafiles": {"summary": {"paired_reads": []}}})
                     sample_db["report"] = sample_db.get("report", {})
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
                             if sample_name == str(result.group("sample_name")):
                                 sample_db["reads"]["R" + result.group("paired_read_number")] = os.path.realpath(os.path.join(sample_folder, file))
-                                sample_db["properties"]["datafiles"]["paired_reads"].append(os.path.realpath(os.path.join(sample_folder, file)))
+                                sample_db["properties"]["datafiles"]["summary"]["paired_reads"].append(os.path.realpath(os.path.join(sample_folder, file)))
                                 md5sum_key = "R" + result.group("paired_read_number") + "_md5sum"
                                 if "md5skip" in config and config["md5skip"] and md5sum_key in sample_db["reads"]:
                                     pass
@@ -398,7 +398,7 @@ rule set_samples_from_sample_info:
                                 if config["samplesheet_column_mapping"][rename_column] == column:
                                     column_name = rename_column
                             sample_db["sample_sheet"][column_name] = row[column]
-                            sample_db["properties"]["sample_info"][column_name] = row[column]
+                            sample_db["properties"]["sample_info"]["summary"][column_name] = row[column]
                             
                         # If sample has no name (most likely because there were no reads
                         # in the sample folder) we have to specify a name.
@@ -461,7 +461,7 @@ rule set_sample_species:
                     if config.get("samples_to_include", None) is None or row[config["samplesheet_column_mapping"]["sample_name"]] in config["samples_to_include"].split(","):
                         sample_db = datahandling.load_sample(sample_config)
 
-                        sample_db["properties"] = sample_db.get("properties", {"sample_info": {}, "datafiles": {}})
+                        sample_db["properties"] = sample_db.get("properties", {"sample_info": {"summary": {}}, "datafiles": {"summary": {"paired_reads": []}}})
                         provided_species = sample_db["sample_sheet"].get("provided_species")
                         if pandas.isna(provided_species):
                             provided_species = None
@@ -472,7 +472,7 @@ rule set_sample_species:
                                 provided_species = str(provided_species)
                             else:
                                 provided_species = species_db # Use proper name if exists.
-                        sample_db["properties"]["sample_info"]["provided_species"] = provided_species
+                        sample_db["properties"]["sample_info"]["summary"]["provided_species"] = provided_species
                         datahandling.save_sample_to_file(sample_db, sample_config)
 
             except pandas.io.common.EmptyDataError:
