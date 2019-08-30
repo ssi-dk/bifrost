@@ -35,6 +35,36 @@ yaml.register_class(Int64)
 Class to be used as a template for rules which require python scripts. Can be tightened up to only
 allow access to parts of the document if needed in the future, ie options.
 """
+class stamperTestObj:
+    def __init__(self, function_name, display_name, effect, log=None):
+        self.name = function_name,
+        self.display_name = display_name,
+        self.effect = effect
+        self.value = ""
+        self.status = ""
+        self.reason = ""
+        self.log = log
+        self.write_log_out("Running {}".format(self.name))
+
+    def set_value(self, value):
+        if isinstance(value, float):
+            value = round(value, 3)
+        self.value = value
+
+    def get_value(self):
+        return self.value
+
+    def set_status_and_reason(self, status, reason):
+        self.status = status
+        self.reason = self.reason
+
+    def write_log_out(self, content):
+        if self.log is not None:
+            with open(self.log.log_out, "a+") as file_handle:
+                file_handle.write(content)
+        else:
+            sys.stdout.write(content)
+
 class SampleComponentObj:
     def __init__(self):
         self.sample_id = None
@@ -173,7 +203,7 @@ class SampleComponentObj:
         try:
             actual_value = functools.reduce(dict.get, field, db)
             if expected_value is None:
-                self.write_log_err(log, "Found required entry (value not checked) for entry: {}\n".format(":".join(field), expected_value))
+                self.write_log_err(log, "Found required entry (value not checked) for entry: {}\n".format(":".join(field)))
                 return True
             elif type(expected_value) is not list:
                 expected_value = [expected_value]

@@ -1,51 +1,29 @@
+import sys
 from bifrostlib import datahandling
 
 
-def test__sample__has_reads_files(db, file_path, key, temp_data):
+def test__sample__has_reads_files(sampleComponentObj):
     try:
-        sample_db = temp_data["sample_db"]
-        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
-
-        test = {
-            "name": this_function_name,
-            "display_name": "No reads",
-            "effect": "core facility",
-            "value": "",
-            "status": "",
-            "reason": ""
-        }
-        if sample_db["reads"]["R1"] == "":
-            test["status"] = "fail"
-            test["reason"] = "Read path is empty"
+        test = datahandling.stamperTestObj(this_function_name, "No reads", "core facility")
+        if sampleComponentObj.get_reads() == ("", ""):
+            test.set_status_and_reason("fail", "Read path is empty")
         else:
-            test["status"] = "pass"
-            test["reason"] = ""
-
+            test.set_status_and_reason("pass", "")
     except KeyError as e:
-        test["status"] = "fail"
-        test["reason"] = "Database KeyError {} in function {}: ".format(e.args[0], this_function_name)
-
+        test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
     finally:
-        db["results"][this_function_name] = test
-        return db
+        return test
 
 
-def test__species_detection__main_species_level(db, file_path, key, temp_data):
+def test__species_detection__main_species_level(sampleComponentObj):
     try:
-        sample_db = temp_data["sample_db"]
-        component_db = temp_data["component_db"]
         this_function_name = sys._getframe().f_code.co_name
-
-        test = {
-            "name": this_function_name,
-            "display_name": "Multiple species detected",
-            "effect": "supplying lab",
-            "value": "",
-            "status": "",
-            "reason": ""
-        }
-        test["value"] = round(sample_db["properties"]["species_detection"]["percent_classified_species_1"] + sample_db["properties"]["species_detection"]["percent_unclassified"], 3)
+        test = datahandling.stamperTestObj(this_function_name, "Multiple species detected", "supplying lab")
+        options = sampleComponentObj.get_options
+        species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
+        test.set_value(species_detection["percent_classified_species_1"] + species_detection[["percent_unclassified"]])
+        if test.get_value < options
         if test["value"] < component_db["options"]["min_species"]:
             test["status"] = "fail"
             test["reason"] = "Value ({}) is below threshold ({})".format(test["value"], component_db["options"]["min_species"])
@@ -62,7 +40,7 @@ def test__species_detection__main_species_level(db, file_path, key, temp_data):
         return db
 
 
-def test__species_detection__unclassified_level(db, file_path, key, temp_data):
+def test__species_detection__unclassified_level(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -93,7 +71,7 @@ def test__species_detection__unclassified_level(db, file_path, key, temp_data):
         return db
 
 
-def test__component__species_in_db(db, file_path, key, temp_data):
+def test__component__species_in_db(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -125,7 +103,7 @@ def test__component__species_in_db(db, file_path, key, temp_data):
         return db
 
 
-def test__sample__species_provided_is_detected(db, file_path, key, temp_data):
+def test__sample__species_provided_is_detected(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -163,7 +141,7 @@ def test__sample__species_provided_is_detected(db, file_path, key, temp_data):
         return db
 
 
-def test__denovo_assembly__genome_size_at_1x(db, file_path, key, temp_data):
+def test__denovo_assembly__genome_size_at_1x(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -199,7 +177,7 @@ def test__denovo_assembly__genome_size_at_1x(db, file_path, key, temp_data):
         return db
 
 
-def test__denovo_assembly__genome_size_at_10x(db, file_path, key, temp_data):
+def test__denovo_assembly__genome_size_at_10x(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -235,7 +213,7 @@ def test__denovo_assembly__genome_size_at_10x(db, file_path, key, temp_data):
         return db
 
 
-def test__denovo_assembly__genome_size_difference_1x_10x(db, file_path, key, temp_data):
+def test__denovo_assembly__genome_size_difference_1x_10x(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -267,7 +245,7 @@ def test__denovo_assembly__genome_size_difference_1x_10x(db, file_path, key, tem
         return db
 
 
-def test__denovo_assembly__genome_average_coverage(db, file_path, key, temp_data):
+def test__denovo_assembly__genome_average_coverage(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -309,7 +287,7 @@ def test__denovo_assembly__genome_average_coverage(db, file_path, key, temp_data
         return db
 
 
-def test__denovo_assembly__minimum_read_number(db, file_path, key, temp_data):
+def test__denovo_assembly__minimum_read_number(sampleComponentObj):
     try:
         sample_db = temp_data["sample_db"]
         component_db = temp_data["component_db"]
@@ -342,7 +320,7 @@ def test__denovo_assembly__minimum_read_number(db, file_path, key, temp_data):
         return db
 
 
-def evaluate_tests_and_stamp(db, file_path, key, temp_data):
+def evaluate_tests_and_stamp(sampleComponentObj):
     sample_db = temp_data["sample_db"]
     core_facility = False
     supplying_lab = False
@@ -373,78 +351,18 @@ def evaluate_tests_and_stamp(db, file_path, key, temp_data):
     return db
 
 
-def generate_summary(db, file_path, key, temp_data):
+def generate_summary(sampleComponentObj):
     for test in db["results"]:
         db["summary"][db["results"][test]["name"]] = "{}:{}:{}".format(db["results"][test]["status"], db["results"][test]["reason"], db["results"][test]["value"])
     return db
 
 
-def script__datadump(output, sample_file, component_file, sample_component_file, log):
-    try:
-        output = str(output)
-        log_out = str(log.out_file)
-        log_err = str(log.err_file)
-        sample_db = datahandling.load_sample(sample_file)
-        component_db = datahandling.load_component(component_file)
-        db_sample_component = datahandling.load_sample_component(sample_component_file)
-        this_function_name = sys._getframe().f_code.co_name
-        global GLOBAL_component_name
-        GLOBAL_component_name = component_db["name"]
-
-        datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
-
-        # Save files to DB
-        datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
-
-        # Initialization of values, summary and report are also saved into the sample
-        db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
-        db_sample_component["results"] = {}
-        db_sample_component["report"] = {}  # Currently unused, set to dict of component config path when used
-#---Unique to component: start----------------------------------------------------------------------
-        db_sample_component["tests"] = {}
-        sample_db["stamps"] = sample_db.get("stamps", {})
-        sample_db["stamps"]["stamp_list"] = sample_db["stamps"].get("stamp_list", [])
-
-        # Variables being used
-        working_temp_data = {"sample_db": sample_db, "component_db": component_db}
-
-        db_sample_component = datahandling.datadump_template(test__sample__has_reads_files, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__species_detection__main_species_level, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__species_detection__unclassified_level, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__component__species_in_db, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__sample__species_provided_is_detected, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_size_at_1x, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_size_at_10x, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_size_difference_1x_10x, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__denovo_assembly__genome_average_coverage, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(test__denovo_assembly__minimum_read_number, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(evaluate_tests_and_stamp, db_sample_component, temp_data=working_temp_data)
-        db_sample_component = datahandling.datadump_template(generate_summary, db_sample_component, temp_data=working_temp_data)
-
-        sample_db["stamps"]["ssi_stamper"] = db_sample_component["stamp"]
-        sample_db["stamps"]["stamp_list"].append(db_sample_component["stamp"])
-        sample_db["properties"]["stamper"] = db_sample_component["summary"]
-
-        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
-        datahandling.save_sample_to_file(sample_db, sample_file)
-#---Unique to component: end------------------------------------------------------------------------
-        open(output, 'w+').close()  # touch file
-
-    except Exception:
-        datahandling.write_log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.write_log(log_err, str(traceback.format_exc()))
-        raise Exception
-        return 1
-
-    finally:
-        datahandling.write_log(log_out, "Done {}\n".format(this_function_name))
-        return 0
+def datadump(sampleComponentObj, log):
+    sampleComponentObj.start_data_dump(log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_has_min_num_of_reads, log=log)
+    sampleComponentObj.end_data_dump(log=log)
 
 
-script__datadump(
-    snakemake.output.complete,
-    snakemake.params.sample_file,
-    snakemake.params.component_file,
-    snakemake.params.sample_component_file,
+datadump(
+    snakemake.params.sampleComponentObj,
     snakemake.log)
-
