@@ -184,19 +184,21 @@ db_values_changes:
   sample:
     properties:
       mlst:
-        species:  # str for mlst_db
-        results:
-          sequence_type:  #str
-          allele_profile: {}
+        summary:  # see sample_component summary
         component:
-          _id: "ObjectId"
-    reporter:
+          _id:  # ObjectId
+    report:
       mlst:
-        title: MLST
+        title: "MLST"
         info: *dockerfile
         columns: 
           - {id: "db", name: "db"}
           - {id: "strain", name: "strain"}
           - {id: "alleles", name: "alleles"}
         data: []
+  sample_component:
+    summary:
+      strain: []
+    results:
+      ariba_mlst/data_yaml: {}
 #---------------------------------------------------------------------------------------------------

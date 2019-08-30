@@ -3,15 +3,13 @@ import os
 from bifrostlib import datahandling
 
 configfile: "../config.yaml"  # Relative to run directory
+
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
-
 bifrost_sampleComponentObj = datahandling.SampleComponentObj()
-(sample_db, component_db) = bifrost_sampleComponentObj.load(
-    config["sample_id"], config["component_id"])
+sample_name, component_name, docker_file, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
 
-singularity: component_db["dockerfile"]
+singularity: docker_file
 
-reads = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
     bifrost_sampleComponentObj.success()
@@ -24,15 +22,15 @@ onerror:
 rule all:
     input:
         # file is defined by datadump function
-        component_db["name"] + "/datadump_complete"
+        component_name + "/datadump_complete"
 
 
 rule setup:
     output:
         init_file = touch(
-            temp(component_db["name"] + "/" + component_db["name"] + "_initialized")),
+            temp(component_name + "/initialized")),
     params:
-        folder = component_db["name"]
+        folder = component_name
 
 
 rule_name = "check_requirements"
@@ -44,14 +42,14 @@ rule check_requirements:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
-        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
     output:
-        check_file = component_db["name"] + "/requirements_met",
+        check_file = component_name + "/requirements_met",
     params:
         bifrost_sampleComponentObj
     run:
@@ -77,15 +75,13 @@ rule ariba_resfinder:
     input:
         check_file = rules.check_requirements.output.check_file,
         folder = rules.setup.output.init_file,
-        reads = reads
+        reads = bifrost_sampleComponentObj.get_reads()
     output:
         complete = rules.setup.params.folder + "/resistance/report.tsv"
     params:
         sampleComponentObj = bifrost_sampleComponentObj
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__run_ariba_resfinder.py")
-
-
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__run__ariba_resfinder.py")
 #* Dynamic section: end ****************************************************************************
 
 #- Templated section: start ------------------------------------------------------------------------
@@ -99,10 +95,10 @@ rule datadump:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
-        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
         rules.ariba_resfinder.output.file  # Needs to be output of final rule

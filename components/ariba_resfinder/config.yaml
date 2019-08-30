@@ -47,7 +47,7 @@ db_values_changes:
         summary: 
         component:
           _id: "ObjectId"
-    reporter:
+    report:
       resistance:
         title: Resistance
         info: *dockerfile
@@ -59,4 +59,6 @@ db_values_changes:
         data: []  # list of dicts parsed in datadump
   sample_component:
     summary:
+    results:
+      ariba_resfinder/resistance/report.tsv: {}
 #---------------------------------------------------------------------------------------------------

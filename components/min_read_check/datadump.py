@@ -1,15 +1,10 @@
-import os
 from bifrostlib import datahandling
 
 
 def extract_has_min_num_of_reads(sampleComponentObj):
     import re
-    summary, results = sampleComponentObj.get_summary_and_results()
-    file_path = os.path.join(sampleComponentObj.get_component_name(), "has_min_num_of_reads")
-    key = file_path.replace(".","_").replace("$","_")
-    
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("data.yaml")
     buffer = datahandling.read_buffer(file_path)
-    results[key] = {}
     results[key]["min_read_num"] = int(re.search("min_read_num:\s*([0-9]+)", buffer, re.MULTILINE).group(1))
     summary["has_min_num_of_reads"] = True
     return (summary, results)

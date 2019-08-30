@@ -1,15 +1,19 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: cge_resfinder
-category: &category Resistance
 version: 2.0
-schema_version: 2.0
-target: sample
-type: pipeline
-recommendation: recommended
-description: >
-  This preforms read based mapping against the resfinder DB's. The options show the species entries 
-  which will be attempted for mlst with key originating from the species DB. This is done against 
-  the cge_db using kma mode. 
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: resistance
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    This preforms read based mapping against the resfinder DB's. The options show the species entries 
+    which will be attempted for mlst with key originating from the species DB. This is done against 
+    the cge_db using kma mode. 
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -21,32 +25,40 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path, a recommended
-# strategy for shrared resources is to symlink the resource from the root resources folder into
-# the component resources folder. This will prevent
-database_path: "/bifrost_resources/resfinder_db"
+resources:
+  database_path: "/bifrost_resources/resfinder_db"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
+    properties:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files: []
   sample:
     properties:
       resistance:
+        summary:  # see sample_component summary
         component:
-          _id: "ObjectId"
-          date: "datetime"
-    reporter:
+          _id:  # ObjectId
+    report:
       resistance:
-        title: *category
+        title: "Resistance"
         info: *dockerfile
-        content: [["gene", "%cov", "%id", "anti-biotic class", "pred. phenotype"]]  # headers
+        columns: 
+          - {id: "resistance_gene", name: "gene"}
+          - {id: "coverage", name: "%cov"}
+          - {id: "identity", name: "%id"}
+          - {id: "anti_biotic_class", name: "anti-biotic class"}
+          - {id: "predicted_phenotype", name: "pred. phenotype"}
+        data: []
   sample_component:
     summary:
+    results:
+      cge_resfinder/data_resfinder_json: {}
 #---------------------------------------------------------------------------------------------------

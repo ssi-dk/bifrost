@@ -53,9 +53,9 @@ db_values_changes:
   sample:
     properties:
       denovo_assembly:
-        summary: # see sample_component summary
+        summary:  # see sample_component summary
         component:
-          _id: "ObjectId"
+          _id:  # ObjectId
     report:
   sample_component:
       summary:
@@ -83,4 +83,10 @@ db_values_changes:
         insert_size_average:
         insert_size_standard_deviation:
       results:
+        assemblatron/contigs_sum_cov: {}
+        assemblatron/contigs_bin_cov: {}
+        assemblatron/log/setup__filter_reads_with_bbduk_err_log: {}
+        assemblatron/quast/report_tsv: {}
+        assemblatron/contigs_variants: {}
+        assemblatron/contigs_stats: {}
 #---------------------------------------------------------------------------------------------------

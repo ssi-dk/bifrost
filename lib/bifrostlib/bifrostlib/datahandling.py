@@ -47,8 +47,23 @@ class SampleComponentObj:
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.sample_component_db["_id"]
-        self.started()
-        return (self.sample_db, self.component_db)
+        return (self.sample_db["name"], self.component_db["name"], self.component_db["docker_file"], self.component_db["options"], self.component_db["resources"])
+
+    def start_data_extraction(self, file_location=None):
+        summary = self.sample_component_db["properties"]["summary"]
+        results = self.sample_component_db["results"]
+        file_path = None
+        key = None
+        if file_location is not None:
+            file_path = os.path.join(self.get_component_name(), file_location)
+            key = self.get_file_location_key(file_location)
+            results[key] = {}
+        return summary, results, file_path, key
+
+    def get_file_location_key(self, file_location):
+        file_path = os.path.join(self.get_component_name(), file_location)
+        key = file_path.replace(".", "_").replace("$", ".")
+        return key
 
     def get_sample_properties_by_category(self, category):
         return self.sample_db["properties"].get(category, None)
@@ -59,6 +74,12 @@ class SampleComponentObj:
             return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
         else:
             return ("/dev/null", "/dev/null")
+
+    def get_resources(self):
+        return self.component_db["resources"]
+
+    def get_options(self):
+        return self.component_db["options"]
 
     def check_requirements(self, output_file="requirements_met", log=None):
         no_failures = True
@@ -101,7 +122,7 @@ class SampleComponentObj:
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
-        return (self.sample_db, self.component_db)
+        return (self.component_db["name"], self.component_db["options"], self.component_db["resources"])
 
     def rule_run_cmd(self, command, log):
         self.write_log_out(log, "Running:{}\n".format(command))
@@ -127,9 +148,6 @@ class SampleComponentObj:
     def save_files_to_sample_component(self, log=None):
         save_files_to_db(self.component_db["db_values_changes"]["files"], sample_component_id=self.sample_component_db["_id"])
         self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
-
-    def get_summary_and_results(self):
-        return (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"])
 
     def get_component_name(self):
         return self.component_db["name"]
@@ -340,25 +358,6 @@ def read_buffer(file_path):
     with open(file_path, "r") as file_handle:
         buffer = file_handle.read()
     return buffer
-
-
-def datadump_template(extraction_callback, db, temp_data=None, key=None, file_path=None):
-    try:
-        if file_path is not None:
-            if os.path.isfile(file_path):
-                if key is None:
-                    key = file_path.replace(".", "_").replace("$", "_")  # $ and . are special characters to be avoided in keys
-        if key is not None:
-            db["results"][key] = {}
-        db = extraction_callback(db, file_path=file_path, key=key, temp_data=temp_data)
-
-    except Exception:
-        print(traceback.format_exc())
-        if key is not None:
-            db["results"][key]["status"] = "datadumper error"
-        raise Exception
-
-    return db
 
 
 # /runs
