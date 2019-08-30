@@ -452,10 +452,7 @@ def save_file_to_db(sample_component_id, file_path):
 
 
 
-def load_file_from_db(file_id, save_to_path=None):
-
-    if os.path.isfile(save_to_path):
-        raise FileExistsError
+def load_file_from_db(file_id, save_to_path=None, subpath=False):
 
     connection = get_connection()
     db = connection.get_database()
@@ -463,14 +460,30 @@ def load_file_from_db(file_id, save_to_path=None):
 
     fobj = fs.get(file_id)
 
-    if os.path.isdir(save_to_path):
+    if save_to_path is None:
+        if subpath:
+            save_to_path = fobj.full_path
+        else:
+            save_to_path = fobj.filename
+    elif os.path.isdir(save_to_path):
         save_to_path = os.path.join(save_to_path, fobj.filename)
 
-    if save_to_path is None:
-        save_to_path = fobj.filename
+    if os.path.isfile(save_to_path):
+        raise FileExistsError
+    
+    dirname = os.path.dirname(save_to_path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
 
     with open(save_to_path, 'wb') as file_handle:
 
 
         file_handle.write(fobj.read())
     return file_id
+
+def find_files(sample_component_id):
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+    return list(fs.find({"sample_component_id":sample_component_id}))

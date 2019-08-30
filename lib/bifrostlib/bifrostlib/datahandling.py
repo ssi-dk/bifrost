@@ -590,8 +590,6 @@ def load_species(ncbi_species):
 def get_ncbi_species(species_entry):
     return mongo_interface.query_ncbi_species(species_entry)
 
-# Refactor this
-
 
 def load_samples_from_runs(run_ids=None, names=None):
     if run_ids is not None:
@@ -622,8 +620,25 @@ def save_files_to_db(file_paths, sample_component_id):
     return file_ids
 
 
-def load_file_from_db(file_id, save_to_path=None):
-    return mongo_interface.load_file_from_db(file_id, save_to_path)
+def load_file_from_db(file_id, save_to_path=None, subpath=False):
+    return mongo_interface.load_file_from_db(file_id, save_to_path, subpath)
+
+
+def recreate_s_c_files(sample_component_id, save_to_path):
+    files = mongo_interface.find_files(ObjectId(sample_component_id))
+    for f in files:
+        load_file_from_db(f._id, subpath=True)
+
+def recreate_yaml(collection, oid, path):
+    if collection == "sample_components":
+        obj = get_sample_component(oid)
+    elif collection == "samples":
+        obj = get_sample(oid)
+    else:
+        raise ValueError("invalid collection")
+    with open(path, "w") as file_handle:
+        yaml.dump(obj, file_handle)
+
 
 def test():
     print("Hello")
