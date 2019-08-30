@@ -42,12 +42,14 @@ db_values_changes:
   sample:
     properties:
       size_check:
-        summary:  # see sample_component: summary for content
+        summary:  # see sample_component summary
         component:
-          _id: "ObjectId"
+          _id:  # ObjectId
     report:
       size_check:
   sample_component:
     summary:
-      has_min_num_of_reads: # Boolean
+      has_min_num_of_reads:  # Boolean
+    results:
+      min_read_check/data_yaml: {}
 #---------------------------------------------------------------------------------------------------

@@ -17,7 +17,13 @@ def convert_summary_for_reporter(sampleComponentObj):
             if resfinder_dict[anti_biotic_class][subclass] != "No hit found":
                 gene_dict = resfinder_dict[anti_biotic_class][subclass]
                 for gene in gene_dict:
-                    data.append([gene_dict[gene]["resistance_gene"], gene_dict[gene]["coverage"], gene_dict[gene]["identity"], anti_biotic_class, gene_dict[gene]["predicted_phenotype"]])  # table rows
+                    data.append({
+                        "resistance_gene": gene_dict[gene]["resistance_gene"],
+                        "coverage": gene_dict[gene]["coverage"],
+                        "identity": gene_dict[gene]["identity"],
+                        "anti_biotic_class": anti_biotic_class,
+                        "predicted_phenotype": gene_dict[gene]["predicted_phenotype"]]
+                    })
     return data
 
 

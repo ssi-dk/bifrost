@@ -17,18 +17,21 @@ def extract_ariba_mlst_report_and_details(sampleComponentObj):
 def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     key = sampleComponentObj.get_file_location_key("data.yaml")
-    strains = []
+
     data = []
     for mlst_db in results[key]:
         strain_db = results[key][mlst_db]["report"]
         alleles = []
         strain = strain_db["ST"]
-        strains.append(strain)
         for gene in strain_db:
             if gene != "ST":
                 alleles.append("{}_{}".format(gene, strain_db[gene]))
         alleles = ", ".join(alleles)
-        data.append([mlst_db, strain, alleles])
+        data.append({
+            "db": mlst_db,
+            "strain": strain,
+            "alleles": alleles
+        })
     return data
 
 

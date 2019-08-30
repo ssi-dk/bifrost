@@ -1,16 +1,19 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: ssi_stamper
-category: &category Stamper
 version: 2.0
-schema_version: 2.0
-target: sample
-type: stamper
-recommendation: required
-requires_db: True
-description: >
-  This runs against the mondoDB database and certifies a sample that has run assemblatron and 
-  whats_my_species on it's QC preformance (Core Facility/Supplying Lab/Ok). This can also be run
-  as a script without output on the server (only bifrost DB)
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: stamper
+  schema_version: 2.0
+  target: sample
+  type: stamper
+  recommendation: required
+  description: >
+    This runs against the mondoDB database and certifies a sample that has run assemblatron and 
+    whats_my_species on it's QC preformance (Core Facility/Supplying Lab/Ok). This can also be run
+    as a script without output on the server (only bifrost DB)
 #---------------------------------------------------------------------------------------------------
 
 #-Docker location-----------------------------------------------------------------------------------
@@ -81,8 +84,7 @@ options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path
-# None
+resources:
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
@@ -92,18 +94,22 @@ requirements:
       status: Success
     whats_my_species:
       status: Success
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files: []
   sample:
     properties:
-      stamper: # see sample_component summary
+      stamper: 
+        summary:  # see sample_component summary
         component:
           _id: "ObjectId"
-          date: "datetime"
     stamps:
       stamp_list:
       ssi_stamper:
+    report:
+      stamper:
   sample_component:
     summary:
       test__sample__has_reads_files:
