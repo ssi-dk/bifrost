@@ -783,12 +783,6 @@ rule setup_sample_components_to_run:
                                 command.write("#SBATCH --mem={}G -p {} -c {} -t {} -J '{}_{}'\n".format(
                                     config["memory"], partition, config["threads"], config["walltime"], component, sample_name))
 
-                            if "tmp_dir" in config:
-                                tmp_dir = " --shadow-prefix {}".format(
-                                    config["tmp_dir"])
-                            else:
-                                tmp_dir = ""
-
                             for component_name in components:
                                 component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                 if sample_name in config["samples_to_ignore"]:
@@ -808,7 +802,7 @@ rule setup_sample_components_to_run:
                                     sample_component_db["status"] = "queued to run"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    command.write("snakemake {} --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format(tmp_dir, "-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
+                                    command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format("-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.write_log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
