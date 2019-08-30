@@ -26,7 +26,7 @@ def rule__run_ariba_mlst(input, output, sampleComponentObj, log):
             data_dict = {}
             for mlst_entry in mlst_species:
                 data_dict[mlst_entry] = {}
-                mlst_entry_path = folder + "/" + mlst_entry
+                mlst_entry_path = component_name + "/" + mlst_entry
                 mlst_database_path = os.path.join(database_path, mlst_entry, "ref_db")
                 sampleComponentObj.rule_run_cmd("ariba run --force {} {} {} {} 1> {} 2> {}".format(mlst_database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), log)
                 data_dict[mlst_entry]["report"] = pandas.read_csv(os.path.join(mlst_entry_path, "mlst_report.tsv"), sep="\t").to_dict(orient="records")[0]
