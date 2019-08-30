@@ -24,7 +24,7 @@ def extract_contigs_sum_cov(sampleComponentObj):
 
 
 def extract_contigs_bin_cov(sampleComponentObj):
-    summary, results, file_path, key = sampleComponentObj.get_summary_and_results("contigs.bin.cov")
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("contigs.bin.cov")
     options = sampleComponentObj.get_options()
     results[key] = datahandling.load_yaml(file_path)
     for bin_value in options["cov_bin_values"]:
@@ -34,7 +34,7 @@ def extract_contigs_bin_cov(sampleComponentObj):
 
 def extract_bbuk_log(sampleComponentObj):
     import json
-    summary, results, file_path, key = sampleComponentObj.get_summary_and_results("log/setup__filter_reads_with_bbduk.err.log")
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("log/setup__filter_reads_with_bbduk.err.log")
     buffer = datahandling.read_buffer(file_path)
     bbduk_dict = json.loads("{" + buffer.partition("{")[2])
     results[key] = bbduk_dict
@@ -45,7 +45,7 @@ def extract_bbuk_log(sampleComponentObj):
 
 def extract_quast_report(sampleComponentObj):
     import re
-    summary, results, file_path, key = sampleComponentObj.get_summary_and_results("quast/report.tsv")
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("quast/report.tsv")
     buffer = datahandling.read_buffer(file_path)
     results[key]["GC"] = float(re.search("GC \(%\)\t([0-9]+[\.]?[0-9]*)", buffer, re.MULTILINE).group(1))
     results[key]["N50"] = int(re.search("N50\t([0-9]+)", buffer, re.MULTILINE).group(1))

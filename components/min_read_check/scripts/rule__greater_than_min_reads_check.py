@@ -8,10 +8,10 @@ def rule__greater_than_min_reads_check(input, output, sampleComponentObj, log):
     import re
     try:
         this_function_name = sys._getframe().f_code.co_name
-        sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
+        name, options, resources = sampleComponentObj.start_rule(this_function_name, log=log)
 
         # Variables being used
-        min_read_number = int(component_db["options"]["min_num_reads"])
+        min_read_number = options["min_num_reads"]
         stats_data = datahandling.read_buffer(input.stats_file)
         output_file = str(output.file)
 

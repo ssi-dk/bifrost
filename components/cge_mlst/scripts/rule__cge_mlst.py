@@ -5,50 +5,38 @@ import traceback
 from bifrostlib import datahandling
 
 
-def script__run_cge_mlst(input, output, sample_file, component_file, folder, log):
+def rule__run_cge_mlst(input, output, sampleComponentObj, log):
     try:
-        log_out = str(log.out_file)
-        log_err = str(log.err_file)
-        sample_db = datahandling.load_sample(sample_file)
-        component_db = datahandling.load_component(component_file)
         this_function_name = sys._getframe().f_code.co_name
-
-        datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
+        name, options, resources = sampleComponentObj.start_rule(this_function_name, log=log)
 
         # Variables being used
-        database_path = component_db["database_path"]
+        database_path = resources["database_path"]
         reads = input.reads  # expected a tuple of read locations
         output_file = output.complete  # a file to mark success for snakemake
-        species = sample_db["properties"]["species"]
+        species = sampleComponentObj.get_sample_properties_by_category("species_detection")["summary"]["species"]
 
         # Code to run
-        if species not in component_db["options"]["mlst_species_mapping"]:
-            datahandling.write_log(log_out, "cge mlst species: {}\n".format(species))
-            subprocess.Popen("touch " + folder + "/no_mlst_species_DB").communicate()
+        if species not in options["mlst_species_mapping"]:
+            sampleComponentObj.write_log_out(log, "species {} not in mlst species\n".format(species))
+            sampleComponentObj.rule_run_cmd("touch {}/no_mlst_species_DB".format(name), log)
         else:
-            mlst_species = component_db["options"]["mlst_species_mapping"][species]
+            mlst_species = options["mlst_species_mapping"][species]
             data_dict = {}
             for mlst_entry in mlst_species:
-                mlst_entry_path = folder + "/" + mlst_entry
-                datahandling.write_log(log_out, "mlst {} on species: {}\n".format(mlst_entry, species))
-                subprocess.Popen("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path), shell=True).communicate()
-                subprocess.Popen("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, database_path, reads[0], reads[1], mlst_entry_path, log_out, log_err), shell=True).communicate()
-                data_dict[mlst_entry] = datahandling.load_yaml(folder + "/" + mlst_entry + "/data.json")
+                mlst_entry_path = "{}/{}".format(name, mlst_entry)
+                sampleComponentObj.rule_run_cmd("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path,), log)
+                sampleComponentObj.rule_run_cmd("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(mlst_entry_path, mlst_entry, database_path, reads[0], reads[1], mlst_entry_path, log.log_out, log.log_err), log)
+                data_dict[mlst_entry] = datahandling.load_yaml("{}/data.json".format(mlst_entry_path))
             datahandling.save_yaml(data_dict, output_file)
 
+        sampleComponentObj.end_rule(this_function_name, log=log)
     except Exception:
-        datahandling.write_log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.write_log(log_err, str(traceback.format_exc()))
-
-    finally:
-        datahandling.write_log(log_out, "Done {}\n".format(this_function_name))
-        return 0
+        sampleComponentObj.write_log_err(log, str(traceback.format_exc()))
 
 
-script__run_cge_mlst(
+rule__run_cge_mlst(
     snakemake.input,
     snakemake.output,
-    snakemake.params.sample_file,
-    snakemake.params.component_file,
-    snakemake.params.folder,
+    snakemake.params.sampleComponentObj,
     snakemake.log)

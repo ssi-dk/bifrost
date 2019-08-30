@@ -1,7 +1,7 @@
 # script for use with snakemake
 import sys
+import subprocess
 import traceback
-import os
 from bifrostlib import datahandling
 
 
@@ -9,7 +9,7 @@ def rule__summarize_variants(input, output, sampleComponentObj, log):
     import cyvcf2
     try:
         this_function_name = sys._getframe().f_code.co_name
-        sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
+        name, options, resources = sampleComponentObj.start_rule(this_function_name, log=log)
 
         variants_vcf_file = str(input.variants)
         summarize_ambiguous_snp_yaml = str(output.variants_yaml)

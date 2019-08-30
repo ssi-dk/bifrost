@@ -3,14 +3,13 @@ import os
 from bifrostlib import datahandling
 
 configfile: "../config.yaml"  # Relative to run directory
+
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
-
 bifrost_sampleComponentObj = datahandling.SampleComponentObj()
-(sample_db, component_db) = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
+sample_name, component_name, docker_file, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
 
-singularity: component_db["dockerfile"]
+singularity: docker_file
 
-reads = bifrost_sampleComponentObj.get_reads()
 
 onsuccess:
     bifrost_sampleComponentObj.success()
@@ -22,14 +21,16 @@ onerror:
 
 rule all:
     input:
-        component_db["name"] + "/datadump_complete"  # file is defined by datadump function
+        # file is defined by datadump function
+        component_name + "/datadump_complete"
 
 
 rule setup:
     output:
-        init_file = touch(temp(component_db["name"] + "/" + component_db["name"] + "_initialized")),
+        init_file = touch(
+            temp(component_name + "/initialized")),
     params:
-        folder = component_db["name"]
+        folder = component_name
 
 
 rule_name = "check_requirements"
@@ -41,14 +42,14 @@ rule check_requirements:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
-        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
     output:
-        check_file = component_db["name"] + "/requirements_met",
+        check_file = component_name + "/requirements_met",
     params:
         bifrost_sampleComponentObj
     run:
@@ -73,11 +74,11 @@ rule setup__filter_reads_with_bbduk:
     # Dynamic
     input:
         folder = rules.check_requirements.output.check_file,
-        reads = (R1, R2)
+        reads = bifrost_sampleComponentObj.get_reads()
     output:
         filtered_reads = temp(rules.setup.params.folder + "/filtered.fastq")
     params:
-        adapters = component_db["resources"]["adapters_fasta"]
+        adapters = bifrost_resources["adapters_fasta"]
     shell:
         "bbduk.sh threads={threads} -Xmx{resources.memory_in_GB}G in={input.reads[0]} in2={input.reads[1]} out={output.filtered_reads} ref={params.adapters} ktrim=r k=23 mink=11 hdist=1 tbo qtrim=r minlength=30 json=t 1> {log.out_file} 2> {log.err_file}"
 
@@ -368,9 +369,9 @@ rule rename_contigs:
     input:
         contigs = rules.assembly__skesa.output,
     output:
-        contigs = rules.setup.params.folder + "/" + sample_db["name"] + ".fasta",
+        contigs = rules.setup.params.folder + "/" + sample_name + ".fasta",
     params:
-        sample_name = sample_db["name"]
+        sample_name = sample_name
     shell:
         "sed -e 's/Contig/{params.sample_name}/' {input.contigs} > {output.contigs}"
 #* Dynamic section: end ****************************************************************************
@@ -386,10 +387,10 @@ rule datadump:
     resources:
         memory_in_GB = memory_in_GB
     log:
-        out_file = component_db["name"] + "/log/" + rule_name + ".out.log",
-        err_file = component_db["name"] + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        component_db["name"] + "/benchmarks/" + rule_name + ".benchmark"
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
         rules.rename_contigs.output.contigs  # Needs to be output of final rule

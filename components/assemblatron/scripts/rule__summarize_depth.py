@@ -8,8 +8,9 @@ from bifrostlib import datahandling
 def rule__summarize_depth(input, output, sampleComponentObj, log):
     try:
         this_function_name = sys._getframe().f_code.co_name
-        sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
+        name, options, resources = sampleComponentObj.start_rule(this_function_name, log=log)
 
+        # Variables being used
         depth_file = str(input.coverage)
         summarize_contig_depth_yaml = str(output.contig_depth_yaml)
         summarize_binned_depth_yaml = str(output.binned_depth_yaml)
