@@ -48,7 +48,21 @@ class SampleComponentObj:
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.sample_component_db["_id"]
         self.started()
-        return (self.sample_db, self.component_db)
+
+    def start_data_extraction(self, file_location=None):
+        summary, report = self.get_summary_and_results()
+        file_path = None
+        key = None
+        if file_location is not None:
+            file_path = os.path.join(self.get_component_name(), file_location)
+            key = self.get_file_location_key(file_location)
+            results[key] = {}
+        return summary, report, file_path, key
+
+    def get_file_location_key(self, file_location):
+        file_path = os.path.join(self.get_component_name(), file_location)
+        key = file_path.replace(".", "_").replace("$", ".")
+        return key
 
     def get_sample_properties_by_category(self, category):
         return self.sample_db["properties"].get(category, None)
@@ -59,6 +73,12 @@ class SampleComponentObj:
             return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
         else:
             return ("/dev/null", "/dev/null")
+
+    def get_resources(self):
+        return self.component_db["resources"]
+
+    def get_options(self):
+        return self.component_db["options"]
 
     def check_requirements(self, output_file="requirements_met", log=None):
         no_failures = True
@@ -101,6 +121,7 @@ class SampleComponentObj:
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
+        return (self.component_db["name"], options, resources)
         return (self.sample_db, self.component_db)
 
     def rule_run_cmd(self, command, log):
@@ -340,25 +361,6 @@ def read_buffer(file_path):
     with open(file_path, "r") as file_handle:
         buffer = file_handle.read()
     return buffer
-
-
-def datadump_template(extraction_callback, db, temp_data=None, key=None, file_path=None):
-    try:
-        if file_path is not None:
-            if os.path.isfile(file_path):
-                if key is None:
-                    key = file_path.replace(".", "_").replace("$", "_")  # $ and . are special characters to be avoided in keys
-        if key is not None:
-            db["results"][key] = {}
-        db = extraction_callback(db, file_path=file_path, key=key, temp_data=temp_data)
-
-    except Exception:
-        print(traceback.format_exc())
-        if key is not None:
-            db["results"][key]["status"] = "datadumper error"
-        raise Exception
-
-    return db
 
 
 # /runs

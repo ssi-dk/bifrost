@@ -1,11 +1,12 @@
-import cyvcf2
+# script for use with snakemake
 import sys
 import traceback
-import re
+import os
 from bifrostlib import datahandling
 
 
 def rule__summarize_variants(input, output, sampleComponentObj, log):
+    import cyvcf2
     try:
         this_function_name = sys._getframe().f_code.co_name
         sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
@@ -94,11 +95,10 @@ def rule__summarize_variants(input, output, sampleComponentObj, log):
         result_matrix["variant_table"] = variant_table
         datahandling.save_yaml(result_matrix, summarize_ambiguous_snp_yaml)
 
+        sampleComponentObj.end_rule(this_function_name, log=log)
     except Exception:
         sampleComponentObj.write_log_err(log, str(traceback.format_exc()))
 
-    finally:
-        return sampleComponentObj.end_rule(this_function_name, log=log)
 
 
 rule__summarize_variants(

@@ -38,7 +38,7 @@ db_values_changes:
           summary: # see sample_component below
           _id: "ObjectId"
           date: "datetime"
-    reporter:
+    report:
       template:
         title: "Template"
         info: *dockerfile
@@ -46,7 +46,7 @@ db_values_changes:
           - {id: "column1", value: "display value for column 1"}
           - {id: "column2", value: "display value for column 2"}
         data:
-          # Data is the rows of values associated with the columns from the reporter
+          # Data is the rows of values associated with the columns from the report
   sample_component:
     summary:
     results:

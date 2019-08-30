@@ -1,12 +1,4 @@
-import pkg_resources
-import datetime
-import os
-import re
-import sys
-import traceback
 from bifrostlib import datahandling
-
-
 
 
 def test__sample__has_reads_files(db, file_path, key, temp_data):
@@ -404,10 +396,10 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Save files to DB
         datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
-        # Initialization of values, summary and reporter are also saved into the sample
+        # Initialization of values, summary and report are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
-        db_sample_component["reporter"] = {}  # Currently unused, set to dict of component config path when used
+        db_sample_component["report"] = {}  # Currently unused, set to dict of component config path when used
 #---Unique to component: start----------------------------------------------------------------------
         db_sample_component["tests"] = {}
         sample_db["stamps"] = sample_db.get("stamps", {})

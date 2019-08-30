@@ -15,7 +15,7 @@ def extract_values_from_output(db, file_path, key, temp_data):
 
 
 def convert_summary_for_reporter(db, file_path, key, temp_data):
-    # Function is dependent on structure of reporter in config file, should only be working with summary
+    # Function is dependent on structure of report in config file, should only be working with summary
     return db
 #**** Dynamic section: end *************************************************************************
 #---- Templated section: start ---------------------------------------------------------------------
@@ -38,10 +38,10 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
         # Save files to DB
         datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
 
-        # Initialization of values, summary and reporter are also saved into the sample
+        # Initialization of values, summary and report are also saved into the sample
         db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
         db_sample_component["results"] = {}
-        db_sample_component["reporter"] = component_db["db_values_changes"]["sample"]["reporter"][GLOBAL_category_name]
+        db_sample_component["report"] = component_db["db_values_changes"]["sample"]["report"][GLOBAL_category_name]
 #---- Templated section: end -----------------------------------------------------------------------
 #**** Dynamic section: start************************************************************************
         # Data extractions
@@ -51,9 +51,9 @@ def script__datadump(output, sample_file, component_file, sample_component_file,
 #---- Templated section: start ---------------------------------------------------------------------
         # Save to sample component
         datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
-        # Save summary and reporter results into sample
+        # Save summary and report results into sample
         sample_db["properties"][GLOBAL_category_name] = db_sample_component["summary"]
-        sample_db["reporter"][GLOBAL_category_name] = db_sample_component["reporter"]
+        sample_db["report"][GLOBAL_category_name] = db_sample_component["report"]
         datahandling.save_sample_to_file(sample_db, sample_file)
         open(output, 'w+').close()  # touch file
 

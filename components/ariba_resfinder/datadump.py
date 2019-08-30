@@ -1,14 +1,11 @@
-import os
 from bifrostlib import datahandling
+
 
 def extract_ariba_resfinder_data(sampleComponentObj):
     import pandas
-
-    summary, results = sampleComponentObj.get_summary_and_results()
-    file_path = os.path.join(sampleComponentObj.get_component_name(), "resistance/report.tsv")
-
-
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("resistance/report.tsv")
     # all the rows are turned into a subelement of one gene, all subelements are expected to be the same size
+    #- Sub Function start --------------------------------------------------------------------------
     def snp_info_parser(row):
         var_info = []
         num_of_snp_elements = len(row["has_known_var"])
@@ -31,7 +28,7 @@ def extract_ariba_resfinder_data(sampleComponentObj):
                 "smtls_nts": row["smtls_nts"][i],
                 "smtls_nts_depth": row["smtls_nts_depth"][i]})
         return var_info
-
+    #- Sub Function end ----------------------------------------------------------------------------
     df = pandas.read_csv(file_path, sep="\t")
     # These are all the columns which will be included in the final dataframe except for the collapsed column
     grouped_df = df.groupby(["#ariba_ref_name", "ref_name", "gene", "var_only", "flag", "reads", "cluster", "ref_len", "ref_base_assembled", "pc_ident", "ctg", "ctg_len", "ctg_cov", "var_description", "free_text"])
@@ -46,22 +43,22 @@ def extract_ariba_resfinder_data(sampleComponentObj):
     # Set the reference id back to a variable for the dict to be in proper format
     flattened_df = flattened_df.set_index("#ariba_ref_name")
 
-    results = flattened_df.to_dict(orient="index")
+    results[key] = flattened_df.to_dict(orient="index")
     return (summary, results)
 
 
-def convert_summary_for_reporter(sampleComponentObj):
-    summary, results = sampleComponentObj.get_summary_and_results()
+def generate_report(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction()
+    key = sampleComponentObj.get_file_location_key("resistance/report.tsv")
     data = []
-    report_results = results["ariba_resfinder/resistance/report_tsv"]
-    for gene in report_results:
+    for gene in results[key]:
         variant_count = 0
-        for variant in report_results[gene]["var_info"]:
+        for variant in results[key][gene]["var_info"]:
             variant_count = variant_count + 1
         data.append({
             "gene": gene,
-            "coverage": round(report_results[gene].get("ref_base_assembled", 0) / report_results[gene].get("ref_len", 1), 3),
-            "identity": report_results[gene]["pc_ident"],
+            "coverage": round(results[key][gene].get("ref_base_assembled", 0) / results[key][gene].get("ref_len", 1), 3),
+            "identity": results[key][gene]["pc_ident"],
             "variants": variant_count
         })
     return data
@@ -69,7 +66,7 @@ def convert_summary_for_reporter(sampleComponentObj):
 def datadump(sampleComponentObj, log):
     sampleComponentObj.start_data_dump(log=log)
     sampleComponentObj.run_data_dump_on_function(extract_ariba_resfinder_data, log=log)
-    sampleComponentObj.end_data_dump(convert_summary_for_reporter, log=log)
+    sampleComponentObj.end_data_dump(generate_report, log=log)
 
 datadump(
     snakemake.params.sampleComponentObj,

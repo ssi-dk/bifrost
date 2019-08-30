@@ -184,13 +184,10 @@ db_values_changes:
   sample:
     properties:
       mlst:
-        species:  # str for mlst_db
-        results:
-          sequence_type:  #str
-          allele_profile: {}
+        summary:
         component:
           _id: "ObjectId"
-    reporter:
+    report:
       mlst:
         title: MLST
         info: *dockerfile
@@ -199,4 +196,10 @@ db_values_changes:
           - {id: "strain", name: "strain"}
           - {id: "alleles", name: "alleles"}
         data: []
+  sample_component:
+    summary:
+      species:  # str for mlst_db
+    results:
+      sequence_type:  #str
+      allele_profile: {}
 #---------------------------------------------------------------------------------------------------

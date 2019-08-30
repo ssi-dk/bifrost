@@ -1,13 +1,9 @@
-import os
 from bifrostlib import datahandling
 
 
-def extract_mlst_report_and_details(sampleComponentObj):
-    summary, results = sampleComponentObj.get_summary_and_results()
-    file_path = os.path.join(sampleComponentObj.get_component_name(), "data.yaml")
-    buffer = datahandling.load_yaml(file_path)
-    key = file_path.replace(".", "_").replace("$", ".")
-    results[key] = buffer
+def extract_ariba_mlst_report_and_details(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("data.yaml")
+    results[key] = datahandling.load_yaml(file_path)
     strains = []
     for mlst_db in results[key]:
         strain_db = results[key][mlst_db]["report"]
@@ -18,14 +14,13 @@ def extract_mlst_report_and_details(sampleComponentObj):
     return (summary, results)
 
 
-def convert_summary_for_reporter(sampleComponentObj):
-    summary, results = sampleComponentObj.get_summary_and_results()
+def generate_report(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction()
+    key = sampleComponentObj.get_file_location_key("data.yaml")
     strains = []
     data = []
-    component_name = sampleComponentObj.get_component_name()
-    for mlst_db in results[component_name + "/data_yaml"]:
-        strain_db = results[component_name +
-                            "/data_yaml"][mlst_db]["report"]
+    for mlst_db in results[key]:
+        strain_db = results[key][mlst_db]["report"]
         alleles = []
         strain = strain_db["ST"]
         strains.append(strain)
@@ -39,8 +34,8 @@ def convert_summary_for_reporter(sampleComponentObj):
 
 def datadump(sampleComponentObj, log):
     sampleComponentObj.start_data_dump(log=log)
-    sampleComponentObj.run_data_dump_on_function(extract_mlst_report_and_details, log=log)
-    sampleComponentObj.end_data_dump(convert_summary_for_reporter, log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_ariba_mlst_report_and_details, log=log)
+    sampleComponentObj.end_data_dump(generate_report, log=log)
 
 datadump(
     snakemake.params.sampleComponentObj,

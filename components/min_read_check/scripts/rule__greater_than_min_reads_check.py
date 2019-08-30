@@ -1,11 +1,11 @@
 # script for use with snakemake
 import sys
 import traceback
-import re
+import os
 from bifrostlib import datahandling
 
-
 def rule__greater_than_min_reads_check(input, output, sampleComponentObj, log):
+    import re
     try:
         this_function_name = sys._getframe().f_code.co_name
         sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
@@ -23,11 +23,9 @@ def rule__greater_than_min_reads_check(input, output, sampleComponentObj, log):
         else:
             sampleComponentObj.write_log_out(log, "Doesn't have min reads {}reads found\n".format(num_of_reads))
 
+        sampleComponentObj.end_rule(this_function_name, log=log)
     except Exception:
         sampleComponentObj.write_log_err(log, str(traceback.format_exc()))
-
-    finally:
-        return sampleComponentObj.end_rule(this_function_name, log=log)
 
 
 rule__greater_than_min_reads_check(

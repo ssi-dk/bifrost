@@ -47,7 +47,7 @@ db_values_changes:
         summary: 
         component:
           _id: "ObjectId"
-    reporter:
+    report:
       resistance:
         title: Resistance
         info: *dockerfile

@@ -1,5 +1,5 @@
+# script for use with snakemake
 import sys
-import subprocess
 import traceback
 import os
 from bifrostlib import datahandling
@@ -7,8 +7,7 @@ from bifrostlib import datahandling
 def rule__run_ariba_resfinder(input, output, sampleComponentObj, log):
     try:
         this_function_name = sys._getframe().f_code.co_name
-        sample_db, component_db = sampleComponentObj.start_rule(
-            this_function_name, log=log)
+        sample_db, component_db = sampleComponentObj.start_rule(this_function_name, log=log)
 
         # Variables being used
         database_path = component_db["database_path"]
@@ -16,7 +15,7 @@ def rule__run_ariba_resfinder(input, output, sampleComponentObj, log):
         output_file = output.complete  # a file to mark success for snakemake
 
         # Code to run
-        command = "ariba run --force {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], os.path.join(folder, "resistance"), log.log_out, log.log_err)
+        command = "ariba run --force {} {} {} {} 1> {} 2> {}".format(database_path, reads[0], reads[1], os.path.join(sampleComponentObj.get_component_name, "resistance"), log.log_out, log.log_err)
         sampleComponentObj.rule_run_cmd(command, log)
 
     except Exception:

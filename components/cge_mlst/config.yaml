@@ -188,7 +188,7 @@ db_values_changes:
         component:
           _id: "ObjectId"
           date: "datetime"
-    reporter:
+    report:
       mlst:
         title: *category
         info: *dockerfile

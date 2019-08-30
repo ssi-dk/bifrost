@@ -1,82 +1,35 @@
-import pkg_resources
-import datetime
-import os
-import re
-import sys
-import traceback
 from bifrostlib import datahandling
 
 
-
-
-def extract_cge_mlst_data(db, file_path, key, temp_data):
-    buffer = datahandling.load_yaml(file_path)
-    db["results"][key] = buffer
-    return db
-
-
-def convert_summary_for_reporter(db, file_path, key, temp_data):
+def extract_cge_mlst_report_and_details(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("data.yaml")
+    results[key] = datahandling.load_yaml(file_path)
     strains = []
-    for mlst_db in db["results"][GLOBAL_component_name + "/data_yaml"]:
-        strain_db = db["results"][GLOBAL_component_name + "/data_yaml"][mlst_db]
-        strain = strain_db["mlst"]["results"]["sequence_type"]
+    for mlst_db in results[key]:
+        strain = results[key][mlst_db]["mlst"]["results"]["sequence_type"]
         strains.append(strain)
-        alleles = ", ".join([strain_db["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in strain_db["mlst"]["results"]["allele_profile"]])
-        db["reporter"]["content"].append([mlst_db, strain, alleles])
-    db["results"]["strain"] = strains
-    db["summary"]["strain"] = strains
-    return db
+    results["strain"] = strains
+    summary["strain"] = strains
+    return (summary, results)
 
 
-def script__datadump(output, sample_file, component_file, sample_component_file, log):
-    try:
-        output = str(output)
-        log_out = str(log.out_file)
-        log_err = str(log.err_file)
-        sample_db = datahandling.load_sample(sample_file)
-        component_db = datahandling.load_component(component_file)
-        db_sample_component = datahandling.load_sample_component(sample_component_file)
-        this_function_name = sys._getframe().f_code.co_name
-        global GLOBAL_component_name
-        GLOBAL_component_name = component_db["name"]
-
-        datahandling.write_log(log_out, "Started {}\n".format(this_function_name))
-
-        # Save files to DB
-        datahandling.save_files_to_db(component_db["db_values_changes"]["files"], sample_component_id=db_sample_component["_id"])
-
-        # Initialization of values, summary and reporter are also saved into the sample
-        db_sample_component["summary"] = {"component": {"_id": component_db["_id"], "_date": datetime.datetime.utcnow()}}
-        db_sample_component["results"] = {}
-        db_sample_component["reporter"] = component_db["db_values_changes"]["sample"]["reporter"]["mlst"]
-
-        # Data extractions
-        db_sample_component = datahandling.datadump_template(extract_cge_mlst_data, db_sample_component, file_path=os.path.join(GLOBAL_component_name, "data.yaml"))
-        db_sample_component = datahandling.datadump_template(convert_summary_for_reporter, db_sample_component)
-
-        # Save to sample component
-        datahandling.save_sample_component_to_file(db_sample_component, sample_component_file)
-        # Save summary and reporter results into sample
-        sample_db["properties"]["mlst"] = db_sample_component["summary"]
-        sample_db["reporter"]["mlst"] = db_sample_component["reporter"]
-        datahandling.save_sample_to_file(sample_db, sample_file)
-
-        open(output, 'w+').close()  # touch file
-
-    except Exception:
-        datahandling.write_log(log_out, "Exception in {}\n".format(this_function_name))
-        datahandling.write_log(log_err, str(traceback.format_exc()))
-        raise Exception
-        return 1
-
-    finally:
-        datahandling.write_log(log_out, "Done {}\n".format(this_function_name))
-        return 0
+def generate_report(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction()
+    key = sampleComponentObj.get_file_location_key("data.yaml")
+    data = []
+    for mlst_db in results[key]:
+        strain = results[key][mlst_db]["mlst"]["results"]["sequence_type"]
+        strains.append(strain)
+        alleles = ", ".join([results[key][mlst_db]["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in results[key][mlst_db]["mlst"]["results"]["allele_profile"]])
+        data.append([mlst_db, strain, alleles])
+    return data
 
 
-script__datadump(
-    snakemake.output.complete,
-    snakemake.params.sample_file,
-    snakemake.params.component_file,
-    snakemake.params.sample_component_file,
+def datadump(sampleComponentObj, log):
+    sampleComponentObj.start_data_dump(log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_cge_mlst_report_and_details, log=log)
+    sampleComponentObj.end_data_dump(generate_report, log=log)
+
+datadump(
+    snakemake.params.sampleComponentObj,
     snakemake.log)
