@@ -15,7 +15,7 @@ def rule__run_ariba_mlst(input, output, sampleComponentObj, log):
         reads = input.reads  # expected a tuple of read locations
         output_file = str(output.complete)  # a file to mark success for snakemake
         database_path = resources["database_path"]
-        species = sampleComponentObj.get_sample_properties_by_category("species_detection")["summary"]["species"]
+        species = sampleComponentObj.get_sample_properties_by_category("species_detection")["species"]
         mlst_species_mapping = options["mlst_species_mapping"]
 
         # Code to run

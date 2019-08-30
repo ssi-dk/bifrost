@@ -20,24 +20,17 @@ def test__species_detection__main_species_level(sampleComponentObj):
     try:
         this_function_name = sys._getframe().f_code.co_name
         test = datahandling.stamperTestObj(this_function_name, "Multiple species detected", "supplying lab")
-        options = sampleComponentObj.get_options
+        options = sampleComponentObj.get_options()
         species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
         test.set_value(species_detection["percent_classified_species_1"] + species_detection[["percent_unclassified"]])
-        if test.get_value < options
-        if test["value"] < component_db["options"]["min_species"]:
-            test["status"] = "fail"
-            test["reason"] = "Value ({}) is below threshold ({})".format(test["value"], component_db["options"]["min_species"])
+        if test.get_value() < options["min_species"]:
+            test.set_status_and_reason("fail", "Value ({}) is below threshold ({})".format(.get_value(), options["min_species"]))
         else:
-            test["status"] = "pass"
-            test["reason"] = ""
-
+            test.set_status_and_reason("pass", "")
     except KeyError as e:
-        test["status"] = "fail"
-        test["reason"] = "Database KeyError {} in function {}: ".format(e.args[0], this_function_name)
-
+        test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
     finally:
-        db["results"][this_function_name] = test
-        return db
+        return test
 
 
 def test__species_detection__unclassified_level(sampleComponentObj):

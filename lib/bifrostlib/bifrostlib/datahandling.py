@@ -77,7 +77,7 @@ class SampleComponentObj:
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.sample_component_db["_id"]
-        return (self.sample_db["name"], self.component_db["name"], self.component_db["docker_file"], self.component_db["options"], self.component_db["resources"])
+        return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
         summary = self.sample_component_db["properties"]["summary"]
@@ -96,7 +96,10 @@ class SampleComponentObj:
         return key
 
     def get_sample_properties_by_category(self, category):
-        return self.sample_db["properties"].get(category, None)
+        if category in self.sample_db["properties"]:
+            return self.sample_db["properties"][category].get("summary", None)
+        else:
+            return None
 
     def get_reads(self):
         datafiles = self.get_sample_properties_by_category("datafiles")

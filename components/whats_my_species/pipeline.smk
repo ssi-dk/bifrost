@@ -6,9 +6,9 @@ configfile: "../config.yaml"  # Relative to run directory
 
 num_of_threads, memory_in_GB = config["threads"], config["memory"]
 bifrost_sampleComponentObj = datahandling.SampleComponentObj()
-sample_name, component_name, docker_file, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
+sample_name, component_name, dockerfile, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
 
-singularity: docker_file
+singularity: dockerfile
 
 
 onsuccess:

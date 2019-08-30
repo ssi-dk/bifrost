@@ -14,7 +14,7 @@ def rule__run_cge_mlst(input, output, sampleComponentObj, log):
         database_path = resources["database_path"]
         reads = input.reads  # expected a tuple of read locations
         output_file = output.complete  # a file to mark success for snakemake
-        species = sampleComponentObj.get_sample_properties_by_category("species_detection")["summary"]["species"]
+        species = sampleComponentObj.get_sample_properties_by_category("species_detection")["species"]
 
         # Code to run
         if species not in options["mlst_species_mapping"]:
