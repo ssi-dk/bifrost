@@ -802,7 +802,8 @@ rule setup_sample_components_to_run:
                                     sample_component_db["status"] = "queued to run"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format("-B " + sample_db["reads"]["R1"] + "," + sample_db["reads"]["R2"] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
+                                    reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
+                                    command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format("-B " + reads[0] + "," + reads[1] + "," + os.getcwd() + "," + os.path.dirname(os.getenv("BIFROST_DB_KEY")), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.write_log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
