@@ -110,8 +110,17 @@ db_values_changes:
       ssi_stamper:
     report:
       stamper:
+        title: "SSI QC Stamp"
+        info: *dockerfile
+        columns:
+          - {id: "test", name: "test"}
+        data: []
   sample_component:
     summary:
+      stamp:
+        name:
+        value:
+        date:
       test__sample__has_reads_files:
       test__species_detection__main_species_level:
       test__species_detection__unclassified_level:
@@ -122,9 +131,6 @@ db_values_changes:
       test__denovo_assembly__genome_size_difference_1x_10x:
       test__denovo_assembly__genome_average_coverage:
       test__denovo_assembly__minimum_read_number:
-    stamp:
-      name:
-      value:
-      date:
+    results:
 #---------------------------------------------------------------------------------------------------
 

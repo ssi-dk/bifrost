@@ -44,7 +44,7 @@ class stamperTestObj:
         self.status = ""
         self.reason = ""
         self.log = log
-        self.write_log_out("Running {}".format(self.name))
+        self.write_log_out("Running {}".format(function_name))
 
     def set_value(self, value):
         if isinstance(value, float):
@@ -54,9 +54,23 @@ class stamperTestObj:
     def get_value(self):
         return self.value
 
+    def set_effect(self, effect):
+        self.effect = effect
+
     def set_status_and_reason(self, status, reason):
         self.status = status
-        self.reason = self.reason
+        self.reason = reason
+
+    def as_dict(self):
+        test = {
+            "name": self.name,
+            "display_name": self.display_name,
+            "effect": self.effect,
+            "value": self.value,
+            "status": self.status,
+            "reason": self.reason,
+        }
+        return test
 
     def write_log_out(self, content):
         if self.log is not None:
