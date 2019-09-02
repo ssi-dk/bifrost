@@ -29,15 +29,14 @@ def species_math(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     kraken_report_bracken_key = sampleComponentObj.get_file_location_key("kraken_report_bracken.txt")
     bracken_key = sampleComponentObj.get_file_location_key("bracken.txt")
-    if ("status" not in results[results[kraken_report_bracken_key]] and 
-        "status" not in results[results["bracken_key"]] and 
-        "species_1_count" in results[results["bracken_key"]] and 
-        "species_2_count" in results[results["bracken_key"]]):
-        summary["percent_unclassified"] = results[results["bracken_key"]]["unclassified_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
-        summary["percent_classified_species_1"] = results[results["bracken_key"]]["species_1_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
-        summary["name_classified_species_1"] = results[results["bracken_key"]]["species_1_name"]
-        summary["percent_classified_species_2"] = results[results["bracken_key"]]["species_2_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
-        summary["name_classified_species_2"] = results[results["bracken_key"]]["species_2_name"]
+    if ("status" not in results[bracken_key] and
+        "species_1_count" in results[bracken_key] and
+            "species_2_count" in results[bracken_key]):
+        summary["percent_unclassified"] = results[bracken_key]["unclassified_count"] / (results[bracken_key]["unclassified_count"] + results[bracken_key]["root"])
+        summary["percent_classified_species_1"] = results[bracken_key]["species_1_count"] / (results[bracken_key]["unclassified_count"] + results[bracken_key]["root"])
+        summary["name_classified_species_1"] = results[bracken_key]["species_1_name"]
+        summary["percent_classified_species_2"] = results[bracken_key]["species_2_count"] / (results[bracken_key]["unclassified_count"] + results[bracken_key]["root"])
+        summary["name_classified_species_2"] = results[bracken_key]["species_2_name"]
         summary["detected_species"] = summary["name_classified_species_1"]
     return (summary, results)
 
