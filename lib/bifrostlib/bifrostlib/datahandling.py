@@ -673,18 +673,62 @@ def load_file_from_db(file_id, save_to_path=None, subpath=False):
 def recreate_s_c_files(sample_component_id, save_to_path):
     files = mongo_interface.find_files(ObjectId(sample_component_id))
     for f in files:
-        load_file_from_db(f._id, subpath=True)
+        load_file_from_db(f._id, save_to_path, subpath=True)
 
-def recreate_yaml(collection, oid, path):
+def recreate_yaml(collection, oid, path=None):
     if collection == "sample_components":
         obj = get_sample_component(oid)
+        filename = "{}__{}.yaml".format(obj["sample"]["name"], obj["component"]["name"])
     elif collection == "samples":
         obj = get_sample(oid)
+        filename = "sample.yaml"
+    elif collection == "runs":
+        obj = get_runs(oid)[0]
+        filename = "run.yaml"
     else:
         raise ValueError("invalid collection")
+    if path is None:
+        path = "."
+    path = os.path.join(path, filename)
     with open(path, "w") as file_handle:
         yaml.dump(obj, file_handle)
 
+
+def recreate_s_c(sample_component_id, save_to_path):
+    recreate_s_c_files(sample_component_id, save_to_path)
+    recreate_yaml("sample_components", sample_component_id, save_to_path)
+
+def recreate_sample(sample_id, save_to_path):
+    sample = get_sample(sample_id)
+    if sample is None:
+        raise ValueError("Sample not found")
+    name = sample["name"]
+    path = os.path.join(save_to_path, name)
+    if os.path.exists(path):
+        raise FileExistsError("Sample directory already exists")
+    os.makedirs(path)
+    recreate_yaml("samples", sample_id, path)
+    
+    sample_components = get_sample_components(sample_ids=[sample_id])
+    for sample_component in sample_components:
+        recreate_s_c(str(sample_component["_id"]), path)
+
+def recreate_run(run_id, save_to_path):
+    runs = get_runs(run_id)
+    if len(runs) == 0:
+        raise ValueError("Run not found")
+    run = runs[0]
+    name = run["name"]
+    path = os.path.join(save_to_path, name)
+    if os.path.exists(path):
+        raise FileExistsError("Run directory already exists")
+    run_yaml_dir = os.path.join(path, "bifrost")
+    os.makedirs(run_yaml_dir)
+    recreate_yaml("runs", run_id, run_yaml_dir)
+    for sample in run["samples"]:
+        recreate_sample(str(sample["_id"]), path)
+    #component.yamls?
+    #create samples folder
 
 def test():
     print("Hello")

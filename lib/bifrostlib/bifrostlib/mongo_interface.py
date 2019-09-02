@@ -466,7 +466,11 @@ def load_file_from_db(file_id, save_to_path=None, subpath=False):
         else:
             save_to_path = fobj.filename
     elif os.path.isdir(save_to_path):
-        save_to_path = os.path.join(save_to_path, fobj.filename)
+        if subpath:
+            save_to_path = os.path.join(save_to_path, fobj.full_path)
+        else:
+            save_to_path = os.path.join(save_to_path, fobj.filename)
+        
 
     if os.path.isfile(save_to_path):
         raise FileExistsError
