@@ -45,7 +45,7 @@ def species_math(sampleComponentObj):
 def set_sample_species(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     sample_info = sampleComponentObj.get_sample_properties_by_category("sample_info")
-    if sample_info["provided_species"] is not None:
+    if sample_info.get("provided_species", None) is not None:
         summary["species"] = sample_info["provided_species"]
     else:
         summary["species"] = summary["detected_species"]
