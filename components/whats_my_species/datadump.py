@@ -33,7 +33,7 @@ def species_math(sampleComponentObj):
         "status" not in results[results["bracken_key"]] and 
         "species_1_count" in results[results["bracken_key"]] and 
         "species_2_count" in results[results["bracken_key"]]):
-        summary["percent_unclassified"] = results[results[kraken_report_bracken_key]]["unclassified_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
+        summary["percent_unclassified"] = results[results["bracken_key"]]["unclassified_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
         summary["percent_classified_species_1"] = results[results["bracken_key"]]["species_1_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
         summary["name_classified_species_1"] = results[results["bracken_key"]]["species_1_name"]
         summary["percent_classified_species_2"] = results[results["bracken_key"]]["species_2_count"] / (results[results[kraken_report_bracken_key]]["unclassified_count"] + results[results[kraken_report_bracken_key]]["root"])
