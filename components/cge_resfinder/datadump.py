@@ -22,7 +22,7 @@ def convert_summary_for_reporter(sampleComponentObj):
                         "coverage": gene_dict[gene]["coverage"],
                         "identity": gene_dict[gene]["identity"],
                         "anti_biotic_class": anti_biotic_class,
-                        "predicted_phenotype": gene_dict[gene]["predicted_phenotype"]]
+                        "predicted_phenotype": gene_dict[gene]["predicted_phenotype"]
                     })
     return data
 
