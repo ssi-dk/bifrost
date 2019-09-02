@@ -206,6 +206,7 @@ class SampleComponentObj:
         self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
         report_data = generate_report_function(self)
         if report_data is not None:
+            self.sample_db["report"][self.component_db["details"]["category"]] = self.sample_component_db["report"]
             self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
             assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
