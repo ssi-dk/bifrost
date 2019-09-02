@@ -29,6 +29,7 @@ def species_math(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     kraken_report_bracken_key = sampleComponentObj.get_file_location_key("kraken_report_bracken.txt")
     bracken_key = sampleComponentObj.get_file_location_key("bracken.txt")
+    print(results)
     if ("status" not in results[bracken_key] and
         "species_1_count" in results[bracken_key] and
             "species_2_count" in results[bracken_key]):
