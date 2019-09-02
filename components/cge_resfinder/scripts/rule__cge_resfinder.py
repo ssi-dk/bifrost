@@ -15,7 +15,8 @@ def rule__run_cge_resfinder(input, output, sampleComponentObj, log):
         reads = input.reads  # expected a tuple of read locations
 
         # Code to run
-        sampleComponentObj.rule_run_cmd("resfinder.py -x -matrix -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(database_path, reads[0], reads[1], folder, log.log_out, log.log_err), log)
+        sampleComponentObj.rule_run_cmd("resfinder.py -x -matrix -p {} -mp kma -i {} {} -o {} 1> {} 2> {}".format(
+            database_path, reads[0], reads[1], name, log.log_out, log.log_err), log)
 
         sampleComponentObj.end_rule(this_function_name, log=log)
     except Exception:
