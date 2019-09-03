@@ -39,49 +39,49 @@ def rule__summarize_variants(input, output, sampleComponentObj, log):
             data_matrix[i] = {}
             for j in range(50, -1, -1):
                 data_matrix[i][j] = 0
-
-        variant_file = cyvcf2.VCF(variants_vcf_file)
-        current_variant = next(variant_file)
-        current_frequency = current_variant.INFO.get("AF")
-        next_frequency = 0
-        for next_variant in variant_file:
+        try:
+            variant_file = cyvcf2.VCF(variants_vcf_file)
+            current_variant = next(variant_file)
+            current_frequency = current_variant.INFO.get("AF")
+            next_frequency = 0
+            for next_variant in variant_file:
+                if not next_variant.is_indel and not next_variant.is_deletion:
+                    if current_variant.POS == next_variant.POS and current_variant.CHROM == next_variant.CHROM:
+                        next_frequency = next_variant.INFO.get("AF") + current_frequency
+                    else:
+                        next_frequency = next_variant.INFO.get("AF")
+                        depth = current_variant.INFO.get("DP")
+                        frequency = current_frequency
+                        if depth > 100:
+                            depth = 100
+                        if round(frequency, 2) > 0.5:
+                            frequency = 1.00 - frequency
+                        frequency = int(round(frequency, 2) * 100)
+                        data_matrix[depth][frequency] += 1
+                elif next_variant.is_indel:
+                    result_matrix["indels"] += 1
+                elif next_variant.is_deletion:
+                    result_matrix["deletions"] += 1
+                current_variant = next_variant
+                current_frequency = next_frequency
+            # should handle last entry
             if not next_variant.is_indel and not next_variant.is_deletion:
-                if current_variant.POS == next_variant.POS and current_variant.CHROM == next_variant.CHROM:
-                    next_frequency = next_variant.INFO.get("AF") + current_frequency
-                else:
-                    next_frequency = next_variant.INFO.get("AF")
-                    depth = current_variant.INFO.get("DP")
-                    frequency = current_frequency
-                    if depth > 100:
-                        depth = 100
-                    if round(frequency, 2) > 0.5:
-                        frequency = 1.00 - frequency
-                    frequency = int(round(frequency, 2) * 100)
-                    data_matrix[depth][frequency] += 1
+                depth = next_variant.INFO.get("DP")
+                frequency = current_frequency
+                if depth > 100:
+                    depth = 100
+                if round(frequency, 2) > 0.5:
+                    frequency = 1.00 - frequency
+                frequency = int(round(frequency, 2) * 100)
+                data_matrix[depth][frequency] += 1
             elif next_variant.is_indel:
                 result_matrix["indels"] += 1
             elif next_variant.is_deletion:
                 result_matrix["deletions"] += 1
-            current_variant = next_variant
-            current_frequency = next_frequency
-        # should handle last entry
-        if not next_variant.is_indel and not next_variant.is_deletion:
-            depth = next_variant.INFO.get("DP")
-            frequency = current_frequency
-            if depth > 100:
-                depth = 100
-            if round(frequency, 2) > 0.5:
-                frequency = 1.00 - frequency
-            frequency = int(round(frequency, 2) * 100)
-            data_matrix[depth][frequency] += 1
-        elif next_variant.is_indel:
-            result_matrix["indels"] += 1
-        elif next_variant.is_deletion:
-            result_matrix["deletions"] += 1
-    except StopIteration:
-        result_matrix["error"] = "No variants"
+        except StopIteration:
+            result_matrix["error"] = "No variants"
 
-        # back propogate the values
+            # back propogate the values
         variant_table = [[0 for x in range(51)] for y in range(100)]
         column_add = [0] * 51
         for i in range(100, 0, -1):
