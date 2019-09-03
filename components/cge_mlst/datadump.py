@@ -19,7 +19,7 @@ def generate_report(sampleComponentObj):
     data = []
     for mlst_db in results[key]:
         strain = results[key][mlst_db]["mlst"]["results"]["sequence_type"]
-        alleles = ", ".join([results[key][mlst_db]["mlst"]["results"]["allele_profile"][i]["allel: ,
+        alleles = ", ".join([results[key][mlst_db]["mlst"]["results"]["allele_profile"][i]["allele_name"] for i in results[key][mlst_db]["mlst"]["results"]["allele_profile"]])
         data.append({
             "db": mlst_db,
             "strain": strain,
