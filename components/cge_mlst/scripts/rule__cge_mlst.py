@@ -25,8 +25,8 @@ def rule__run_cge_mlst(input, output, sampleComponentObj, log):
             data_dict = {}
             for mlst_entry in mlst_species:
                 mlst_entry_path = "{}/{}".format(name, mlst_entry)
-                sampleComponentObj.rule_run_cmd("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path,), log)
-                sampleComponentObj.rule_run_cmd("ls {} -lah".format(database_path, log)
+                sampleComponentObj.rule_run_cmd("if [ -d \"{}\" ]; then rm -r {}; fi".format(mlst_entry_path, mlst_entry_path), log)
+                sampleComponentObj.rule_run_cmd("ls {} -lah".format(database_path), log)
 
                 sampleComponentObj.rule_run_cmd("mkdir {}; mlst.py -x -matrix -s {} -p {} -mp kma -i {} {} -o {}".format(mlst_entry_path, mlst_entry, database_path, reads[0], reads[1], mlst_entry_path), log)
                 data_dict[mlst_entry] = datahandling.load_yaml("{}/data.json".format(mlst_entry_path))
