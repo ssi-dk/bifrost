@@ -46,7 +46,6 @@ db_values_changes:
         component:
           _id:  # ObjectId
     report:
-      size_check:
   sample_component:
     summary:
       has_min_num_of_reads:  # Boolean

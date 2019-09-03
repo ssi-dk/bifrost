@@ -188,7 +188,10 @@ class SampleComponentObj:
             }
         }
         self.sample_component_db["results"] = {}
-        self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+        if self.component_db["db_values_changes"]["sample"].get("report", None) is not None:
+            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+        else:
+            self.sample_component_db["report"] = {}
         self.write_log_out(log, "Starting datadump\n")
         self.save_files_to_sample_component(log)
 
