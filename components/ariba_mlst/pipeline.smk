@@ -81,7 +81,7 @@ rule ariba_mlst:
     params:
         sampleComponentObj = bifrost_sampleComponentObj
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__run__ariba_mlst.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__ariba_mlst.py")
 #**** Dynamic section: end *************************************************************************
 
 #- Templated section: start ------------------------------------------------------------------------

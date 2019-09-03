@@ -31,7 +31,7 @@ def generate_report(sampleComponentObj):
 def datadump(sampleComponentObj, log):
     sampleComponentObj.start_data_dump(log=log)
     sampleComponentObj.run_data_dump_on_function(extract_cge_mlst_report_and_details, log=log)
-    sampleComponentObj.end_data_dump(generate_report, log=log)
+    sampleComponentObj.end_data_dump(generate_report_function=generate_report, log=log)
 
 datadump(
     snakemake.params.sampleComponentObj,

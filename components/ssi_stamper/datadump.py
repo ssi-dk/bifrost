@@ -264,7 +264,7 @@ def datadump(sampleComponentObj, log):
     sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__genome_average_coverage, log=log)
     sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__minimum_read_number, log=log)
     sampleComponentObj.run_data_dump_on_function(evaluate_tests_and_stamp, log=log)
-    sampleComponentObj.end_data_dump(generate_report, log=log)
+    sampleComponentObj.end_data_dump(generate_report_function=generate_report, log=log)
 
 
 datadump(

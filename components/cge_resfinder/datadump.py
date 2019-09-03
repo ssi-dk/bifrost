@@ -30,8 +30,7 @@ def convert_summary_for_reporter(sampleComponentObj):
 def datadump(sampleComponentObj, log):
     sampleComponentObj.start_data_dump(log=log)
     sampleComponentObj.run_data_dump_on_function(extract_cge_resfinder_data, log=log)
-    sampleComponentObj.end_data_dump(
-        generate_report_function=convert_summary_for_reporter, log=log)
+    sampleComponentObj.end_data_dump(generate_report_function=convert_summary_for_reporter, log=log)
 
 datadump(
     snakemake.params.sampleComponentObj,

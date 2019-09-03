@@ -81,7 +81,7 @@ rule ariba_resfinder:
     params:
         sampleComponentObj = bifrost_sampleComponentObj
     script:
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__run__ariba_resfinder.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__ariba_resfinder.py")
 #* Dynamic section: end ****************************************************************************
 
 #- Templated section: start ------------------------------------------------------------------------
