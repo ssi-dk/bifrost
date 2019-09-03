@@ -399,7 +399,8 @@ rule datadump:
         rules.summarize__depth.output.contig_depth_yaml,
         rules.summarize__depth.output.binned_depth_yaml,
         rules.post_assembly__stats.output.stats,
-        rules.assembly_check__sketch_on_contigs.output.sketch
+        rules.assembly_check__sketch_on_contigs.output.sketch,
+        rules.post_assembly__samtools_stats.output.stats
         #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input
