@@ -79,9 +79,9 @@ def rule__summarize_variants(input, output, sampleComponentObj, log):
         elif next_variant.is_deletion:
             result_matrix["deletions"] += 1
     except StopIteration:
-            result_matrix["error"] = "No variants"
+        result_matrix["error"] = "No variants"
 
-            # back propogate the values
+        # back propogate the values
         variant_table = [[0 for x in range(51)] for y in range(100)]
         column_add = [0] * 51
         for i in range(100, 0, -1):
