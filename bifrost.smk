@@ -250,6 +250,8 @@ rule initialize_samples_from_sample_folder:
                     sample_db["path"] = os.path.realpath(sample_name)
                     sample_db["properties"] = sample_db.get("properties", {"sample_info": {"summary": {}}, "datafiles": {"summary": {"paired_reads": []}}})
                     sample_db["report"] = sample_db.get("report", {})
+                    # Reset paired read list, otherwise it gets filled when rerunning bifrostlib
+                    sample_db["properties"]["datafiles"]["summary"]["paired_reads"] = []
                     for file in sorted(os.listdir(sample_folder)):
                         result = re.search(config["read_pattern"], file)
                         if result and os.path.isfile(os.path.realpath(os.path.join(sample_folder, file))):
