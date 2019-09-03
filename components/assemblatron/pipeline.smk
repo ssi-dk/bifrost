@@ -394,6 +394,7 @@ rule datadump:
     input:
         #* Dynamic section: start ******************************************************************
         rules.rename_contigs.output.contigs  # Needs to be output of final rule
+        rules.post_assembly__annotate.output.gff
         #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input
