@@ -28,7 +28,7 @@ def extract_contigs_bin_cov(sampleComponentObj):
     options = sampleComponentObj.get_options()
     results[key] = datahandling.load_yaml(file_path)
     for bin_value in options["cov_bin_values"]:
-        summary["raw_length_at_{}x".format(bin_value)] = yaml["binned_depth"][bin_value - 1]
+        summary["raw_length_at_{}x".format(bin_value)] = results[key]["binned_depth"][bin_value - 1]
     return (summary, results)
 
 
