@@ -237,20 +237,23 @@ class SampleComponentObj:
             return False
 
     def write_log_out(self, log, content):
-        if log is not None:
-            self.write_log(log.out_file, content)
-        else:
-            sys.stdout.write(content)
+        if content is not None:
+            if log is not None:
+                self.write_log(log.out_file, content)
+            else:
+                sys.stdout.write(content)
 
     def write_log_err(self, log, content):
-        if log is not None:
-            self.write_log(log.err_file, content)
-        else:
-            sys.stderr.write(content)
+        if content is not None:
+            if log is not None:
+                self.write_log(log.err_file, content)
+            else:
+                sys.stderr.write(content)
 
     def write_log(self, log_file, content):
-        with open(log_file, "a+") as file_handle:
-            file_handle.write(content)
+        if content is not None:
+            with open(log_file, "a+") as file_handle:
+                file_handle.write(content)
 
 
 def write_log(log_file, content):
