@@ -393,7 +393,7 @@ rule datadump:
         component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
-        rules.rename_contigs.output.contigs  # Needs to be output of final rule
+        rules.rename_contigs.output.contigs,  # Needs to be output of final rule
         rules.post_assembly__annotate.output.gff
         #* Dynamic section: end ********************************************************************
     output:
