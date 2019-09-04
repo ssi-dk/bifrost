@@ -592,7 +592,9 @@ def get_sample_component(sample_component_id=None, sample_id=None, component_id=
         sample_id = [ObjectId(sample_id)]
     if component_id is not None:
         component_id = [ObjectId(component_id)]
-    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id, component_names=[component_name])), None)
+    if component_name is not None:
+        component_name = [component_name]
+    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id, component_names=component_name)), None)
 
 
 def post_sample_component(sample_component):
