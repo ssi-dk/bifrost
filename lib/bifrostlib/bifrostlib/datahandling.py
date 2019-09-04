@@ -145,7 +145,6 @@ class SampleComponentObj:
                     c_name = requirement.split(".")[1]
                     s_c_db = get_sample_component(sample_id=self.sample_id,
                                                   component_name=c_name)
-                    print("s_c_db", s_c_db)
                     if not self.requirement_met(s_c_db, field, expected_value, log):
                         no_failures = False
                 else:
