@@ -142,7 +142,11 @@ class SampleComponentObj:
                 elif category == "component":
                     field = requirement.split(".")[2:]
                     expected_value = requirements[requirement]
-                    if not self.requirement_met(self.component_db, field, expected_value, log):
+                    c_name = requirement.split(".")[1]
+                    s_c_db = get_sample_component(sample_id=self.sample_id,
+                                                  component_name=c_name)
+                    print("s_c_db", s_c_db)
+                    if not self.requirement_met(s_c_db, field, expected_value, log):
                         no_failures = False
                 else:
                     no_failures = False
@@ -581,14 +585,14 @@ def get_sample_components(sample_component_ids=None, sample_ids=None, component_
         component_names=component_names)
 
 
-def get_sample_component(sample_component_id=None, sample_id=None, component_id=None):
+def get_sample_component(sample_component_id=None, sample_id=None, component_id=None, component_name=None):
     if sample_component_id is not None:
         sample_component_id = [ObjectId(sample_component_id)]
     if sample_id is not None:
         sample_id = [ObjectId(sample_id)]
     if component_id is not None:
         component_id = [ObjectId(component_id)]
-    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id)), None)
+    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id, component_names=[component_name])), None)
 
 
 def post_sample_component(sample_component):
