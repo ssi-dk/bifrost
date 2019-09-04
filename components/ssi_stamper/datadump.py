@@ -157,7 +157,7 @@ def test__denovo_assembly__genome_size_difference_1x_10x(sampleComponentObj):
         if test.get_value() < options["max_size_difference_for_1x_and_10x"]:
             test.set_status_and_reason("pass", "")
         else:
-            test.set_status_and_reason("fail", "Value ({}) above expected ({})".format(test.get_value(), options["max_size_difference_for_1x_and_10x"])
+            test.set_status_and_reason("fail", "Value ({}) above expected ({})".format(test.get_value(), options["max_size_difference_for_1x_and_10x"]))
     except KeyError as e:
         test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
     finally:
@@ -174,7 +174,7 @@ def test__denovo_assembly__genome_average_coverage(sampleComponentObj):
         denovo_assembly = sampleComponentObj.get_sample_properties_by_category("denovo_assembly")
         test.set_value(denovo_assembly["bin_coverage_at_1x"])
         if test.get_value() < options["average_coverage_fail"]:
-            test.set_status_and_reason("fail", test["reason"] = "Lack of reads ({} < {})".format(test.get_value(), options["average_coverage_fail"]))
+            test.set_status_and_reason("fail", "Lack of reads ({} < {})".format(test.get_value(), options["average_coverage_fail"]))
         elif test.get_value() < options["average_coverage_low"]:
             test.set_status_and_reason("fail", "Not enough reads ({} < {})".format(test.get_value(), options["average_coverage_low"]))
         elif test.get_value() < options["average_coverage_warn"]:
@@ -247,7 +247,7 @@ def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     data = []
     for test in summary:
-        data.append({"test": "{}:{}:{}".format(summary[test]["reason"]})
+        data.append({"test": "{}:{}:{}".format(summary[test]["reason"])})
     return data
 
 
