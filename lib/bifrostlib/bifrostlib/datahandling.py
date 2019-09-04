@@ -37,14 +37,14 @@ allow access to parts of the document if needed in the future, ie options.
 """
 class stamperTestObj:
     def __init__(self, function_name, display_name, effect, log=None):
-        self.name = function_name,
-        self.display_name = display_name,
+        self.name = function_name
+        self.display_name = display_name
         self.effect = effect
         self.value = ""
         self.status = ""
         self.reason = ""
         self.log = log
-        self.write_log_out("Running {}".format(function_name))
+        self.write_log_out("Running {}\n".format(function_name))
 
     def set_value(self, value):
         if isinstance(value, float):

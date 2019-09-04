@@ -206,6 +206,8 @@ def test__denovo_assembly__minimum_read_number(sampleComponentObj):
         test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
     finally:
         summary[this_function_name] = test.as_dict()
+        print(test.as_dict())
+        print(test.name)
         return (summary, results)
 
 
@@ -213,7 +215,6 @@ def evaluate_tests_and_stamp(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
     sample_info = sampleComponentObj.get_sample_properties_by_category("sample_info")
-    sample_db = temp_data["sample_db"]
     core_facility = False
     supplying_lab = False
     for test in summary:
@@ -222,7 +223,7 @@ def evaluate_tests_and_stamp(sampleComponentObj):
                 supplying_lab = True
             elif summary[test]["effect"] == "core facility":
                 core_facility = True
-    if (sample_info["provided_species"] == species_detection["detected_species"] and
+    if (sample_info.get("provided_species", None) == species_detection["detected_species"] and
         summary["test__denovo_assembly__genome_average_coverage"]["status"] == "fail" and \
         summary["test__denovo_assembly__genome_average_coverage"]["effect"] == "supplyinh lab" and \
         summary["test__denovo_assembly__genome_size_difference_1x_10x"]["status"] == "fail" and \
@@ -230,15 +231,21 @@ def evaluate_tests_and_stamp(sampleComponentObj):
         summary["test__denovo_assembly__genome_size_at_1x"]["status"] == "pass"):
             core_facility = True
     action = "pass:OK"
+    status = "pass"
     if supplying_lab:
+        status = "fail"
         action = "fail:supplying lab"
     if core_facility:
+        status = "fail"
         action = "fail:core facility"
 
     summary["stamp"] = {
+        "display_name": "ssi_stamper",
         "name": "ssi_stamper",
+        "status": status,
         "value": action,
-        "date": datetime.datetime.utcnow()
+        "date": datetime.datetime.utcnow(),
+        "reason": ""
     }
     return (summary, results)
 
@@ -247,7 +254,11 @@ def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     data = []
     for test in summary:
-        data.append({"test": "{}:{}:{}".format(summary[test]["reason"])})
+        print(summary[test])
+        data.append({"test": "{}: {}:{}:{}".format(summary[test]["display_name"],
+                                                   summary[test]["status"],
+                                                   summary[test]["value"],
+                                                   summary[test]["reason"])})
     return data
 
 
