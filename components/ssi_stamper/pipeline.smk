@@ -77,6 +77,6 @@ rule datadump:
     output:
         complete = rules.all.input
     params:
-        bifrost_sampleComponentObj
+        sampleComponentObj=bifrost_sampleComponentObj
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
