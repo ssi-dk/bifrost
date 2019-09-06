@@ -108,7 +108,7 @@ def test__denovo_assembly__genome_size_at_1x(sampleComponentObj):
         options = sampleComponentObj.get_options()
         denovo_assembly = sampleComponentObj.get_sample_properties_by_category("denovo_assembly")
         species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
-        test.set_value(denovo_assembly["bin_contigs_at_1x"])
+        test.set_value(denovo_assembly["bin_length_at_1x"])
         species = species_detection["species"]
         if species not in options["species_qc_value_mapping"]:
             species = "default"
@@ -131,7 +131,7 @@ def test__denovo_assembly__genome_size_at_10x(sampleComponentObj):
         options = sampleComponentObj.get_options()
         denovo_assembly = sampleComponentObj.get_sample_properties_by_category("denovo_assembly")
         species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
-        test.set_value(denovo_assembly["bin_contigs_at_10x"])
+        test.set_value(denovo_assembly["bin_length_at_10x"])
         species = species_detection["species"]
         if species not in options["species_qc_value_mapping"]:
             species = "default"
@@ -254,7 +254,6 @@ def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     data = []
     for test in summary:
-        print(summary[test])
         data.append({"test": "{}: {}:{}:{}".format(summary[test]["display_name"],
                                                    summary[test]["status"],
                                                    summary[test]["value"],
