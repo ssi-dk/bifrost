@@ -83,6 +83,15 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
         return query_result
     # clean_result = {}
     sample_ids = [x["_id"] for x in old_schema]
+
+    # Other adaptations:
+    for sample in old_schema:
+        datafiles = {"summary": {"paired_reads": [sample["reads"]["R1"],
+                                                  sample["reads"]["R2"]]}}
+        sample["properties"]["datafiles"] = datafiles
+        sample["properties"]["species_detection"] = {"summary": {"provided_species": sample["properties"]["provided_species"],
+                                                                 "detected_species": sample["properties"]["detected_species"]}}
+
     samples_by_ids = {str(x["_id"]):x for x in old_schema}
     # unnamed_count = 0
 

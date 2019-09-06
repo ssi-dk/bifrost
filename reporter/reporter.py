@@ -451,6 +451,7 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
         State("data-store", "data")]
         )
 def sample_report(page_n, lasso_selected, data_store):
+    species_col = "properties.species_detection.summary.species"
     page_n = int(page_n)
     json_data = loads(data_store)
     reporter_json = {str(x["_id"]) :x.get("reporter", {}) for x in json_data}
@@ -461,12 +462,12 @@ def sample_report(page_n, lasso_selected, data_store):
         data = data[data._id.isin(lasso)]
     if len(data) == 0: return []
     samples = data["_id"]
-    data = data.sort_values(["properties.species", "name"])
+    data = data.sort_values([species_col, "name"])
     skips = PAGESIZE * (page_n)
     page = data[skips:skips+PAGESIZE]
     page = import_data.add_sample_runs(page)
     max_page = len(samples) // PAGESIZE
-    page_species = page["properties.species"].unique().tolist()
+    page_species = page[species_col].unique().tolist()
     # We need to have fake radio buttons with the same ids to account for times 
     # when not all PAGESIZE samples are shown and are not taking the ids required by the callback
     html_fake_radio_buttons = html.Div([dcc.RadioItems(
@@ -655,7 +656,8 @@ def update_test_table(data_store):
  
     tests_df["_id"] = tests_df["_id"].astype(str)
 
-    add_if_missing = ["reads.R1"]
+    add_if_missing = ["reads.R1", "properties.species_detection.summary.provided_species",
+                      "properties.species_detection.summary.species"]
 
     for c in add_if_missing:
         if c not in tests_df:
@@ -682,10 +684,10 @@ def update_test_table(data_store):
     # Split test columns
     columns = tests_df.columns
     split_columns = [
-        "properties.stamper.test__denovo_assembly__genome_size_difference_1x_10x",
-        "properties.stamper.test__species_detection__main_species_level",
-        "properties.stamper.test__component__species_in_db",
-        "properties.stamper.test__sample__species_provided_is_detected"
+        "properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x",
+        "properties.stamper.summary.test__species_detection__main_species_level",
+        "properties.stamper.summary.test__component__species_in_db",
+        "properties.stamper.summary.test__sample__species_provided_is_detected"
     ]
     i = 0
     for column in columns:
@@ -756,8 +758,10 @@ def update_test_table(data_store):
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
             "column_id": qc_action, "filter_query": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+    print("prefilter", list(tests_df.columns))
+    tests_df = tests_df.filter(items=[c['id'] for c in COLUMNS])
+    print("postfilter", list(tests_df.columns))
 
-    tests_df = tests_df[[c['id'] for c in COLUMNS]]
 
     table = dash_table.DataTable(
 
@@ -840,9 +844,9 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
     species_col = "properties.detected_species"
 
     if plot_species == "provided":
-        species_col = "properties.provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species == "detected":
-        species_col = "properties.detected_species"
+        species_col = "properties.species_detection.summary.detected_species"
     if species_col not in plot_df or plot_df[species_col].unique() is None:
         return dcc.Dropdown(
             id="plot-species"
@@ -891,16 +895,16 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     plot_values = global_vars.plot_values
     traces = []
     trace_ranges = []
-
-    species_col = "properties.detected_species"
+    species_col = "properties.species_detection.summary.detected_species"
     if plot_species_source == "provided":
-        species_col = "properties.provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species_source == "detected":
-        species_col = "properties.detected_species"
+        species_col = "properties.species_detection.summary.detected_species"
 
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
+    print(plot_df.columns)
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
 

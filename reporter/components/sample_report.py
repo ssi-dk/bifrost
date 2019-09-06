@@ -12,7 +12,7 @@ import math
 import json
 
 def check_test(test_name, sample):
-    test_path = "properties.stamper." + test_name
+    test_path = "properties.stamper.summary." + test_name
     if test_path not in sample or pd.isnull(sample[test_path]):
         return "" # show nothing
         #return "test-missing"
@@ -62,7 +62,7 @@ def generate_sample_report(sample, n_sample, reporter_json):
 def html_species_report(dataframe, species, row_index, reporter_json, **kwargs):
     report = []
     for index, sample in \
-            dataframe.loc[dataframe["properties.species"] == species].iterrows():
+            dataframe.loc[dataframe["properties.species_detection.summary.species"] == species].iterrows():
         report.append(generate_sample_report(sample,
                                              row_index, reporter_json[sample["_id"]]))
         row_index += 1
@@ -72,11 +72,11 @@ def html_species_report(dataframe, species, row_index, reporter_json, **kwargs):
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
         sample_data.get(
-            "properties.species_detection.percent_classified_species_1", math.nan),
+            "properties.species_detection.summary.percent_classified_species_1", math.nan),
         sample_data.get(
-            "properties.species_detection.percent_classified_species_2", math.nan),
+            "properties.species_detection.summary.percent_classified_species_2", math.nan),
         sample_data.get(
-            "properties.species_detection.percent_unclassified", math.nan)
+            "properties.species_detection.summary.percent_unclassified", math.nan)
     ]
 
     color_0 = "#b3ccc1"
@@ -91,17 +91,17 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    [html.I(sample_data.get("properties.species_detection.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
+                    [html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
                 html_td_percentage(percentages[0] + percentages[2], color_0)
             ], className=check_test("test__species_detection__main_species_level", sample_data) + " trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("properties.species_detection.name_classified_species_1", "No data")), className="cell"),
+                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
             ], className="trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("properties.species_detection.name_classified_species_2", "No data")), className="cell"),
+                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_2", "No data")), className="cell"),
                 html_td_percentage(percentages[1], color_2)
             ], className="trow"),
             html.Tr([
@@ -205,30 +205,30 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
                 "list": [
                     "Number of filtered reads",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.filtered_reads_num", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.filtered_reads_num", math.nan))
                 ],
                 "className": check_test("test__denovo_assembly__minimum_read_number", sample_data)
             },
             [
                 "Number of contigs (1x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.bin_contigs_at_1x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_1x", math.nan))
             ],
             [
                 "Number of contigs (10x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.bin_contigs_at_10x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_10x", math.nan))
             ],
             [
                 "N50",
                 "{:,}".format(sample_data.get(
-                    "properties.denovo_assembly.N50", math.nan))
+                    "properties.denovo_assembly.summary.N50", math.nan))
             ],
             {
                 "list": [
                     "Average coverage (1x)",
                     "{:,.2f}".format(
-                        sample_data.get("properties.denovo_assembly.bin_coverage_at_1x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_coverage_at_1x", math.nan))
                 ],
                 "className": check_test("test__denovo_assembly__genome_average_coverage", sample_data)
             },
@@ -236,7 +236,7 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
                 "list": [
                     "Genome size at 1x depth",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.bin_length_at_1x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_1x", math.nan))
                 ],
                 "className": check_test("test__denovo_assembly__genome_size_at_1x", sample_data)
             },
@@ -244,7 +244,7 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
                 "list": [
                     "Genome size at 10x depth",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.bin_length_at_10x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan))
                 ],
                 "className": check_test("test__denovo_assembly__genome_size_at_10x", sample_data)
             },
@@ -253,8 +253,8 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
                     "Genome size 1x - 10x diff",
                     "{:,.0f}".format(
                         sample_data.get(
-                            "properties.denovo_assembly.bin_length_at_1x", math.nan)
-                        - sample_data.get("properties.denovo_assembly.bin_length_at_10x", math.nan)
+                            "properties.denovo_assembly.summary.bin_length_at_1x", math.nan)
+                        - sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan)
                     )
                 ],
                 "className": check_test("test__denovo_assembly__genome_size_difference_1x_10x", sample_data)
@@ -262,12 +262,12 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
             [
                 "Genome size at 25x depth",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.bin_length_at_25x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_length_at_25x", math.nan))
             ],
             [
                 "Ambiguous sites",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.snp_filter_10x_10%", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.snp_filter_10x_10%", math.nan))
             ] 
         ])
     ])
@@ -350,7 +350,7 @@ def html_sample_tables(sample_data, reporter_json, **kwargs):
 def children_sample_list_report(filtered_df, reporter_json):
     report = []
     result_index = 0
-    for species in filtered_df["properties.species"].unique():
+    for species in filtered_df["properties.species_detection.summary.species"].unique():
         species_report_div, result_index = html_species_report(
             filtered_df, species, result_index, reporter_json)
         report.append(html.Div([

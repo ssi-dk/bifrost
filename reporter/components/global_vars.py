@@ -47,39 +47,39 @@ COLUMNS = [
     },
     {
         "name": "Provided_Species",
-        "id": "properties.provided_species"
+        "id": "properties.species_detection.summary.provided_species"
     },
     {
         "name": "Detected Species",
-        "id": "properties.detected_species"
+        "id": "properties.species_detection.summary.detected_species"
     },
     {
         "name": "Genome_size_1x",
-        "id": "properties.denovo_assembly.bin_length_at_1x"
+        "id": "properties.denovo_assembly.summary.bin_length_at_1x"
     },
     {
         "name": "Genome_size_10x",
-        "id": "properties.denovo_assembly.bin_length_at_10x"
+        "id": "properties.denovo_assembly.summary.bin_length_at_10x"
     },
     {
         "name": "G_size_diff_1x_10",
-        "id": "properties.stamper.test__denovo_assembly__genome_size_difference_1x_10x_text"
+        "id": "properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x.value"
     },
     {
         "name": "Avg_coverage",
-        "id": "properties.denovo_assembly.bin_coverage_at_1x"
+        "id": "properties.denovo_assembly.summary.bin_coverage_at_1x"
     },
     {
         "name": "Num_contigs",
-        "id": "properties.denovo_assembly.bin_contigs_at_1x"
+        "id": "properties.denovo_assembly.summary.bin_contigs_at_1x"
     },
     {
         "name": "Ambiguous_sites",
-        "id": "properties.denovo_assembly.snp_filter_10x_10%"
+        "id": "properties.denovo_assembly.summary.snp_filter_10x_10%"
     },
     {
         "name": "Num_reads",
-        "id": "properties.denovo_assembly.filtered_reads_num"
+        "id": "properties.denovo_assembly.summary.filtered_reads_num"
     },
     # {
     #     "name": "mlst_type",
@@ -87,11 +87,11 @@ COLUMNS = [
     # },
     {
         "name": "Main_sp_plus_uncl",
-        "id": "properties.stamper.test__species_detection__main_species_level_text"
+        "id": "properties.stamper.summary.test__species_detection__main_species_level.value"
     },
     {
         "name": "Unclassified_reads",
-        "id": "properties.species_detection.percent_unclassified"
+        "id": "properties.species_detection.summary.percent_unclassified"
     },
     {
         "name": "DB_ID",
@@ -106,43 +106,43 @@ COLUMNS = [
 plot_values = [
     {
         "name": "Genome_size_1x",
-        "id": "properties.denovo_assembly.bin_length_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_length_at_1x",
         "limits": [1500000, 6000000]
     },
     {
         "name": "Genome_size_10x",
-        "id": "properties.denovo_assembly.bin_length_at_10x",
+        "id": "properties.denovo_assembly.summary.bin_length_at_10x",
         "limits": [1500000, 6000000],
         "xaxis": "x"
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "properties.stamper.test__denovo_assembly__genome_size_difference_1x_10x_text",
+        "id": "properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x.value",
         "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",
-        "id": "properties.denovo_assembly.bin_coverage_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_coverage_at_1x",
         "limits": [0, 200]
     },
     {
         "name": "Contig_num_1x",
-        "id": "properties.denovo_assembly.bin_contigs_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_contigs_at_1x",
         "limits": [0, 700]
     },
     {
         "name": "Num_reads",
-        "id": "properties.denovo_assembly.filtered_reads_num",
+        "id": "properties.denovo_assembly.summary.filtered_reads_num",
         "limits": [1000, 8000000]
     },
     {
         "name": "Main_sp_plus_unclassified",
-        "id": "properties.stamper.test__species_detection__main_species_level_text",
+        "id": "properties.stamper.summary.test__species_detection__main_species_level.value",
         "limits": [0.75, 1]
     },
     {
         "name": "Unclassified_reads",
-        "id": "properties.species_detection.percent_unclassified",
+        "id": "properties.species_detection.summary.percent_unclassified",
         "limits": [0, 0.25]
     }
 ]
