@@ -13,11 +13,7 @@ LABEL \
 RUN \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
-    conda install -yq ruamel.yaml==0.16.5; \
-    conda install -yq pymongo==3.8.0; \
-    conda install -yq pandas==0.25.0; \
-    conda install -yq python-magic==0.4.15; \
-    conda install -yq ariba==2.14.1; \
+    conda install -yq ruamel.yaml==0.16.5 pymongo==3.8.0 pandas==0.25.0 python-magic==0.4.15 ariba==2.14.1; \
     pip install -q bifrostlib==2.0.1; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \

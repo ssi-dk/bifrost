@@ -101,7 +101,7 @@ rule datadump:
         component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         #* Dynamic section: start ******************************************************************
-        rules.ariba_mlst.output.file  # Needs to be output of final rule
+        rules.ariba_mlst.output.complete  # Needs to be output of final rule
         #* Dynamic section: end ********************************************************************
     output:
         complete = rules.all.input
