@@ -11,6 +11,11 @@ def extract_ariba_virulencefinder_data(sampleComponentObj):
         num_of_snp_elements = len(row["has_known_var"])
         for i in range(num_of_snp_elements):
             var_info.append({
+                "ref_base_assembled": row["ref_base_assembled"][i],
+                "pc_ident": row["pc_ident"][i],
+                "ctg": row["ctg"][i],
+                "ctg_len": row["ctg_len"][i],
+                "ctg_cov": row["ctg_cov"][i],
                 "known_var": row["known_var"][i],
                 "var_type": row["var_type"][i],
                 "var_seq_type": row["var_seq_type"][i],
@@ -31,7 +36,7 @@ def extract_ariba_virulencefinder_data(sampleComponentObj):
     #- Sub Function end ----------------------------------------------------------------------------
     df = pandas.read_csv(file_path, sep="\t")
     # These are all the columns which will be included in the final dataframe except for the collapsed column
-    grouped_df = df.groupby(["#ariba_ref_name", "ref_name", "gene", "var_only", "flag", "reads", "cluster", "ref_len", "ref_base_assembled", "pc_ident", "ctg", "ctg_len", "ctg_cov", "var_description", "free_text"])
+    grouped_df = df.groupby(["#ariba_ref_name", "ref_name", "gene", "var_only", "flag", "reads", "cluster", "ref_len", "var_description", "free_text"])
     # Turn the columns which are not part of the final dataframe into lists, some will have 1 entry some will have multiple
     flattened_df = grouped_df.agg(list)
     # Reset the indexing for formatting purposes otherwise you layer them

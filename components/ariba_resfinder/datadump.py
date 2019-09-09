@@ -11,6 +11,11 @@ def extract_ariba_resfinder_data(sampleComponentObj):
         num_of_snp_elements = len(row["has_known_var"])
         for i in range(num_of_snp_elements):
             var_info.append({
+                "ref_base_assembled": row["ref_base_assembled"][i],
+                "pc_ident": row["pc_ident"][i],
+                "ctg": row["ctg"][i],
+                "ctg_len": row["ctg_len"][i],
+                "ctg_cov": row["ctg_cov"][i],
                 "known_var": row["known_var"][i],
                 "var_type": row["var_type"][i],
                 "var_seq_type": row["var_seq_type"][i],
