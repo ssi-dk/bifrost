@@ -3,9 +3,9 @@ from bifrostlib import datahandling
 
 def extract_ariba_virulencefinder_data(sampleComponentObj):
     import pandas
-    summary, results, file_path, key = sampleComponentObj.start_data_extraction("virulence/report.tsv")
     # all the rows are turned into a subelement of one gene, all subelements are expected to be the same size
     #- Sub Function start --------------------------------------------------------------------------
+
     def snp_info_parser(row):
         var_info = []
         num_of_snp_elements = len(row["has_known_var"])
