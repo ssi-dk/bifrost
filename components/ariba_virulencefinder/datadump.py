@@ -44,7 +44,7 @@ def extract_ariba_virulencefinder_data(sampleComponentObj):
     # Apply the function onto the columns that are in multiples and convert data accordingly and assign that to a new variable
     flattened_df["var_info"] = flattened_df.apply(snp_info_parser, axis=1)
     # Drop the columns used to make the combined value from the function
-    flattened_df = flattened_df.drop(columns=["known_var", "var_type", "var_seq_type", "known_var_change", "has_known_var", "ref_ctg_change", "ref_ctg_effect", "ref_start", "ref_end", "ref_nt", "ctg_start", "ctg_end", "ctg_nt", "smtls_total_depth", "smtls_nts", "smtls_nts_depth"])
+    flattened_df = flattened_df.drop(columns=["ref_base_assembled", "pc_ident", "ctg", "ctg_len", "ctg_cov", "known_var", "var_type", "var_seq_type", "known_var_change", "has_known_var", "ref_ctg_change", "ref_ctg_effect", "ref_start", "ref_end", "ref_nt", "ctg_start", "ctg_end", "ctg_nt", "smtls_total_depth", "smtls_nts", "smtls_nts_depth"])
     # Set the reference id back to a variable for the dict to be in proper format
     flattened_df = flattened_df.set_index("#ariba_ref_name")
 
