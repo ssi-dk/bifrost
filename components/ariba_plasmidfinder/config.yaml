@@ -40,7 +40,7 @@ requirements:
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files:
-    - "ariba_resfinder/plasmid/report.tsv"
+    - "ariba_plasmidfinder/plasmid/report.tsv"
   sample:
     properties:
       plasmid:
