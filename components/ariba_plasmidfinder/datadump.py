@@ -3,7 +3,7 @@ from bifrostlib import datahandling
 
 def extract_ariba_plasmidfinder_data(sampleComponentObj):
     import pandas
-    summary, results, file_path, key = sampleComponentObj.start_data_extraction("resistance/report.tsv")
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("plasmid/report.tsv")
     # all the rows are turned into a subelement of one gene, all subelements are expected to be the same size
     #- Sub Function start --------------------------------------------------------------------------
 
