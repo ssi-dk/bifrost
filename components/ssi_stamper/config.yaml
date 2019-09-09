@@ -105,9 +105,6 @@ db_values_changes:
         summary:  # see sample_component summary
         component:
           _id: "ObjectId"
-    stamps:
-      stamp_list:
-      ssi_stamper:
     report:
       stamper:
         title: "SSI QC Stamp"
