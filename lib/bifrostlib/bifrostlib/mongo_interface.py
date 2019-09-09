@@ -11,6 +11,9 @@ import magic
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
+global GLOBAL_schema_version
+GLOBAL_schema_version = 2.0
+
 def date_now():
     """
     Needed to keep the same date in python and mongo, as mongo rounds to millisecond
@@ -50,7 +53,7 @@ def dump_run_info(data_dict):
     db = connection.get_database()
     runs_db = db.runs  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = runs_db.find_one_and_update(
@@ -60,7 +63,6 @@ def dump_run_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
         result = runs_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
 
@@ -80,7 +82,7 @@ def dump_sample_info(data_dict):
     db = connection.get_database()
     samples_db = db.samples  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = samples_db.find_one_and_update(
@@ -90,7 +92,6 @@ def dump_sample_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
         result = samples_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
     return data_dict
@@ -123,7 +124,7 @@ def dump_component_info(data_dict):
     db = connection.get_database()
     components_db = db.components  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {'created_at': now})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = components_db.find_one_and_update(
@@ -133,8 +134,6 @@ def dump_component_info(data_dict):
             upsert=True  # This might change in the future # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
-
         data_dict = components_db.find_one_and_update(
             filter={"name": data_dict["name"], "version": data_dict["version"]},
             update={"$setOnInsert": data_dict},
@@ -158,7 +157,7 @@ def dump_sample_component_info(data_dict):
     db = connection.get_database()
     sample_components_db = db.sample_components  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = sample_components_db.find_one_and_update(
