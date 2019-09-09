@@ -24,7 +24,7 @@ def rule__ariba_plasmidfinder(input, output, sampleComponentObj, log):
         sampleComponentObj.write_log_err(log, str(traceback.format_exc()))
 
 
-rule__ariba_resfinder(
+rule__ariba_plasmidfinder(
     snakemake.input,
     snakemake.output,
     snakemake.params.sampleComponentObj,

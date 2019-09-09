@@ -19,5 +19,5 @@ RUN \
     cd /bifrost_resources; \
     mkdir plasmidfinder; \
     cd /bifrost_resources/plasmidfinder; \
-    ariba getref finder plasmidfinder --version 1307168; \
+    ariba getref plasmidfinder plasmidfinder --version 1307168; \
     ariba prepareref -f plasmidfinder.fa -m plasmidfinder.tsv ref_db; \
