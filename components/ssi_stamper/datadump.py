@@ -26,7 +26,7 @@ def test__species_detection__main_species_level(sampleComponentObj):
         test = datahandling.stamperTestObj(this_function_name, "Multiple species detected", "supplying lab")
         options = sampleComponentObj.get_options()
         species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
-        test.set_value(species_detection["percent_classified_species_1"] + species_detection[["percent_unclassified"]])
+        test.set_value(species_detection["percent_classified_species_1"] + species_detection["percent_unclassified"])
         if test.get_value() < options["min_species"]:
             test.set_status_and_reason("fail", "Value ({}) is below threshold ({})".format(test.get_value(), options["min_species"]))
         else:
