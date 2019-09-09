@@ -35,6 +35,13 @@ requirements:
     properties:
       datafiles:
         paired_reads:
+      species_detection:
+        summary:
+          species: 
+            - "Escherichia coli"
+            - "Staphylococcus aureus"
+            - "Listeria monocytogenes"
+            - "Enterococcus faecium"
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------

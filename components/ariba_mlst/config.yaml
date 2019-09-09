@@ -176,6 +176,9 @@ requirements:
     properties:
       datafiles:
         paired_reads:
+      species_detection:
+        summary:
+          species:
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------
