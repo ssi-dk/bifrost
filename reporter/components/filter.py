@@ -434,6 +434,7 @@ def generate_table(tests_df):
             "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
     tests_df["_id"] = tests_df["_id"].astype(str)
+
     tests_df = tests_df.filter([ c["id"] for c in COLUMNS])
 
     return tests_df
