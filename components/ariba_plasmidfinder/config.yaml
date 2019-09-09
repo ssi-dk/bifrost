@@ -60,5 +60,5 @@ db_values_changes:
   sample_component:
     summary:
     results:
-      ariba_resfinder/plasmid/report.tsv: {}
+      ariba_plasmidfinder/plasmid/report.tsv: {}
 #---------------------------------------------------------------------------------------------------
