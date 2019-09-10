@@ -337,93 +337,72 @@ def html_div_filter():
 
 
 def generate_table(tests_df):
-    qc_action = "stamps.ssi_stamper.value"
+    qc_action = "properties.stamper.summary.stamp.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
     else:
-        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[
-            1]
+        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
+    
+    print(list(tests_df.columns))
+    r1_col = "properties.datafiles.summary.paired_reads"
 
-    if "reads.R1" not in tests_df:
-        tests_df["reads.R1"] = np.nan
+    if r1_col not in tests_df:
+        tests_df[r1_col] = np.nan
 
-    values = {"reads.R1": ""}
+    values = {r1_col: ""}
     tests_df = tests_df.fillna(value=values)
-    no_reads_mask = tests_df["reads.R1"] == ""
+    no_reads_mask = tests_df[r1_col] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
 
-    user_stamp_col = "stamp.supplying_lab_check.value"
-    # Overload user stamp to ssi_stamper
-    if user_stamp_col in tests_df.columns:
-        user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
-        tests_df.loc[user_OK_mask, qc_action] = "*OK"
-        user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
-        tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
-        user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
-        tests_df.loc[user_cf_mask, qc_action] = "*core facility"
+    # user_stamp_col = "stamp.supplying_lab_check.value"
+    # # Overload user stamp to ssi_stamper
+    # if user_stamp_col in tests_df.columns:
+    #     user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
+    #     tests_df.loc[user_OK_mask, qc_action] = "*OK"
+    #     user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
+    #     tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
+    #     user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
+    #     tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
-    # Split test columns
-    columns = tests_df.columns
-    split_columns = [
-        "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff",
-        "sample_components.ssi_stamper.summary.whats_my_species:minspecies",
-        "sample_components.ssi_stamper.summary.whats_my_species:nosubmitted",
-        "sample_components.ssi_stamper.summary.whats_my_species:detectedspeciesmismatch"
-    ]
-    i = 0
-    for column in columns:
-        if column in split_columns:
-            new = tests_df[column].str.split(":", expand=True)
-            loc = tests_df.columns.get_loc(column)
-            #tests_df.drop(columns = [column], inplace=True)
-            tests_df.insert(loc, column + "_QC", new[0])
-            tests_df.insert(loc + 1, column + "_text", new[2])
-        i += 1
-
-    if "sample_components.ariba_mlst.summary.mlst_report" in columns:
-        first_split = tests_df["sample_components.ariba_mlst.summary.mlst_report"].str.split(
-            ",", n=1, expand=True)
-        if len(first_split.columns) == 2:
-            second_split = first_split[0].str.split(":", n=1, expand=True)
-            if len(second_split.columns) == 2:
-                keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
-                second_split.loc[keyerrormask, 1] = np.nan
-                tests_df["ariba_mlst_type"] = second_split[1]
-                tests_df["ariba_mlst_alleles"] = first_split[1]
-
-    test_cols = [col for col in columns if (col.startswith(
-        "sample_components.ssi_stamper.summary") and
-        not col.startswith("sample_components.ssi_stamper.summary.qcquickie"))]
-
-    def concatenate_failed(row):
-        res = []
-        for col in test_cols:
-            test_name = col.split(":")[-1]
-            if type(row[col]) == str:
-                fields = row[col].split(":")
-                if fields[0] in ["fail", "undefined"]:
-                    res.append("Test {}: {}, {}".format(
-                        test_name, fields[0], fields[1]))
-        row["ssi_stamper_failed_tests"] = ". ".join(res)
-        return row
+    test_cols = [col for col in tests_df.columns if (col.startswith(
+        "properties.stamper.summary."))]
 
     # Round columns:
     for col in global_vars.ROUND_COLUMNS:
         if col in tests_df.columns:
             tests_df[col] = round(tests_df[col], 3)
 
+    def concatenate_failed(row):
+        res = []
+        tests = {}
+        for col in test_cols:
+            test_name = col.split(".")[-2]
+            field = col.split(".")[-1]
+            value = row[col]
+            test = tests.get(test_name, {})
+            test[field] = value
+            tests[test_name] = test
+        for testname in tests:
+            test = tests[testname]
+            if test["status"] == "fail":
+                res.append("Test {}: {}, {}".format(
+                    testname, test["status"], test["reason"]))
+        row["ssi_stamper_failed_tests"] = ". ".join(res)
+        return row
+
     tests_df = tests_df.apply(concatenate_failed, axis="columns")
+
+
 
     COLUMNS = global_vars.COLUMNS
 
     # Generate conditional formatting:
     style_data_conditional = []
-    conditional_columns = [
-        col for col in tests_df.columns if col.startswith("QC_")]
+    conditional_columns = ["properties.stamper.summary.stamp.value"]
 
     for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
         style_data_conditional += list(map(lambda x: {"if": {

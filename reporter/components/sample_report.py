@@ -16,10 +16,9 @@ SAMPLE_PAGESIZE = 25
 def sample_report(data):
 
     sample_n = len(data)
-    
+
     return [
         html.Span("0", style={"display": "none"}, id="page-n"),
-        
         html.Span(str(sample_n // SAMPLE_PAGESIZE),
                   style={"display": "none"}, id="max-page"),
         dbc.Row(
@@ -76,7 +75,7 @@ def sample_report(data):
     ]
 
 def check_test(test_name, sample):
-    test_path = "sample_components.ssi_stamper.summary." + test_name
+    test_path = "properties.stamper.summary." + test_name
     if test_path not in sample or pd.isnull(sample[test_path]):
         return "" # show nothing
         #return "test-missing"
@@ -88,7 +87,7 @@ def check_test(test_name, sample):
         return "test-warning"
 
 def get_species_img(sample_data):
-    genus = str(sample_data.get("sample_components.whats_my_species.summary.name_classified_species_1")).split()[
+    genus = str(sample_data.get("properties.species_detection.summary.name_classified_species_1")).split()[
         0].lower()
     if "{}.svg".format(genus) in list_of_images:
         img = html.Img(
@@ -116,7 +115,7 @@ def generate_sample_report(sample, n_sample):
                         html.H6(
                             sample["name"],
                             className="d-inline font-weight-bold text-primary mx-2"),
-                        html.I(sample["properties.species"])
+                        html.I(sample["properties.species_detection.summary.species"])
                     ], className="d-inline-block"),
                     
                 ]),
@@ -132,10 +131,10 @@ def generate_sample_report(sample, n_sample):
 
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
-        sample_data.get("sample_components.whats_my_species.summary.percent_classified_species_1", math.nan),
+        sample_data.get("properties.species_detection.summary.percent_classified_species_1", math.nan),
         sample_data.get(
-            "sample_components.whats_my_species.summary.percent_classified_species_2", math.nan),
-        sample_data.get("sample_components.whats_my_species.summary.percent_unclassified", math.nan)
+            "properties.species_detection.summary.percent_classified_species_2", math.nan),
+        sample_data.get("properties.species_detection.summary.percent_unclassified", math.nan)
     ]
 
     color_0 = "#b3ccc1"
@@ -150,17 +149,17 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    [html.I(sample_data.get("sample_components.whats_my_species.summary.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
+                    [html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
                 html_td_percentage(percentages[0] + percentages[2], color_0)
             ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("sample_components.whats_my_species.summary.name_classified_species_1", "No data")), className="cell"),
+                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
             ], className="trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("sample_components.whats_my_species.summary.name_classified_species_2", "No data")), className="cell"),
+                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_2", "No data")), className="cell"),
                 html_td_percentage(percentages[1], color_2)
             ], className="trow"),
             html.Tr([
@@ -174,8 +173,8 @@ def html_test_tables(sample_data):
     stamps_to_check = ["ssi_stamper", "supplying_lab_check"]
     rows = []
     for key, value in sample_data.items():
-        if key.startswith("sample_components.ssi_stamper.summary.whats_my_species") \
-                or key.startswith("sample_components.ssi_stamper.summary.assemblatron"):
+        if key.startswith("properties.stamper.summary.whats_my_species") \
+                or key.startswith("properties.stamper.summary.assemblatron"):
             if pd.isnull(value):
                 value = "nan"
             name_v = key.split(":")
@@ -222,6 +221,7 @@ def html_test_tables(sample_data):
         ]),
     ])
 
+
 def html_sample_tables(sample_data, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
@@ -246,7 +246,7 @@ def html_sample_tables(sample_data, **kwargs):
                     {
                         "list": ["Provided species", html.I(
                             sample_data.get("sample_sheet.provided_species"))],
-                        "className": check_test("sample_components.whats_my_species.summary:detectedspeciesmismatch", sample_data)
+                        "className": check_test("properties.species_detection.summary:detectedspeciesmismatch", sample_data)
                     },
                     {
                         "list": ["Read file", 
@@ -264,29 +264,29 @@ def html_sample_tables(sample_data, **kwargs):
                 "list": [
                     "Number of filtered reads",
                     "{:,.0f}".format(
-                        sample_data.get("sample_components.assemblatron.summary.filtered_reads_num", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.filtered_reads_num", math.nan))
                 ],
                 "className": check_test("assemblatron:numreads", sample_data)
             },
             [
                 "Number of contigs (1x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("sample_components.assemblatron.summary.bin_contigs_at_1x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_1x", math.nan))
             ],
             [
                 "Number of contigs (10x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("sample_components.assemblatron.summary.bin_contigs_at_10x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_10x", math.nan))
             ],
             [
                 "N50",
-                "{:,}".format(sample_data.get("sample_components.assemblatron.summary.N50", math.nan))
+                "{:,}".format(sample_data.get("properties.denovo_assembly.summary.N50", math.nan))
             ],
             {
                 "list": [
                     "Average coverage (1x)",
                     "{:,.2f}".format(
-                        sample_data.get("sample_components.assemblatron.summary.bin_coverage_at_1x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_coverage_at_1x", math.nan))
                 ],
                 "className": check_test("assemblatron:avgcoverage", sample_data)
             },
@@ -294,7 +294,7 @@ def html_sample_tables(sample_data, **kwargs):
                 "list": [
                     "Genome size at 1x depth",
                     "{:,.0f}".format(
-                        sample_data.get("sample_components.assemblatron.summary.bin_length_at_1x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_1x", math.nan))
                 ],
                 "className": check_test("assemblatron:1xgenomesize", sample_data)
             },
@@ -302,7 +302,7 @@ def html_sample_tables(sample_data, **kwargs):
                 "list": [
                     "Genome size at 10x depth",
                     "{:,.0f}".format(
-                        sample_data.get("sample_components.assemblatron.summary.bin_length_at_10x", math.nan))
+                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan))
                 ],
                 "className": check_test("assemblatron:10xgenomesize", sample_data)
             },
@@ -311,8 +311,8 @@ def html_sample_tables(sample_data, **kwargs):
                     "Genome size 1x - 10x diff",
                     "{:,.0f}".format(
                         sample_data.get(
-                            "sample_components.assemblatron.summary.bin_length_at_1x", math.nan)
-                        - sample_data.get("sample_components.assemblatron.summary.bin_length_at_10x", math.nan)
+                            "properties.denovo_assembly.summary.bin_length_at_1x", math.nan)
+                        - sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan)
                     )
                 ],
                 "className": check_test("assemblatron:1x10xsizediff", sample_data)
@@ -320,152 +320,70 @@ def html_sample_tables(sample_data, **kwargs):
             [
                 "Genome size at 25x depth",
                 "{:,.0f}".format(
-                    sample_data.get("sample_components.assemblatron.summary.bin_length_at_25x", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.bin_length_at_25x", math.nan))
             ],
             [
                 "Ambiguous sites",
                 "{:,.0f}".format(
-                    sample_data.get("sample_components.assemblatron.summary.snp_filter_10x_10%", math.nan))
+                    sample_data.get("properties.denovo_assembly.summary.snp_filter_10x_10%", math.nan))
             ] 
         ])
     ])
-    resresults = False
-    resfinder = sample_data.get('sample_components.ariba_resfinder.summary.ariba_resfinder', [])
-    if type(resfinder) == list and len(resfinder):
-        resresults = True
-        resfinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
+    expected_results = global_vars.expected_results
+    any_results = False
+    results = []
+    for entry in expected_results:
+        if "report.{}.data".format(entry) in sample_data:
+            any_results = True
+            results.append(html.Div([
+                html.H6(sample_data["report.{}.title".format(entry)],
+                        className="table-header"),
+                html.Div(
+                    dt.DataTable(
+                        style_table={
+                            'overflowX': 'scroll',
+                            'overflowY': 'scroll',
+                            'maxHeight': '480'
+                        },
 
-                columns=global_vars.finder_columns,
-                data=resfinder,
-                page_action='none'
-            ), className="grey-border")
-    elif (sample_data.get("sample_components.ariba_resfinder.status", "") == "Success" and
-         (type(resfinder) == float or resfinder is None or not len(resfinder))):
-        resfinder_div = html.P("No antibiotic resistance genes found")
-    else:
-        resfinder_div = html.P("Resfinder not run")
-    
-    plasmidfinder = sample_data.get('ariba_plasmidfinder.ariba_plasmidfinder', [])
-    if type(plasmidfinder) == list and len(plasmidfinder):
-        resresults = True
-        plasmidfinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=global_vars.finder_columns,
-                data=plasmidfinder,
-                page_action='none'
-            ), className="grey-border")
-    elif (sample_data.get("sample_components.ariba_plasmidfinder.status", "") == "Success" and
-         (type(plasmidfinder) == float or
-          plasmidfinder is None or
-          not len(plasmidfinder))):
-        plasmidfinder_div = html.P("No replicons found")
-    else:
-        plasmidfinder_div = html.P("Plasmidfinder not run")
+                        columns=sample_data["report.{}.columns".format(entry)],
+                        data=sample_data["report.{}.data".format(entry)],
+                        page_action='none'
+                    ), className="grey-border")
+            ], className="col-6"))
+        else:
+            results.append(html.Div([
+                html.H6("{} not run".format(entry.capitalize()),
+                        className="table-header")
+            ], className="col-6"))
 
-    virulencefinder = sample_data.get('ariba_virulencefinder.ariba_virulencefinder', [])
-    if type(virulencefinder) == list and len(virulencefinder):
-        resresults = True
-        virulencefinder_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=global_vars.finder_columns,
-                data=virulencefinder,
-                page_action='none'
-            ), className="grey-border")
-    elif sample_data.get("sample_components.ariba_virulencefinder.status", "") == "Success" and (type(virulencefinder) == float or virulencefinder is None or not len(virulencefinder)):
-        virulencefinder_div = html.P("No virulence markers found")
-    else:
-        virulencefinder_div = html.P("Virulencefinder not run")
-
-    mlst_data = sample_data.get(
-        'sample_components.ariba_mlst.summary.mlst_report', "")
-    if type(mlst_data) == str and len(mlst_data):
-        resresults = True
-        mlst_dict = {}
-        mlst_fields = mlst_data.split(",")
-        for field in mlst_fields:
-            key, value = field.split(":")
-            mlst_dict[key] = value
-
-        columns = [{"name": i, "id": i} for i in mlst_dict.keys()]
-        mlst_div = html.Div(
-            dt.DataTable(
-                style_table={
-                    'overflowX': 'scroll',
-                    'overflowY': 'scroll',
-                    'maxHeight': '480'
-                },
-                columns=columns,
-                data=[mlst_dict],
-                page_action='none'
-            ), className="grey-border")
-    else:
-        mlst_div = html.P("MLST not run")
-
-    mlst_db = sample_data.get("sample_components.ariba_mlst.summary.mlst_db", "")
+    # mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
 
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
-    if (sample_data.get("sample_components.ariba_resfinder.status", "") == "Success" or
-        sample_data.get("sample_components.ariba_plasmidfinder.status", "") == "Success" or
-        sample_data.get("sample_components.ariba_mlst.status", "") == "Success" or
-        sample_data.get("sample_components.ariba_virulencefinder.status", "") == "Success"):
+    if (sample_data.get("ariba_resfinder.status", "") == "Success" or
+        sample_data.get("ariba_plasmidfinder.status", "") == "Success" or
+        sample_data.get("ariba_mlst.status", "") == "Success" or
+            sample_data.get("ariba_virulencefinder.status", "") == "Success"):
         res_analysis_not_run = False
     else:
         res_analysis_not_run = True
 
-    if resresults:
+    if any_results:
         res_div = html.Details([
-            html.Summary("ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
+            html.Summary(
+                "ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
             html.Div([
-                html.Div([
-                    html.Div([
-                        html.H6("ResFinder", className="table-header"),
-                        resfinder_div
-                    ], className="col-12 col-xl-6"),
-                    html.Div([
-                        html.H6("VirulenceFinder", className="table-header"),
-                        virulencefinder_div
-                    ], className="col-12 col-xl-6")
-                ], className="row"),
-                html.Div([
-                    html.Div([
-                        html.H6("PlasmidFinder", className="table-header"),
-                        plasmidfinder_div
-                    ], className="col-12 col-xl-6"),
-                    html.Div([
-                        html.H6("MLST ({})".format(mlst_db), className="table-header"),
-                        mlst_div
-                    ], className="col-12 col-xl-6")
-                ], className="row")
+                html.Div(results, className="row"),
             ])
         ])
-    elif not resresults and not res_analysis_not_run:
-        res_div = html.Div(html.P("No antibiotic resistances, replicons or virulence markers found for this sample."))
     else:
         res_div = html.Div(
-            html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
+            html.P("Resfinder, plasmidfinder, MLST and virulencefinder were not run."))
+
 
     mlst_type = "ND"
-    if "sample_components.ariba_mlst.summary.mlst_report" in sample_data and sample_data["sample_components.ariba_mlst.summary.mlst_report"] is not None:
-        mlst_report_string = sample_data["sample_components.ariba_mlst.summary.mlst_report"]
-        if "," in str(mlst_report_string):
-            mlst_text_split = mlst_report_string.split(",", 1)
-            mlst_type = mlst_text_split[0].split(":",1)[1]
+    if "properties.mlst.summary.strain" in sample_data and not pd.isna(sample_data["properties.mlst.summary.strain"]):
+        mlst_type = ", ".join(sample_data["properties.mlst.summary.strain"])
 
 
     return html.Div([

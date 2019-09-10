@@ -10,78 +10,6 @@ PAGESIZE = 25
 
 CONNECTION = None
 
-TABLE_QUERY = [
-    {
-        '$lookup': {
-            'from': 'sample_components',
-            'let': {
-                'sample_id': '$_id'
-            },
-            'pipeline': [
-                {
-                    '$match': {
-                        'status': 'Success',
-                        'name': {
-                            '$nin': [
-                                'qcquickie', 'analyzer'
-                            ]
-                        },
-                        '$expr': {
-                            '$eq': [
-                                '$sample._id', '$$sample_id'
-                            ]
-                        }
-                    }
-                }, {
-                    '$project': {
-                        'component.name': 1,
-                        'setup_date': 1,
-                        'summary': 1,
-                        'status': 1,
-                        '_id': 0
-                    }
-                }, {
-                    '$sort': {
-                        'component.name': 1,
-                        'setup_date': -1
-                    }
-                }, {
-                    '$group': {
-                        '_id': '$component.name',
-                        's_c_g': {
-                            '$push': '$$ROOT'
-                        }
-                    }
-                }, {
-                    '$project': {
-                        '_id': 0,
-                        'v': {
-                            '$arrayElemAt': [
-                                '$s_c_g', 0
-                            ]
-                        },
-                        'k': '$_id'
-                    }
-                }
-            ],
-            'as': 'sample_components'
-        }
-    }, {
-        '$project': {
-            'name': 1,
-            '_id': 1,
-            'component.name': 1,
-            'sample_sheet': 1,
-            'stamps': 1,
-            'properties': 1,
-            'reads': 1,
-            'sample_components': {
-                '$arrayToObject': '$sample_components'
-            }
-        }
-    }
-]
-
 
 def close_connection():
     global CONNECTION
@@ -171,9 +99,9 @@ def get_species_list(species_source, run_name=None):
     connection = get_connection()
     db = connection.get_database()
     if species_source == "provided":
-        spe_field = "properties.provided_species"
+        spe_field = "properties.species_detection.summary.provided_species"
     else:
-        spe_field = "properties.detected_species"
+        spe_field = "properties.species_detection.summary.detected_species"
     if run_name is not None:
         run = db.runs.find_one(
             {"name": run_name},
@@ -225,17 +153,17 @@ def filter_qc(qc_list):
     for elem in qc_list:
         if elem == "Not checked":
             qc_query.append({"$and": [
-                {"reads.R1": {"$exists": True}},
-                {"stamps.ssi_stamper": {"$exists": False}}
+                {"properties.datafiles.summary.paired_reads": {"$exists": True}},
+                {"properties.stamper.summary.stamp.value": {"$exists": False}}
             ]})
         elif elem == "fail:core facility":
             qc_query.append({"$or": [
-                        {"reads.R1": {"$exists": False}},
-                        {"stamps.ssi_stamper.value": "fail:core facility"}
+                        {"properties.datafiles.summary.paired_reads": {"$exists": False}},
+                        {"properties.stamper.summary.stamp.value": "fail:core facility"}
                     ]
                 })
         else:
-            qc_query.append({"stamps.ssi_stamper.value": elem})
+            qc_query.append({"properties.stamper.summary.stamp.value": elem})
     return {"$match": {"$and": qc_query}}
 
 
@@ -243,14 +171,13 @@ def filter(run_names=None,
            species=None, species_source="species", group=None,
            qc_list=None, samples=None, pagination=None,
            sample_names=None,
-           include_s_c=False,
            projection=None):
     if species_source == "provided":
-        spe_field = "properties.provided_species"
+        spe_field = "properties.species_detection.summary.provided_species"
     elif species_source == "detected":
-        spe_field = "properties.detected_species"
+        spe_field = "properties.species_detection.summary.detected_species"
     else:
-        spe_field = "properties.species"
+        spe_field = "properties.species_detection.summary.species"
     connection = get_connection()
     db = connection.get_database()
     query = []
@@ -309,8 +236,6 @@ def filter(run_names=None,
         else:
             query.append({"sample_sheet.group": {"$in": group}})
 
-    sort_step = {"$sort": {"name": 1}}
-
     if pagination is not None:
         p_limit = pagination['page_size']
         p_skip = pagination['page_size'] * pagination['current_page']
@@ -327,27 +252,17 @@ def filter(run_names=None,
     if len(query) == 0:
         if qc_query is None:
             match_query = {}
-            final_query = [sort_step] + TABLE_QUERY + skip_limit_steps
         else:
             match_query = qc_query["$match"]
-            final_query = [{"$match": match_query}] + \
-                [sort_step] + TABLE_QUERY + skip_limit_steps
     else:
         if qc_query is None:
             match_query = {"$and": query}
-            final_query = [{"$match": match_query}] + \
-                [sort_step] + TABLE_QUERY + skip_limit_steps
         else:
             match_query = {"$and": query + qc_query["$match"]["$and"]}
-            final_query = [{"$match": match_query}] + \
-                [sort_step] + TABLE_QUERY + skip_limit_steps
 
-    if include_s_c:
-        query_result = list(db.samples.aggregate(final_query))
-    else:
-        query_result = list(db.samples.find(match_query, projection).sort(
-            [('name', pymongo.ASCENDING)]
-        ))
+    query_result = list(db.samples.find(
+        match_query, projection).sort([('name', pymongo.ASCENDING)]).skip(p_skip).limit(p_limit))
+
     return query_result
 
 

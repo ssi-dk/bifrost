@@ -191,3 +191,6 @@ finder_columns = [
 
 ROUND_COLUMNS = ["sample_components.whats_my_species.summary.percent_unclassified",
                  "sample_components.assemblatron.summary.bin_coverage_at_1x"]
+
+expected_results = ["resistance", "mlst", "plasmid",
+                    "virulence"]  # expected categories in sample report

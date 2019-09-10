@@ -417,7 +417,6 @@ def fill_sample_report(page_n, sample_store):
     
     data_table = import_data.filter_all(
         sample_ids=sample_ids,
-        include_s_c=True,
         pagination={"page_size": SAMPLE_PAGESIZE, "current_page": page_n})
     max_page = len(sample_store) // SAMPLE_PAGESIZE
     # We need to have fake radio buttons with the same ids to account for times 
@@ -505,7 +504,6 @@ def update_selected_samples(n_clicks, param_store, collection_name,
             group=group_list, qc_list=qc_list,
             run_names=run_names,
             sample_names=sample_names,
-            include_s_c=False,
             projection={"name": 1})
 
         if "_id" in samples:
@@ -534,8 +532,7 @@ def update_filter_table(ignore, sample_store):
         map(lambda x: x["_id"], sample_store))
 
     samples = import_data.filter_all(
-        sample_ids=sample_ids,
-        include_s_c=True)
+        sample_ids=sample_ids)
 
     samples = generate_table(samples)
     if len(sample_store) > 500:
