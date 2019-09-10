@@ -52,7 +52,7 @@ options:
     "Clostridium botulinum": [Clostridium_botulinum]
     "Campylobacter concisus": [Campylobacter_concisus_curvus]
     "Campylobacter curvus": [Campylobacter_concisus_curvus]
-    "Clostridioides difficile": [Clostridium_difficile]
+    "Clostridioides difficile": [Clostridioides_difficile]
     "Corynebacterium diphtheriae": [Corynebacterium_diphtheriae]
     "Campylobacter fetus": [Campylobacter_fetus]
     "Citrobacter freundii": [Citrobacter_freundii]

@@ -62,7 +62,7 @@ RUN \
     ariba pubmlstget "Citrobacter freundii" Citrobacter_freundii; \
     ariba pubmlstget "Clonorchis sinensis" Clonorchis_sinensis; \
     ariba pubmlstget "Clostridium botulinum" Clostridium_botulinum; \
-    ariba pubmlstget "Clostridium difficile" Clostridium_difficile; \
+    ariba pubmlstget "Clostridioides difficile" Clostridioides_difficile; \
     ariba pubmlstget "Clostridium septicum" Clostridium_septicum; \
     ariba pubmlstget "Corynebacterium diphtheriae" Corynebacterium_diphtheriae; \
     ariba pubmlstget "Cronobacter spp." Cronobacter_spp_; \
