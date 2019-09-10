@@ -1,14 +1,11 @@
-import dash_html_components as html
 import dash_core_components as dcc
-import components.import_data as import_data
-import components.global_vars as global_vars
-import dash_bootstrap_components as dbc
+import dash_html_components as html
 import plotly.graph_objs as go
 from plotly import tools
 import pandas as pd
 import numpy as np
-import math
-import json
+import components.import_data as import_data
+import components.global_vars as global_vars
 
 def aggregate_report(data):
 
@@ -75,15 +72,15 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
         sample_ids=sample_ids,
         projection={"properties": 1})
 
-    species_col = "properties.detected_species"
+    species_col = "properties.species_detection.summary.detected_species"
 
     if plot_species == "provided":
-        species_col = "properties.provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species == "detected":
-        species_col = "properties.detected_species"
+        species_col = "properties.species_detection.summary.detected_species"
 
-    if species_col not in plot_df or plot_df[species_col].unique() is None:
-        return [None,[]]
+    if species_col not in plot_df:
+        plot_df[species_col] = np.nan
     plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
     species_list = plot_df[species_col].unique()
     species_list = ["All species",] + list(species_list)
@@ -106,17 +103,18 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     traces = []
     trace_ranges = []
 
-    species_col = "properties.detected_species"
+    species_col = "properties.species_detection.summary.detected_species"
     if plot_species_source == "provided":
-        species_col = "properties.provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species_source == "detected":
-        species_col = "properties.detected_species"
+        species_col = "properties.species_detection.summary.detected_species"
 
     sample_ids = [s["_id"] for s in sample_store]
     plot_df = import_data.filter_all(
-        sample_ids=sample_ids,
-        include_s_c=True)
+        sample_ids=sample_ids)
 
+    if "properties.species_detection.summary.provided_species" not in plot_df:
+        plot_df["properties.species_detection.summary.provided_species"] = np.nan
 
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
@@ -341,35 +339,27 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     return fig, sunburst_fig
 
 def generate_sunburst(plot_df):
-
-    if "sample_components.ariba_mlst.summary.mlst_report" in plot_df.columns:
-        first_split = plot_df["sample_components.ariba_mlst.summary.mlst_report"].str.split(
-            ",", n=1, expand=True)
-        if len(first_split.columns) == 2:
-            second_split = first_split[0].str.split(":", n=1, expand=True)
-            if len(second_split.columns) == 2:
-                keyerrormask = second_split[1] == " 'ariba_mlst/mlst_report_tsv'"
-                second_split.loc[keyerrormask, 1] = np.nan
-                plot_df["ariba_mlst_type"] = second_split[1]
-                plot_df["ariba_mlst_alleles"] = first_split[1]
     
-    unique_species = plot_df["properties.species"].unique()
+    unique_species = plot_df["properties.species_detection.summary.species"].unique()
 
     labels = ["samples"]
     parents = [""]
     values = [len(plot_df["_id"])]
-
+    plot_df["properties.mlst.summary.strainstr"] = [
+        ','.join(map(str, l)) for l in plot_df['properties.mlst.summary.strain']]
     for species in unique_species:
-        species_df = plot_df[plot_df["properties.species"] == species]
+        species_df = plot_df[plot_df["properties.species_detection.summary.species"] == species]
         labels.append(short_species(species))
         parents.append("samples")
         values.append(len(species_df))
-        if "ariba_mlst_type" in species_df.columns:
-            unique_mlst = species_df["ariba_mlst_type"].unique()
+        if "properties.mlst.summary.strainstr" in species_df.columns:
+            unique_mlst = species_df["properties.mlst.summary.strainstr"].unique(
+            )
             for mlst in unique_mlst:
                 labels.append(mlst)
                 parents.append(short_species(species))
-                values.append(len(species_df[species_df.ariba_mlst_type == mlst]))
+                values.append(
+                    len(species_df[species_df["properties.mlst.summary.strainstr"] == mlst]))
 
     trace = go.Sunburst(
         labels=labels,

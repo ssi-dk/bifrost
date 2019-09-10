@@ -134,27 +134,26 @@ def pipeline_report_data(sample_data):
         "queued to run": "queue",
     }
     samples = import_data.filter_all(
-        sample_ids = [s["_id"] for s in sample_data],
-        include_s_c=False,
-        projection={"stamps": 1, 'name': 1, 'sample_sheet.priority': 1})
+        sample_ids=[s["_id"] for s in sample_data],
+        projection={"properties.stamper": 1, 'name': 1,
+                    'sample_sheet.priority': 1,
+                    "components": 1})
     samples["_id"] = samples["_id"].astype(str)
     samples = samples.set_index("_id")
 
-    s_c_status = import_data.get_sample_component_status(
-        sample_data)
-
     components_order = [
-        "whats_my_species", "analyzer", "assemblatron", "ssi_stamper",
-        "ariba_resfinder", "ariba_mlst", "ariba_plasmidfinder",
-        "ariba_virulencefinder", "sp_cdiff_fbi", "sp_ecoli_fbi",
-        "sp_salm_fbi", "min_read_check", "qcquickie"]
+        "min_read_check", "whats_my_species", "assemblatron", "ssi_stamper",
+        "cge_resfinder", "cge_mlst", "cge_plasmidfinder",
+        "cge_virulencefinder", "ariba_resfinder", "ariba_mlst",
+        "ariba_plasmidfinder", "ariba_virulencefinder", "sp_cdiff_fbi",
+        "sp_ecoli_fbi", "sp_salm_fbi", "min_read_check", "analyzer",
+        "qcquickie", "ssi_stamper"]
 
 
     s_c_components = []
-    for sample in s_c_status:
-        for comp_name in sample['s_cs'].keys():
-            if comp_name not in s_c_components:
-                s_c_components.append(comp_name)
+    for _id, sample in samples.iterrows():
+        for component in sample["components"]:
+            s_c_components.append(component["name"])
     components_list = [comp for comp in components_order if comp in s_c_components]
 
     rows = []
@@ -234,10 +233,7 @@ def pipeline_report_data(sample_data):
         })
 
     rerun_form_samples = []
-
-    for s_components in s_c_status:
-        sample_id = str(s_components["_id"])
-        sample = samples.loc[sample_id]
+    for _id, sample in samples.iterrows():
         name = sample["name"]
 
         row = {}
@@ -245,10 +241,10 @@ def pipeline_report_data(sample_data):
             continue  # ignore this row
 
         row["sample"] = name
-        row["_id"] = sample_id
+        row["_id"] = _id
 
         rerun_form_samples.append({"label": name, "value": "{}:{}".format(
-            sample_id, name)})
+            _id, name)})
 
         priority = str(sample.get("sample_sheet.priority", "")).lower()
         # prio_display = " " Emoji not supported
@@ -257,7 +253,7 @@ def pipeline_report_data(sample_data):
         # else:
         #     prio_display = "Low"
         row["priority"] = priority
-        qc_val = sample.get("stamps.ssi_stamper.value", "N/A")
+        qc_val = sample.get("properties.stamper.summary.stamp.value", "N/A")
         if pd.isna(qc_val):
             qc_val = "N/A"
 
@@ -289,12 +285,8 @@ def pipeline_report_data(sample_data):
 
         row["qc_val"] = qc_val
 
-        for component in components_list:
-            if component in s_components["s_cs"].keys():
-                s_c = s_components["s_cs"][component]
-                row[component] = status_dict[s_c]
-            else:
-                row[component] = "None"
+        for component in sample["components"]:
+            row[component["name"]] = status_dict[component["status"]]
         rows.append(row)
     def sort_name(e):
         return e["sample"]

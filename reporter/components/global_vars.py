@@ -1,19 +1,19 @@
 import math
 
 def assemblatron_diff(res):
-    if "sample_components.assemblatron.summary.bin_length_at_1x" in res and "sample_components.assemblatron.summary.bin_length_at_10x" in res:
-        res["sample_components.assemblatron.summary.bin_length_1x_10x_diff"] = res["sample_components.assemblatron.summary.bin_length_at_1x"] - \
-            res["sample_components.assemblatron.summary.bin_length_at_10x"]
+    if "properties.denovo_assembly.summary.bin_length_at_1x" in res and "properties.denovo_assembly.summary.bin_length_at_10x" in res:
+        res["properties.denovo_assembly.summary.bin_length_1x_10x_diff"] = res["properties.denovo_assembly.summary.bin_length_at_1x"] - \
+            res["properties.denovo_assembly.summary.bin_length_at_10x"]
     else:
-        res["sample_components.assemblatron.summary.bin_length_1x_10x_diff"] = math.nan
+        res["properties.denovo_assembly.summary.bin_length_1x_10x_diff"] = math.nan
     return res
 
 def assemblatron_contig_diff(res):
-    if "sample_components.assemblatron.summary.bin_contigs_at_1x" in res and "sample_components.assemblatron.summary.bin_contigs_at_10x" in res:
-        res["sample_components.assemblatron.summary.bin_contigs_1x_10x_diff"] = res["sample_components.assemblatron.summary.bin_contigs_at_1x"] - \
-            res["sample_components.assemblatron.summary.bin_contigs_at_10x"]
+    if "properties.denovo_assembly.summary.bin_contigs_at_1x" in res and "properties.denovo_assembly.summary.bin_contigs_at_10x" in res:
+        res["properties.denovo_assembly.summary.bin_contigs_1x_10x_diff"] = res["properties.denovo_assembly.summary.bin_contigs_at_1x"] - \
+            res["properties.denovo_assembly.summary.bin_contigs_at_10x"]
     else:
-        res["sample_components.assemblatron.summary.bin_contigs_1x_10x_diff"] = math.nan
+        res["properties.denovo_assembly.summary.bin_contigs_1x_10x_diff"] = math.nan
     return res
 
 FUNCS = [assemblatron_diff, assemblatron_contig_diff]
@@ -109,43 +109,43 @@ COLUMNS = [
 plot_values = [
     {
         "name": "Genome_size_1x",
-        "id": "sample_components.assemblatron.summary.bin_length_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_length_at_1x",
         "limits": [1500000, 6000000]
     },
     {
         "name": "Genome_size_10x",
-        "id": "sample_components.assemblatron.summary.bin_length_at_10x",
+        "id": "properties.denovo_assembly.summary.bin_length_at_10x",
         "limits": [1500000, 6000000],
         "xaxis": "x"
     },
     {
         "name": "G_size_difference_1x_10",
-        "id": "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff_text",
+        "id": "properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x.value",
         "limits": [0, 260000]
     },
     {
         "name": "Avg_coverage",
-        "id": "sample_components.assemblatron.summary.bin_coverage_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_coverage_at_1x",
         "limits": [0, 200]
     },
     {
         "name": "Contig_num_1x",
-        "id": "sample_components.assemblatron.summary.bin_contigs_at_1x",
+        "id": "properties.denovo_assembly.summary.bin_contigs_at_1x",
         "limits": [0, 700]
     },
     {
         "name": "Num_reads",
-        "id": "sample_components.assemblatron.summary.filtered_reads_num",
+        "id": "properties.denovo_assembly.summary.filtered_reads_num",
         "limits": [1000, 8000000]
     },
     {
         "name": "Main_sp_plus_unclassified",
-        "id": "sample_components.ssi_stamper.summary.whats_my_species:minspecies_text",
+        "id": "properties.stamper.summary.test__species_detection__main_species_level.value",
         "limits": [0.75, 1]
     },
     {
         "name": "Unclassified_reads",
-        "id": "sample_components.whats_my_species.summary.percent_unclassified",
+        "id": "properties.species_detection.summary.percent_unclassified",
         "limits": [0, 0.25]
     }
 ]
@@ -189,8 +189,8 @@ finder_columns = [
     }
 ]
 
-ROUND_COLUMNS = ["sample_components.whats_my_species.summary.percent_unclassified",
-                 "sample_components.assemblatron.summary.bin_coverage_at_1x"]
+ROUND_COLUMNS = ["properties.species_detection.summary.percent_unclassified",
+                 "properties.denovo_assembly.summary.bin_coverage_at_1x"]
 
 expected_results = ["resistance", "mlst", "plasmid",
                     "virulence"]  # expected categories in sample report
