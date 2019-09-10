@@ -53,14 +53,14 @@ def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     key = sampleComponentObj.get_file_location_key("virulence/report.tsv")
     data = []
-    for gene in results[key]:
+    for contig in results[key]:
         variant_count = 0
-        for variant in results[key][gene]["var_info"]:
+        for variant in results[key][contig]["var_info"]:
             variant_count = variant_count + 1
         data.append({
-            "gene": gene,
-            "coverage": round(results[key][gene].get("ref_base_assembled", 0) / results[key][gene].get("ref_len", 1), 3),
-            "identity": results[key][gene]["pc_ident"],
+            "gene": results[key][contig]["ref_name"],
+            "coverage": round(results[key][contig].get("ref_base_assembled", 0) / results[key][contig].get("ref_len", 1), 3),
+            "identity": results[key][contig]["pc_ident"],
             "variants": variant_count
         })
     return data
