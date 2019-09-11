@@ -298,56 +298,6 @@ def get_assemblies_paths(sample_ids):
     }, {"path": 1, "sample": 1}))
 
 
-# Run_checker.py
-def get_sample_component_status(samples):
-    with get_connection() as connection:
-        db = connection.get_database()
-        sample_ids = list(map(lambda x: ObjectId(x["_id"]), samples))
-        s_c_list = list(db.sample_components.aggregate([
-            {
-                "$match": {
-                    "sample._id": {
-                        "$in": sample_ids
-                    }
-                }
-            },
-            {
-                "$sort": SON([("setup_date", 1)])
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "sample": "$sample._id",
-                        "component": "$component.name"
-                    },
-                    "status": {
-                        "$last": "$status"
-                    }
-                }
-            },
-            {
-                "$group": {
-                    "_id": "$_id.sample",
-                    "s_cs": {
-                        "$push": {
-                            "k": "$_id.component",
-                            "v": "$status"
-                        }
-                    }
-                }
-            },
-            {
-                "$project": {
-                    "_id": 1.0,
-                    "s_cs": {
-                        "$arrayToObject": "$s_cs"
-                    }
-                }
-            }
-        ]))
-        return s_c_list
-
-
 
 def get_species_QC_values(ncbi_species):
     connection = get_connection()
@@ -365,7 +315,10 @@ def get_sample_QC_status(last_runs):
                 for run in last_runs
                 for sample in run["samples"]]
         
-    samples_full = get_samples(list(map(lambda x: x["_id"], samples)))
+    samples_full = db.samples.find({"_id": {"$in": list(map(lambda x: x["_id"], samples))}},
+                                   {"properties.stamper": 1,
+                                    "properties.datafiles": 1,
+                                    "name": 1})
     samples_by_ids = {str(s["_id"]): s for s in samples_full}
 
     samples_runs_qc = {}
@@ -378,18 +331,19 @@ def get_sample_QC_status(last_runs):
         for run in last_runs:
             for run_sample in run["samples"]:
                 if name == samples_by_ids[str(run_sample["_id"])]["name"]:
-                    sample_db = db.samples.find_one(
-                        {"_id": run_sample["_id"]}, {"reads": 1, "stamps": 1})
+                    sample_db = samples_by_ids.get(str(run_sample["_id"]), None)
                     if sample_db is not None:
-                        stamps = sample_db.get("stamps", {})
-                        qc_val = stamps.get(
-                            "ssi_stamper", {}).get("value", "N/A")
-                        if qc_val == "N/A" and (not "reads" in sample_db or not "R1" in sample_db["reads"]):
+                        qc_val = sample_db.get("properties", {}).get("stamper", {}).get(
+                            "summary", {}).get("action", {}).get("value", "N/A")
+                        reads = sample_db.get("properties", {}).get("datafiles", {}).get(
+                            "summary", {}).get("paired_reads", [])
+
+                        if qc_val == "N/A" and not reads:
                             qc_val = "CF(LF)"
                         expert_check = False
-                        if "supplying_lab_check" in stamps and "value" in stamps["supplying_lab_check"]:
-                            qc_val = stamps["supplying_lab_check"]["value"]
-                            expert_check = True
+                        # if "supplying_lab_check" in stamps and "value" in stamps["supplying_lab_check"]:
+                        #     qc_val = stamps["supplying_lab_check"]["value"]
+                        #     expert_check = True
 
                         if qc_val == "fail:supplying lab":
                             qc_val = "SL"
@@ -463,12 +417,6 @@ def get_sample(sample_id):
     connection = get_connection()
     db = connection.get_database()
     return db.samples.find_one({"_id": sample_id})
-
-
-def get_samples(sample_ids):
-    connection = get_connection()
-    db = connection.get_database()
-    return list(db.samples.find({"_id": {"$in": sample_ids}}))
 
 
 def get_comment(run_id):

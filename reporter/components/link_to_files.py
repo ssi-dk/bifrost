@@ -6,17 +6,20 @@ import components.import_data as import_data
 
 def link_to_files(sample_store):
     """Generates a script string """
-    sample_ids = [s["_id"] for s in sample_store]
-    samples = import_data.get_samples(sample_ids)
+    sample_ids = [str(s["_id"]) for s in sample_store]
+    samples = import_data.filter_all(sample_ids=sample_ids,
+                                      projection={"name": 1,
+                                                  "properties.datafiles.summary.paired_reads": 1})
+    samples["_id"] = samples["_id"].astype(str)
+    samples = samples.set_index("_id")
     # Access samples by their id
-    samples_by_ids = {str(s["_id"]): s for s in samples}
     assemblies = import_data.get_assemblies_paths(sample_ids)
     reads_script = "mkdir samples\ncd samples\n"
     assemblies_script = "mkdir assemblies\ncd assemblies\n"
     reads_errors = []
     assemblies_errors = []
     for assembly in assemblies:
-        sample = samples_by_ids[str(assembly["sample"]["_id"])]
+        sample = samples.loc[str(assembly["sample"]["_id"]), : ]
         try:
             assemblies_script += "#{}\nln -s {} {}\n".format(
                 sample["name"],
@@ -58,17 +61,18 @@ def link_to_files(sample_store):
             ], className="card mb-4 shadow")
         ]
 
-    for sample in samples:
+    for _id, sample in samples.iterrows():
         try:
             reads_script += "#{}\nln -s {} .\nln -s {} .\n".format(
                 sample["name"],
-                sample["reads"]["R1"],
-                sample["reads"]["R2"])
+                sample["properties.datafiles.summary.paired_reads"][0],
+                sample["properties.datafiles.summary.paired_reads"][1])
         except KeyError as e:
             reads_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
                 sample.get("name", "None"),
                 sample["_id"],
-                sample.get("reads", "No data")
+                sample.get(
+                    "properties.datafiles.summary.paired_reads", "No data")
             ))
     if len(reads_errors):
         reads_html = [

@@ -342,8 +342,7 @@ def generate_table(tests_df):
         tests_df[qc_action] = np.nan
     else:
         tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
-    
-    print(list(tests_df.columns))
+
     r1_col = "properties.datafiles.summary.paired_reads"
 
     if r1_col not in tests_df:

@@ -23,7 +23,13 @@ import components.import_data as import_data
 import json
 from bson import json_util
 
-
+components_order = [
+    "min_read_check", "whats_my_species", "assemblatron", "ssi_stamper",
+    "cge_resfinder", "cge_mlst", "cge_plasmidfinder",
+    "cge_virulencefinder", "ariba_resfinder", "ariba_mlst",
+    "ariba_plasmidfinder", "ariba_virulencefinder", "sp_cdiff_fbi",
+    "sp_ecoli_fbi", "sp_salm_fbi", "min_read_check", "analyzer",
+    "qcquickie", "ssi_stamper"]
 
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
@@ -138,17 +144,6 @@ def pipeline_report_data(sample_data):
         projection={"properties.stamper": 1, 'name': 1,
                     'sample_sheet.priority': 1,
                     "components": 1})
-    samples["_id"] = samples["_id"].astype(str)
-    samples = samples.set_index("_id")
-
-    components_order = [
-        "min_read_check", "whats_my_species", "assemblatron", "ssi_stamper",
-        "cge_resfinder", "cge_mlst", "cge_plasmidfinder",
-        "cge_virulencefinder", "ariba_resfinder", "ariba_mlst",
-        "ariba_plasmidfinder", "ariba_virulencefinder", "sp_cdiff_fbi",
-        "sp_ecoli_fbi", "sp_salm_fbi", "min_read_check", "analyzer",
-        "qcquickie", "ssi_stamper"]
-
 
     s_c_components = []
     for _id, sample in samples.iterrows():
@@ -307,7 +302,8 @@ def rerun_components_button(button, table_data):
         sample_rerun.append(row["component"])
         to_rerun[row["sample_id"]] = sample_rerun
     
-    sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys())
+    sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys(),
+                                         projection={"name": 1, "path": 1})
     samples_by_id = {str(s["_id"]) : s for s in sample_dbs}
 
     bifrost_components_dir = os.path.join(keys.rerun["bifrost_dir"], "components/")
@@ -355,7 +351,6 @@ def rerun_components_button(button, table_data):
                     keys.rerun["advres"])
             else:
                 advres = ''
-            torque_node = ",nodes=1:ppn={}".format(keys.rerun["threads"])
             script_path = os.path.join(run_path, "manual_rerun.sh")
             with open(script_path, "w") as script:
                 command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
@@ -412,9 +407,9 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
         col = active["column_id"]
         sample = table_data[active["row"]]["sample"]
         sample_id = table_data[active["row"]]["_id"]
-
-        new_rows = [{"sample": sample, "component": col,
-                     "sample_id": sample_id}]
+        if col in components_order:
+            new_rows = [{"sample": sample, "component": col,
+                        "sample_id": sample_id}]
     elif triggered_id == "rerun-add-components.n_clicks":
         sample_id, sample = rerun_comp.split(":")
         new_rows = [{"sample": sample,
