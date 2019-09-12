@@ -55,9 +55,7 @@ def generate_report(sampleComponentObj):
     key = sampleComponentObj.get_file_location_key("plasmid/report.tsv")
     data = []
     for contig in results[key]:
-        variant_count = 0
-        for variant in results[key][contig]["var_info"]:
-            variant_count = variant_count + 1
+        variant_count = len(results[key][contig].get("var_info", []))
         data.append({
             "gene": results[key][contig]["ref_name"],
             "coverage": round(results[key][contig].get("ref_base_assembled", 0) / results[key][contig].get("ref_len", 1), 3),
