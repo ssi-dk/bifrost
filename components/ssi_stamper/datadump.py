@@ -254,7 +254,7 @@ def generate_report(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     data = []
     for test in summary:
-        data.append({"test": "{}:{}:{}:{}".format(summary[test]["display_name"],
+        data.append({"test": "{}: {}:{}:{}".format(summary[test]["display_name"],
                                                    summary[test]["status"],
                                                    summary[test]["value"],
                                                    summary[test]["reason"])})
