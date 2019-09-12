@@ -8,6 +8,7 @@ import components.global_vars as global_vars
 import components.admin as admin
 import dash_bootstrap_components as dbc
 import pandas as pd
+import numpy as np
 import math
 import json
 
@@ -338,6 +339,7 @@ def html_sample_tables(sample_data, **kwargs):
             results.append(html.Div([
                 html.H6(sample_data["report.{}.title".format(entry)],
                         className="table-header"),
+                html.Div(sample_data["report.{}.info".format(entry)]),
                 html.Div(
                     dt.DataTable(
                         style_table={
@@ -373,8 +375,8 @@ def html_sample_tables(sample_data, **kwargs):
 
 
     mlst_type = "ND"
-    if "properties.mlst.summary.strain" in sample_data and not pd.isna(sample_data["properties.mlst.summary.strain"]):
-        mlst_type = ", ".join(sample_data["properties.mlst.summary.strain"])
+    if "properties.mlst.summary.strain" in sample_data and isinstance(sample_data["properties.mlst.summary.strain"], (list, np.ndarray)):
+        mlst_type = ", ".join(list(map(str,sample_data["properties.mlst.summary.strain"])))
 
 
     return html.Div([
