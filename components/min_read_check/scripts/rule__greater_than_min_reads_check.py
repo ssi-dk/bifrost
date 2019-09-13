@@ -17,11 +17,11 @@ def rule__greater_than_min_reads_check(input, output, sampleComponentObj, log):
 
         # Code to run
         num_of_reads = int(re.search("Result:\s*([0-9]+)\sreads", stats_data, re.MULTILINE).group(1))
+        with open(output_file, "w") as output:
         if num_of_reads > min_read_number:
-            with open(output_file, "w") as output:
-                output.write("min_read_num:{}".format(min_read_number))
+            output.write("has_min_num_of_reads:TRUE\nmin_read_num:{}".format(num_of_reads))
         else:
-            sampleComponentObj.write_log_out(log, "Doesn't have min reads {}reads found\n".format(num_of_reads))
+            output.write("has_min_num_of_reads:FALSE\nmin_read_num:{}".format(num_of_reads))
 
         sampleComponentObj.end_rule(this_function_name, log=log)
     except Exception:
