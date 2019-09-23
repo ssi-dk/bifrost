@@ -48,7 +48,7 @@ def set_sample_species(sampleComponentObj):
     if sample_info.get("provided_species", None) is not None:
         summary["species"] = sample_info["provided_species"]
     else:
-        summary["species"] = summary["detected_species"]
+        summary["species"] = summary.get("detected_species", None)
     return (summary, results)
 
 
