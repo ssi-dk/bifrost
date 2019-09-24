@@ -99,7 +99,7 @@ def get_species_list(species_source, run_name=None):
     connection = get_connection()
     db = connection.get_database()
     if species_source == "provided":
-        spe_field = "properties.species_detection.summary.provided_species"
+        spe_field = "properties.sample_info.summary.provided_species"
     else:
         spe_field = "properties.species_detection.summary.detected_species"
     if run_name is not None:
@@ -173,7 +173,7 @@ def filter(run_names=None,
            sample_names=None,
            projection=None):
     if species_source == "provided":
-        spe_field = "properties.species_detection.summary.provided_species"
+        spe_field = "properties.sample_info.summary.provided_species"
     elif species_source == "detected":
         spe_field = "properties.species_detection.summary.detected_species"
     else:
@@ -302,10 +302,21 @@ def get_assemblies_paths(sample_ids):
 def get_species_QC_values(ncbi_species):
     connection = get_connection()
     db = connection.get_database('bifrost_species')
-    if ncbi_species != "default":
-        return db.species.find_one({"ncbi_species": ncbi_species}, {"min_length": 1, "max_length": 1})
-    else:
-        return db.species.find_one({"organism": ncbi_species}, {"min_length": 1, "max_length": 1})
+    species = db.species.find_one({"ncbi_species": ncbi_species}, {
+                        "min_length": 1, "max_length": 1})
+    if species is not None:
+        return species
+    species = db.species.find_one({"organism": ncbi_species}, {
+        "min_length": 1, "max_length": 1})
+    if species is not None:
+        return species
+    species = db.species.find_one({"group": ncbi_species}, {
+        "min_length": 1, "max_length": 1})
+    if species is not None:
+        return species
+    species = db.species.find_one({"organism": "default"}, {
+        "min_length": 1, "max_length": 1})
+    return species
 
 
 def get_sample_QC_status(last_runs):

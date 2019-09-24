@@ -34,7 +34,7 @@ COLUMNS = [
     },
     {
         "name": "QC_action",
-        "id": "properties.stamper.summary.stamp.value",
+        "id": "properties.stamper.summary.stamp",
     },
     {
         "name": "Comments",
@@ -46,7 +46,7 @@ COLUMNS = [
     },
     {
         "name": "Provided_Species",
-        "id": "properties.species_detection.summary.provided_species"
+        "id": "properties.sample_info.summary.provided_species"
     },
     {
         "name": "Detected Species",
@@ -150,44 +150,8 @@ plot_values = [
     }
 ]
 
-finder_columns = [
-    {
-        "name": "GENE",
-        "id": "GENE"
-    },
-    {
-        "name": "%COVERAGE",
-        "id": "%COVERAGE"
-    },
-    {
-        "name": "%IDENTITY",
-        "id": "%IDENTITY"
-    },
-    {
-        "name": "SEQUENCE",
-        "id": "SEQUENCE"
-    },
-    {
-        "name": "START",
-        "id": "START"
-    },
-    {
-        "name": "END",
-        "id": "END"
-    },
-    {
-        "name": "DATABASE",
-        "id": "DATABASE"
-    },
-    {
-        "name": "COVERAGE",
-        "id": "COVERAGE"
-    },
-    {
-        "name": "ACCESSION",
-        "id": "ACCESSION"
-    }
-]
+value_from_test = ["properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x",
+                   "properties.stamper.summary.test__species_detection__main_species_level"]
 
 ROUND_COLUMNS = ["properties.species_detection.summary.percent_unclassified",
                  "properties.denovo_assembly.summary.bin_coverage_at_1x"]

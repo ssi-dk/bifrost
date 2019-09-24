@@ -337,11 +337,9 @@ def html_div_filter():
 
 
 def generate_table(tests_df):
-    qc_action = "properties.stamper.summary.stamp.value"
+    qc_action = "properties.stamper.summary.stamp"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
-    else:
-        tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
 
     r1_col = "properties.datafiles.summary.paired_reads"
 
@@ -368,23 +366,40 @@ def generate_table(tests_df):
     #     tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     test_cols = [col for col in tests_df.columns if (col.startswith(
-        "properties.stamper.summary."))]
+        "properties.stamper.summary.") and col != "properties.stamper.summary.stamp")]
 
     # Round columns:
     for col in global_vars.ROUND_COLUMNS:
         if col in tests_df.columns:
             tests_df[col] = round(tests_df[col], 3)
+    
+    for col in global_vars.value_from_test:
+        if col in tests_df.columns:
+            new = tests_df[col].str.split(":", expand=True)
+            loc = tests_df.columns.get_loc(col)
+            tests_df.insert(loc + 1, col + ".value", new[2])
 
     def concatenate_failed(row):
         res = []
         tests = {}
         for col in test_cols:
-            test_name = col.split(".")[-2]
-            field = col.split(".")[-1]
-            value = row[col]
-            test = tests.get(test_name, {})
-            test[field] = value
-            tests[test_name] = test
+            test_name = col.split(".")[-1]
+            if pd.isna(row[col]):
+                tests[test_name] = {
+                    "status": "fail",
+                    "reason": "Not tested",
+                    "value": ""
+                }
+            else:
+                values = row[col].split(":")
+                # if len(values) == 3:
+                status, reason, value = values
+                
+                tests[test_name] = {
+                    "status": status,
+                    "reason": reason,
+                    "value": value
+                }
         for testname in tests:
             test = tests[testname]
             if test["status"] == "fail":

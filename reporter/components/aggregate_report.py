@@ -75,7 +75,7 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
     species_col = "properties.species_detection.summary.detected_species"
 
     if plot_species == "provided":
-        species_col = "properties.species_detection.summary.provided_species"
+        species_col = "properties.sample_info.summary.provided_species"
     elif plot_species == "detected":
         species_col = "properties.species_detection.summary.detected_species"
 
@@ -105,7 +105,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
 
     species_col = "properties.species_detection.summary.detected_species"
     if plot_species_source == "provided":
-        species_col = "properties.species_detection.summary.provided_species"
+        species_col = "properties.sample_info.summary.provided_species"
     elif plot_species_source == "detected":
         species_col = "properties.species_detection.summary.detected_species"
 
@@ -113,26 +113,18 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     plot_df = import_data.filter_all(
         sample_ids=sample_ids)
 
-    if "properties.species_detection.summary.provided_species" not in plot_df:
-        plot_df["properties.species_detection.summary.provided_species"] = np.nan
+    if "properties.sample_info.summary.provided_species" not in plot_df:
+        plot_df["properties.sample_info.summary.provided_species"] = np.nan
 
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
 
     #Some columns need to have some text extracted
-    split_columns = [
-        "sample_components.ssi_stamper.summary.assemblatron:1x10xsizediff",
-        "sample_components.ssi_stamper.summary.whats_my_species:minspecies",
-    ]
-    i = 0
-    for column in plot_df.columns:
-        if column in split_columns:
-            new = plot_df[column].str.split(":", expand=True)
-            loc = plot_df.columns.get_loc(column)
-            #tests_df.drop(columns = [column], inplace=True)
-            plot_df.insert(loc, column + "_QC", new[0])
-            plot_df.insert(loc + 1, column + "_text", new[2])
-        i += 1
+    for col in global_vars.value_from_test:
+        if col in plot_df.columns:
+            new = plot_df[col].str.split(":", expand=True)
+            loc = plot_df.columns.get_loc(col)
+            plot_df.insert(loc + 1, col + ".value", new[2])
     
     sunburst_fig = generate_sunburst(plot_df)
 
@@ -219,8 +211,6 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
 
     species_size = import_data.get_species_QC_values(selected_species)
-    if species_size is None:
-        species_size = import_data.get_species_QC_values("default")
 
     annotations = [
         {
@@ -339,16 +329,21 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     return fig, sunburst_fig
 
 def generate_sunburst(plot_df):
+    species_col = "properties.species_detection.summary.species"
+    mlst_col = "properties.mlst.summary.strain"
+    if not (species_col in plot_df.columns and mlst_col in plot_df.columns):
+        return go.Figure()
     
-    unique_species = plot_df["properties.species_detection.summary.species"].unique()
+    unique_species = plot_df[species_col].unique()
 
     labels = ["samples"]
     parents = [""]
     values = [len(plot_df["_id"])]
-    plot_df["properties.mlst.summary.strainstr"] = [
-        ','.join(map(str, l)) for l in plot_df['properties.mlst.summary.strain']]
+    plot_df.loc[plot_df[mlst_col].isnull(
+    )] = plot_df.loc[plot_df[mlst_col].isnull()].apply(lambda x: [])
+    plot_df["properties.mlst.summary.strainstr"] = plot_df[mlst_col].apply(', '.join)
     for species in unique_species:
-        species_df = plot_df[plot_df["properties.species_detection.summary.species"] == species]
+        species_df = plot_df[plot_df[species_col] == species]
         labels.append(short_species(species))
         parents.append("samples")
         values.append(len(species_df))
