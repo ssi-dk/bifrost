@@ -283,7 +283,7 @@ def update_group_list(run_name, pathname):
         group_list = import_data.get_group_list(run_name)
     group_list_options = []
     for item in group_list:
-        if item["_id"] == None:
+        if pd.isna(item["_id"]):
             group_list_options.append({
                 "label": "Not defined ({})".format(item["count"]),
                 "value": "Not defined"
@@ -323,7 +323,7 @@ def update_species_list(run_name, form_species):
     species_options = []
     species_list_options = []
     for item in species_list:
-        if item["_id"] == None:
+        if pd.isna(item["_id"]):
             species_options.append("Not classified")
             species_list_options.append({
                 "label": "Not classified ({})".format(item["count"]),
