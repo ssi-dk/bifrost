@@ -284,8 +284,8 @@ def update_run_report(store, n_intervals):
                 continue #ignore this row
             row = []
             stamps = sample.get("stamps", {})
-            priority = sample.get("sample_sheet",
-                                  {}).get("priority", "").lower()
+            priority = str(sample.get("sample_sheet",
+                                  {}).get("priority", "")).lower()
             prio_display = " "
             prio_title = priority
             if priority == "high":
