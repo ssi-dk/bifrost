@@ -464,7 +464,7 @@ rule set_sample_species:
                         sample_db = datahandling.load_sample(sample_config)
 
                         sample_db["properties"] = sample_db.get("properties", {"sample_info": {"summary": {}}, "datafiles": {"summary": {"paired_reads": []}}})
-                        provided_species = sample_db["sample_sheet"].get("provided_species")
+                        provided_species = sample_db["properties"]["sample_info"]["summary"].get("provided_species")
                         if pandas.isna(provided_species):
                             provided_species = None
                         else:
