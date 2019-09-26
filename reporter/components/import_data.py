@@ -53,7 +53,6 @@ def filter_all(species=None, species_source=None, group=None,
                sample_names=None,
                pagination=None,
                projection=None):
-
     if sample_ids is None:
         query_result = mongo_interface.filter(
             run_names=run_names, species=species,
@@ -66,7 +65,6 @@ def filter_all(species=None, species_source=None, group=None,
         query_result = mongo_interface.filter(
             samples=sample_ids, pagination=pagination,
             projection=projection)
-
     return pd.io.json.json_normalize(query_result)
 
 

@@ -19,6 +19,7 @@ import keys
 import dash_scroll_up
 
 import components.import_data as import_data
+from datetime import datetime
 
 import json
 from bson import json_util
@@ -49,7 +50,8 @@ def pipeline_report(sample_data):
             "padding": "0px 10px",
             "fontSize": "0.7rem",
             "height": "25px"
-            })
+            }
+            )
 
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                       "*: user submitted")
@@ -71,7 +73,7 @@ def pipeline_report(sample_data):
                         table,
                         dcc.Interval(
                             id='table-interval',
-                            interval=30*1000,  # in milliseconds
+                            interval=30*100000,  # in milliseconds
                             n_intervals=0
                         )
                     ], className="card-body")
@@ -131,6 +133,11 @@ def pipeline_report(sample_data):
 
 def pipeline_report_data(sample_data):
 
+    if len(sample_data) == 0:
+        return [], [{"id": "Priority", "name": "Priority"},
+                    {"id": "Sample", "name": "Sample"},
+                    {"id": "QC status", "name": "QC status"}], [], [], []
+
     status_dict = {
         "Success": "OK",
         "Running": "Running",
@@ -147,10 +154,12 @@ def pipeline_report_data(sample_data):
 
     s_c_components = []
     for _id, sample in samples.iterrows():
-        for component in sample["components"]:
-            s_c_components.append(component["name"])
+        try:
+            for component in sample["components"]:
+                s_c_components.append(component["name"])
+        except TypeError:
+            pass
     components_list = [comp for comp in components_order if comp in s_c_components]
-
     rows = []
 
     columns = [
@@ -164,6 +173,7 @@ def pipeline_report_data(sample_data):
     for comp in components_list:
         columns.append({"name": comp, "id": comp})
         rerun_form_components.append({"label": comp, "value": comp})
+
 
     # Conditional data colors
     style_data_conditional = [
@@ -196,7 +206,7 @@ def pipeline_report_data(sample_data):
             "backgroundColor": "#f1c40f"
         }
     ]
-    for col in s_c_components:
+    for col in components_list:
         style_data_conditional.append({
             "if": {
                 "column_id": col,
@@ -279,9 +289,11 @@ def pipeline_report_data(sample_data):
                 print(sample)
 
         row["qc_val"] = qc_val
-
-        for component in sample["components"]:
-            row[component["name"]] = status_dict[component["status"]]
+        try:
+            for component in sample["components"]:
+                row[component["name"]] = status_dict[component["status"]]
+        except TypeError:
+            pass
         rows.append(row)
     def sort_name(e):
         return e["sample"]
@@ -410,6 +422,8 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
         if col in components_order:
             new_rows = [{"sample": sample, "component": col,
                         "sample_id": sample_id}]
+        else:
+            new_rows = []
     elif triggered_id == "rerun-add-components.n_clicks":
         sample_id, sample = rerun_comp.split(":")
         new_rows = [{"sample": sample,

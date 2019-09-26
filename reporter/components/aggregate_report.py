@@ -338,12 +338,14 @@ def generate_sunburst(plot_df):
 
     labels = ["samples"]
     parents = [""]
+    ids = ["samples"]
     values = [len(plot_df["_id"])]
-    plot_df.loc[plot_df[mlst_col].isnull(
-    )] = plot_df.loc[plot_df[mlst_col].isnull()].apply(lambda x: [])
+    for row in plot_df.loc[plot_df[mlst_col].isnull(), mlst_col].index:
+        plot_df.at[row, mlst_col] = []
     plot_df["properties.mlst.summary.strainstr"] = plot_df[mlst_col].apply(', '.join)
     for species in unique_species:
         species_df = plot_df[plot_df[species_col] == species]
+        ids.append(short_species(species))
         labels.append(short_species(species))
         parents.append("samples")
         values.append(len(species_df))
@@ -351,12 +353,14 @@ def generate_sunburst(plot_df):
             unique_mlst = species_df["properties.mlst.summary.strainstr"].unique(
             )
             for mlst in unique_mlst:
+                ids.append("{} - {}".format(species, mlst))
                 labels.append(mlst)
                 parents.append(short_species(species))
-                values.append(
-                    len(species_df[species_df["properties.mlst.summary.strainstr"] == mlst]))
+                values.append(str(
+                    len(species_df[species_df["properties.mlst.summary.strainstr"] == mlst])))
 
     trace = go.Sunburst(
+        ids=ids,
         labels=labels,
         parents=parents,
         values=values,

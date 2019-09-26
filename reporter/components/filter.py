@@ -306,8 +306,12 @@ def html_div_filter():
                             },
                             columns=global_vars.COLUMNS,
                             style_cell={
-                                'width': '200px',
-                                'padding': '0 15px'
+                                'minWidth': '200px',
+                                'textAlign': 'center',
+                                "fontFamily": "Arial",
+                                "padding": "0px 10px",
+                                "fontSize": "0.7rem",
+                                "height": "auto"
                             },
                             style_cell_conditional=[
                                 {
@@ -392,14 +396,17 @@ def generate_table(tests_df):
                 }
             else:
                 values = row[col].split(":")
-                # if len(values) == 3:
-                status, reason, value = values
-                
+                status = values[0]
+                # Needed to join due to ":" appearing sometimes in reason
+                reason = ":".join(values[1:-1])
+                value = values[-1]
+            
                 tests[test_name] = {
                     "status": status,
                     "reason": reason,
                     "value": value
                 }
+                
         for testname in tests:
             test = tests[testname]
             if test["status"] == "fail":

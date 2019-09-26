@@ -35,7 +35,7 @@ import components.admin as admin
 from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
 from components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
 from components.resequence_report import resequence_report
-from components.link_to_files import link_to_files
+from components.link_to_files import link_to_files, link_to_files_div
 
 # Globals
 # also defined in mongo_interface.py
@@ -104,9 +104,13 @@ external_scripts = [
     'https://kit.fontawesome.com/24170a81ff.js',
 ]
 
+external_stylesheets = [
+    "https://fonts.googleapis.com/css?family=Lato",
+    dbc.themes.BOOTSTRAP
+]
 
 app = dash.Dash(__name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    external_stylesheets=external_stylesheets,
     external_scripts=external_scripts
 )
 app.title = "bifrost"
@@ -125,8 +129,7 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
 
 # Temp css to make it look nice
 # Lato font
-app.css.append_css(
-    {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
+
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
@@ -330,7 +333,7 @@ def update_run_name(pathname, sample_store):
         samples_panel = "d-none"
         view = resequence_report(collection_name)
     elif section == "link-to-files":
-        view = link_to_files(sample_store)
+        view = link_to_files_div()
     else:
         samples_panel = "d-none"
         view = "Not found"
@@ -719,6 +722,13 @@ def print_radio(n_clicks_timestamp, user, *args):
             return "Feedback saved"
     return []
 
+
+@app.callback(
+    Output("link-to-files-div", "children"),
+    [Input("sample-store", "data")],
+)
+def link_to_files_f(data):
+    return link_to_files(data)
 
 server = app.server # Required for gunicorn
 
