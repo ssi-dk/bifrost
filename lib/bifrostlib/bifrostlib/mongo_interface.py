@@ -8,6 +8,7 @@ import ruamel.yaml
 import traceback
 import atexit
 import magic
+import math
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
@@ -19,7 +20,7 @@ def date_now():
     Needed to keep the same date in python and mongo, as mongo rounds to millisecond
     """
     d = datetime.utcnow()
-    return d.replace(microsecond=round(d.microsecond/1000)*1000)
+    return d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
 CONNECTION = None
 
