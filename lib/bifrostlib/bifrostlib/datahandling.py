@@ -91,6 +91,7 @@ class SampleComponentObj:
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.sample_component_db["_id"]
+        self.started()
         return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
@@ -154,9 +155,20 @@ class SampleComponentObj:
         else:
             self.requirements_not_met()
 
+    def get_current_status(self):
+        return self.sample_component_db["status"]
+
     def requirements_not_met(self):
         sys.stdout.write("Workflow stopped due to requirements\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
+
+    def initialized(self):
+        sys.stdout.write("Workflow initialized\n")
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Initialized")
+
+    def queued(self):
+        sys.stdout.write("Workflow queue'd\n")
+        update_status_in_sample_and_sample_component(self.sample_component_id, "Queued")
 
     def started(self):
         sys.stdout.write("Workflow processing\n")
@@ -164,11 +176,13 @@ class SampleComponentObj:
 
     def success(self):
         sys.stdout.write("Workflow complete\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
+        if self.get_current_status() == "Running":
+            update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
 
     def failure(self):
         sys.stdout.write("Workflow error\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
+        if self.get_current_status() == "Running":
+            update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
