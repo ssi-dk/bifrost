@@ -14,6 +14,14 @@ import json
 
 SAMPLE_PAGESIZE = 25
 
+def get(dict_o, field, default=None):
+    r = dict_o.get(field, default)
+    
+    if not isinstance(r, (list, np.ndarray)) and pd.isna(r):
+        return default
+    else:
+        return r
+
 def sample_report(data):
 
     sample_n = len(data)
@@ -77,18 +85,19 @@ def sample_report(data):
 
 def check_test(test_name, sample):
     test_path = "properties.stamper.summary." + test_name
-    if test_path not in sample or pd.isnull(sample[test_path]):
+    res = get(sample, test_path, "")
+    if res == "":
         return "" # show nothing
         #return "test-missing"
-    if sample.get(test_path, "").startswith("pass"):
+    if res.startswith("pass"):
         return "test-pass"
-    elif sample.get(test_path, "").startswith("fail"):
+    elif res.startswith("fail"):
         return "test-fail"
     else:
         return "test-warning"
 
 def get_species_img(sample_data):
-    genus = str(sample_data.get("properties.species_detection.summary.name_classified_species_1")).split()[
+    genus = str(get(sample_data, "properties.species_detection.summary.name_classified_species_1")).split()[
         0].lower()
     if "{}.svg".format(genus) in list_of_images:
         img = html.Img(
@@ -116,7 +125,7 @@ def generate_sample_report(sample, n_sample):
                         html.H6(
                             sample["name"],
                             className="d-inline font-weight-bold text-primary mx-2"),
-                        html.I(sample["properties.species_detection.summary.species"])
+                        html.I(get(sample, "properties.species_detection.summary.species"))
                     ], className="d-inline-block"),
                     
                 ]),
@@ -132,10 +141,9 @@ def generate_sample_report(sample, n_sample):
 
 def html_organisms_table(sample_data, **kwargs):
     percentages = [
-        sample_data.get("properties.species_detection.summary.percent_classified_species_1", math.nan),
-        sample_data.get(
-            "properties.species_detection.summary.percent_classified_species_2", math.nan),
-        sample_data.get("properties.species_detection.summary.percent_unclassified", math.nan)
+        get(sample_data, "properties.species_detection.summary.percent_classified_species_1", math.nan),
+        get(sample_data, "properties.species_detection.summary.percent_classified_species_2", math.nan),
+        get(sample_data, "properties.species_detection.summary.percent_unclassified", math.nan)
     ]
 
     color_0 = "#b3ccc1"
@@ -150,23 +158,23 @@ def html_organisms_table(sample_data, **kwargs):
         html.Table([
             html.Tr([
                 html.Td(
-                    [html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
+                    [html.I(get(sample_data, "properties.species_detection.summary.name_classified_species_1", "No data")), " + Unclassified"], className="cell"),
                 html_td_percentage(percentages[0] + percentages[2], color_0)
-            ], className=check_test("whats_my_species:minspecies", sample_data) + " trow"),
+            ], className=check_test("test__species_detection__main_species_level", sample_data) + " trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_1", "No data")), className="cell"),
+                    html.I(get(sample_data, "properties.species_detection.summary.name_classified_species_1", "No data")), className="cell"),
                 html_td_percentage(percentages[0], color_1)
             ], className="trow"),
             html.Tr([
                 html.Td(
-                    html.I(sample_data.get("properties.species_detection.summary.name_classified_species_2", "No data")), className="cell"),
+                    html.I(get(sample_data, "properties.species_detection.summary.name_classified_species_2", "No data")), className="cell"),
                 html_td_percentage(percentages[1], color_2)
             ], className="trow"),
             html.Tr([
                 html.Td("Unclassified", className="cell"),
                 html_td_percentage(percentages[2], color_u)
-            ], className=check_test("whats_my_species:maxunclassified", sample_data) + " trow")
+            ], className=check_test("test__species_detection__unclassified_level", sample_data) + " trow")
         ], className="bifrost-table")
     ], **kwargs)
 
@@ -189,15 +197,16 @@ def html_test_tables(sample_data):
     stamp_rows = []
     for stamp in stamps_to_check:
         stamp_key = "stamps.{}.value".format(stamp)
-        if stamp_key in sample_data and not pd.isnull(sample_data[stamp_key]):
-            if str(sample_data[stamp_key]).startswith("pass"):
+        stamp_val = get(sample_data, stamp_key)
+        if stamp_val is not None:
+            if str(stamp_val).startswith("pass"):
                 stamp_class = "test-pass"
-            elif str(sample_data[stamp_key]).startswith("fail"):
+            elif str(stamp_val).startswith("fail"):
                 stamp_class = "test-fail"
             else:
                 stamp_class = ""
             stamp_rows.append({
-                "list": [stamp, sample_data[stamp_key]],
+                "list": [stamp, stamp_val],
                 "className": stamp_class
             })
 
@@ -227,32 +236,32 @@ def html_sample_tables(sample_data, **kwargs):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
 
-    if "sample_sheet.sample_name" in sample_data:
-        if "sample_sheet.emails" in sample_data and type(sample_data["sample_sheet.emails"]) is str:
-            n_emails = len(sample_data["sample_sheet.emails"].split(";"))
+    if get(sample_data, "properties.sample_info.summary.sample_name"):
+        emails_l = get(sample_data, "properties.sample_info.summary.emails")
+        if emails_l:
+            n_emails = len(emails_l.split(";"))
             if (n_emails > 1):
-                emails = ", ".join(
-                    sample_data["sample_sheet.emails"].split(";")[:2])
+                emails = ", ".join(emails_l.split(";")[:2])
                 if (n_emails > 2):
                     emails += ", ..."
             else:
-                emails = sample_data["sample_sheet.emails"]
+                emails = emails_l
         else:
             emails = ""
         sample_sheet_table = html_table([
-                    ["Supplied name", sample_data.get("sample_sheet.sample_name","")],
-                    ["User Comments", sample_data.get("sample_sheet.Comments","")],
-                    ["Supplying lab", sample_data.get("sample_sheet.group", "")],
+                    ["Supplied name", get(sample_data, "sample_sheet.sample_name", "")],
+                    ["User Comments", get(sample_data, "sample_sheet.Comments", "")],
+                    ["Supplying lab", get(sample_data, "sample_sheet.group", "")],
                     ["Submitter emails", emails],
                     {
                         "list": ["Provided species", html.I(
-                            sample_data.get("sample_sheet.provided_species"))],
-                        "className": check_test("properties.species_detection.summary:detectedspeciesmismatch", sample_data)
+                            get(sample_data, "sample_sheet.provided_species", ""))],
+                        "className": check_test("test__sample__species_provided_is_detected", sample_data)
                     },
                     {
                         "list": ["Read file", 
-                            str(sample_data["reads.R1"]).split("/")[-1]],
-                        "className": check_test("base:readspresent", sample_data)
+                                 str(get(sample_data, "properties.datafiles.summary.paired_reads", [""])[0]).split("/")[-1]],
+                        "className": check_test("test__sample__has_reads_files", sample_data)
                     }
                 ])
     else:
@@ -265,68 +274,68 @@ def html_sample_tables(sample_data, **kwargs):
                 "list": [
                     "Number of filtered reads",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.summary.filtered_reads_num", math.nan))
+                        get(sample_data, "properties.denovo_assembly.summary.filtered_reads_num", math.nan))
                 ],
-                "className": check_test("assemblatron:numreads", sample_data)
+                "className": check_test("test__denovo_assembly__minimum_read_number", sample_data)
             },
             [
                 "Number of contigs (1x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_1x", math.nan))
+                    get(sample_data, "properties.denovo_assembly.summary.bin_contigs_at_1x", math.nan))
             ],
             [
                 "Number of contigs (10x cov.)",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.summary.bin_contigs_at_10x", math.nan))
+                    get(sample_data, "properties.denovo_assembly.summary.bin_contigs_at_10x", math.nan))
             ],
             [
                 "N50",
-                "{:,}".format(sample_data.get("properties.denovo_assembly.summary.N50", math.nan))
+                "{:,}".format(
+                    get(sample_data, "properties.denovo_assembly.summary.N50", math.nan))
             ],
             {
                 "list": [
                     "Average coverage (1x)",
                     "{:,.2f}".format(
-                        sample_data.get("properties.denovo_assembly.summary.bin_coverage_at_1x", math.nan))
+                        get(sample_data, "properties.denovo_assembly.summary.bin_coverage_at_1x", math.nan))
                 ],
-                "className": check_test("assemblatron:avgcoverage", sample_data)
+                "className": check_test("test__denovo_assembly__genome_average_coverage", sample_data)
             },
             {
                 "list": [
                     "Genome size at 1x depth",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_1x", math.nan))
+                        get(sample_data, "properties.denovo_assembly.summary.bin_length_at_1x", math.nan))
                 ],
-                "className": check_test("assemblatron:1xgenomesize", sample_data)
+                "className": check_test("test__denovo_assembly__genome_size_at_1x", sample_data)
             },
             {
                 "list": [
                     "Genome size at 10x depth",
                     "{:,.0f}".format(
-                        sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan))
+                        get(sample_data, "properties.denovo_assembly.summary.bin_length_at_10x", math.nan))
                 ],
-                "className": check_test("assemblatron:10xgenomesize", sample_data)
+                "className": check_test("test__denovo_assembly__genome_size_at_10x", sample_data)
             },
             {
                 "list": [
                     "Genome size 1x - 10x diff",
                     "{:,.0f}".format(
-                        sample_data.get(
-                            "properties.denovo_assembly.summary.bin_length_at_1x", math.nan)
-                        - sample_data.get("properties.denovo_assembly.summary.bin_length_at_10x", math.nan)
+                        get(sample_data, "properties.denovo_assembly.summary.bin_length_at_1x", math.nan)
+                        - get(sample_data, "properties.denovo_assembly.summary.bin_length_at_10x", math.nan)
                     )
                 ],
-                "className": check_test("assemblatron:1x10xsizediff", sample_data)
+                "className": check_test("test__denovo_assembly__genome_size_difference_1x_10x", sample_data)
             },
             [
                 "Genome size at 25x depth",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.summary.bin_length_at_25x", math.nan))
+                    get(sample_data, "properties.denovo_assembly.summary.bin_length_at_25x", math.nan))
             ],
             [
                 "Ambiguous sites",
                 "{:,.0f}".format(
-                    sample_data.get("properties.denovo_assembly.summary.snp_filter_10x_10%", math.nan))
+                    get(sample_data, "properties.denovo_assembly.summary.snp_filter_10x_10%", math.nan))
             ] 
         ])
     ])
@@ -337,9 +346,9 @@ def html_sample_tables(sample_data, **kwargs):
         if "report.{}.data".format(entry) in sample_data:
             any_results = True
             results.append(html.Div([
-                html.H6(sample_data["report.{}.title".format(entry)],
+                html.H6(get(sample_data, "report.{}.title".format(entry)),
                         className="table-header"),
-                html.Div(sample_data["report.{}.info".format(entry)]),
+                html.Div(get(sample_data, "report.{}.info".format(entry))),
                 html.Div(
                     dt.DataTable(
                         style_table={
@@ -348,8 +357,8 @@ def html_sample_tables(sample_data, **kwargs):
                             'maxHeight': '480'
                         },
 
-                        columns=sample_data["report.{}.columns".format(entry)],
-                        data=sample_data["report.{}.data".format(entry)],
+                        columns=get(sample_data, "report.{}.columns".format(entry)),
+                        data=get(sample_data, "report.{}.data".format(entry)),
                         page_action='none'
                     ), className="grey-border")
             ], className="col-6"))
@@ -375,8 +384,9 @@ def html_sample_tables(sample_data, **kwargs):
 
 
     mlst_type = "ND"
-    if "properties.mlst.summary.strain" in sample_data and isinstance(sample_data["properties.mlst.summary.strain"], (list, np.ndarray)):
-        mlst_type = ", ".join(list(map(str,sample_data["properties.mlst.summary.strain"])))
+    strain_list = get(sample_data, "properties.mlst.summary.strain")
+    if isinstance(strain_list, (list, np.ndarray)):
+        mlst_type = ", ".join(list(map(str, strain_list)))
 
 
     return html.Div([
