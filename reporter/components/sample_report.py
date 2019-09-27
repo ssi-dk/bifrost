@@ -357,10 +357,11 @@ def html_sample_tables(sample_data, **kwargs):
                             'maxHeight': '480'
                         },
 
-                        columns=get(sample_data, "report.{}.columns".format(entry)),
-                        data=get(sample_data, "report.{}.data".format(entry)),
+                        columns=get(sample_data, "report.{}.columns".format(entry), []),
+                        data=get(sample_data, "report.{}.data".format(entry), []),
                         page_action='none'
-                    ), className="grey-border")
+                    ),
+                     className="grey-border")
             ], className="col-6"))
         else:
             results.append(html.Div([
