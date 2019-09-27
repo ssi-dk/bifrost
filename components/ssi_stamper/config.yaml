@@ -90,10 +90,12 @@ resources:
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   component:
+    min_read_check:
+      status: Success
     assemblatron:
-      status: Success
+      status: [Success, Failure]
     whats_my_species:
-      status: Success
+      status: [Success, Failure]
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------

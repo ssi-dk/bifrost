@@ -2,7 +2,6 @@ import sys
 import datetime
 from bifrostlib import datahandling
 
-
 def test__sample__has_reads_files(sampleComponentObj):
     try:
         this_function_name = sys._getframe().f_code.co_name
@@ -10,6 +9,24 @@ def test__sample__has_reads_files(sampleComponentObj):
         test = datahandling.stamperTestObj(this_function_name, "No reads", "core facility")
         if sampleComponentObj.get_reads() == ("", ""):
             test.set_status_and_reason("fail", "Read path is empty")
+        else:
+            test.set_status_and_reason("pass", "")
+    except KeyError as e:
+        test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
+    finally:
+        summary[this_function_name] = test.as_dict()
+        return (summary, results)
+
+
+def test__size_check__has_min_reads(sampleComponentObj):
+    try:
+        this_function_name = sys._getframe().f_code.co_name
+        summary, results, file_path, key = sampleComponentObj.start_data_extraction()
+        size_check = sampleComponentObj.get_sample_properties_by_category("size_check")
+        test = datahandling.stamperTestObj(this_function_name, "Less than min reads", "core facility")
+        test.set_value(size_check["has_min_num_of_reads"])
+        if test.get_value() == False:
+            test.set_status_and_reason("fail", "Less than min reads")
         else:
             test.set_status_and_reason("pass", "")
     except KeyError as e:
@@ -264,6 +281,7 @@ def generate_report(sampleComponentObj):
 def datadump(sampleComponentObj, log):
     sampleComponentObj.start_data_dump(log=log)
     sampleComponentObj.run_data_dump_on_function(test__sample__has_reads_files, log=log)
+    sampleComponentObj.run_data_dump_on_function(test__size_check__has_min_reads, log=log)
     sampleComponentObj.run_data_dump_on_function(test__species_detection__main_species_level, log=log)
     sampleComponentObj.run_data_dump_on_function(test__species_detection__unclassified_level, log=log)
     sampleComponentObj.run_data_dump_on_function(test__component__species_in_db, log=log)
