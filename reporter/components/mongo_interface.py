@@ -345,7 +345,7 @@ def get_sample_QC_status(last_runs):
                     sample_db = samples_by_ids.get(str(run_sample["_id"]), None)
                     if sample_db is not None:
                         qc_val = sample_db.get("properties", {}).get("stamper", {}).get(
-                            "summary", {}).get("action", {}).get("value", "N/A")
+                            "summary", {}).get("stamp", "N/A")
                         reads = sample_db.get("properties", {}).get("datafiles", {}).get(
                             "summary", {}).get("paired_reads", [])
 
@@ -356,12 +356,12 @@ def get_sample_QC_status(last_runs):
                         #     qc_val = stamps["supplying_lab_check"]["value"]
                         #     expert_check = True
 
-                        if qc_val == "fail:supplying lab":
+                        if qc_val == "supplying lab":
                             qc_val = "SL"
-                        elif (qc_val == "fail:core facility" or
-                                qc_val == "fail:resequence"):
+                        elif (qc_val == "core facility" or
+                                qc_val == "resequence"):
                             qc_val = "CF"
-                        elif qc_val == "pass:OK" or qc_val == "pass:accepted":
+                        elif qc_val == "OK" or qc_val == "accepted":
                             qc_val = "OK"
 
                         if expert_check:
@@ -374,11 +374,15 @@ def get_sample_QC_status(last_runs):
 def get_last_runs(run, n, runtype):
     connection = get_connection()
     db = connection.get_database()
-    if run is not None:
+
+    run = db.runs.find_one({"name": run})
+    run_date = run.get("metadata", {}).get("created_at")
+
+    if run_date is not None:
         if runtype is not None:
-            query = {"name": {"$lte": run}, "type": runtype}
+            query = {"metadata.created_at": {"$lte": run_date}, "type": runtype}
         else:
-            query = {"name": {"$lte": run}}
+            query = {"metadata.created_at": {"$lte": run_date}}
     else:
         if runtype is not None:
             query = {"type": runtype}

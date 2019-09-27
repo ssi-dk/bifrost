@@ -11,9 +11,10 @@ def resequence_report(run_name=None):
                         "Core Facility (Library Fail). -: No data. "
                         "*: user submitted. "
                         "The table will update every 30s automatically.")
-
+    if run_name is None:
+        return None
     last_runs = import_data.get_last_runs(
-        run_name, 12, runtype="routine")  # Get last 12 runs
+        run_name, 12)  # Get last 12 runs
     last_runs_names = [run["name"] for run in last_runs]
     prev_runs_dict = import_data.get_sample_QC_status(last_runs)
     header = html.Tr([html.Th(html.Div(html.Strong("Sample")),
@@ -29,17 +30,18 @@ def resequence_report(run_name=None):
         row.append(html.Td(name))
 
         sample_all_OKs = True
-
+        print(name, p_runs)
         for index in range(len(last_runs)):
             if last_runs[index]["name"] in p_runs:
                 className = "0"
                 title = "Not Run"
                 status = p_runs[last_runs[index]["name"]]
+                print(status)
                 if status.startswith("OK"):
                     className = "2"
                     title = "OK"
                 elif status == "SL":
-                    sample_all_OKs = False
+                    # sample_all_OKs = False # Disabled
                     className = "1"
                     title = "Supplying Lab"
                 elif status.startswith("CF"):

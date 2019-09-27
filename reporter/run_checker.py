@@ -29,8 +29,8 @@ components_order = [
     "cge_resfinder", "cge_mlst", "cge_plasmidfinder",
     "cge_virulencefinder", "ariba_resfinder", "ariba_mlst",
     "ariba_plasmidfinder", "ariba_virulencefinder", "sp_cdiff_fbi",
-    "sp_ecoli_fbi", "sp_salm_fbi", "min_read_check", "analyzer",
-    "qcquickie", "ssi_stamper"]
+    "sp_ecoli_fbi", "sp_salm_fbi", "analyzer",
+    "qcquickie", "testomatic"]
 
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
