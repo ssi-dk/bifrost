@@ -206,28 +206,6 @@ def test__denovo_assembly__genome_average_coverage(sampleComponentObj):
         return (summary, results)
 
 
-def test__denovo_assembly__minimum_read_number(sampleComponentObj):
-    try:
-        this_function_name = sys._getframe().f_code.co_name
-        summary, results, file_path, key = sampleComponentObj.start_data_extraction()
-        test = datahandling.stamperTestObj(this_function_name, "Number of filtered reads below minimum", "core facility")
-        options = sampleComponentObj.get_options()
-        denovo_assembly = sampleComponentObj.get_sample_properties_by_category("denovo_assembly")
-        test.set_value(denovo_assembly["filtered_reads_num"])
-        if test.get_value() < options["number_of_reads_fail"]:
-            test["status"] = "fail"
-            test["reason"]="Filtered reads below minimum ({} < {})".format(test.get_value(), options["number_of_reads_fail"])
-        else:
-            test.set_status_and_reason("pass", "")
-    except KeyError as e:
-        test.set_status_and_reason("fail", "Database KeyError {} in function {}: ".format(e.args[0], this_function_name))
-    finally:
-        summary[this_function_name] = test.as_dict()
-        print(test.as_dict())
-        print(test.name)
-        return (summary, results)
-
-
 def evaluate_tests_and_stamp(sampleComponentObj):
     summary, results, file_path, key = sampleComponentObj.start_data_extraction()
     species_detection = sampleComponentObj.get_sample_properties_by_category("species_detection")
@@ -290,7 +268,6 @@ def datadump(sampleComponentObj, log):
     sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__genome_size_at_10x, log=log)
     sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__genome_size_difference_1x_10x, log=log)
     sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__genome_average_coverage, log=log)
-    sampleComponentObj.run_data_dump_on_function(test__denovo_assembly__minimum_read_number, log=log)
     sampleComponentObj.run_data_dump_on_function(evaluate_tests_and_stamp, log=log)
     sampleComponentObj.end_data_dump(generate_report_function=generate_report, log=log)
 

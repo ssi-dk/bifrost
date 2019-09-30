@@ -801,7 +801,7 @@ rule setup_sample_components_to_run:
                                         if config.get("overwrite", False):
                                             command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    sample_component_db["status"] = "queued to run"
+                                    sample_component_db["status"] = "Queued"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
