@@ -225,15 +225,14 @@ def evaluate_tests_and_stamp(sampleComponentObj):
         summary["test__sample__species_provided_is_detected"]["status"] == "pass" and \
         summary["test__denovo_assembly__genome_size_at_1x"]["status"] == "pass"):
             core_facility = True
-    action = "pass:OK"
+    action = "OK"
     status = "pass"
     if supplying_lab:
         status = "fail"
-        action = "fail:supplying lab"
+        action = "supplying lab"
     if core_facility:
         status = "fail"
-        action = "fail:core facility"
-
+        action = "core facility"
     summary["stamp"] = {
         "display_name": "ssi_stamper",
         "name": "ssi_stamper",
