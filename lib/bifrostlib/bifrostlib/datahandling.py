@@ -158,6 +158,17 @@ class SampleComponentObj:
     def get_current_status(self):
         return self.sample_component_db["status"]
 
+    def update_status_in_sample_and_sample_component(status):
+        self.sample_component_db["status"] = status 
+        status_set = False
+        for component in self.sample_db["components"]:
+            if component["_id"] == self.component_db["_id"]:
+                component["status"] = status
+                status_set = True
+        if not status_set:
+            self.sample_db["components"].append([{"_id": component_db["_id"], "name":component_db["name"], "status":status}])
+        self.save()
+
     def requirements_not_met(self):
         sys.stdout.write("Workflow stopped due to requirements\n")
         update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
@@ -230,12 +241,14 @@ class SampleComponentObj:
             self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
             assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
-        save_sample(self.sample_db)
-        self.write_log_out(log, "sample {} saved\n".format(self.sample_db["_id"]))
-        save_sample_component(self.sample_component_db)
-        self.write_log_out(log, "sample_component {} saved\n".format(self.sample_component_db["_id"]))
+        self.save()
+        self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
         open(os.path.join(self.component_db["name"], output_file), "w+").close()
         self.write_log_out(log, "Done datadump\n")
+
+    def save(self):
+        save_sample(self.sample_db)
+        save_sample_component(self.sample_component_db)
 
     def requirement_met(self, db, field, expected_value, log):
         try:
@@ -388,29 +401,6 @@ def sample_component_success(file_yaml):
         return False
     else:
         return True
-
-
-def update_status_in_sample_and_sample_component(sample_component_id, status):
-    sample_component_db = get_sample_component(sample_component_id=sample_component_id)
-    component_db = get_component(component_id=sample_component_db["component"]["_id"])
-    sample_db = get_sample(sample_id=sample_component_db["sample"]["_id"])
-    sample_component_db["status"] = status
-    status_set = False
-    for component in sample_db["components"]:
-        if component["_id"] == component_db["_id"]:
-            component["status"] = status
-            status_set = True
-    if not status_set:
-        sample_db["components"].append([{"_id":component_db["_id"], "name":component_db["name"], "status":status}])
-    save_sample(sample_db)
-    save_sample_component(sample_component_db)
-
-
-def update_sample_component_failure(file_yaml):
-    sample_component_dict = load_sample_component(file_yaml)
-    if sample_component_dict["status"] != "Requirements not met":
-        sample_component_dict["status"] = "Failure"
-    save_sample_component_to_file(sample_component_dict, file_yaml)
 
 
 def save_yaml(content_dict, file_yaml):
