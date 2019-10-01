@@ -46,7 +46,8 @@ db_values_changes:
       plasmid:
         summary: 
         component:
-          _id: "ObjectId"
+          _id: 
+          date: "ObjectId"
     report:
       plasmid:
         title: Plasmid

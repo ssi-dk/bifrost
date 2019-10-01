@@ -53,7 +53,8 @@ db_values_changes:
       virulence:
         summary: 
         component:
-          _id: "ObjectId"
+          _id: 
+          date: "ObjectId"
     report:
       virulence:
         title: Virulence

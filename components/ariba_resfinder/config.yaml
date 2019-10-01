@@ -46,7 +46,8 @@ db_values_changes:
       resistance:
         summary: 
         component:
-          _id: "ObjectId"
+          _id: 
+          date: "ObjectId"
     report:
       resistance:
         title: Resistance

@@ -44,7 +44,8 @@ db_values_changes:
       size_check:
         summary:  # see sample_component summary
         component:
-          _id:  # ObjectId
+          _id: 
+          date:  # ObjectId
     report:
   sample_component:
     summary:

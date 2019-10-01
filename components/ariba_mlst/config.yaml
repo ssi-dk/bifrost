@@ -189,7 +189,8 @@ db_values_changes:
       mlst:
         summary:  # see sample_component summary
         component:
-          _id:  # ObjectId
+          _id: 
+          date:  # ObjectId
     report:
       mlst:
         title: "MLST"

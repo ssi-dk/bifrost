@@ -48,7 +48,8 @@ db_values_changes:
       species_detection:
         summary:  # see sample_component summary
         component:
-          _id:  # ObjectId
+          _id: 
+          date:  # ObjectId
     report:
       species_detection:
   sample_component:
