@@ -96,7 +96,7 @@ def create_feedback_s_c(user, sample, value):
     d = datetime.utcnow()
     now = d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
-    if value not in ("OK", "other", "resequence"):
+    if value not in ("OK", "other", "core facility"):
         raise ValueError("Feedback value {} not valid".format(value))
 
     if value == "OK":
@@ -163,7 +163,7 @@ def add_user_feedback(user, sample_id, value):
     """
     Submits user feedback to a sample
     """
-    sample = mongo_interface.get_samples([ObjectId(sample_id)])[0]
+    sample = mongo_interface.get_sample(ObjectId(sample_id))
     s_c = create_feedback_s_c(user, sample, value)
     sample, old_value = add_user_feedback_to_properties(sample, s_c)
     mongo_interface.save_sample_component(s_c)

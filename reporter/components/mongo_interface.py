@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+import math
 import re
 import pymongo
 import keys  # .gitgnored file
@@ -7,6 +9,14 @@ from bson.son import SON
 import atexit
 
 PAGESIZE = 25
+
+
+def date_now():
+    """
+    Needed to keep the same date in python and mongo, as mongo rounds to millisecond
+    """
+    d = datetime.utcnow()
+    return d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
 CONNECTION = None
 
@@ -391,6 +401,11 @@ def get_last_runs(run, n, runtype):
     return list(db.runs.find(query, {"name": 1, "samples": 1}).sort([['metadata.created_at', pymongo.DESCENDING]]).limit(n))
 
 
+def get_samples(sample_id_list):
+    connection = get_connection()
+    db = connection.get_database()
+    return db.samples.find_one({"_id": {"$in": sample_id_list}})
+
 def get_sample(sample_id):
     connection = get_connection()
     db = connection.get_database()
@@ -490,12 +505,6 @@ def get_run(run_name):
     connection = get_connection()
     db = connection.get_database()
     return db.runs.find_one({"name": run_name})
-
-
-def get_sample(sample_id):
-    connection = get_connection()
-    db = connection.get_database()
-    return db.samples.find_one({"_id": sample_id})
 
 
 def get_component(name=None, version=None):

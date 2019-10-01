@@ -301,9 +301,6 @@ def pipeline_report_data(sample_data):
     return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
 
 
-
-
-
 def rerun_components_button(button, table_data):
     if button == 0:
         return "", False

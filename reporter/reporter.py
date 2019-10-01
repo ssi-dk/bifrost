@@ -409,7 +409,7 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
 @app.callback(
     Output("sample-report", "children"),
     [Input("page-n", "children"),
-     Input("sample-store", "data")]
+    Input("sample-store", "data")]
         )
 def fill_sample_report(page_n, sample_store):
     page_n = int(page_n)
@@ -643,23 +643,6 @@ def pipeline_report_data_f(sample_store, ignore):
 def update_aggregate_fig_f(selected_species, samples, plot_species_source):
     return update_aggregate_fig(selected_species, samples, plot_species_source)
 
-
-def create_stamp(value, user):
-    return {
-        "name": "supplying_lab_check",
-        "user-ip": str(request.remote_addr),
-        "user": user,
-        "date": datetime.datetime.utcnow(),
-        "value": value
-    }
-
-
-# @app.callback(Output("rerun-output", "isOpen"),
-#               [Input("rerun-add-components", "n_clicks")],
-#               [State("rerun-components", "value")])
-# def rerun_form(n_clicks, value):
-#     print(value)
-
 @app.callback(Output("pipeline-rerun", "data"),
               [Input("pipeline-table", "active_cell"),
                Input("pipeline-table", "derived_viewport_data"),
@@ -708,12 +691,12 @@ def submit_user_feedback(n_clicks_timestamp, user, *args):
         for val in args:
             if val != "noaction":
                 if val.startswith("OK_"):
-                    feedback_pairs.append((val[2:], "OK"))
+                    feedback_pairs.append((val[3:], "OK"))
                 elif val.startswith("CF_"):
-                    feedback_pairs.append((val[2:], "core facility"))
-                elif val.startswith("O_"):
-                    feedback_pairs.append((val[2:], "other"))
-        if len(stamplist) > 0:
+                    feedback_pairs.append((val[3:], "core facility"))
+                elif val.startswith("OT_"):
+                    feedback_pairs.append((val[3:], "other"))
+        if len(feedback_pairs) > 0:
             import_data.add_batch_user_feedback_and_mail(feedback_pairs, user)
             return "Feedback saved"
     return []

@@ -13,8 +13,10 @@ def html_qc_expert_form():
                 dbc.Col(dcc.Input(id="qc-user-1", placeholder="Your initials (e.g. MBAS)",
                                   value="", type="text"), width=3),
                 html.Div(id="placeholder0", style={"display": "none"}),
-                dbc.Col(html.Button("Submit QC values",
-                                    id="feedback-button"), width=3)
+                dbc.Col([
+                    html.Button("Submit QC values",
+                                id="feedback-button"),
+                    html.Div(id="qc-feedback", className="qc-feedback")], width=3)
             ]),
             html.Div([
                 html.Details([
