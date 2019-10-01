@@ -32,7 +32,7 @@ def extract_ariba_virulencefinder_data(sampleComponentObj):
         return var_info
     #- Sub Function end ----------------------------------------------------------------------------
     df = pandas.read_csv(file_path, sep="\t")
-    if df.shape()[0] > 0:
+    if df.shape[0] > 0:
         # These are all the columns which will be included in the final dataframe except for the collapsed column
         grouped_df = df.groupby(["ctg", "#ariba_ref_name", "ref_name", "gene", "var_only", "flag", "reads", "cluster", "ref_len", "ref_base_assembled", "pc_ident", "var_description", "free_text"])
         # Turn the columns which are not part of the final dataframe into lists, some will have 1 entry some will have multiple
