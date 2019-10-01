@@ -84,6 +84,10 @@ class SampleComponentObj:
         self.sample_id = None
         self.component_id = None
 
+    def __repr__(self):
+        # print command
+        return str()
+
     def load(self, sample_id, component_id):
         self.sample_id = sample_id
         self.component_id = component_id
@@ -158,7 +162,7 @@ class SampleComponentObj:
     def get_current_status(self):
         return self.sample_component_db["status"]
 
-    def update_status_in_sample_and_sample_component(status):
+    def update_status_in_sample_and_sample_component(self, status):
         self.sample_component_db["status"] = status 
         status_set = False
         for component in self.sample_db["components"]:
@@ -166,34 +170,34 @@ class SampleComponentObj:
                 component["status"] = status
                 status_set = True
         if not status_set:
-            self.sample_db["components"].append([{"_id": component_db["_id"], "name":component_db["name"], "status":status}])
+            self.sample_db["components"].append([{"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status}])
         self.save()
 
     def requirements_not_met(self):
         sys.stdout.write("Workflow stopped due to requirements\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Requirements not met")
+        self.update_status_in_sample_and_sample_component("Requirements not met")
 
     def initialized(self):
         sys.stdout.write("Workflow initialized\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Initialized")
+        self.update_status_in_sample_and_sample_component("Initialized")
 
     def queued(self):
         sys.stdout.write("Workflow queue'd\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Queued")
+        self.update_status_in_sample_and_sample_component("Queued")
 
     def started(self):
         sys.stdout.write("Workflow processing\n")
-        update_status_in_sample_and_sample_component(self.sample_component_id, "Running")
+        self.update_status_in_sample_and_sample_component("Running")
 
     def success(self):
         sys.stdout.write("Workflow complete\n")
         if self.get_current_status() == "Running":
-            update_status_in_sample_and_sample_component(self.sample_component_id, "Success")
+            self.update_status_in_sample_and_sample_component("Success")
 
     def failure(self):
         sys.stdout.write("Workflow error\n")
         if self.get_current_status() == "Running":
-            update_status_in_sample_and_sample_component(self.sample_component_id, "Failure")
+            self.update_status_in_sample_and_sample_component("Failure")
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
