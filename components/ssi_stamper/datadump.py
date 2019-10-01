@@ -220,7 +220,7 @@ def evaluate_tests_and_stamp(sampleComponentObj):
                 core_facility = True
     if (sample_info.get("provided_species", None) == species_detection["detected_species"] and
         summary["test__denovo_assembly__genome_average_coverage"]["status"] == "fail" and \
-        summary["test__denovo_assembly__genome_average_coverage"]["effect"] == "supplyinh lab" and \
+        summary["test__denovo_assembly__genome_average_coverage"]["effect"] == "supplying lab" and \
         summary["test__denovo_assembly__genome_size_difference_1x_10x"]["status"] == "fail" and \
         summary["test__sample__species_provided_is_detected"]["status"] == "pass" and \
         summary["test__denovo_assembly__genome_size_at_1x"]["status"] == "pass"):
