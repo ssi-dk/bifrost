@@ -2,13 +2,21 @@ import pymongo
 import re
 import os
 import ruamel.yaml
+from datetime import datetime
 import traceback
 import atexit
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
 
-CONNECTION = None
 
+def date_now():
+    """
+    Needed to keep the same date in python and mongo, as mongo rounds to millisecond
+    """
+    d = datetime.utcnow()
+    return d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
+
+CONNECTION = None
 
 def close_connection():
     global CONNECTION

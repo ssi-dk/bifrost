@@ -345,7 +345,7 @@ def get_sample_QC_status(last_runs):
                     sample_db = samples_by_ids.get(str(run_sample["_id"]), None)
                     if sample_db is not None:
                         qc_val = sample_db.get("properties", {}).get("stamper", {}).get(
-                            "summary", {}).get("stamp", "N/A")
+                            "summary", {}).get("stamp", {}).get("value", "N/A")
                         reads = sample_db.get("properties", {}).get("datafiles", {}).get(
                             "summary", {}).get("paired_reads", [])
 
@@ -422,6 +422,70 @@ def save_sample(data_dict):
     return data_dict
 
 
+def save_sample_component(data_dict):
+    """COPIED FROM BIFROSTLIB. Insert sample dict into mongodb.
+    Return the dict with an _id element"""
+    connection = get_connection()
+    db = connection.get_database()
+    sample_components_db = db.sample_components
+    now = date_now()
+    data_dict["metadata"] = data_dict.get("metadata", {'created_at': now})
+    data_dict["metadata"]["updated_at"] = now
+    if "_id" in data_dict:
+        data_dict = sample_components_db.find_one_and_update(
+            filter={"_id": data_dict["_id"]},
+            update={"$set": data_dict},
+            # return new doc if one is upserted
+            return_document=pymongo.ReturnDocument.AFTER,
+            # This might change in the future. It doesnt make much sense with our current system.
+            upsert=True
+            # Import relies on this to be true.
+            # insert the document if it does not exist
+        )
+    else:
+        search_fields = {
+            "sample._id": data_dict["sample"]["_id"],
+            "component._id": data_dict["component"]["_id"],
+        }
+        data_dict = sample_components_db.find_one_and_update(
+            filter=search_fields,
+            update={
+                "$set": data_dict
+            },
+            # return new doc if one is upserted
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True  # insert the document if it does not exist
+        )
+    return data_dict
+
+
+def save_component(data_dict):
+    """COPIED FROM BIFROSTLIB. Insert sample dict into mongodb.
+    Return the dict with an _id element"""
+    connection = get_connection()
+    db = connection.get_database()
+    now = date_now()
+    data_dict["metadata"] = data_dict.get("metadata", {'created_at': now})
+    data_dict["metadata"]["updated_at"] = now
+    components_db = db.components  # Collection name is samples
+    if "_id" in data_dict:
+        data_dict = components_db.find_one_and_update(
+            filter={"_id": data_dict["_id"]},
+            update={"$set": data_dict},
+            # return new doc if one is upserted
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True  # This might change in the future # insert the document if it does not exist
+        )
+    else:
+        data_dict = components_db.find_one_and_update(
+            filter=data_dict,
+            update={"$setOnInsert": data_dict},
+            # return new doc if one is upserted
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True  # insert the document if it does not exist
+        )
+    return data_dict
+
 def get_run(run_name):
     connection = get_connection()
     db = connection.get_database()
@@ -433,6 +497,18 @@ def get_sample(sample_id):
     db = connection.get_database()
     return db.samples.find_one({"_id": sample_id})
 
+
+def get_component(name=None, version=None):
+    connection = get_connection()
+    db = connection.get_database()
+    query = {}
+    if name is not None:
+        query["name"] = name
+
+    if version is not None:
+        query["version"] = version
+    return db.components.find_one(
+        query)
 
 def get_comment(run_id):
     connection = get_connection()

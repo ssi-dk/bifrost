@@ -341,7 +341,7 @@ def html_div_filter():
 
 
 def generate_table(tests_df):
-    qc_action = "properties.stamper.summary.stamp"
+    qc_action = "properties.stamper.summary.stamp.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
 
@@ -369,37 +369,34 @@ def generate_table(tests_df):
     #     user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
     #     tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
-    test_cols = [col for col in tests_df.columns if (col.startswith(
-        "properties.stamper.summary.") and col != "properties.stamper.summary.stamp")]
+    test_cols = [col.split(".")[-2] for col in tests_df.columns
+        if (col.startswith("properties.stamper.summary.") and
+            col != "properties.stamper.summary.stamp.status" and
+            col.endswith(".status"))]
 
     # Round columns:
     for col in global_vars.ROUND_COLUMNS:
         if col in tests_df.columns:
             tests_df[col] = round(tests_df[col], 3)
-    
-    for col in global_vars.value_from_test:
-        if col in tests_df.columns:
-            new = tests_df[col].str.split(":", expand=True)
-            loc = tests_df.columns.get_loc(col)
-            tests_df.insert(loc + 1, col + ".value", new[2])
+
 
     def concatenate_failed(row):
         res = []
         tests = {}
-        for col in test_cols:
-            test_name = col.split(".")[-1]
-            if pd.isna(row[col]):
+        for test_name in test_cols:
+            reason_c = "properties.stamper.summary.{}.reason".format(test_name)
+            value_c = "properties.stamper.summary.{}.value".format(test_name)
+            status_c = "properties.stamper.summary.{}.status".format(test_name)
+            if pd.isna(row[value_c]):
                 tests[test_name] = {
                     "status": "fail",
                     "reason": "Not tested",
                     "value": ""
                 }
             else:
-                values = row[col].split(":")
-                status = values[0]
-                # Needed to join due to ":" appearing sometimes in reason
-                reason = ":".join(values[1:-1])
-                value = values[-1]
+                status = row[status_c]
+                reason = row[reason_c]
+                value = row[value_c]
             
                 tests[test_name] = {
                     "status": status,
@@ -407,11 +404,11 @@ def generate_table(tests_df):
                     "value": value
                 }
                 
-        for testname in tests:
-            test = tests[testname]
+        for test_name in tests:
+            test = tests[test_name]
             if test["status"] == "fail":
                 res.append("Test {}: {}, {}".format(
-                    testname, test["status"], test["reason"]))
+                    test_name, test["status"], test["reason"]))
         row["ssi_stamper_failed_tests"] = ". ".join(res)
         return row
 

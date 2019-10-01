@@ -1,4 +1,5 @@
 import sys
+import math
 import pandas as pd
 from datetime import datetime
 import components.mongo_interface as mongo_interface
@@ -86,53 +87,118 @@ def get_sample_QC_status(run):
 def get_last_runs(run=None, n=12, runtype=None):
     return mongo_interface.get_last_runs(run, n, runtype)
 
+def create_feedback_s_c(user, sample, value):
+    if user == "":
+        raise ValueError("Missing user value")
+    component = get_component(name="user_feedback", version="1.0")
+    if component is None:
+        component = mongo_interface.save_component(global_vars.feedback_component)
+    d = datetime.utcnow()
+    now = d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
-def post_stamps(stamplist):
-    for pair in stamplist:
-        sample_id, stamp = pair
-        sample_db = mongo_interface.get_samples([ObjectId(sample_id)])[0]
-        stamps = sample_db.get("stamps", {})
-        stamp_list = stamps.get("stamp_list", [])
-        stamp_list.append(stamp)
-        stamps["stamp_list"] = stamp_list
-        stamps[stamp["name"]] = stamp
-        sample_db["stamps"] = stamps
-        mongo_interface.save_sample(sample_db)
-    return "Feedback saved"
+    if value not in ("OK", "other", "resequence"):
+        raise ValueError("Feedback value {} not valid".format(value))
+
+    if value == "OK":
+        status = "pass"
+    else:
+        status = "fail"
+
+    summary = {
+        "stamp": {
+            "name": "user_feedback",
+            "display_name": "User QC feedback",
+            "value": value,
+            "status": status,
+            "reason": ""
+        }
+    }
+
+    s_c = {
+        "component": {
+            "_id": component["_id"],
+            "name": component["name"]
+        },
+        "sample": {
+            "_id": sample["_id"],
+            "name": sample["name"]
+        },
+        "metadata": {
+            "created_at": now,
+            "updated_at": now,
+        },
+        "path": None,
+        "status": "Success",
+        "setup_date": now,
+        "results": summary,
+        "properties": {
+            "summary": summary,
+            "component": {
+                "_id": component["_id"],
+                "date": now,
+            }
+        }
+        
+    }
+
+    return s_c
+
+def add_user_feedback_to_properties(sample, s_c):
+    """
+    Adds/updates user feedback to sample properties
+    """
+    stamper = sample.get("properties", {}).get("stamper", {})
+    stamper["component"] = s_c["properties"]["component"]
+    summary = stamper.get("summary", {})
+
+    old_value = summary.get("stamp").get("value")
+
+    summary["stamp"] = s_c["properties"]["summary"]["stamp"]
+    sample["properties"] = sample.get("properties", {})
+    sample["properties"]["stamper"] = stamper
+    return sample, old_value
+
+
+def add_user_feedback(user, sample_id, value):
+    """
+    Submits user feedback to a sample
+    """
+    sample = mongo_interface.get_samples([ObjectId(sample_id)])[0]
+    s_c = create_feedback_s_c(user, sample, value)
+    sample, old_value = add_user_feedback_to_properties(sample, s_c)
+    mongo_interface.save_sample_component(s_c)
+    mongo_interface.save_sample(sample)
+    return (sample["name"], old_value)
+
+def add_batch_user_feedback_and_mail(feedback_pairs, user):
+    """
+    Main function called to send sample QC feedback 
+    """
+    email_pairs = []
+    for sample_id, value in feedback_pairs:
+        name, old_value = add_user_feedback(user, sample_id, value)
+        runs = mongo_interface.get_sample_runs([ObjectId(sample_id)])
+        run_names = [run["name"] for run in runs]
+        if "fail:core facility" in (old_value, value):
+            email_pairs.append(name, old_value, value, run_names)
+    send_mail(email_pairs, user)
+
+
+def get_component(name, version):
+    return mongo_interface.get_component(name, version)
+
 
 def get_run(run_name):
     return mongo_interface.get_run(run_name)
 
-def get_samples(sample_ids):
-    return mongo_interface.get_samples(sample_ids)
 
-
-def email_stamps(stamplist):
+def send_mail(sample_info, user):
+    """
+    Sends email about sample feedback updates.
+    """
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
-
-    user = ""
-    sample_info = []
-    for stamp_pair in stamplist:
-        sample_id, stamp = stamp_pair
-        user = stamp["user"]
-        new_status = stamp["value"]
-        sample = mongo_interface.get_samples([ObjectId(sample_id)])[0]
-        if sample is not None:
-            sample_name = sample["name"]
-        else:
-            sample_name = "DBERROR, ID: {}".format(sample_id)
-        runs = mongo_interface.get_sample_runs([ObjectId(sample_id)])
-        run_names = [run["name"] for run in runs]
-        old_status = "none"
-        if "stamps" in sample:
-            if "supplying_lab_check" in sample["stamps"]:
-                old_status = sample["stamps"]["supplying_lab_check"]["value"]
-            elif "ssi_stamper" in sample["stamps"]:
-                old_status = sample["stamps"]["ssi_stamper"]["value"]
-        if "fail:resequence" in (old_status, new_status):
-            sample_info.append((sample_name, old_status, new_status, run_names))
 
     if len(sample_info) == 0:
         return

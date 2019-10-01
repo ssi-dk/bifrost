@@ -84,7 +84,7 @@ def sample_report(data):
     ]
 
 def check_test(test_name, sample):
-    test_path = "properties.stamper.summary." + test_name
+    test_path = "properties.stamper.summary." + test_name + ".status"
     res = get(sample, test_path, "")
     if res == "":
         return "" # show nothing

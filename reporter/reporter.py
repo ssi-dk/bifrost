@@ -702,23 +702,19 @@ def display_confirm_feedback(button):
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
                                      for n in range(SAMPLE_PAGESIZE)]
 )
-def print_radio(n_clicks_timestamp, user, *args):
+def submit_user_feedback(n_clicks_timestamp, user, *args):
     if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
-        stamp_a = create_stamp("pass:accepted", user)
-        stamp_r = create_stamp("fail:resequence", user)
-        stamp_o = create_stamp("fail:other", user)
-        stamplist = []
+        feedback_pairs = []
         for val in args:
             if val != "noaction":
-                if val.startswith("A_"):
-                    stamplist.append((val[2:], stamp_a))
-                elif val.startswith("R_"):
-                    stamplist.append((val[2:], stamp_r))
+                if val.startswith("OK_"):
+                    feedback_pairs.append((val[2:], "OK"))
+                elif val.startswith("CF_"):
+                    feedback_pairs.append((val[2:], "core facility"))
                 elif val.startswith("O_"):
-                    stamplist.append((val[2:], stamp_o))
+                    feedback_pairs.append((val[2:], "other"))
         if len(stamplist) > 0:
-            import_data.email_stamps(stamplist)
-            import_data.post_stamps(stamplist)
+            import_data.add_batch_user_feedback_and_mail(feedback_pairs, user)
             return "Feedback saved"
     return []
 
