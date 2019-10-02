@@ -84,10 +84,6 @@ class SampleComponentObj:
         self.sample_id = None
         self.component_id = None
 
-    def __repr__(self):
-        # print command
-        return str()
-
     def load(self, sample_id, component_id):
         self.sample_id = sample_id
         self.component_id = component_id
