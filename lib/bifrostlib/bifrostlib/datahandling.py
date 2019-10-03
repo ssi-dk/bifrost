@@ -91,7 +91,6 @@ class SampleComponentObj:
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.sample_component_id = self.sample_component_db["_id"]
-        self.started()
         return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
@@ -262,11 +261,9 @@ class SampleComponentObj:
                     self.write_log_err(log, "Found required entry for entry: {} value:{}\n".format(":".join(field), actual_value))
                     return True
             else:
-                self.requirements_not_met()
                 self.write_log_err(log, "Requirements not met for entry: {} allowed_values: {} value:{}\n".format(":".join(field), expected_value, actual_value))
                 return False
         except Exception:
-            self.requirements_not_met()
             self.write_log_err(log, "Requirements not met for entry: {}\ndb was:{}\n".format(":".join(field), db))
             self.write_log_err(log, str(traceback.format_exc()))
             return False
