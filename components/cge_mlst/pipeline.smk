@@ -12,10 +12,12 @@ singularity: dockerfile
 
 
 onsuccess:
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
     bifrost_sampleComponentObj.success()
 
 
 onerror:
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
     bifrost_sampleComponentObj.failure()
 
 
