@@ -179,7 +179,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 def html_test_tables(sample_data):
-    stamps_to_check = ["ssi_stamper", "supplying_lab_check"]
+    qc_to_check = ["stamper"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("properties.stamper.summary.whats_my_species") \
@@ -194,20 +194,22 @@ def html_test_tables(sample_data):
             if (key.endswith(".action")):
                 rows.append(["QC Action", value])
 
-    stamp_rows = []
-    for stamp in stamps_to_check:
-        stamp_key = "stamps.{}.value".format(stamp)
-        stamp_val = get(sample_data, stamp_key)
-        if stamp_val is not None:
-            if str(stamp_val).startswith("pass"):
-                stamp_class = "test-pass"
-            elif str(stamp_val).startswith("fail"):
-                stamp_class = "test-fail"
+    qc_rows = []
+    for qc_cat in qc_to_check:
+        qc_key = "properties.{}.summary.stamp.value".format(qc_cat)
+        qc_val = get(sample_data, qc_key)
+        if qc_val is not None:
+            if str(qc_val).startswith("OK"):
+                qc_class = "test-pass"
+            elif str(qc_val) in ["core facility", "supplying lab", "other"]:
+                qc_class = "test-fail"
             else:
-                stamp_class = ""
-            stamp_rows.append({
-                "list": [stamp, stamp_val],
-                "className": stamp_class
+                qc_class = ""
+            source = get(sample_data,"properties.{}.summary.stamp.display_name".format(qc_cat))
+            qc_label = "{} [{}]".format(qc_cat, source)
+            qc_rows.append({
+                "list": [qc_label, qc_val],
+                "className": qc_class
             })
 
     if len(rows):
@@ -215,15 +217,15 @@ def html_test_tables(sample_data):
     else:
         test_table = html.P("No failed tests.")
     
-    if len(stamp_rows):
-        stamp_table = html_table(stamp_rows)
+    if len(qc_rows):
+        qc_table = html_table(qc_rows)
     else:
-        stamp_table = html.P("No stamps.")
+        qc_table = html.P("No info.")
 
     return dbc.Row([
         dbc.Col([
-            html.H6("QC stamps", className="table-header"),
-            stamp_table
+            html.H6("QC", className="table-header"),
+            qc_table
         ]),
         dbc.Col([
             html.H6("Failed QC tests", className="table-header"),

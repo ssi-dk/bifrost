@@ -342,6 +342,7 @@ def html_div_filter():
 
 def generate_table(tests_df):
     qc_action = "properties.stamper.summary.stamp.value"
+    user_stamp_col = "properties.stamper.summary.stamp.name"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
 
@@ -358,6 +359,9 @@ def generate_table(tests_df):
     tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
+
+    user_mask = tests_df[user_stamp_col] == "user_feedback"
+    tests_df.loc[user_mask, qc_action] = "👤 " + tests_df.loc[user_mask, qc_action]
 
     # user_stamp_col = "stamp.supplying_lab_check.value"
     # # Overload user stamp to ssi_stamper
