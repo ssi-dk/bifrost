@@ -262,9 +262,11 @@ class SampleComponentObj:
                     self.write_log_err(log, "Found required entry for entry: {} value:{}\n".format(":".join(field), actual_value))
                     return True
             else:
+                self.requirements_not_met()
                 self.write_log_err(log, "Requirements not met for entry: {} allowed_values: {} value:{}\n".format(":".join(field), expected_value, actual_value))
                 return False
         except Exception:
+            self.requirements_not_met()
             self.write_log_err(log, "Requirements not met for entry: {}\ndb was:{}\n".format(":".join(field), db))
             self.write_log_err(log, str(traceback.format_exc()))
             return False
