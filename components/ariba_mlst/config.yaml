@@ -179,6 +179,145 @@ requirements:
       species_detection:
         summary:
           species:
+            - Acinetobacter baumannii
+            - Achromobacter
+            - Aeromonas
+            - Aspergillus fumigatus
+            - Anaplasma phagocytophilum
+            - Arcobacter
+            - Bartonella bacilliformis
+            - Burkholderia cepacia complex
+            - Bacillus cereus
+            - Brachyspira hampsonii
+            - Bartonella henselae
+            - Brachyspira hyodysenteriae
+            - Brachyspira intermedia
+            - Bacillus licheniformis
+            - Bordetella pertussis
+            - Streptococcus pseudopneumoniae
+            - Borrelia
+            - Brachyspira pilosicoli
+            - Burkholderia pseudomallei
+            - Brachyspira
+            - Brucella
+            - Bacillus subtilis
+            - Candida albicans
+            - Campylobacter coli
+            - Campylobacter jejuni
+            - Clostridium botulinum
+            - Campylobacter concisus
+            - Campylobacter curvus
+            - Clostridioides difficile
+            - Corynebacterium diphtheriae
+            - Campylobacter fetus
+            - Citrobacter freundii
+            - Candida glabrata
+            - Campylobacter helveticu
+            - Chlamydiales
+            - Campylobacter hyointestinalis
+            - Campylobacter insulaenigrae
+            - Candidatus Liberibacter solanacearum
+            - Candida krusei
+            - Campylobacter lanienae
+            - Campylobacter lari
+            - Carnobacterium maltaromaticum
+            - Cronobacter sakazakii
+            - Clostridium septicum
+            - Clonorchis sinensis
+            - Campylobacter sputorum
+            - Candida tropicalis
+            - Campylobacter upsaliensis
+            - Dichelobacter nodosus
+            - Enterobacter cloacae
+            - Escherichia coli
+            - Edwardsiella
+            - Enterococcus faecalis
+            - Enterococcus faecium
+            - Flavobacterium psychrophilum
+            - Gallibacterium anatis
+            - Helicobacter cinaedi
+            - Haemophilus influenzae
+            - Haemophilus parasuis
+            - Helicobacter pylori
+            - Helicobacter suis
+            - Klebsiella aerogenes
+            - Kingella kingae
+            - Klebsiella oxytoca
+            - Klebsiella pneumoniae
+            - Kudoa septempunctata
+            - Leptospira
+            - Listeria monocytogenes
+            - Lactobacillus salivarius
+            - Mycobacterium abscessus
+            - Mycoplasma agalactiae
+            - Mycoplasma bovis
+            - Macrococcus canis
+            - Macrococcus caseolyticus
+            - Moraxella catarrhalis
+            - Mannheimia haemolytica
+            - Mycoplasma hyopneumoniae
+            - Mycoplasma hyorhinis
+            - Mycoplasma iowae
+            - Mycobacterium massiliense
+            - Melissococcus plutonius
+            - Mycoplasma pneumoniae
+            - Mycoplasma synoviae
+            - Mycobacteria
+            - Neisseria gonorrhoeae
+            - Neisseria meningitidis
+            - Ornithobacterium rhinotracheale
+            - Orientia tsutsugamushi
+            - Propionibacterium acnes
+            - Pseudomonas aeruginosa
+            - Photobacterium damselae
+            - Pseudomonas fluorescens
+            - Porphyromonas gingivalis
+            - Paenibacillus larvae
+            - Pasteurella multocida
+            - Pediococcus pentosaceus
+            - Pseudomonas putida
+            - Piscirickettsia salmonis
+            - Riemerella anatipestifer
+            - Rhodococcus
+            - Streptococcus agalactiae
+            - Staphylococcus aureus
+            - Streptococcus bovis equinus complex_ SBSEC
+            - Streptococcus canis
+            - Streptococcus dysgalactiae equisimilis
+            - Salmonella enterica
+            - Staphylococcus epidermidis
+            - Streptococcus gallolyticus
+            - Staphylococcus haemolyticus
+            - Stapylococcus hominis
+            - Sinorhizobium
+            - Staphylococcus lugdunensis
+            - Stenotrophomonas maltophilia
+            - Streptococcus oralis
+            - Saprolegnia parasitica
+            - Streptococcus pneumoniae
+            - Staphylococcus pseudintermedius
+            - Streptococcus pyogenes
+            - Streptococcus suis
+            - Streptococcus thermophilus
+            - Streptomyces
+            - Streptococcus uberis
+            - Streptococcus zooepidemicus
+            - Taylorella
+            - Tenacibaculum
+            - Treponema pallidum
+            - Trichomonas vaginalis
+            - Ureaplasma
+            - Vibrio cholerae
+            - Vibrio
+            - Vibrio parahaemolyticus
+            - Vibrio tapetis
+            - Vibrio vulnificus
+            - Wolbachia
+            - Xylella fastidiosa
+            - Yersinia aleksiciae
+            - Yersinia enterocolitica
+            - Yersinia pseudotuberculosis
+            - Yersinia ruckeri
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------
