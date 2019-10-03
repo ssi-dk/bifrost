@@ -269,16 +269,15 @@ def pipeline_report_data(sample_data):
             expert_check = True
 
         statusname = ""
-        if qc_val == "fail:supplying lab":
+        if qc_val == "supplying lab":
             qc_val = "SL"
             statusname = "status-1"
         elif qc_val == "N/A":
             statusname = "status--2"
-        elif (qc_val == "fail:core facility" or
-                qc_val == "fail:resequence"):
+        elif (qc_val == "core facility"):
             statusname = "status--1"
             qc_val = "CF"
-        elif qc_val == "pass:OK" or qc_val == "pass:accepted":
+        elif qc_val == "OK":
             statusname = "status-2"
             qc_val = "OK"
 

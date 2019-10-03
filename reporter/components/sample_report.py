@@ -196,8 +196,9 @@ def html_test_tables(sample_data):
 
     qc_rows = []
     for qc_cat in qc_to_check:
-        qc_key = "properties.{}.summary.stamp.value".format(qc_cat)
-        qc_val = get(sample_data, qc_key)
+        qc_key = "properties.{}.summary.stamp".format(qc_cat)
+        qc_key_val = "{}.value".format(qc_key)
+        qc_val = get(sample_data, qc_key_val)
         if qc_val is not None:
             if str(qc_val).startswith("OK"):
                 qc_class = "test-pass"
@@ -205,8 +206,9 @@ def html_test_tables(sample_data):
                 qc_class = "test-fail"
             else:
                 qc_class = ""
-            source = get(sample_data,"properties.{}.summary.stamp.display_name".format(qc_cat))
-            qc_label = "{} [{}]".format(qc_cat, source)
+            source = get(sample_data, "{}.display_name".format(qc_key))
+            reason = get(sample_data, "{}.reason".format(qc_key), "")
+            qc_label = "{} [{}, {}]".format(qc_cat, source, reason)
             qc_rows.append({
                 "list": [qc_label, qc_val],
                 "className": qc_class

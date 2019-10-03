@@ -268,7 +268,7 @@ def sidebar_toggle(n, is_open):
     [State("param-store", "data")]
 )
 def update_run_name(params, prev_params):
-    if params is None:
+    if params is None or params == "":
         raise dash.exceptions.PreventUpdate("Initial repeated params call")
     pparse = urlparse.urlparse(params)
     params = urlparse.parse_qs(pparse.query)

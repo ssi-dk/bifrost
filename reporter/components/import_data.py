@@ -110,7 +110,8 @@ def create_feedback_s_c(user, sample, value):
             "display_name": "User QC feedback",
             "value": value,
             "status": status,
-            "reason": ""
+            "reason": user, #for now its just user
+            "user": user
         }
     }
 
