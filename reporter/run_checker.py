@@ -244,9 +244,8 @@ def pipeline_report_data(sample_data):
         row = {}
         if name == "Undetermined":
             continue  # ignore this row
-
         row["sample"] = name
-        row["_id"] = _id
+        row["_id"] = str(sample["_id"])
 
         rerun_form_samples.append({"label": name, "value": "{}:{}".format(
             _id, name)})
@@ -310,8 +309,12 @@ def rerun_components_button(button, table_data):
         sample_rerun.append(row["component"])
         to_rerun[row["sample_id"]] = sample_rerun
     
+    print(row)
+    
     sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys(),
-                                         projection={"name": 1, "path": 1})
+                                         projection={"name": 1, "path": 1,
+                                                     "properties.datafiles.summary.paired_reads": 1})
+    print(sample_dbs)
     samples_by_id = {str(s["_id"]) : s for s in sample_dbs}
 
     bifrost_components_dir = os.path.join(keys.rerun["bifrost_dir"], "components/")
@@ -319,22 +322,26 @@ def rerun_components_button(button, table_data):
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
         sample_name = sample_db["name"]
-        run_path = sample_db["path"]
+        sample_path = sample_db["path"]
+        reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
         sample_command = ""
         for component in components:
             component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
                 component, component)
+            sing_args = "-B " + reads[0] + "," + reads[1] + "," + \
+                sample_path + "," + \
+                os.getenv("BIFROST_DB_KEY")
+            snakemake_command = (r'snakemake --use-singularity  --singularity-args \"{}\" '
+                                 r'--singularity-prefix \"{}\" --restart-times 2 '
+                                 r"--cores 4 -s {} "
+                                 r"--config Sample=sample.yaml {}; ")
             # unlock first
-            command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
-                        r" --cores 4 -s {} "
-                        r"--config Sample=sample.yaml --unlock; ").format(
-                            component_path)
-            command += (r"snakemake --shadow-prefix /scratch --restart-times 2"
-                        r" --cores 4 -s {} "
-                        r"--config Sample=sample.yaml; ").format(
-                            component_path)
+            command += snakemake_command.format(
+                sing_args, keys.rerun["singularity_prefix"], component_path, "--unlock")
+            command += snakemake_command.format(
+                sing_args, keys.rerun["singularity_prefix"], component_path, "--unlock")
             sample_command += command
         
         if keys.rerun["grid"] == "slurm":
@@ -349,7 +356,7 @@ def rerun_components_button(button, table_data):
                 stderr=subprocess.STDOUT,
                 shell=True,
                 env=os.environ,
-                cwd=run_path)
+                cwd=sample_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, process_out, process_err))
         elif keys.rerun["grid"] == "torque":
@@ -359,7 +366,7 @@ def rerun_components_button(button, table_data):
                     keys.rerun["advres"])
             else:
                 advres = ''
-            script_path = os.path.join(run_path, "manual_rerun.sh")
+            script_path = os.path.join(sample_path, "manual_rerun.sh")
             with open(script_path, "w") as script:
                 command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
                             "ppn={threads},walltime={walltime}{advres} -N "
@@ -372,7 +379,7 @@ def rerun_components_button(button, table_data):
                                         stderr=subprocess.STDOUT,
                                         shell=True,
                                         env=os.environ,
-                                        cwd=run_path)
+                                        cwd=sample_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, process_out, process_err))
         elif keys.rerun["grid"] == "slurm.mock":

@@ -401,10 +401,12 @@ def get_last_runs(run, n, runtype):
     return list(db.runs.find(query, {"name": 1, "samples": 1}).sort([['metadata.created_at', pymongo.DESCENDING]]).limit(n))
 
 
-def get_samples(sample_id_list):
+def get_samples(sample_id_list, projection=None):
     connection = get_connection()
     db = connection.get_database()
-    return db.samples.find_one({"_id": {"$in": sample_id_list}})
+    if projection is None:
+        projection = {}
+    return list(db.samples.find({"_id": {"$in": sample_id_list}}, projection))
 
 def get_sample(sample_id):
     connection = get_connection()

@@ -227,9 +227,9 @@ def send_mail(sample_info, user):
     s.sendmail(msg["From"], msg["To"], msg.as_string())
 
 
-def get_samples(sample_ids):
+def get_samples(sample_ids, projection=None):
     sample_ids = [ObjectId(id) for id in sample_ids]
-    return mongo_interface.get_samples(sample_ids)
+    return mongo_interface.get_samples(sample_ids, projection=projection)
 
 
 def get_comment(run_id):
