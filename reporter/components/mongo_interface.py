@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 from bson.son import SON
 import atexit
 
-PAGESIZE = 25
+PAGESIZE = 10
 
 
 def date_now():

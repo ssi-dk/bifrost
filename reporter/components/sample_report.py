@@ -12,7 +12,7 @@ import numpy as np
 import math
 import json
 
-SAMPLE_PAGESIZE = 25
+SAMPLE_PAGESIZE = 10
 
 def get(dict_o, field, default=None):
     r = dict_o.get(field, default)
@@ -347,25 +347,41 @@ def html_sample_tables(sample_data, **kwargs):
     any_results = False
     results = []
     for entry in expected_results:
-        if "report.{}.data".format(entry) in sample_data:
+        entry_key = "report.{}.data".format(entry)
+        if entry_key in sample_data:
             any_results = True
+            if len(get(sample_data, entry_key, [])) == 0:
+                datatable = "No results"
+            else:
+                data = get(sample_data, "report.{}.data".format(entry), [])
+                columns = get(sample_data, "report.{}.columns".format(entry), [])
+                header = [c["name"] for c in columns]
+                rows = []
+                for rowd in data:
+
+                    row = [rowd[col["id"]] for col in columns]
+                    rows.append(row)
+
+                datatable = html_table(rows, header)
+                # dt.DataTable(
+                #     style_table={
+                #         'overflowX': 'scroll',
+                #         'overflowY': 'scroll',
+                #         'maxHeight': '480'
+                #     },
+
+                #     columns=get(
+                #         sample_data, "report.{}.columns".format(entry), []),
+                #     data=get(sample_data, "report.{}.data".format(entry), []),
+                #     page_action='none'
+                # )
             results.append(html.Div([
                 html.H6(get(sample_data, "report.{}.title".format(entry)),
                         className="table-header"),
                 html.Div(get(sample_data, "report.{}.info".format(entry))),
                 html.Div(
-                    dt.DataTable(
-                        style_table={
-                            'overflowX': 'scroll',
-                            'overflowY': 'scroll',
-                            'maxHeight': '480'
-                        },
-
-                        columns=get(sample_data, "report.{}.columns".format(entry), []),
-                        data=get(sample_data, "report.{}.data".format(entry), []),
-                        page_action='none'
-                    ),
-                     className="grey-border")
+                    datatable,
+                    className="grey-border")
             ], className="col-6"))
         else:
             results.append(html.Div([

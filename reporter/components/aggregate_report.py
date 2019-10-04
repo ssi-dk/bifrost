@@ -1,3 +1,4 @@
+from datetime import datetime
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
@@ -113,6 +114,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     plot_df = import_data.filter_all(
         sample_ids=sample_ids)
 
+
     if "properties.sample_info.summary.provided_species" not in plot_df:
         plot_df["properties.sample_info.summary.provided_species"] = np.nan
 
@@ -125,8 +127,8 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
             new = plot_df[col].str.split(":", expand=True)
             loc = plot_df.columns.get_loc(col)
             plot_df.insert(loc + 1, col + ".value", new[2])
-    
     sunburst_fig = generate_sunburst(plot_df)
+
 
     #Convert to string so the id can be shown in the plot.
     plot_df["_id"] = plot_df["_id"].astype(str)
@@ -211,6 +213,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
 
     species_size = import_data.get_species_QC_values(selected_species)
+
 
     annotations = [
         {
@@ -326,6 +329,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     ]
 
     fig["layout"].update(annotations=annotations)
+
     return fig, sunburst_fig
 
 def generate_sunburst(plot_df):
@@ -335,14 +339,12 @@ def generate_sunburst(plot_df):
         return go.Figure()
     
     unique_species = plot_df[species_col].unique()
-
     labels = ["samples"]
     parents = [""]
     ids = ["samples"]
     values = [len(plot_df["_id"])]
     for row in plot_df.loc[plot_df[mlst_col].isnull(), mlst_col].index:
         plot_df.at[row, mlst_col] = [None]
-    
     def joinmlst(l):
         return ', '.join(map(str, l))
 
@@ -362,7 +364,6 @@ def generate_sunburst(plot_df):
                 parents.append(short_species(species))
                 values.append(str(
                     len(species_df[species_df["properties.mlst.summary.strainstr"] == mlst])))
-
     trace = go.Sunburst(
         ids=ids,
         labels=labels,
@@ -376,7 +377,6 @@ def generate_sunburst(plot_df):
     layout = go.Layout(
         margin=go.layout.Margin(t=0, l=0, r=0, b=0)
     )
-
     return go.Figure([trace], layout)
 
 
