@@ -173,7 +173,7 @@ def pipeline_report_data(sample_data):
     for comp in components_list:
         columns.append({"name": comp, "id": comp})
         #HERE
-        rerun_form_components.append({"label": comp, "value": comp + "__" + comp_id})
+        rerun_form_components.append({"label": comp, "value": comp})
 
 
     # Conditional data colors

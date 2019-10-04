@@ -87,7 +87,7 @@ def get_group_list(run_name=None):
             },
             {
                 "$group": {
-                    "_id": "$sample_sheet.group",
+                    "_id": "$properties.sample_info.summary.group",
                     "count": {"$sum": 1}
                 }
             }
@@ -96,7 +96,7 @@ def get_group_list(run_name=None):
         groups = list(db.samples.aggregate([
             {
                 "$group": {
-                    "_id": "$sample_sheet.group",
+                    "_id": "$properties.sample_info.summary.group",
                     "count": { "$sum":1 }
                 }
             }
@@ -238,13 +238,14 @@ def filter(run_names=None,
         if "Not defined" in group:
             query.append({"$or":
                 [
-                    {"sample_sheet.group": None},
-                    {"sample_sheet.group": {"$in": group}},
-                    {"sample_sheet.group": {"$exists": False}}
+                    {"properties.sample_info.summary.group": None},
+                    {"properties.sample_info.summary.group": {"$in": group}},
+                    {"properties.sample_info.summary.group": {"$exists": False}}
                 ]
             })
         else:
-            query.append({"sample_sheet.group": {"$in": group}})
+            query.append(
+                {"properties.sample_info.summary.group": {"$in": group}})
 
     if pagination is not None:
         p_limit = pagination['page_size']
@@ -274,18 +275,6 @@ def filter(run_names=None,
         match_query, projection).sort([('name', pymongo.ASCENDING)]).skip(p_skip).limit(p_limit))
 
     return query_result
-
-
-def get_results(sample_ids):
-    connection = get_connection()
-    db = connection.get_database()
-    return list(db.sample_components.find({
-        "sample._id": {"$in": sample_ids},
-        "summary": {"$exists": True},
-        "status": "Success",
-        "component.name": {"$nin": ["qcquickie", "testomatic"]} #Saving transfers
-    }, {"summary": 1, "sample._id": 1, "component.name" : 1, "setup_date": 1, "status": 1}).sort([("setup_date", 1)]))
-
 
 def get_sample_runs(sample_ids):
     connection = get_connection()
