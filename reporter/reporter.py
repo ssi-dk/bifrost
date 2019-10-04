@@ -361,6 +361,7 @@ def update_run_name(pathname, sample_store):
     [Input("form-species-source", "value"),
     Input("selected-collection", "data")]
 )
+@cache.memoize(timeout=cache_timeout)  # in seconds
 def update_run_options(form_species, selected_collection):
     return filter_update_run_options(form_species, selected_collection)
 

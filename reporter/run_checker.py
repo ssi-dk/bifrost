@@ -172,7 +172,8 @@ def pipeline_report_data(sample_data):
 
     for comp in components_list:
         columns.append({"name": comp, "id": comp})
-        rerun_form_components.append({"label": comp, "value": comp})
+        #HERE
+        rerun_form_components.append({"label": comp, "value": comp + "__" + comp_id})
 
 
     # Conditional data colors
@@ -309,8 +310,6 @@ def rerun_components_button(button, table_data):
         sample_rerun.append(row["component"])
         to_rerun[row["sample_id"]] = sample_rerun
     
-    print(row)
-    
     sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys(),
                                          projection={"name": 1, "path": 1,
                                                      "properties.datafiles.summary.paired_reads": 1})
@@ -321,6 +320,7 @@ def rerun_components_button(button, table_data):
 
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
+        sample_id = str(sample_db["_id"])
         sample_name = sample_db["name"]
         sample_path = sample_db["path"]
         reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
@@ -336,12 +336,12 @@ def rerun_components_button(button, table_data):
             snakemake_command = (r'snakemake --use-singularity  --singularity-args \"{}\" '
                                  r'--singularity-prefix \"{}\" --restart-times 2 '
                                  r"--cores 4 -s {} "
-                                 r"--config Sample=sample.yaml {}; ")
+                                 r"--config sample_id={} component_id={} {}; ")
             # unlock first
             command += snakemake_command.format(
-                sing_args, keys.rerun["singularity_prefix"], component_path, "--unlock")
+                sing_args, keys.rerun["singularity_prefix"], component_path, sample_id, component_id, "--unlock")
             command += snakemake_command.format(
-                sing_args, keys.rerun["singularity_prefix"], component_path, "--unlock")
+                sing_args, keys.rerun["singularity_prefix"], component_path, sample_id, component_id, "")
             sample_command += command
         
         if keys.rerun["grid"] == "slurm":
