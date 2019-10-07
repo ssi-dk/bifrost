@@ -351,6 +351,7 @@ def rerun_components_button(button, table_data):
             sample_command += command
         
         if keys.rerun["grid"] == "slurm":
+            print(sample_command)
             process = subprocess.Popen(
                 ('sbatch --mem={memory}G -p {priority} -c {threads} '
                     '-t {walltime} -J "bifrost_{sample_name}" --wrap'
