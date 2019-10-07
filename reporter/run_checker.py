@@ -321,7 +321,7 @@ def rerun_components_button(button, table_data):
 
     component_ids = {}
     for component in component_list:
-        component_ids[component] = import_data.get_component(component)["_id"]
+        component_ids[component] = str(import_data.get_component(component)["_id"])
 
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
