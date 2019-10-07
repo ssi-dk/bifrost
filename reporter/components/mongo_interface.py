@@ -511,7 +511,7 @@ def get_component(name=None, version=None):
     if version is not None:
         query["version"] = version
     return db.components.find_one(
-        query).sort([["version", -1], ["_id", -1]])
+        query, sort=[["version", -1], ["_id", -1]])
 
 def get_comment(run_id):
     connection = get_connection()
