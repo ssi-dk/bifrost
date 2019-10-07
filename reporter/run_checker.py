@@ -305,18 +305,23 @@ def rerun_components_button(button, table_data):
         return "", False
     out = []
     to_rerun = {}
+    component_list = set()
     for row in table_data:
         sample_rerun = to_rerun.get(row["sample_id"], [])
         sample_rerun.append(row["component"])
+        component_list.add(row["component"])
         to_rerun[row["sample_id"]] = sample_rerun
     
     sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys(),
                                          projection={"name": 1, "path": 1,
                                                      "properties.datafiles.summary.paired_reads": 1})
-    print(sample_dbs)
     samples_by_id = {str(s["_id"]) : s for s in sample_dbs}
 
     bifrost_components_dir = os.path.join(keys.rerun["bifrost_dir"], "components/")
+
+    component_ids = {}
+    for component in component_list:
+        component_ids[component] = import_data.get_component(component)["_id"]
 
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
@@ -326,6 +331,7 @@ def rerun_components_button(button, table_data):
         reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
         sample_command = ""
         for component in components:
+            component_id = component_ids[component]
             component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(

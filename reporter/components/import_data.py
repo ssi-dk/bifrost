@@ -185,7 +185,7 @@ def add_batch_user_feedback_and_mail(feedback_pairs, user):
     send_mail(email_pairs, user)
 
 
-def get_component(name, version):
+def get_component(name=None, version=None):
     return mongo_interface.get_component(name, version)
 
 

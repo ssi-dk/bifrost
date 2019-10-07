@@ -499,6 +499,9 @@ def get_run(run_name):
 
 
 def get_component(name=None, version=None):
+    """
+    If no version is specified, it'll get the latest.
+    """
     connection = get_connection()
     db = connection.get_database()
     query = {}
@@ -508,7 +511,7 @@ def get_component(name=None, version=None):
     if version is not None:
         query["version"] = version
     return db.components.find_one(
-        query)
+        query).sort([["version", -1], ["_id", -1]])
 
 def get_comment(run_id):
     connection = get_connection()
