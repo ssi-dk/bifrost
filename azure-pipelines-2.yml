@@ -1,0 +1,38 @@
+# Docker
+- task: CosmosDbEmulator@2
+  inputs:
+    containerName: 'azure-cosmosdb-emulator'
+    enableAPI: 'MongoDB'
+    portMapping: '8081:8081, 8901:8901, 8902:8902, 8979:8979, 10250:10250, 10251:10251, 10252:10252, 10253:10253, 10254:10254, 10255:10255, 10256:10256, 10350:10350'
+    hostDirectory: '$(Build.BinariesDirectory)\azure-cosmosdb-emulator'
+# Build a Docker image 
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master-docker
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: buildAndPush
+        containerRegistry: 'Docker hub'
+        repository: 'ssidk/bifrost-test'
+        dockerfile: 'Dockerfile'
+        arguments: BIFROST_URI=$(BIFROST_URI)
+        tags: |
+          $(tag)
