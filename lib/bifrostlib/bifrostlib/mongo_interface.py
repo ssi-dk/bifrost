@@ -1,6 +1,7 @@
 import pymongo
 import re
 import os
+import math
 from datetime import datetime
 import ruamel.yaml
 import traceback
@@ -13,7 +14,7 @@ def date_now():
     Needed to keep the same date in python and mongo, as mongo rounds to millisecond
     """
     d = datetime.utcnow()
-    return d.replace(microsecond=round(d.microsecond/1000)*1000)
+    return d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
 CONNECTION = None
 
