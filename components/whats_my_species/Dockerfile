@@ -21,7 +21,7 @@ RUN \
     conda install -yq kraken==1.1.1; \
     conda install -yq bracken==1.0.0; \
     conda install -yq wget==1.20.1; \
-    pip install -q bifrostlib==2.0.2; \
+    pip install -q bifrostlib==2.0.3; \
     # Directory for static DBs
     mkdir bifrost_resources;
 RUN \
