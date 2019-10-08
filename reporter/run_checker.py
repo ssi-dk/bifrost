@@ -357,6 +357,7 @@ def rerun_components_button(button, table_data):
                 sample_name=sample_name,
                 command=sample_command)
             print(process_command)
+            print(sample_path)
             process = subprocess.Popen(
                 process_command,
                 stdout=subprocess.PIPE,
