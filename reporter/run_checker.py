@@ -350,15 +350,12 @@ def rerun_components_button(button, table_data):
             sample_command += command
 
         if keys.rerun["grid"] == "slurm":
-            sample_command = "ls"
             process_command = ('sbatch --mem={memory}G -p {priority} -c {threads} '
                                '-t {walltime} -J "bifrost_{sample_name}" --wrap'
                                ' "{command}"').format(
                 **keys.rerun,
                 sample_name=sample_name,
                 command=sample_command)
-            print(process_command)
-            print(sample_path)
             process = subprocess.Popen(
                 process_command,
                 stdout=subprocess.PIPE,
