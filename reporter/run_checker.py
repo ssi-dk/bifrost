@@ -356,6 +356,7 @@ def rerun_components_button(button, table_data):
                 **keys.rerun,
                 sample_name=sample_name,
                 command=sample_command)
+            process_command = "ls"
             print(process_command)
             print(sample_path)
             process = subprocess.Popen(
