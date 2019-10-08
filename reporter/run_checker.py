@@ -333,7 +333,9 @@ def rerun_components_button(button, table_data):
             component_id = component_pair[1]
             component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
-            command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
+            command = (r'conda activate env_snakemake; '
+                       r'export BIFROST_DB_KEY=/srv/data/DB/bifrost_resources/bifrost_schema2.0_keys.txt; '
+                       r'if [ -d \"{}\" ]; then rm -r {}; fi; ').format(
                 component, component)
             sing_args = "-B " + reads[0] + "," + reads[1] + "," + \
                 sample_path + "," + \
