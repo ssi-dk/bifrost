@@ -32,9 +32,9 @@ components_order = [
     "sp_ecoli_fbi", "sp_salm_fbi", "analyzer",
     "qcquickie", "testomatic"]
 
+
 def pipeline_report(sample_data):
     update_notice = "The table will update every 30s automatically."
-
 
     table = dash_table.DataTable(
         id="pipeline-table", selected_rows=[],
@@ -50,8 +50,8 @@ def pipeline_report(sample_data):
             "padding": "0px 10px",
             "fontSize": "0.7rem",
             "height": "25px"
-            }
-            )
+        }
+    )
 
     update_notice += (" Req.: requirements not met. Init.: initialised. "
                       "*: user submitted")
@@ -66,7 +66,8 @@ def pipeline_report(sample_data):
             dbc.Col([
                 html.Div([
                     html.Div([
-                        html.H6("Pipeline status", className="m-0 font-weight-bold text-primary")
+                        html.H6("Pipeline status",
+                                className="m-0 font-weight-bold text-primary")
                     ], className="card-header py-3"),
                     html.Div([
                         html.P(update_notice),
@@ -77,7 +78,7 @@ def pipeline_report(sample_data):
                             n_intervals=0
                         )
                     ], className="card-body")
-                ], className="card shadow mb-4")                
+                ], className="card shadow mb-4")
             ], width=9),
             dbc.Col([
                 html.Div([
@@ -159,7 +160,8 @@ def pipeline_report_data(sample_data):
                 s_c_components.append(component["name"])
         except TypeError:
             pass
-    components_list = [comp for comp in components_order if comp in s_c_components]
+    components_list = [
+        comp for comp in components_order if comp in s_c_components]
     rows = []
 
     columns = [
@@ -172,9 +174,8 @@ def pipeline_report_data(sample_data):
 
     for comp in components_list:
         columns.append({"name": comp, "id": comp})
-        #HERE
+        # HERE
         rerun_form_components.append({"label": comp, "value": comp})
-
 
     # Conditional data colors
     style_data_conditional = [
@@ -291,9 +292,11 @@ def pipeline_report_data(sample_data):
         try:
             for component in sample["components"]:
                 row[component["name"]] = status_dict[component["status"]]
+                row["{}_id".format(component["name"])] = str(component["_id"])
         except TypeError:
             pass
         rows.append(row)
+
     def sort_name(e):
         return e["sample"]
     rows.sort(key=sort_name)
@@ -305,23 +308,18 @@ def rerun_components_button(button, table_data):
         return "", False
     out = []
     to_rerun = {}
-    component_list = set()
     for row in table_data:
         sample_rerun = to_rerun.get(row["sample_id"], [])
-        sample_rerun.append(row["component"])
-        component_list.add(row["component"])
+        sample_rerun.append((row["component"], row["component_id"]))
         to_rerun[row["sample_id"]] = sample_rerun
-    
+
     sample_dbs = import_data.get_samples(sample_ids=to_rerun.keys(),
                                          projection={"name": 1, "path": 1,
                                                      "properties.datafiles.summary.paired_reads": 1})
-    samples_by_id = {str(s["_id"]) : s for s in sample_dbs}
+    samples_by_id = {str(s["_id"]): s for s in sample_dbs}
 
-    bifrost_components_dir = os.path.join(keys.rerun["bifrost_dir"], "components/")
-
-    component_ids = {}
-    for component in component_list:
-        component_ids[component] = str(import_data.get_component(component)["_id"])
+    bifrost_components_dir = os.path.join(
+        keys.rerun["bifrost_dir"], "components/")
 
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
@@ -330,8 +328,9 @@ def rerun_components_button(button, table_data):
         sample_path = sample_db["path"]
         reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
         sample_command = ""
-        for component in components:
-            component_id = component_ids[component]
+        for component_pair in components:
+            component = component_pair[0]
+            component_id = component_pair[1]
             component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
             command = r'if [ -d \"{}\" ]; then rm -r {}; fi; '.format(
@@ -349,7 +348,7 @@ def rerun_components_button(button, table_data):
             command += snakemake_command.format(
                 sing_args, keys.rerun["singularity_prefix"], component_path, sample_id, component_id, "")
             sample_command += command
-        
+
         if keys.rerun["grid"] == "slurm":
             print(sample_command)
             process = subprocess.Popen(
@@ -382,24 +381,24 @@ def rerun_components_button(button, table_data):
                                                      sample_name=sample_name)
                 script.write(command)
             process = subprocess.Popen('qsub {}'.format(script_path),
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT,
-                                        shell=True,
-                                        env=os.environ,
-                                        cwd=sample_path)
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT,
+                                       shell=True,
+                                       env=os.environ,
+                                       cwd=sample_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, process_out, process_err))
         elif keys.rerun["grid"] == "slurm.mock":
             print(('sbatch --mem={memory}G -p {priority} -c {threads} '
-                  '-t {walltime} -J "bifrost_{sample_name}" --wrap'
-                  ' "{command}"').format(
+                   '-t {walltime} -J "bifrost_{sample_name}" --wrap'
+                   ' "{command}"').format(
                 **keys.rerun,
                 sample_name=sample_name,
                 command=sample_command))
 
     message = "Jobs sent to the server:\n"
     message += "\n".join(["{}: out: {} | err: {}".format(*el)
-                         for el in out])
+                          for el in out])
     return message, True
 
 
@@ -412,8 +411,9 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
 
     if columns:
         columns = columns[3:]
+        columns = [x for x in columns if not x["id"].endswith("_id")]
 
-    #Get context to know which button was triggered.
+    # Get context to know which button was triggered.
     ctx = dash.callback_context
 
     if not ctx.triggered:
@@ -421,7 +421,7 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
     else:
         triggered_id = ctx.triggered[0]['prop_id']
 
-    #Nothing triggered it, return empty table if init call or prev data.
+    # Nothing triggered it, return empty table if init call or prev data.
     if active is None and triggered_id is None:
         return prev_data
 
@@ -429,22 +429,28 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
         col = active["column_id"]
         sample = table_data[active["row"]]["sample"]
         sample_id = table_data[active["row"]]["_id"]
+        component_id = table_data[active["row"]].get("{}_id".format(col), None)
         if col in components_order:
-            new_rows = [{"sample": sample, "component": col,
-                        "sample_id": sample_id}]
+            new_rows = [{"sample": sample,
+                         "component": col,
+                         "sample_id": sample_id,
+                         "component_id": component_id}]
         else:
             new_rows = []
     elif triggered_id == "rerun-add-components.n_clicks":
         sample_id, sample = rerun_comp.split(":")
+        row = table_data[table_data._id == sample_id]
         new_rows = [{"sample": sample,
                      "component": comp["id"],
-                     "sample_id": sample_id} for comp in columns]
+                     "sample_id": sample_id,
+                     "component_id": row["{}_id".format(comp["id"])]} for comp in columns]
     elif triggered_id == "rerun-add-samples.n_clicks":
         new_rows = []
         for row in table_data:
             new_rows.append({"sample": row["sample"],
                              "component": rerun_samp,
-                             "sample_id": row["_id"]})
+                             "sample_id": row["_id"],
+                             "component_id": row["{}_id".format(rerun_samp)]})
     elif triggered_id == "rerun-add-failed.n_clicks":
         new_rows = []
         for row in table_data:
@@ -453,7 +459,8 @@ def update_rerun_table(active, table_data, n_click_comp, n_click_samp,
                 if row[col] == "Fail" or row[col] == "init.":
                     new_rows.append({"sample": row["sample"],
                                      "component": col,
-                                     "sample_id": row["_id"]})
+                                     "sample_id": row["_id"],
+                                     "component_id": row["{}_id".format(col)]})
     else:
         new_rows = []
 
