@@ -19,5 +19,5 @@ RUN \
     cd /bifrost_resources; \
     mkdir resfinder; \
     cd /bifrost_resources/resfinder; \
-    ariba getref resfinder resfinder --version f8ea197; \
+    ariba getref resfinder resfinder --version 149209d; \
     ariba prepareref -f resfinder.fa -m resfinder.tsv ref_db; \

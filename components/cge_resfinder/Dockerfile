@@ -48,7 +48,7 @@ RUN \
     git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git; \
     # grab specific commit for date assurance 2019/07/19
     cd resfinder_db; \ 
-    git checkout f8ea197;
+    git checkout 149209d;
 RUN \
     cd /bifrost_resources/resfinder_db; \
     python3 INSTALL.py kma_index; 
