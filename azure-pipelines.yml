@@ -8,7 +8,8 @@ trigger:
 - dev
 
 variables:
-  bifrost_db_key: "../../resources/keys.txt"
+# KIMN:I break this with change of bifrost_db_key pointing to connection string instead of file
+#  bifrost_db_key: "../../resources/keys.txt"
 
 jobs:
 
