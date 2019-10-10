@@ -23,4 +23,8 @@ RUN \
     pip install -q bifrostlib==2.0.3; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/dev/setup/adapters.fasta;
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+    
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

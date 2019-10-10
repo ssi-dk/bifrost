@@ -18,4 +18,8 @@ RUN \
     conda install -yq pymongo==3.8.0; \
     conda install -yq pandas==0.25.0; \
     conda install -yq python-magic==0.4.15; \
-    pip install -q bifrostlib==2.0.3; 
+    pip install -q bifrostlib==2.0.3; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

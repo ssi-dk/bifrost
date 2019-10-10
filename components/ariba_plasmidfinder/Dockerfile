@@ -21,3 +21,7 @@ RUN \
     cd /bifrost_resources/plasmidfinder; \
     ariba getref plasmidfinder plasmidfinder --version 1307168; \
     ariba prepareref -f plasmidfinder.fa -m plasmidfinder.tsv ref_db; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

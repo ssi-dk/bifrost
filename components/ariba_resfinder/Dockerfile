@@ -21,3 +21,7 @@ RUN \
     cd /bifrost_resources/resfinder; \
     ariba getref resfinder resfinder --version 149209d; \
     ariba prepareref -f resfinder.fa -m resfinder.tsv ref_db; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]
