@@ -74,7 +74,7 @@ def pipeline_report(sample_data):
                         table,
                         dcc.Interval(
                             id='table-interval',
-                            interval=30*100000,  # in milliseconds
+                            interval=30*1000,  # in milliseconds
                             n_intervals=0
                         )
                     ], className="card-body")
