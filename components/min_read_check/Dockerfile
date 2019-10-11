@@ -20,7 +20,7 @@ RUN \
     conda install -yq python-magic==0.4.15; \
     conda install -yq bbmap==38.58; \
     conda install -yq wget==1.20.1; \
-    pip install -q bifrostlib==2.0.3; \
+    pip install -q bifrostlib==2.0.4; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
     wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta; \

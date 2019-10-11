@@ -14,7 +14,7 @@ RUN \
     conda config --add channels conda-forge; \
     conda config --add channels bioconda; \
     conda install -yq ruamel.yaml==0.16.5 pymongo==3.8.0 pandas==0.25.0 python-magic==0.4.15 ariba==2.14.1; \
-    pip install -q bifrostlib==2.0.3; \
+    pip install -q bifrostlib==2.0.4; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
     mkdir mlst; \
