@@ -518,7 +518,7 @@ def get_last_runs(run, n):
     connection = get_connection()
     db = connection.get_database()
     return list(db.runs.find({"name": {"$lte": run},
-                              }, #"type": "routine"},
+                              "type": "routine"},
                              {"name": 1, "samples": 1}).sort([['metadata.created_at', pymongo.DESCENDING]]).limit(n))
 
 
