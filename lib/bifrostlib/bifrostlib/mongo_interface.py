@@ -38,12 +38,11 @@ def get_connection():
     if CONNECTION is not None:
         return CONNECTION
     else:
-        mongo_db_key_location = os.getenv("BIFROST_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        # Return mongodb connection
-        CONNECTION = pymongo.MongoClient(mongodb_url)
-        return CONNECTION
+        if os.getenv("BIFROST_DB_KEY", None) is not None:
+            CONNECTION = pymongo.MongoClient(os.getenv("BIFROST_DB_KEY"))  # Note none here apparently will use defaults which means localhost:27017
+            return CONNECTION
+        else:
+            raise ValueError("BIFROST_DB_KEY not set")
 
 
 

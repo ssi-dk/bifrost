@@ -23,7 +23,7 @@ RUN \
     conda install -yq pymongo==3.8.0; \
     conda install -yq pandas==0.25.0; \
     conda install -yq python-magic==0.4.15; \
-    pip install -q bifrostlib==2.0.3; \
+    pip install -q bifrostlib==2.0.4; \
     pip install -q cgecore==1.5.0; \
     pip install -q tabulate==0.8.3; \
     # Directory for static DBs
@@ -54,4 +54,8 @@ RUN \
 ENV MLST_DB "/bifrost_resources/mlst_db" 
 RUN \
     cd /bifrost_resources/mlst_db; \
-    python3 INSTALL.py kma_index; 
+    python3 INSTALL.py kma_index; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

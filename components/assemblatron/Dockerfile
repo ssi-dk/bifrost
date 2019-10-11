@@ -24,10 +24,13 @@ RUN \
     conda install -yq minimap2==2.17; \
     conda install -yq samtools==1.9; \
     conda install -yq cyvcf2==0.11.4; \
-    pip install -q bifrostlib==2.0.3; \
+    pip install -q bifrostlib==2.0.4; \
     pip install -q quast==5.0.2; \
     conda install wget==1.20.1; \
-    mkdir bifrost_resources;
-RUN \
+    mkdir bifrost_resources; \
     cd /bifrost_resources; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/dev/setup/adapters.fasta;
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta; \
+    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]
