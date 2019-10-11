@@ -123,7 +123,7 @@ def html_filter_drawer():
                                                                 ),
                                                             ]
                                                         ),
-                                                        width=6, id="run-list-div"
+                                                        width=12, id="run-list-div"
                                                     ),
                                                     dbc.Col(
                                                         dbc.FormGroup(
