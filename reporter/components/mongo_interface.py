@@ -166,10 +166,10 @@ def filter_qc(qc_list):
                 {"properties.datafiles.summary.paired_reads": {"$exists": True}},
                 {"properties.stamper.summary.stamp.value": {"$exists": False}}
             ]})
-        elif elem == "fail:core facility":
+        elif elem == "core facility":
             qc_query.append({"$or": [
                         {"properties.datafiles.summary.paired_reads": {"$exists": False}},
-                        {"properties.stamper.summary.stamp.value": "fail:core facility"}
+                        {"properties.stamper.summary.stamp.value": "core facility"}
                     ]
                 })
         else:
@@ -270,7 +270,6 @@ def filter(run_names=None,
             match_query = {"$and": query}
         else:
             match_query = {"$and": query + qc_query["$match"]["$and"]}
-
     query_result = list(db.samples.find(
         match_query, projection).sort([('name', pymongo.ASCENDING)]).skip(p_skip).limit(p_limit))
 

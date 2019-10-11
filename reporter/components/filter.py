@@ -86,9 +86,9 @@ def update_collection_button(collection, pathname):
 
 def html_filter_drawer():
     qc_list_options = [
-        {"label": "OK", "value": "pass:OK"},
-        {"label": "Core Facility", "value": "fail:core facility"},
-        {"label": "Supplying Lab", "value": "fail:supplying lab"},
+        {"label": "OK", "value": "OK"},
+        {"label": "Core Facility", "value": "core facility"},
+        {"label": "Supplying Lab", "value": "supplying lab"},
         {"label": "Not checked", "value": "Not checked"}
     ]
     run_filter = html.Div(
@@ -140,11 +140,6 @@ def html_filter_drawer():
                                                         ),
                                                         width=6,
                                                     ),
-                                                ],
-                                                form=True,
-                                            ),
-                                            dbc.Row(
-                                                [
                                                     dbc.Col(
                                                         dbc.FormGroup(
                                                             [
@@ -158,9 +153,9 @@ def html_filter_drawer():
                                                                 ),
                                                                 dcc.RadioItems(
                                                                     options=[
-                                                                        {"label": "Provided",
+                                                                        {"label": " Provided",
                                                                          "value": "provided"},
-                                                                        {"label": "Detected",
+                                                                        {"label": " Detected",
                                                                          "value": "detected"},
                                                                     ],
                                                                     value="provided",
@@ -251,13 +246,6 @@ def html_filter_drawer():
     return run_filter
 
 def html_div_filter():
-    qc_list_options = [
-        {"label": "OK", "value": "pass:OK"},
-        {"label": "Core Facility", "value": "fail:core facility"},
-        {"label": "Supplying Lab", "value": "fail:supplying lab"},
-        {"label": "Not checked", "value": "Not checked"}
-    ]
-    
 
     return html.Div([
         html.Div(
