@@ -161,7 +161,7 @@ RUN \
     ariba pubmlstget "Yersinia pseudotuberculosis" Yersinia_pseudotuberculosis; \
     ariba pubmlstget "Yersinia ruckeri" Yersinia_ruckeri; \
     ariba pubmlstget "Yersinia spp." Yersinia_spp_; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
-
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

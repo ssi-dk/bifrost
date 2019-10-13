@@ -29,8 +29,8 @@ RUN \
     conda install wget==1.20.1; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
-
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

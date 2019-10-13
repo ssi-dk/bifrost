@@ -52,7 +52,7 @@ RUN \
 RUN \
     cd /bifrost_resources/resfinder_db; \
     python3 INSTALL.py kma_index; \
-    wget https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh;
-
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]
