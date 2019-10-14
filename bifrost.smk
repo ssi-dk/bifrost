@@ -547,7 +547,7 @@ rule add_components_to_samples:
                                 sample_db["components"].append({"name": component_name, "_id": component_id})
                     datahandling.save_sample_to_file(sample_db, sample_config)
             datahandling.write_log(log_out, "Done {}\n".format(rule_name))
-        except Exception as e:
+        except:
             datahandling.write_log(log_err, str(traceback.format_exc()))
 
 
@@ -592,8 +592,7 @@ rule initialize_sample_components_for_each_sample:
             for folder in sorted(os.listdir(".")):
                 if os.path.isfile(os.path.realpath(os.path.join(folder, "sample.yaml"))):
                     sample_name = str(folder)
-                    unique_sample_names[sample_name] = unique_sample_names.get(
-                        sample_name, 0) + 1
+                    unique_sample_names[sample_name] = unique_sample_names.get(sample_name, 0) + 1
 
             for sample_name in unique_sample_names:
                 if config.get("samples_to_include", None) is None or sample_name in config["samples_to_include"].split(","):
@@ -607,8 +606,7 @@ rule initialize_sample_components_for_each_sample:
                             component_name = item.get("name",)
                             component_id = item.get("_id",)
                             sample_component_path = sample_name + "/" + sample_name + "__" + component_name + ".yaml"
-                            sample_component_folder_path = os.path.realpath(
-                                os.path.join(sample_name, component_name))
+                            sample_component_folder_path = os.path.realpath(os.path.join(sample_name, component_name))
                             sample_component_db = datahandling.load_sample_component(sample_component_path)
                             sample_component_db["sample"] = {"name": sample_name, "_id": sample_id}
                             sample_component_db["component"] = {"name": component_name, "_id": component_id}
@@ -805,7 +803,7 @@ rule setup_sample_components_to_run:
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
-                                    command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format("-B " + reads[0] + "," + reads[1] + "," + os.getcwd()), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
+                                    # command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format("-B " + reads[0] + "," + reads[1] + "," + os.getcwd()), config["singularity_prefix"], config["restart_times"], config["threads"], component_file, unlock, sample_component_db["sample"]["_id"], sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.write_log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
