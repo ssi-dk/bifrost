@@ -331,13 +331,15 @@ def html_div_filter():
 def generate_table(tests_df):
     qc_action = "properties.stamper.summary.stamp.value"
     user_stamp_col = "properties.stamper.summary.stamp.name"
-    if qc_action not in tests_df:
-        tests_df[qc_action] = np.nan
-
     r1_col = "properties.datafiles.summary.paired_reads"
 
-    if r1_col not in tests_df:
-        tests_df[r1_col] = np.nan
+    # Add needed columns
+    for col in [qc_action, user_stamp_col, r1_col]:
+        if col not in tests_df:
+            tests_df[col] = np.nan
+
+    # Convert to string for comparison later on
+    tests_df = tests_df.astype({user_stamp_col: str})
 
     values = {r1_col: ""}
     tests_df = tests_df.fillna(value=values)

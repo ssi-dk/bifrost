@@ -295,6 +295,9 @@ def pipeline_report_data(sample_data):
                 row["{}_id".format(component["name"])] = str(component["_id"])
         except TypeError:
             pass
+        except KeyError:
+            print(sample["_id"])
+            print(sample["components"])
         rows.append(row)
 
     def sort_name(e):
@@ -333,13 +336,13 @@ def rerun_components_button(button, table_data):
             component_id = component_pair[1]
             component_path = os.path.join(bifrost_components_dir,
                                           component, "pipeline.smk")
+            db_key = os.environ.get('BIFROST_DB_KEY')
             command = (r'source activate env_snakemake; '
-                       r'export BIFROST_DB_KEY=/srv/data/DB/bifrost_resources/bifrost_schema2.0_keys.txt; '
+                       r'export BIFROST_DB_KEY={}; '
                        r'if [ -d \"{}\" ]; then rm -r {}; fi; ').format(
-                component, component)
+                db_key, component, component)
             sing_args = "-B " + reads[0] + "," + reads[1] + "," + \
-                sample_path + "," + \
-                os.getenv("BIFROST_DB_KEY")
+                sample_path
             snakemake_command = (r'snakemake --use-singularity  --singularity-args \"{}\" '
                                  r'--singularity-prefix \"{}\" --restart-times 2 '
                                  r"--cores 4 -s {} "
