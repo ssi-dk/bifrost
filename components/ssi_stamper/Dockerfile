@@ -7,3 +7,6 @@ LABEL \
     version="2.0" \
     DBversion="31/07/19" \
     maintainer="kimn@ssi.dk;"
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

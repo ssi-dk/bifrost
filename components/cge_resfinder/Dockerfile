@@ -40,3 +40,6 @@ RUN \
 RUN \
     cd /bifrost_resources/resfinder_db; \
     python3 INSTALL.py kma_index;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

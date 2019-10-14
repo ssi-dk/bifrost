@@ -19,3 +19,6 @@ RUN \
     # In base image
     cd /bifrost_resources; \
     wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/adapters.fasta;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]

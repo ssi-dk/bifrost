@@ -16,3 +16,6 @@ RUN \
     cd /bifrost_resources/virulencefinder; \
     ariba getref virulencefinder virulencefinder --version 80c55fe; \
     ariba prepareref -f virulencefinder.fa -m virulencefinder.tsv ref_db;
+
+ENTRYPOINT \
+    ["/bifrost_resources/docker_umask_002.sh"]
