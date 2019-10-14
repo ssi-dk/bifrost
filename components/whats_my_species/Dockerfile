@@ -27,6 +27,8 @@ RUN \
 RUN \
     # Kraken mini DB and bracken
     cd /bifrost_resources; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh \
     # NOTE: even though the file is dated 20171019 it's actually when unzipped 20171013, to avoid some issues im renaming it minikraken
     # wget -q https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_4GB.tgz; \
     wget -q https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
@@ -35,9 +37,7 @@ RUN \
     tar -zxvf minikraken_20171019_8GB.tgz; \
     rm minikraken_20171019_4GB.tgz; \
     # wget -q https://ccb.jhu.edu/software/bracken/dl/minikraken_4GB_100mers_distrib.txt;
-    wget -q https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt; \
-    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
-    chmod +x  docker_umask_002.sh
+    wget -q https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt;
 
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

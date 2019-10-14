@@ -17,11 +17,12 @@ RUN \
     pip install -q bifrostlib==2.0.4; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh \
     mkdir plasmidfinder; \
     cd /bifrost_resources/plasmidfinder; \
     ariba getref plasmidfinder plasmidfinder --version 1307168; \
-    ariba prepareref -f plasmidfinder.fa -m plasmidfinder.tsv ref_db; \
-    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
-    chmod +x  docker_umask_002.sh
-    ENTRYPOINT \
+    ariba prepareref -f plasmidfinder.fa -m plasmidfinder.tsv ref_db; 
+
+ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

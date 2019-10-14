@@ -29,6 +29,8 @@ RUN \
     # Directory for static DBs
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh \
     # Install KMA
     git clone --branch 1.2.10a https://bitbucket.org/genomicepidemiology/kma.git; \
     cd kma; \
@@ -54,8 +56,7 @@ RUN \
 ENV MLST_DB "/bifrost_resources/mlst_db" 
 RUN \
     cd /bifrost_resources/mlst_db; \
-    python3 INSTALL.py kma_index; \
-    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
-    chmod +x  docker_umask_002.sh
+    python3 INSTALL.py kma_index; 
+
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

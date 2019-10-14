@@ -17,11 +17,12 @@ RUN \
     pip install -q bifrostlib==2.0.4; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh \
     mkdir virulencefinder; \
     cd /bifrost_resources/virulencefinder; \
     ariba getref virulencefinder virulencefinder --version 80c55fe; \
-    ariba prepareref -f virulencefinder.fa -m virulencefinder.tsv ref_db; \
-    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
-    chmod +x  docker_umask_002.sh
+    ariba prepareref -f virulencefinder.fa -m virulencefinder.tsv ref_db;
+
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

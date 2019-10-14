@@ -17,6 +17,8 @@ RUN \
     pip install -q bifrostlib==2.0.4; \
     mkdir bifrost_resources; \
     cd /bifrost_resources; \
+    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
+    chmod +x  docker_umask_002.sh \
     mkdir mlst; \
     cd /bifrost_resources/mlst; \
     # NOTE: running this will generate a DB which is time dependant. Please use docker image for this DB
@@ -160,8 +162,7 @@ RUN \
     ariba pubmlstget "Xylella fastidiosa" Xylella_fastidiosa; \
     ariba pubmlstget "Yersinia pseudotuberculosis" Yersinia_pseudotuberculosis; \
     ariba pubmlstget "Yersinia ruckeri" Yersinia_ruckeri; \
-    ariba pubmlstget "Yersinia spp." Yersinia_spp_; \
-    wget -q https://raw.githubusercontent.com/ssi-dk/bifrost/master/setup/docker_umask_002.sh; \
-    chmod +x  docker_umask_002.sh
+    ariba pubmlstget "Yersinia spp." Yersinia_spp_;
+
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]
