@@ -15,6 +15,7 @@ RUN \
     apt-get install -y -qq zlib1g-dev; \
     pip install -q cgecore==1.5.0; \
     pip install -q tabulate==0.8.3; \
+    pip install -q biopython==1.74; \
     # In base image
     cd /bifrost_resources; \
     # Install KMA
