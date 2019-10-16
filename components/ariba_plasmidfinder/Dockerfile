@@ -9,13 +9,14 @@ LABEL \
     maintainer="kimn@ssi.dk;"
 
 RUN \
-    conda install -yq -c bioconda ariba==2.14.1; \
+    # Next 3 are for make which is needed by ariba for install
+    apt-get update -qq --fix-missing; \
+    apt-get install -y -qq ariba=2.13.3+ds-1; \
     # In base image
     cd /bifrost_resources; \
     mkdir plasmidfinder; \
     cd /bifrost_resources/plasmidfinder; \
     ariba getref plasmidfinder plasmidfinder --version 1307168; \
     ariba prepareref -f plasmidfinder.fa -m plasmidfinder.tsv ref_db; 
-
 ENTRYPOINT \
     ["/bifrost_resources/docker_umask_002.sh"]

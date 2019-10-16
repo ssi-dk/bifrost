@@ -25,8 +25,8 @@ options:
 
 #-Required resource files---------------------------------------------------------------------------
 resources:
-  kraken_database: "/bifrost_resources/minikraken/"
-  kraken_kmer_dist: "/bifrost_resources/minikraken_4GB_100mers_distrib.txt"
+  kraken_database: "/bifrost_resources/minikraken_20171019_8GB/"
+  kraken_kmer_dist: "/bifrost_resources/minikraken_100mers_distrib.txt"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------

@@ -9,7 +9,8 @@ LABEL \
     maintainer="kimn@ssi.dk;"
 
 RUN \
-    conda install -yq -c bioconda ariba==2.14.1; \
+    apt-get update -qq --fix-missing; \
+    apt-get install -y -qq ariba=2.13.3+ds-1; \
     # In base image
     cd /bifrost_resources; \
     mkdir resfinder; \
