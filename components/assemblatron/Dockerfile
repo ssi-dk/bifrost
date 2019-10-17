@@ -9,12 +9,12 @@ LABEL \
     maintainer="kimn@ssi.dk;"
 
 RUN \
-    conda install -yq -c bioconda prokka==1.13.7; \
     conda install -yq -c bioconda bbmap==38.58; \
     conda install -yq -c bioconda skesa==2.3.0; \
     conda install -yq -c bioconda minimap2==2.17; \
     conda install -yq -c bioconda samtools==1.9; \
     conda install -yq -c bioconda cyvcf2==0.11.4; \
+    conda install -yq -c conda-forge -c bioconda -c defaults prokka==1.14.0; \
     pip install -q quast==5.0.2; \
     # In base image
     cd /bifrost_resources; \
