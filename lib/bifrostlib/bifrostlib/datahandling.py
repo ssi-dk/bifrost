@@ -334,11 +334,6 @@ def load_component(file_yaml):
         return temp
 
 def save_sample(sample_db):
-    #TODO: This writing to a file is temporary and should be removed with bifrost.smk refactoring
-    if "path" in sample_db:
-        with open(os.path.join(sample_db["path"], "sample.yaml"), "w") as file_handle:
-            yaml.dump(sample_db, file_handle)
-
     return mongo_interface.dump_sample_info(sample_db)
 
 def save_sample_to_file(sample_dict, file_yaml):
