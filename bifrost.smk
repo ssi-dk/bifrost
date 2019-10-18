@@ -36,7 +36,7 @@ sample_folder = config["sample_folder"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
-num_of_threads, memory_in_GB = config["threads"], config["memory"]
+
 
 
 onsuccess:
@@ -126,10 +126,6 @@ rule copy_run_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -158,10 +154,6 @@ rule initialize_components:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -205,10 +197,6 @@ rule initialize_samples_from_sample_folder:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -278,10 +266,6 @@ rule check__provided_sample_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -355,10 +339,6 @@ rule set_samples_from_sample_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -425,10 +405,6 @@ rule set_sample_species:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -489,10 +465,6 @@ rule add_components_to_samples:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -556,10 +528,6 @@ rule initialize_sample_components_for_each_sample:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -623,10 +591,6 @@ rule initialize_run:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -707,10 +671,6 @@ rule setup_sample_components_to_run:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
