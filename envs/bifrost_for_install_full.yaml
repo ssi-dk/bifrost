@@ -33,6 +33,6 @@ dependencies:
     - dash-table-experiments
     - dash_scroll_up
     - quast # done because quast conda installs a version for python 2.7 and everything else is python3
-    - bifrostlib
+    - bifrostlib==1.2.1
 # will also need to pip install bifrostlib (cd /lib/bifrostlib; pip install setup.py;)
 
