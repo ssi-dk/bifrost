@@ -1,9 +1,9 @@
 # In process of updating to a system where components have their own env's launched on top of bifrost's env. This should reduce dependencies here.
 name: bifrost
 channels:
-  - defaults
   - bioconda
   - conda-forge
+  - defaults
 dependencies:
   - snakemake>=5.2
   - "conda-forge::openjdk"
@@ -28,6 +28,7 @@ dependencies:
   - pymongo
   - dash
   - dash-core-components
+  - samtools
   # - mongodb
   - pip:
     - dash-table-experiments
