@@ -116,20 +116,18 @@ Go into the sample folder (the one you want to run), open cmd_bifrost.sh and cop
 
 You can also create a new batch file with the same header as cmd_bifrost.sh and submit it to the queue system.
 
-### Removing a run (update)
+### Removing a run
 
-There is a script in scripts/db_management/remove_run.py. Make sure to have the bifrost environment enabled and your correct key path in the BIFROST_DB_KEY variable. Then run the script:
+This task should be done in two steps. First, activate the bifrost environment, make sure that you have the correct key path in the BIFROST_DB_KEY variable and launch a python interpreter. Run the following command to delete the run from the database.
 
-```bash
-python remove_run.py 5b894291104fd46ecabe6638
+```python
+from bifrostlib import datahandling
+datahandling.delete_run(name="runname")
 ```
 
-Where 5b894291104fd46ecabe6638 is the id for your run (without the "ObjectId()" part). You can find the id of the run in the run folder/bifrost/run.yaml or in the database directly. To connect to the database, you need the mongo client which you can find in computerome already by running:
+Note that delete_run can be run with the run_id instead by using `datahandling.delete_run(run_id="runidstring")`.
 
-module load tools
-module load mongodb/3.4.4
-
-and then running mongo. You can use the credentials in your key file to log in and take a look.
+Now that the data has been removed from the database, you can delete the data files from the filesystem.
 
 ## Debugging
 
