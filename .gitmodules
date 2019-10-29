@@ -1,6 +1,3 @@
-[submodule "components/bifrost-min_read_check"]
-	path = components/bifrost-min_read_check
-	url = git@github.com:ssi-dk/bifrost-min_read_check.git
 [submodule "components/min_read_check"]
 	path = components/min_read_check
 	url = git@github.com:ssi-dk/bifrost-min_read_check.git
