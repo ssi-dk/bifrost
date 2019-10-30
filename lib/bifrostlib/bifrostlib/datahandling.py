@@ -293,11 +293,13 @@ def check_db_connection_exists():
         mongo_interface.get_connection()
         return True
     except:
+        print(str(traceback.format_exc()))
         return False
 
 
-def get_connection_address():
-    return ":".join([str(i) for i in test.address])
+def get_connection_info():
+    connection = mongo_interface.get_connection()
+    return (connection.address, connection.get_database().name)
 
 
 def write_log(log_file, content):
