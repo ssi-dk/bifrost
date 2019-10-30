@@ -301,8 +301,8 @@ def get_connection_info():
     connection = mongo_interface.get_connection()
     message = (
         f"Connected to:\n"
-        f"\tDatabase: {connection.get_database().name}\n"
-        f"\t Host: {':'.join([str(i) for i in connection.address])}\n"
+        f"    Database: {connection.get_database().name}\n"
+        f"    Host: {':'.join([str(i) for i in connection.address])}\n"
     )
     return message
 
