@@ -13,4 +13,4 @@ RUN \
     mkdir bifrost; \
     mkdir bifrost_resources; \
     cd bifrost_resources; \
-    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1; \
+    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1;

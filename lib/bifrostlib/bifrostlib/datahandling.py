@@ -288,6 +288,18 @@ class SampleComponentObj:
                 file_handle.write(content)
 
 
+def check_db_connection_exists():
+    try:
+        mongo_interface.get_connection()
+        return True
+    except:
+        return False
+
+
+def get_connection_address():
+    return ":".join([str(i) for i in test.address])
+
+
 def write_log(log_file, content):
     with open(log_file, "a+") as file_handle:
         file_handle.write(content)
