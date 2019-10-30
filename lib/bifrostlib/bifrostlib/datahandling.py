@@ -299,7 +299,12 @@ def check_db_connection_exists():
 
 def get_connection_info():
     connection = mongo_interface.get_connection()
-    return (connection.address, connection.get_database().name)
+    message = (
+        f"Connected to:\n"
+        f"\tDatabase: {connection.get_database().name}\n"
+        f"\t Host: {':'.join([str(i) for i in connection.address])}\n"
+    )
+    return message
 
 
 def write_log(log_file, content):
