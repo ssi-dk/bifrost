@@ -290,7 +290,8 @@ class SampleComponentObj:
 
 def check_db_connection_exists():
     try:
-        mongo_interface.get_connection()
+        connection = mongo_interface.get_connection()
+        connection.server_info()
         return True
     except:
         print(str(traceback.format_exc()))
