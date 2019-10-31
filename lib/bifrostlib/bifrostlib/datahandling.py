@@ -80,17 +80,22 @@ class stamperTestObj:
             sys.stdout.write(content)
 
 class SampleComponentObj:
-    def __init__(self):
-        self.sample_id = None
-        self.component_id = None
-
-    def load(self, sample_id, component_id):
+    def __init__(self, sample_id, component_id, path=None):
         self.sample_id = sample_id
         self.component_id = component_id
+        self.path = path
         self.sample_db = get_sample(sample_id=self.sample_id)
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
-        self.sample_component_id = self.sample_component_db["_id"]
+        if self.sample_component_db == None:
+            self.sample_component_db = save_sample_component({
+                "sample": {"_id": sample_db["_id"], "name": sample_db["name"]},
+                "component": {"_id": component_db["_id"], "name": component_db["name"]},
+                "path": {path}
+            })
+        self.initialized()
+
+    def load(self):
         return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
