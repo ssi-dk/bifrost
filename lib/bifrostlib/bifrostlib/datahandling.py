@@ -91,7 +91,8 @@ class SampleComponentObj:
             save_sample_component({
                 "sample": {"_id": self.sample_db["_id"], "name": self.sample_db["name"]},
                 "component": {"_id": self.component_db["_id"], "name": self.component_db["name"]},
-                "path": path
+                "path": path,
+                "status": "initialized"
             })
             self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.initialized()
@@ -171,7 +172,7 @@ class SampleComponentObj:
                 component["status"] = status
                 status_set = True
         if not status_set:
-            self.sample_db["components"].append([{"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status}])
+            self.sample_db["components"].append({"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status})
         self.save()
 
     def requirements_not_met(self):
