@@ -88,11 +88,12 @@ class SampleComponentObj:
         self.component_db = get_component(component_id=self.component_id)
         self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         if self.sample_component_db == None:
-            self.sample_component_db = save_sample_component({
+            save_sample_component({
                 "sample": {"_id": self.sample_db["_id"], "name": self.sample_db["name"]},
                 "component": {"_id": self.component_db["_id"], "name": self.component_db["name"]},
                 "path": path
             })
+            self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
         self.initialized()
 
     def load(self):
