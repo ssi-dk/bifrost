@@ -91,7 +91,7 @@ class SampleComponentObj:
             self.sample_component_db = save_sample_component({
                 "sample": {"_id": self.sample_db["_id"], "name": self.sample_db["name"]},
                 "component": {"_id": self.component_db["_id"], "name": self.component_db["name"]},
-                "path": {path}
+                "path": path
             })
         self.initialized()
 
