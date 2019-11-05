@@ -251,6 +251,7 @@ class SampleComponentObj:
         self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
         open(os.path.join(self.component_db["name"], output_file), "w+").close()
         self.write_log_out(log, "Done datadump\n")
+        self.success()
 
     def save(self):
         save_sample(self.sample_db)
