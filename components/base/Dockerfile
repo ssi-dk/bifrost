@@ -10,7 +10,6 @@ LABEL \
 
 RUN \
     pip install -q bifrostlib==2.0.5; \
+    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1; \
     mkdir bifrost; \
-    mkdir bifrost_resources; \
-    cd bifrost_resources; \
-    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1;
+    mkdir bifrost_resources;
