@@ -167,6 +167,9 @@ class SampleComponentObj:
     def update_status_in_sample_and_sample_component(self, status):
         self.sample_component_db["status"] = status 
         status_set = False
+        # TODO: this code should be refactored out (next 2 lines) as it's because a sample isn't initiated which should be solved by a sampleObj
+        if "components" not in self.sample_db:
+            self.sample_db["components"] = []
         for component in self.sample_db["components"]:
             if component["_id"] == self.component_db["_id"]:
                 component["status"] = status
