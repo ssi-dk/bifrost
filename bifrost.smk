@@ -768,7 +768,7 @@ rule setup_sample_components_to_run:
                                     if config.get("overwrite", False):
                                         command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                     reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
-                                    command.write(f"singularity run -B {','.join(reads)} {os.path.join(config['singularity_prefix'], component_map[component_name])} --id {sample_db['_id']}")
+                                    command.write(f"singularity run -B {','.join(reads)} {os.path.join(config['singularity_prefix'], component_map[component_name])} --id {sample_db['_id']};\n")
                                 # elif os.path.isfile(component_file):
                                 #     unlock = ""
                                 #     if config["unlock"]:
