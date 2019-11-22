@@ -48,7 +48,7 @@ app.layout = html.Div([
             className="button button-primary no-print"
         ),
         html.Div(id='none', children=[], style={'display': 'none'}),
-        html.H1("SerumQC Run Checker"),
+        html.H1("Bifrost Run Checker"),
         dcc.Store(id="sample-store", storage_type="memory"),
         dcc.Interval(
             id='table-interval',
