@@ -464,6 +464,7 @@ rule set_sample_species:
                         if pandas.isna(provided_species):
                             provided_species = None
                         else:
+                            provided_species = provided_species.strip()
                             species_db = datahandling.get_ncbi_species(
                                 provided_species)
                             if species_db is None:
