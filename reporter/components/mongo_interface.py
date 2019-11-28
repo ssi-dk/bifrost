@@ -3,7 +3,6 @@ from datetime import datetime
 import math
 import re
 import pymongo
-import keys  # .gitgnored file
 from bson.objectid import ObjectId
 from bson.son import SON
 import atexit

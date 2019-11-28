@@ -6,7 +6,6 @@ import components.mongo_interface as mongo_interface
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
 import components.global_vars as global_vars
-import keys
 from bson.json_util import dumps, loads
 
 pd.options.mode.chained_assignment = None
@@ -198,6 +197,7 @@ def send_mail(sample_info, user):
     Sends email about sample feedback updates.
     """
     import smtplib
+    import keys  # keys.py in reporter/keys.py
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
