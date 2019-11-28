@@ -485,7 +485,7 @@ def get_sample_QC_status(last_runs):
         name = samples_by_ids[str(sample["_id"])]["name"]
         for run in last_runs:
             for run_sample in run["samples"]:
-                if name == samples_by_ids[str(run_sample["_id"])]["name"]:
+                if name == run_sample["name"]:
                     sample_db = db.samples.find_one(
                         {"_id": run_sample["_id"]}, {"reads": 1, "stamps": 1})
                     if sample_db is not None:
