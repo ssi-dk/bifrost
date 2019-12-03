@@ -1,94 +1,73 @@
+#- Templated section: start ------------------------------------------------------------------------
 import os
-import sys
-import traceback
-import shutil
 from bifrostlib import datahandling
-from bifrostlib import check_requirements
-
-component = "ariba_virulencefinder"  # Depends on component name, should be same as folder
 
 configfile: "../config.yaml"  # Relative to run directory
-global_threads = config["threads"]
-global_memory_in_GB = config["memory"]
-sample = config["Sample"]
 
-sample_file_name = sample
-db_sample = datahandling.load_sample(sample_file_name)
+num_of_threads, memory_in_GB = config["threads"], config["memory"]
+bifrost_sampleComponentObj = datahandling.SampleComponentObj()
+sample_name, component_name, dockerfile, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
+bifrost_sampleComponentObj.started()
+singularity: dockerfile
 
-component_file_name = "../components/" + component + ".yaml"
-if not os.path.isfile(component_file_name):
-    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
-db_component = datahandling.load_component(component_file_name)
-
-sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
-db_sample_component = datahandling.load_sample_component(sample_component_file_name)
-
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
-else:
-    reads = R1, R2 = ("/dev/null", "/dev/null")
 
 onsuccess:
-    print("Workflow complete")
-    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
+    bifrost_sampleComponentObj.success()
 
 
 onerror:
-    print("Workflow error")
-    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
+    bifrost_sampleComponentObj.failure()
 
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        # file is defined by datadump function
+        component_name + "/datadump_complete"
 
 
 rule setup:
     output:
-        init_file = touch(temp(component + "/" + component + "_initialized")),
+        init_file = touch(
+            temp(component_name + "/initialized")),
     params:
-        folder = component
+        folder = component_name
 
 
 rule_name = "check_requirements"
 rule check_requirements:
-    # Static
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        num_of_threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = component_file_name
     output:
-        check_file = rules.setup.params.folder + "/requirements_met",
+        check_file = component_name + "/requirements_met",
     params:
-        component = component_file_name,
-        sample = sample,
-        sample_component = sample_component_file_name
+        bifrost_sampleComponentObj
     run:
-        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
+        bifrost_sampleComponentObj.check_requirements()
+#- Templated section: end --------------------------------------------------------------------------
 
-
+#* Dynamic section: start **************************************************************************
 rule_name = "ariba_virulencefinder"
 rule ariba_virulencefinder:
     # Static
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        num_of_threads
     resources:
-        memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
@@ -96,70 +75,40 @@ rule ariba_virulencefinder:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
     input:
-        rules.check_requirements.output.check_file,
+        check_file = rules.check_requirements.output.check_file,
         folder = rules.setup.output.init_file,
-        reads = (R1, R2)
+        reads = bifrost_sampleComponentObj.get_reads()
     output:
-        folder = directory(rules.setup.params.folder + "/ariba_virulencefinder")
+        complete = rules.setup.params.folder + "/virulence/report.tsv"
     params:
-        database = os.path.join(os.path.dirname(workflow.snakefile), db_component["ariba_virulencefinder_database"])
-    shell:
-        "ariba run {params.database} {input.reads[0]} {input.reads[1]} {output.folder} > {log.out_file} 2> {log.err_file}"
+        sampleComponentObj = bifrost_sampleComponentObj
+    script:
+        os.path.join(os.path.dirname(workflow.snakefile), "scripts/rule__ariba_virulencefinder.py")
+#* Dynamic section: end ****************************************************************************
 
-
-rule_name = "abricate_on_ariba_virulencefinder"
-rule abricate_on_ariba_virulencefinder:
+#- Templated section: start ------------------------------------------------------------------------
+rule_name = "datadump"
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        num_of_threads
     resources:
-        memory_in_GB = global_memory_in_GB
-    shadow:
-        "shallow"
+        memory_in_GB = memory_in_GB
     log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
-        contigs = rules.ariba_virulencefinder.output.folder
+        #* Dynamic section: start ******************************************************************
+        rules.ariba_virulencefinder.output.complete  # Needs to be output of final rule
+        #* Dynamic section: end ********************************************************************
     output:
-        report = rules.setup.params.folder + "/abricate_on_virulencefinder_from_ariba.tsv",
+        complete = rules.all.input
     params:
-        database = os.path.join(os.path.dirname(workflow.snakefile), db_component["abricate_virulencefinder_database"])
-    shell:
-        """
-        if [[ -e {input.contigs}/assemblies.fa.gz ]] && [[ -n $(gzip -cd {input.contigs}/assemblies.fa.gz | head -c1) ]];
-        then abricate --datadir {params.database} --db . {input.contigs}/assemblies.fa.gz > {output.report} 2> {log.err_file};
-        else touch {output.report};
-        fi;
-        """
-
-
-rule_name = "datadump_ariba_virulencefinder"
-rule datadump_ariba_virulencefinder:
-    # Static
-    message:
-        "Running step:" + rule_name
-    threads:
-        global_threads
-    resources:
-        memory_in_GB = global_memory_in_GB
-    log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
-    benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
-    input:
-        rules.abricate_on_ariba_virulencefinder.output.report,
-    output:
-        summary = touch(rules.all.input)
-    params:
-        folder = rules.setup.params.folder,
-        sample = db_sample.get("name", "ERROR") + "__" + component + ".yaml",
+        sampleComponentObj = bifrost_sampleComponentObj
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
+#- Templated section: end --------------------------------------------------------------------------

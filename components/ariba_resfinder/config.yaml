@@ -1,24 +1,65 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: ariba_resfinder
-version: 1.1
-target: sample
-type: pipeline
-recommendation: recommended
-description: >
-  This preforms read based mapping against the resfinder DB's.
+version: 2.0
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: resistance
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    This preforms read based mapping against the resfinder DB's. The options show the species entries 
+    which will be attempted for mlst with key originating from the species DB. This is done against 
+    the cge_db using ariba.
+#---------------------------------------------------------------------------------------------------
+
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: &dockerfile "docker://ssidk/bifrost-ariba_resfinder:2.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# -None
+options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path
-abricate_resfinder_database: "resources/abricate_resfinder_db" 
-ariba_resfinder_database: "resources/ariba_resfinder_db"
+resources:
+  database_path: "/bifrost_resources/resfinder/ref_db/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-  # None
+  sample:
+    properties:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  files:
+    - "ariba_resfinder/resistance/report.tsv"
+  sample:
+    properties:
+      resistance:
+        summary: 
+        component:
+          _id: 
+          date: "ObjectId"
+    report:
+      resistance:
+        title: Resistance
+        info: *dockerfile
+        columns:  # headers, these values are statically present in datadump
+          - {id: "gene", name: "gene"}
+          - {id: "coverage", name: "%cov"}
+          - {id: "identity", name: "%id"}
+          - {id: "variants", name: "# of variants"}
+        data: []  # list of dicts parsed in datadump
+  sample_component:
+    summary:
+    results:
+      ariba_resfinder/resistance/report.tsv: {}
 #---------------------------------------------------------------------------------------------------

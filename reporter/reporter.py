@@ -7,6 +7,7 @@ import time
 from io import StringIO
 
 import dash
+import flask
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
@@ -16,6 +17,8 @@ import numpy as np
 import plotly.graph_objs as go
 from plotly import tools 
 from dash.dependencies import Input, Output, State
+from bson.json_util import dumps, loads
+
 
 from flask import request   # To get client IP for pass/fail stamp
 
@@ -56,6 +59,21 @@ def short_species(species):
 app = dash.Dash()
 app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
+
+server = app.server
+
+
+@server.route('/get-file/<fileid>')
+def get_file(fileid=None):
+    if fileid is not None:
+        try:
+            f = import_data.load_file_from_db(fileid)
+        except ValueError:
+            return flask.abort(404)
+        # mimetype = f.content_type
+        return flask.send_file(f,as_attachment=True,attachment_filename=f.filename)
+    return flask.abort(404)
+
 
 if hasattr(keys, "pass_protected") and keys.pass_protected:
     dash_auth.BasicAuth(
@@ -439,20 +457,23 @@ def next_page(prev_ts, prev_ts2, next_ts, next_ts2, page_n, max_page):
         State("data-store", "data")]
         )
 def sample_report(page_n, lasso_selected, data_store):
+    species_col = "properties.species_detection.summary.species"
     page_n = int(page_n)
-    #json_data = StringIO(data_store)
-    data = pd.DataFrame.from_dict(data_store)
+    json_data = loads(data_store)
+    reporter_json = {str(x["_id"]) :x.get("reporter", {}) for x in json_data}
+    data=pd.io.json.json_normalize(json_data)
+    data["_id"] = data["_id"].astype(str)
     if lasso_selected != "" and lasso_selected is not None:
         lasso = lasso_selected.split(",")  # lasso first
         data = data[data._id.isin(lasso)]
     if len(data) == 0: return []
     samples = data["_id"]
-    data = data.sort_values(["species","name"])
+    data = data.sort_values([species_col, "name"])
     skips = PAGESIZE * (page_n)
     page = data[skips:skips+PAGESIZE]
     page = import_data.add_sample_runs(page)
     max_page = len(samples) // PAGESIZE
-    page_species = page["species"].unique().tolist()
+    page_species = page[species_col].unique().tolist()
     # We need to have fake radio buttons with the same ids to account for times 
     # when not all PAGESIZE samples are shown and are not taking the ids required by the callback
     html_fake_radio_buttons = html.Div([dcc.RadioItems(
@@ -464,7 +485,7 @@ def sample_report(page_n, lasso_selected, data_store):
     ) for n_sample in range(len(page), PAGESIZE)], style={"display": "none"})
     return [
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
-        html.Div(children_sample_list_report(page)),
+        html.Div(children_sample_list_report(page, reporter_json)),
         html_fake_radio_buttons,
         admin.html_qc_expert_form(),
         html.H4("Page {} of {}".format(page_n + 1, max_page + 1)),
@@ -492,8 +513,7 @@ def generate_sample_folder_div(n_generate_ts,
     if lasso_selected != "":
         samples = lasso_selected.split(",")  # lasso first
     elif data_store != None:
-        #json_data = StringIO(data_store)
-        samples = pd.DataFrame.from_dict(data_store)["_id"]
+        samples = pd.io.json.json_normalize(loads(data_store))["_id"]
     else:
         samples = []
 
@@ -602,7 +622,7 @@ def update_selected_samples(apply_button_ts, run_name, species_list, species_sou
     else:
         samples = import_data.filter_all(species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list, run_name=run_name)
-    return samples.to_dict()
+    return dumps(samples)
 
 
 @app.callback(
@@ -630,27 +650,32 @@ def update_test_table(data_store):
     if data_store == '""':
         return empty_table
     ##json_data = StringIO(data_store)
-    tests_df = pd.DataFrame.from_dict(data_store)
+    tests_df = pd.io.json.json_normalize(loads(data_store))
     if len(tests_df) == 0:
         return empty_table
     qc_action = "ssi_stamper.assemblatron:action"
-    qc_action = "stamp.ssi_stamper.value"
+    qc_action = "stamps.ssi_stamper.value"
     if qc_action not in tests_df:
         tests_df[qc_action] = np.nan
     else:
         tests_df[qc_action] = tests_df[qc_action].str.split(":", expand=True)[1]
  
-    if "R1" not in tests_df:
-        tests_df["R1"] = np.nan
+    tests_df["_id"] = tests_df["_id"].astype(str)
 
-    no_reads_mask = tests_df["R1"] == ""
+    add_if_missing = ["reads.R1", "properties.species_detection.summary.provided_species",
+                      "properties.species_detection.summary.species"]
+
+    for c in add_if_missing:
+        if c not in tests_df:
+            tests_df[c] = np.nan
+    no_reads_mask = tests_df["reads.R1"] == ""
     tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
     tests_df.loc[slmask, qc_action] = "warning: supplying lab"
     
-    user_stamp_col = "stamp.supplying_lab_check.value"
+    user_stamp_col = "stamps.supplying_lab_check.value"
     # Overload user stamp to ssi_stamper
     if user_stamp_col in tests_df.columns:
         user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
@@ -659,14 +684,16 @@ def update_test_table(data_store):
         tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
         user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
         tests_df.loc[user_cf_mask, qc_action] = "*core facility"
+    else:
+        tests_df["stamps.supplying_lab_check.value"] = np.nan
 
     # Split test columns
     columns = tests_df.columns
     split_columns = [
-        "ssi_stamper.assemblatron:1x10xsizediff",
-        "ssi_stamper.whats_my_species:minspecies",
-        "ssi_stamper.whats_my_species:nosubmitted",
-        "ssi_stamper.whats_my_species:detectedspeciesmismatch"
+        "properties.stamper.summary.test__denovo_assembly__genome_size_difference_1x_10x",
+        "properties.stamper.summary.test__species_detection__main_species_level",
+        "properties.stamper.summary.test__component__species_in_db",
+        "properties.stamper.summary.test__sample__species_provided_is_detected"
     ]
     i = 0
     for column in columns:
@@ -715,14 +742,14 @@ def update_test_table(data_store):
     # HORRIBLE HACK: but must be done because of bug https://github.com/plotly/dash-table/issues/224
     # Delete as soon as filter works with column ids
 
-    def simplify_name(name):
-        return name.replace(":", "_").replace(".", "_").replace("=", "_")
+    # def simplify_name(name):
+    #     return name.replace(":", "_").replace(".", "_").replace("=", "_")
         
-    tests_df.columns = list(map(simplify_name, tests_df.columns))
-    COLUMNS = []
-    for column in global_vars.COLUMNS:
-        column["id"] = simplify_name(column["id"])
-        COLUMNS.append(column)
+    # tests_df.columns = list(map(simplify_name, tests_df.columns))
+    # COLUMNS = []
+    # for column in global_vars.COLUMNS:
+    #     column["id"] = simplify_name(column["id"])
+    #     COLUMNS.append(column)
 
     # END OF HORRIBLE HACK
 
@@ -737,6 +764,9 @@ def update_test_table(data_store):
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
             "column_id": qc_action, "filter_query": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
+    print("prefilter", list(tests_df.columns))
+    tests_df = tests_df.filter(items=[c['id'] for c in COLUMNS])
+    print("postfilter", list(tests_df.columns))
 
 
     table = dash_table.DataTable(
@@ -817,14 +847,12 @@ def plot_species_dropdown(rows, selected_rows, plot_species, selected_species):
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
-    # part of the HACK, replace with "properties.detected_species" when issue is solved
-    species_col = "properties_detected_species"
+    species_col = "properties.detected_species"
 
     if plot_species == "provided":
-        species_col = "properties_provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species == "detected":
-        species_col = "properties_detected_species"
-    # end HACK
+        species_col = "properties.species_detection.summary.detected_species"
     if species_col not in plot_df or plot_df[species_col].unique() is None:
         return dcc.Dropdown(
             id="plot-species"
@@ -873,18 +901,16 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     plot_values = global_vars.plot_values
     traces = []
     trace_ranges = []
-
-     # part of the HACK, replace with "properties.detected_species" when issue is solved
-    species_col = "properties_detected_species"
+    species_col = "properties.species_detection.summary.detected_species"
     if plot_species_source == "provided":
-        species_col = "properties_provided_species"
+        species_col = "properties.species_detection.summary.provided_species"
     elif plot_species_source == "detected":
-        species_col = "properties_detected_species"
-    # end HACK
+        species_col = "properties.species_detection.summary.detected_species"
 
     plot_df = pd.DataFrame(rows)
     if selected_rows is not None and len(selected_rows) > 0:
         plot_df = plot_df.iloc[selected_rows]
+    print(plot_df.columns)
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
 
@@ -892,7 +918,7 @@ def update_coverage_figure(selected_species, rows, selected_rows, plot_species_s
     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
         selected_species == "All species"):
         for plot_value in plot_values:
-            plot_id = plot_value["id"].replace(".", "_").replace(":", "_")  #HACK
+            plot_id = plot_value["id"]
             if selected_species == "All species":
                 species_df = plot_df
             else:

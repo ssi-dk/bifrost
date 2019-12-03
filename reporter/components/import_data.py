@@ -46,7 +46,6 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
                                     run_name, species, group, qc_list)
     return list(result)
 
-##NOTE SPLIT/SHORTEN THIS FUNCTION
 def filter_all(species=None, species_source=None, group=None, qc_list=None, run_name=None, func=None, sample_ids=None):
 
     if sample_ids is None:
@@ -55,6 +54,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name" : 1,
                 "properties": 1,
                 "sample_sheet": 1,
+                "report": 1,
                 "reads": 1,
                 "stamps": 1
             },
@@ -65,67 +65,63 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
                 "name": 1,
                 "properties": 1,
                 "sample_sheet": 1,
+                "report": 1,
                 "reads": 1,
                 "stamps": 1
             },
             samples=sample_ids)
 
-    clean_result = {}
-    sample_ids = []
-    unnamed_count = 0
-    for item in query_result:
-        sample_ids.append(item["_id"])
-        sample_sheet_name = ""
-        if "name" not in item:
-            if "sample_sheet" in item:
-                sample_sheet_name = item["sample_sheet"]["sample_name"]
-            else:
-                print("No sample sheet here: ", item)
-                sample_sheet_name = "UNNAMED_" + str(unnamed_count)
-                unnamed_count += 1
-        try:
-            clean_result[str(item["_id"])] = {
-                "_id": str(item["_id"]),
-                "name": item.get("name", sample_sheet_name),
-                "species": item.get("properties", {}).get("species", "Not classified"),
-                "R1": str(item.get("reads", {}).get("R1", ""))
-            }
-            if "properties" in item:
-                for summary_key, summary_value in item["properties"].items():
-                    clean_result[str(item["_id"])]["properties." +
-                                        summary_key] = summary_value
-            if "stamps" in item:
-                for key, stamp in item["stamps"].items():
-                    if key == "stamp_list":
-                        continue
-                    else:
-                        clean_result[str(item["_id"])]["stamp." +
-                                                       key + ".value"] = stamp["value"]
+    # Check if any sample belongs to the old schema.
+    old_schema = []
+    new_schema = []
+    for result in query_result:
+        if not result.get("report"):
+            old_schema.append(result)
+        else:
+            new_schema.append(result)
+    if not old_schema:
+        return query_result
+    # clean_result = {}
+    sample_ids = [x["_id"] for x in old_schema]
 
+    # Other adaptations:
+    for sample in old_schema:
+        datafiles = {"summary": {"paired_reads": [sample["reads"]["R1"],
+                                                  sample["reads"]["R2"]]}}
+        sample["properties"]["datafiles"] = datafiles
+        sample["properties"]["species_detection"] = {"summary": {"provided_species": sample["properties"]["provided_species"],
+                                                                 "detected_species": sample["properties"]["detected_species"]}}
 
-        except KeyError as e:
-            # we'll just ignore this for now
-            sys.stderr.write("Error in sample. Ignored: {}\n".format(item))
-        if "sample_sheet" in item:
-            for key, value in item["sample_sheet"].items():
-                clean_result[str(item["_id"])]["sample_sheet." + key] = value
-        
+    samples_by_ids = {str(x["_id"]):x for x in old_schema}
+    # unnamed_count = 0
+
+    category_dict = {
+        "assemblatron": "denovo_assembly",
+        "ariba_mlst": "mlst",
+        "ariba_resfinder": "resistance",
+        "cge_mlst": "mlst",
+        "cge_resfinder": "resistance",
+        "min_read_check": "size_check",
+        "ssi_stamper": "stamper",
+        "whats_my_species": "species_detection"
+    }
+
     component_result = mongo_interface.get_results(sample_ids)
     for item in component_result:
         item_id = str(item["sample"]["_id"])
         component = item["component"]["name"]
-        if "summary" in item:
-            for summary_key, summary_value in item["summary"].items():
-                clean_result[item_id][component + "." +
-                                      summary_key] = summary_value
-        else:
-            pass
-            # print("Missing summary", item)
-        if "status" in item:
-            clean_result[item_id][component + ".status"] = item["status"]
-        for func in global_vars.FUNCS:
-            clean_result[item_id] = func(clean_result[item_id])
-    return pd.DataFrame.from_dict(clean_result, orient="index")
+        if component in category_dict:
+            category = category_dict[component]
+            if "summary" in item:
+                samples_by_ids[item_id]["properties"][category] = {
+                    "summary": item["summary"]
+                }
+    for sample in samples_by_ids:
+        new_schema.append(samples_by_ids[sample])
+
+    return new_schema
+
+
 
 def add_sample_runs(sample_df):
     """Returns the runs each sample belongs to"""
@@ -171,7 +167,7 @@ def post_stamps(stamplist):
         stamps["stamp_list"] = stamp_list
         stamps[stamp["name"]] = stamp
         sample_db["stamps"] = stamps
-        mongo_interface.save_sample(sample_db)
+        mongo_interface.save_sample_to_file(sample_db)
     return "Feedback saved"
 
 def get_run(run_name):
@@ -249,3 +245,7 @@ def get_comment(run_id):
 
 def set_comment(run_id, comment):
     return mongo_interface.set_comment(run_id, comment)
+
+
+def load_file_from_db(file_id=None):
+    return mongo_interface.load_file_from_db(file_id)

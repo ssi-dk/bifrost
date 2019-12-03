@@ -1,107 +1,84 @@
+#- Templated section: start ------------------------------------------------------------------------
 import os
-import sys
-import traceback
-import shutil
 from bifrostlib import datahandling
-from bifrostlib import check_requirements
-
-component = "ssi_stamper"  # Depends on component name, should be same as folder
 
 configfile: "../config.yaml"  # Relative to run directory
-global_threads = config["threads"]
-global_memory_in_GB = config["memory"]
-sample = config["Sample"]
 
-sample_file_name = sample
-db_sample = datahandling.load_sample(sample_file_name)
+num_of_threads, memory_in_GB = config["threads"], config["memory"]
+bifrost_sampleComponentObj = datahandling.SampleComponentObj()
+sample_name, component_name, dockerfile, options, bifrost_resources = bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])
+bifrost_sampleComponentObj.started()
+singularity: dockerfile
 
-component_file_name = "../components/" + component + ".yaml"
-if not os.path.isfile(component_file_name):
-    shutil.copyfile(os.path.join(os.path.dirname(workflow.snakefile), "config.yaml"), component_file_name)
-db_component = datahandling.load_component(component_file_name)
-
-sample_component_file_name = db_sample["name"] + "__" + component + ".yaml"
-db_sample_component = datahandling.load_sample_component(sample_component_file_name)
-
-if "reads" in db_sample:
-    reads = R1, R2 = db_sample["reads"]["R1"], db_sample["reads"]["R2"]
-else:
-    reads = R1, R2 = ("/dev/null", "/dev/null")
 
 onsuccess:
-    print("Workflow complete")
-    datahandling.update_sample_component_success(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
+    bifrost_sampleComponentObj.success()
 
 
 onerror:
-    print("Workflow error")
-    datahandling.update_sample_component_failure(db_sample.get("name", "ERROR") + "__" + component + ".yaml", component)
+    bifrost_sampleComponentObj.load(config["sample_id"], config["component_id"])  # load needed due to bug in snakemake accessing older object
+    bifrost_sampleComponentObj.failure()
 
 
 rule all:
     input:
-        component + "/" + component + "_complete"
+        # file is defined by datadump function
+        component_name + "/datadump_complete"
 
 
 rule setup:
     output:
-        init_file = touch(temp(component + "/" + component + "_initialized")),
+        init_file = touch(
+            temp(component_name + "/initialized")),
     params:
-        folder = component
+        folder = component_name
 
 
 rule_name = "check_requirements"
 rule check_requirements:
-    # Static
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        num_of_threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
-        out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
-        err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
+        out_file = component_name + "/log/" + rule_name + ".out.log",
+        err_file = component_name + "/log/" + rule_name + ".err.log",
     benchmark:
-        rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
-    # Dynamic
+        component_name + "/benchmarks/" + rule_name + ".benchmark"
     input:
         folder = rules.setup.output.init_file,
-        requirements_file = component_file_name
     output:
-        check_file = rules.setup.params.folder + "/requirements_met",
+        check_file = component_name + "/requirements_met",
     params:
-        component = component_file_name,
-        sample = sample,
-        sample_component = sample_component_file_name
+        bifrost_sampleComponentObj
     run:
-        check_requirements.script__initialization(input.requirements_file, params.component, params.sample, params.sample_component, output, log.out_file, log.err_file)
+        bifrost_sampleComponentObj.check_requirements()
+#- Templated section: end --------------------------------------------------------------------------
 
-
-rule_name = "run_ssi_stamper"
-rule run_ssi_stamper:
+#* Dynamic section: start **************************************************************************
+rule_name = "datadump"
+rule datadump:
     # Static
     message:
         "Running step:" + rule_name
     threads:
-        global_threads
+        num_of_threads
     resources:
-        memory_in_GB = global_memory_in_GB
+        memory_in_GB = memory_in_GB
     log:
         out_file = rules.setup.params.folder + "/log/" + rule_name + ".out.log",
         err_file = rules.setup.params.folder + "/log/" + rule_name + ".err.log",
     benchmark:
         rules.setup.params.folder + "/benchmarks/" + rule_name + ".benchmark"
     # Dynamic
-    params:
-        sample = db_sample,
-        sample_yaml = sample,
-        sample_component = db_sample.get("name", "ERROR") + \
-            "__" + component + ".yaml"
     input:
         check_file = rules.check_requirements.output.check_file,
     output:
-        complete = touch(rules.all.input)
+        complete = rules.all.input
+    params:
+        sampleComponentObj=bifrost_sampleComponentObj
     script:
-        # Should be refactored to a datadump
-        os.path.join(os.path.dirname(workflow.snakefile), "scripts/ssi_stamper.py")
+        os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")

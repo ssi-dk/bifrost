@@ -1,13 +1,19 @@
 import pymongo
+import gridfs
 import re
 import os
-import math
+import sys
 from datetime import datetime
 import ruamel.yaml
 import traceback
 import atexit
+import magic
+import math
 yaml = ruamel.yaml.YAML(typ="safe")
 yaml.default_flow_style = False
+
+global GLOBAL_schema_version
+GLOBAL_schema_version = 2.0
 
 def date_now():
     """
@@ -32,12 +38,11 @@ def get_connection():
     if CONNECTION is not None:
         return CONNECTION
     else:
-        mongo_db_key_location = os.getenv("BIFROST_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        # Return mongodb connection
-        CONNECTION = pymongo.MongoClient(mongodb_url)
-        return CONNECTION
+        if os.getenv("BIFROST_DB_KEY", None) is not None:
+            CONNECTION = pymongo.MongoClient(os.getenv("BIFROST_DB_KEY"))  # Note none here apparently will use defaults which means localhost:27017
+            return CONNECTION
+        else:
+            raise ValueError("BIFROST_DB_KEY not set")
 
 
 
@@ -48,7 +53,7 @@ def dump_run_info(data_dict):
     db = connection.get_database()
     runs_db = db.runs  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = runs_db.find_one_and_update(
@@ -58,7 +63,6 @@ def dump_run_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
         result = runs_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
 
@@ -78,7 +82,7 @@ def dump_sample_info(data_dict):
     db = connection.get_database()
     samples_db = db.samples  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = samples_db.find_one_and_update(
@@ -88,18 +92,22 @@ def dump_sample_info(data_dict):
             upsert=True  # This might change in the future  # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
         result = samples_db.insert_one(data_dict)
         data_dict["_id"] = result.inserted_id
     return data_dict
 
-def get_components(component_ids=None):
+
+def get_components(component_ids=None, component_names=None, component_versions=None):
     """
     Return components based on query
     """
     query = []
     if component_ids is not None:
         query.append({"_id": {"$in": component_ids}})
+    if component_names is not None:
+        query.append({"name": {"$in": component_names}})
+    if component_versions is not None:
+        query.append({"version": {"$in": component_versions}})
     connection = get_connection()
     db = connection.get_database()
     if len(query) == 0:
@@ -116,7 +124,7 @@ def dump_component_info(data_dict):
     db = connection.get_database()
     components_db = db.components  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = components_db.find_one_and_update(
@@ -126,9 +134,12 @@ def dump_component_info(data_dict):
             upsert=True  # This might change in the future # insert the document if it does not exist
         )
     else:
-        data_dict["metadata"]["created_at"] = now
-        result = components_db.insert_one(data_dict)
-        data_dict["_id"] = result.inserted_id
+        data_dict = components_db.find_one_and_update(
+            filter={"name": data_dict["name"], "version": data_dict["version"]},
+            update={"$setOnInsert": data_dict},
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True
+        )
 
     return data_dict
 
@@ -146,7 +157,7 @@ def dump_sample_component_info(data_dict):
     db = connection.get_database()
     sample_components_db = db.sample_components  # Collection name is samples
     now = date_now()
-    data_dict["metadata"] = data_dict.get("metadata", {'created_at': now})
+    data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
     if "_id" in data_dict:
         data_dict = sample_components_db.find_one_and_update(
@@ -295,6 +306,7 @@ def get_samples(sample_ids=None, run_names=None, component_ids=None):
 
 def get_sample_components(sample_component_ids=None,
                           sample_ids=None,
+                          component_ids=None,
                           component_names=None,
                           size=0):
     """Loads most recent sample component for a sample"""
@@ -306,6 +318,8 @@ def get_sample_components(sample_component_ids=None,
         query.append({"_id": {"$in": sample_component_ids}})
     if sample_ids is not None:
         query.append({"sample._id": {"$in": sample_ids}})
+    if component_ids is not None:
+        query.append({"component._id": {"$in": component_ids}})
     if component_names is not None:
         query.append({"component.name": {"$in": component_names}})
     try:
@@ -399,3 +413,80 @@ def delete_sample(sample_id):
     except Exception:
         print(traceback.format_exc())
         return None
+
+# GridFS filehandling
+
+def save_file_to_db(sample_component_id, file_path):
+    """
+    Will raise an error if file doesn't exist
+    """
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+
+    # check if file is there
+    existing = fs.find_one({
+        "sample_component_id": sample_component_id,
+        "full_path": file_path
+    })
+    if existing:
+        print(("WARNING: File {} already exists in".format(file_path),
+        " the db for this component,",
+        " it was overwritten by the new file."), file=sys.stderr)
+        fs.delete(existing._id)
+    
+    db_sample_component = next(iter(get_sample_components(sample_component_ids=[sample_component_id])), None)
+
+    mimetype = magic.from_file(file_path, mime=True)
+
+    with open(file_path, 'rb') as file_handle:
+        file_id = fs.put(file_handle,
+                        sample_component_id=sample_component_id,
+                        sample_id=db_sample_component["sample"]["_id"],
+                        component_id=db_sample_component["component"]["_id"],
+                        full_path=file_path,
+                        filename=os.path.basename(file_path),
+                        mimetype=mimetype)
+    return file_id
+
+
+
+def load_file_from_db(file_id, save_to_path=None, subpath=False):
+
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+
+    fobj = fs.get(file_id)
+
+    if save_to_path is None:
+        if subpath:
+            save_to_path = fobj.full_path
+        else:
+            save_to_path = fobj.filename
+    elif os.path.isdir(save_to_path):
+        if subpath:
+            save_to_path = os.path.join(save_to_path, fobj.full_path)
+        else:
+            save_to_path = os.path.join(save_to_path, fobj.filename)
+        
+
+    if os.path.isfile(save_to_path):
+        raise FileExistsError
+    
+    dirname = os.path.dirname(save_to_path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+
+    with open(save_to_path, 'wb') as file_handle:
+
+
+        file_handle.write(fobj.read())
+    return file_id
+
+def find_files(sample_component_id):
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+    return list(fs.find({"sample_component_id":sample_component_id}))

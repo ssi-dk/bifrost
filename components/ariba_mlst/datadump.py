@@ -1,62 +1,45 @@
-import pkg_resources
-import os
-import re
 from bifrostlib import datahandling
-import sys
-
-config = datahandling.load_config()
 
 
-def extract_tsv(datadump_dict, folder, relative_path):
-    relative_path_key = relative_path.replace(".", "_")
-    if os.path.isfile(os.path.join(folder, relative_path)):
-        datadump_dict["results"][relative_path_key] = {}
-        try:
-            with open(os.path.join(folder, relative_path), "r") as tsv_file:
-                values = []
-                headers = None
-                for line in tsv_file:
-                    line = line.strip()
-                    if headers is None:
-                        headers = line.split('\t')
-                    else:
-                        row = line.split('\t')
-                        values.append(dict(zip(headers, row)))
-        except Exception as e:
-            sys.stderr.write(relative_path, e)
-            sys.stderr.write(datadump_dict)
-            datadump_dict["results"][relative_path_key]["status"] = "datadumper error"
-        datadump_dict["results"][relative_path_key]["values"] = values
-    return datadump_dict
+def extract_ariba_mlst_report_and_details(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction("data.yaml")
+    results[key] = datahandling.load_yaml(file_path)
+    strains = []
+    for mlst_db in results[key]:
+        strain_db = results[key][mlst_db]["report"]
+        strain = strain_db["ST"]
+        strains.append(strain)
+        results["strain"] = strains
+        summary["strain"] = strains
+    return (summary, results)
 
 
-def script__datadump_ariba_mlst(folder, sample, sample_yaml):
-    folder = str(folder)
-    sample = str(sample)
+def generate_report(sampleComponentObj):
+    summary, results, file_path, key = sampleComponentObj.start_data_extraction()
+    key = sampleComponentObj.get_file_location_key("data.yaml")
 
-    datadump_dict = datahandling.load_sample_component(sample)
-    datadump_dict["summary"] = datadump_dict.get("summary", {})
-    datadump_dict["results"] = datadump_dict.get("results", {})
-    mlst_database = datahandling.get_mlst_species_DB(sample_yaml)
-    datadump_dict["results"]["mlst_db"] = mlst_database
-    datadump_dict["summary"]["mlst_db"] = mlst_database
+    data = []
+    for mlst_db in results[key]:
+        strain_db = results[key][mlst_db]["report"]
+        alleles = []
+        strain = strain_db["ST"]
+        for gene in strain_db:
+            if gene != "ST":
+                alleles.append("{}_{}".format(gene, strain_db[gene]))
+        alleles = ", ".join(alleles)
+        data.append({
+            "db": mlst_db,
+            "strain": strain,
+            "alleles": alleles
+        })
+    return data
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/report.tsv")
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst/mlst_report.tsv")
+def datadump(sampleComponentObj, log):
+    sampleComponentObj.start_data_dump(log=log)
+    sampleComponentObj.run_data_dump_on_function(extract_ariba_mlst_report_and_details, log=log)
+    sampleComponentObj.end_data_dump(generate_report_function=generate_report, log=log)
 
-    # Summary:
-    try:
-        datadump_dict["summary"]["mlst_report"] = ",".join(
-            ["{}:{}".format(key, val) for key, val in
-                datadump_dict["results"]["ariba_mlst/mlst_report_tsv"]["values"][0].items()])
-    except KeyError as e:
-        datadump_dict["summary"]["mlst_report"] = "KeyError: {}".format(e)
-
-    datahandling.save_sample_component(datadump_dict, sample)
-
-    return 0
-
-script__datadump_ariba_mlst(snakemake.params.folder, snakemake.params.sample, snakemake.params.sample_yaml)
+datadump(
+    snakemake.params.sampleComponentObj,
+    snakemake.log)

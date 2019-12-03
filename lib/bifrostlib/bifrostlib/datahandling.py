@@ -1,9 +1,15 @@
 import os
+import datetime
 import ruamel.yaml
+import pandas
+import functools
 from bson.objectid import ObjectId
 from bson.int64 import Int64
 from bifrostlib import mongo_interface
 import pymongo
+import traceback
+import sys
+import subprocess
 
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
@@ -25,7 +31,264 @@ yaml.default_flow_style = False
 yaml.register_class(ObjectId)
 yaml.register_class(Int64)
 
-def log(log_file, content):
+"""
+Class to be used as a template for rules which require python scripts. Can be tightened up to only
+allow access to parts of the document if needed in the future, ie options.
+"""
+class stamperTestObj:
+    def __init__(self, function_name, display_name, effect, log=None):
+        self.name = function_name
+        self.display_name = display_name
+        self.effect = effect
+        self.value = ""
+        self.status = ""
+        self.reason = ""
+        self.log = log
+        self.write_log_out("Running {}\n".format(function_name))
+
+    def set_value(self, value):
+        if isinstance(value, float):
+            value = round(value, 3)
+        self.value = value
+
+    def get_value(self):
+        return self.value
+
+    def set_effect(self, effect):
+        self.effect = effect
+
+    def set_status_and_reason(self, status, reason):
+        self.status = status
+        self.reason = reason
+
+    def as_dict(self):
+        test = {
+            "name": self.name,
+            "display_name": self.display_name,
+            "effect": self.effect,
+            "value": self.value,
+            "status": self.status,
+            "reason": self.reason,
+        }
+        return test
+
+    def write_log_out(self, content):
+        if self.log is not None:
+            with open(self.log.log_out, "a+") as file_handle:
+                file_handle.write(content)
+        else:
+            sys.stdout.write(content)
+
+class SampleComponentObj:
+    def __init__(self):
+        self.sample_id = None
+        self.component_id = None
+
+    def load(self, sample_id, component_id):
+        self.sample_id = sample_id
+        self.component_id = component_id
+        self.sample_db = get_sample(sample_id=self.sample_id)
+        self.component_db = get_component(component_id=self.component_id)
+        self.sample_component_db = get_sample_component(sample_id=self.sample_id, component_id=self.component_id)
+        self.sample_component_id = self.sample_component_db["_id"]
+        return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
+
+    def start_data_extraction(self, file_location=None):
+        summary = self.sample_component_db["properties"]["summary"]
+        results = self.sample_component_db["results"]
+        file_path = None
+        key = None
+        if file_location is not None:
+            file_path = os.path.join(self.get_component_name(), file_location)
+            key = self.get_file_location_key(file_location)
+            results[key] = {}
+        return summary, results, file_path, key
+
+    def get_file_location_key(self, file_location):
+        file_path = os.path.join(self.get_component_name(), file_location)
+        key = file_path.replace(".", "_").replace("$", ".")
+        return key
+
+    def get_sample_properties_by_category(self, category):
+        if category in self.sample_db["properties"]:
+            return self.sample_db["properties"][category].get("summary", None)
+        else:
+            return None
+
+    def get_reads(self):
+        datafiles = self.get_sample_properties_by_category("datafiles")
+        if "paired_reads" in datafiles:
+            return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
+        else:
+            return ("/dev/null", "/dev/null")
+
+    def get_resources(self):
+        return self.component_db["resources"]
+
+    def get_options(self):
+        return self.component_db["options"]
+
+    def check_requirements(self, output_file="requirements_met", log=None):
+        no_failures = True
+        if self.component_db["requirements"] is not None:
+            requirements = pandas.io.json.json_normalize(self.component_db["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from component_db, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
+            for requirement in requirements:
+                category = requirement.split(".")[0]
+                if category == "sample":
+                    field = requirement.split(".")[1:]
+                    expected_value = requirements[requirement]
+                    if not self.requirement_met(self.sample_db, field, expected_value, log):
+                        no_failures = False
+                elif category == "component":
+                    field = requirement.split(".")[2:]
+                    expected_value = requirements[requirement]
+                    c_name = requirement.split(".")[1]
+                    s_c_db = get_sample_component(sample_id=self.sample_id,
+                                                  component_name=c_name)
+                    if not self.requirement_met(s_c_db, field, expected_value, log):
+                        no_failures = False
+                else:
+                    no_failures = False
+        if no_failures:
+            open(os.path.join(self.component_db["name"], output_file), "w+").close()
+        else:
+            self.requirements_not_met()
+
+    def get_current_status(self):
+        return self.sample_component_db["status"]
+
+    def update_status_in_sample_and_sample_component(self, status):
+        self.sample_component_db["status"] = status 
+        status_set = False
+        for component in self.sample_db["components"]:
+            if component["_id"] == self.component_db["_id"]:
+                component["status"] = status
+                status_set = True
+        if not status_set:
+            self.sample_db["components"].append([{"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status}])
+        self.save()
+
+    def requirements_not_met(self):
+        sys.stdout.write("Workflow stopped due to requirements\n")
+        self.update_status_in_sample_and_sample_component("Requirements not met")
+
+    def initialized(self):
+        sys.stdout.write("Workflow initialized\n")
+        self.update_status_in_sample_and_sample_component("Initialized")
+
+    def queued(self):
+        sys.stdout.write("Workflow queue'd\n")
+        self.update_status_in_sample_and_sample_component("Queued")
+
+    def started(self):
+        sys.stdout.write("Workflow processing\n")
+        self.update_status_in_sample_and_sample_component("Running")
+
+    def success(self):
+        sys.stdout.write("Workflow complete\n")
+        if self.get_current_status() == "Running":
+            self.update_status_in_sample_and_sample_component("Success")
+
+    def failure(self):
+        sys.stdout.write("Workflow error\n")
+        if self.get_current_status() == "Running":
+            self.update_status_in_sample_and_sample_component("Failure")
+
+    def start_rule(self, rule_name, log=None):
+        self.write_log_out(log, "{} has started\n".format(rule_name))
+        return (self.component_db["name"], self.component_db["options"], self.component_db["resources"])
+
+    def rule_run_cmd(self, command, log):
+        self.write_log_out(log, "Running:{}\n".format(command))
+        command_log_out, command_log_err = subprocess.Popen(command, shell=True).communicate()
+        self.write_log_out(log, command_log_out)
+        self.write_log_err(log, command_log_err)
+
+    def end_rule(self, rule_name, log=None):
+        self.write_log_out(log, "{} has finished\n".format(rule_name))
+
+    def start_data_dump(self, log=None):
+        self.sample_component_db["properties"] = {
+            "summary": {},
+            "component": {
+                "_id": self.component_db["_id"]
+            }
+        }
+        self.sample_component_db["results"] = {}
+        if self.component_db["db_values_changes"]["sample"].get("report", None) is not None:
+            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+        else:
+            self.sample_component_db["report"] = {}
+        self.write_log_out(log, "Starting datadump\n")
+        self.save_files_to_sample_component(log)
+
+    def save_files_to_sample_component(self, log=None):
+        save_files_to_db(self.component_db["db_values_changes"]["files"], sample_component_id=self.sample_component_db["_id"])
+        self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
+
+    def get_component_name(self):
+        return self.component_db["name"]
+
+    def run_data_dump_on_function(self, data_extraction_function, log=None):
+        (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
+
+    def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
+        self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
+        report_data = generate_report_function(self)
+        if report_data is not None:
+            self.sample_db["report"][self.component_db["details"]["category"]] = self.sample_component_db["report"]
+            self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
+            assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
+        self.write_log_err(log, str(traceback.format_exc()))
+        self.save()
+        self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
+        open(os.path.join(self.component_db["name"], output_file), "w+").close()
+        self.write_log_out(log, "Done datadump\n")
+
+    def save(self):
+        save_sample(self.sample_db)
+        save_sample_component(self.sample_component_db)
+
+    def requirement_met(self, db, field, expected_value, log):
+        try:
+            actual_value = functools.reduce(dict.get, field, db)
+            if expected_value is None:
+                self.write_log_err(log, "Found required entry (value not checked) for entry: {}\n".format(":".join(field)))
+                return True
+            elif type(expected_value) is not list:
+                expected_value = [expected_value]
+            if actual_value in expected_value:
+                    self.write_log_err(log, "Found required entry for entry: {} value:{}\n".format(":".join(field), actual_value))
+                    return True
+            else:
+                self.write_log_err(log, "Requirements not met for entry: {} allowed_values: {} value:{}\n".format(":".join(field), expected_value, actual_value))
+                return False
+        except Exception:
+            self.write_log_err(log, "Requirements not met for entry: {}\ndb was:{}\n".format(":".join(field), db))
+            self.write_log_err(log, str(traceback.format_exc()))
+            return False
+
+    def write_log_out(self, log, content):
+        if content is not None:
+            if log is not None:
+                self.write_log(log.out_file, content)
+            else:
+                sys.stdout.write(content)
+
+    def write_log_err(self, log, content):
+        if content is not None:
+            if log is not None:
+                self.write_log(log.err_file, content)
+            else:
+                sys.stderr.write(content)
+
+    def write_log(self, log_file, content):
+        if content is not None:
+            with open(log_file, "a+") as file_handle:
+                file_handle.write(content)
+
+
+def write_log(log_file, content):
     with open(log_file, "a+") as file_handle:
         file_handle.write(content)
 
@@ -62,13 +325,23 @@ def save_component(component_dict, file_yaml):
 
 
 def load_component(file_yaml):
-    if not os.path.isfile(file_yaml):
-        return {}
     with open(file_yaml, "r") as file_handle:
-        return yaml.load(file_handle)
+        temp = yaml.load(file_handle)
+    components = get_components(component_names=[temp["name"]], component_versions=[temp["version"]])
+    if len(components) == 1:
+        return components[0]
+    else:
+        return temp
 
+def save_sample(sample_db):
+    #TODO: This writing to a file is temporary and should be removed with bifrost.smk refactoring
+    if "path" in sample_db:
+        with open(os.path.join(sample_db["path"], "sample.yaml"), "w") as file_handle:
+            yaml.dump(sample_db, file_handle)
 
-def save_sample(sample_dict, file_yaml):
+    return mongo_interface.dump_sample_info(sample_db)
+
+def save_sample_to_file(sample_dict, file_yaml):
     config = load_config()
     if (len(file_yaml.split("/")) >= 2 and
             os.path.isdir("/".join(file_yaml.split("/")[:-1])) is False):
@@ -89,8 +362,16 @@ def load_sample(file_yaml):
         else:
             return content
 
+def save_sample_component(sample_component_db):
+    #TODO: This writing to a file is temporary and should be removed with bifrost.smk refactoring
+    sample_db = get_sample(sample_component_db["sample"]["_id"])
+    if "path" in sample_db:
+        with open(os.path.join(sample_db["path"], "{}__{}.yaml".format(sample_component_db["sample"]["name"], sample_component_db["component"]["name"])), "w") as file_handle:
+            yaml.dump(sample_component_db, file_handle)
 
-def save_sample_component(sample_component_dict, file_yaml):
+    return mongo_interface.dump_sample_component_info(sample_component_db)
+
+def save_sample_component_to_file(sample_component_dict, file_yaml):
     config = load_config()
     if (len(file_yaml.split("/")) >= 2 and
             os.path.isdir("/".join(file_yaml.split("/")[:-1])) is False):
@@ -113,25 +394,12 @@ def load_sample_component(file_yaml):
             return content
 
 
-def sample_component_success(file_yaml, component):
+def sample_component_success(file_yaml):
     sample_component_dict = load_sample_component(file_yaml)
     if sample_component_dict["status"] != "Success":
         return False
     else:
         return True
-
-
-def update_sample_component_success(file_yaml, component):
-    sample_component_dict = load_sample_component(file_yaml)
-    sample_component_dict["status"] = "Success"
-    save_sample_component(sample_component_dict, file_yaml)
-
-
-def update_sample_component_failure(file_yaml, component):
-    sample_component_dict = load_sample_component(file_yaml)
-    if sample_component_dict["status"] != "Requirements not met":
-        sample_component_dict["status"] = "Failure"
-    save_sample_component(sample_component_dict, file_yaml)
 
 
 def save_yaml(content_dict, file_yaml):
@@ -152,23 +420,7 @@ def read_buffer(file_path):
     return buffer
 
 
-def datadump_template(data_dict, component_folder,
-                      file_path, extraction_callback):
-    file_path_key = file_path.replace(".", "_")
-    if os.path.isfile(os.path.join(component_folder, file_path)):
-        data_dict["results"][file_path_key] = {}
-        try:
-            data_dict = extraction_callback(os.path.join(component_folder,
-                                                         file_path),
-                                            file_path_key, data_dict)
-        except Exception as e:
-            print(file_path, e)
-            data_dict["results"][file_path_key]["status"] = "datadumper error"
-        return data_dict
-
-
 # /runs
-
 def post_run(run):
     # Used only by test suite for now.
     # NOTE: dump_run_info acts like a PUT
@@ -287,10 +539,7 @@ def post_run_export(import_dict):
         return imported
 
 # /samples
-
-
-def get_samples(sample_ids=None, run_names=None,
-                component_ids=None):
+def get_samples(sample_ids=None, run_names=None, component_ids=None):
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
     if component_ids is not None:
@@ -298,6 +547,12 @@ def get_samples(sample_ids=None, run_names=None,
     return mongo_interface.get_samples(sample_ids=sample_ids,
                                        run_names=run_names,
                                        component_ids=component_ids)
+
+
+def get_sample(sample_id=None):
+    if sample_id is not None:
+        sample_id = [ObjectId(sample_id)]
+    return next(iter(mongo_interface.get_samples(sample_ids=sample_id)), None)
 
 
 def post_sample(sample):
@@ -318,17 +573,30 @@ def delete_sample(sample_id):
 #  /sample/{id}/sample_components
 
 
-def get_sample_components(sample_component_ids=None,
-                          sample_ids=None, component_names=None):
+def get_sample_components(sample_component_ids=None, sample_ids=None, component_ids=None, component_names=None):
     # Should be smarter
     if sample_component_ids is not None:
         sample_component_ids = [ObjectId(id) for id in sample_component_ids]
     if sample_ids is not None:
         sample_ids = [ObjectId(id) for id in sample_ids]
+    if component_ids is not None:
+        component_ids = [ObjectId(id) for id in component_ids]
     return mongo_interface.get_sample_components(
         sample_component_ids=sample_component_ids,
         sample_ids=sample_ids,
         component_names=component_names)
+
+
+def get_sample_component(sample_component_id=None, sample_id=None, component_id=None, component_name=None):
+    if sample_component_id is not None:
+        sample_component_id = [ObjectId(sample_component_id)]
+    if sample_id is not None:
+        sample_id = [ObjectId(sample_id)]
+    if component_id is not None:
+        component_id = [ObjectId(component_id)]
+    if component_name is not None:
+        component_name = [component_name]
+    return next(iter(mongo_interface.get_sample_components(sample_component_ids=sample_component_id, sample_ids=sample_id, component_ids=component_id, component_names=component_name)), None)
 
 
 def post_sample_component(sample_component):
@@ -345,13 +613,19 @@ def delete_sample_component(s_c_id=None, sample_id=None):
 
 # /component
 
-def get_components(component_ids=None):
+def get_components(component_ids=None, component_names=None, component_versions=None):
     """
     Get components from db
     """
     if component_ids is not None:
         component_ids = list(map(ObjectId, component_ids))
-    return mongo_interface.get_components(component_ids=component_ids)
+    return mongo_interface.get_components(component_ids=component_ids, component_names=component_names, component_versions=component_versions)
+
+
+def get_component(component_id=None):
+    if component_id is not None:
+        component_id = [ObjectId(component_id)]
+    return next(iter(mongo_interface.get_components(component_ids=component_id)), None)
 
 
 def post_component(component):
@@ -362,7 +636,7 @@ def delete_component(component_id):
     return mongo_interface.delete_component(ObjectId(component_id))
 
 
-# /species
+# species
 def get_mlst_species_DB(file_yaml):
     with open(file_yaml, "r") as file_handle:
         sample = yaml.load(file_handle)
@@ -376,8 +650,6 @@ def load_species(ncbi_species):
 
 def get_ncbi_species(species_entry):
     return mongo_interface.query_ncbi_species(species_entry)
-
-# Refactor this
 
 
 def load_samples_from_runs(run_ids=None, names=None):
@@ -397,6 +669,81 @@ def delete_sample_from_runs(sample_id=None):
         sample_id = ObjectId(sample_id)
     return mongo_interface.delete_sample_from_runs(sample_id)
 
+
+
+def save_files_to_db(file_paths, sample_component_id):
+    if file_paths is None:
+        file_paths = []
+    file_ids = []
+    for file_path in file_paths:
+        file_ids.append(mongo_interface.save_file_to_db(
+            sample_component_id, file_path))
+    return file_ids
+
+
+def load_file_from_db(file_id, save_to_path=None, subpath=False):
+    return mongo_interface.load_file_from_db(file_id, save_to_path, subpath)
+
+
+def recreate_s_c_files(sample_component_id, save_to_path):
+    files = mongo_interface.find_files(ObjectId(sample_component_id))
+    for f in files:
+        load_file_from_db(f._id, save_to_path, subpath=True)
+
+def recreate_yaml(collection, oid, path=None):
+    if collection == "sample_components":
+        obj = get_sample_component(oid)
+        filename = "{}__{}.yaml".format(obj["sample"]["name"], obj["component"]["name"])
+    elif collection == "samples":
+        obj = get_sample(oid)
+        filename = "sample.yaml"
+    elif collection == "runs":
+        obj = get_runs(oid)[0]
+        filename = "run.yaml"
+    else:
+        raise ValueError("invalid collection")
+    if path is None:
+        path = "."
+    path = os.path.join(path, filename)
+    with open(path, "w") as file_handle:
+        yaml.dump(obj, file_handle)
+
+
+def recreate_s_c(sample_component_id, save_to_path):
+    recreate_s_c_files(sample_component_id, save_to_path)
+    recreate_yaml("sample_components", sample_component_id, save_to_path)
+
+def recreate_sample(sample_id, save_to_path):
+    sample = get_sample(sample_id)
+    if sample is None:
+        raise ValueError("Sample not found")
+    name = sample["name"]
+    path = os.path.join(save_to_path, name)
+    if os.path.exists(path):
+        raise FileExistsError("Sample directory already exists")
+    os.makedirs(path)
+    recreate_yaml("samples", sample_id, path)
+    
+    sample_components = get_sample_components(sample_ids=[sample_id])
+    for sample_component in sample_components:
+        recreate_s_c(str(sample_component["_id"]), path)
+
+def recreate_run(run_id, save_to_path):
+    runs = get_runs(run_id)
+    if len(runs) == 0:
+        raise ValueError("Run not found")
+    run = runs[0]
+    name = run["name"]
+    path = os.path.join(save_to_path, name)
+    if os.path.exists(path):
+        raise FileExistsError("Run directory already exists")
+    run_yaml_dir = os.path.join(path, "bifrost")
+    os.makedirs(run_yaml_dir)
+    recreate_yaml("runs", run_id, run_yaml_dir)
+    for sample in run["samples"]:
+        recreate_sample(str(sample["_id"]), path)
+    #component.yamls?
+    #create samples folder
 
 def test():
     print("Hello")

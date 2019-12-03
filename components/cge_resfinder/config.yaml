@@ -1,0 +1,65 @@
+#-Basic info----------------------------------------------------------------------------------------
+name: cge_resfinder
+version: 2.0
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: resistance
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    This preforms read based mapping against the resfinder DB's. The options show the species entries 
+    which will be attempted for mlst with key originating from the species DB. This is done against 
+    the cge_db using kma mode. 
+#---------------------------------------------------------------------------------------------------
+
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: &dockerfile "docker://ssidk/bifrost-cge_resfinder:2.0"
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+options:
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+resources:
+  database_path: "/bifrost_resources/resfinder_db"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  sample:
+    properties:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
+#-DB Value changes (excluding component output)-----------------------------------------------------
+db_values_changes:
+  files: []
+  sample:
+    properties:
+      resistance:
+        summary:  # see sample_component summary
+        component:
+          _id: 
+          date:  # ObjectId
+    report:
+      resistance:
+        title: "Resistance"
+        info: *dockerfile
+        columns: 
+          - {id: "resistance_gene", name: "gene"}
+          - {id: "coverage", name: "%cov"}
+          - {id: "identity", name: "%id"}
+          - {id: "anti_biotic_class", name: "anti-biotic class"}
+          - {id: "predicted_phenotype", name: "pred. phenotype"}
+        data: []
+  sample_component:
+    summary:
+    results:
+      cge_resfinder/data_resfinder_json: {}
+#---------------------------------------------------------------------------------------------------

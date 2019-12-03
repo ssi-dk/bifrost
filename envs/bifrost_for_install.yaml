@@ -21,6 +21,7 @@ dependencies:
   - pip
   - uwsgi # Required for the web server
   - mongodb # Required for the DB mode
+  - python-magic
   - pip:
     - dash-table-experiments
     - dash_scroll_up

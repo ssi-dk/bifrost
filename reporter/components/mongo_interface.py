@@ -1,5 +1,7 @@
 import os
 import pymongo
+import gridfs
+
 import keys  # .gitgnored file
 from bson.objectid import ObjectId
 from bson.son import SON
@@ -25,12 +27,11 @@ def get_connection():
     if CONNECTION is not None:
         return CONNECTION
     else:
-        mongo_db_key_location = os.getenv("BIFROST_DB_KEY", None)
-        with open(mongo_db_key_location, "r") as mongo_db_key_location_handle:
-            mongodb_url = mongo_db_key_location_handle.readline().strip()
-        "Return mongodb connection"
-        CONNECTION = pymongo.MongoClient(mongodb_url)
-        return CONNECTION
+        if os.getenv("BIFROST_DB_KEY", None) is not None:
+            CONNECTION = pymongo.MongoClient(os.getenv("BIFROST_DB_KEY"))  # Note none here apparently will use defaults which means localhost:27017
+            return CONNECTION
+        else:
+            raise ValueError("BIFROST_DB_KEY not set")
 
 
 
@@ -528,7 +529,7 @@ def get_sample(sample_id):
     return db.samples.find_one({"_id": sample_id})
 
 
-def save_sample(data_dict):
+def save_sample_to_file(data_dict):
     """COPIED FROM BIFROSTLIB Insert sample dict into mongodb.
     Return the dict with an _id element"""
     connection = get_connection()
@@ -585,3 +586,19 @@ def set_comment(run_id, comment):
         return 1
     else:
         return 0
+
+
+def load_file_from_db(file_id):
+
+    connection = get_connection()
+    db = connection.get_database()
+    fs = gridfs.GridFS(db)
+    try:
+        f = fs.get(ObjectId(file_id))
+        print(f)
+        if f is None:
+            raise ValueError("File not found!")
+        else:
+            return f
+    except gridfs.errors.NoFile:
+        raise ValueError("File not found!")

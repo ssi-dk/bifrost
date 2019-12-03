@@ -1,29 +1,65 @@
-#-Information---------------------------------------------------------------------------------------
+#-Basic info----------------------------------------------------------------------------------------
 name: ariba_plasmidfinder
-version: 1.1
-target: sample
-type: pipeline
-recommendation: recommended
-description: >
-  This preforms read based mapping against the plasmidfinder DB's. 
+version: 2.0
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  category: plasmid
+  schema_version: 2.0
+  target: sample
+  type: pipeline
+  recommendation: recommended
+  description: >
+    This preforms read based mapping against the plasmidfinder DB's. The options show the species entries 
+    which will be attempted for mlst with key originating from the species DB. This is done against 
+    the cge_db using ariba.
+#---------------------------------------------------------------------------------------------------
+
+#-Docker location-----------------------------------------------------------------------------------
+dockerfile: &dockerfile "docker://ssidk/bifrost-ariba_plasmidfinder:2.0"
 #---------------------------------------------------------------------------------------------------
 
 #-Options-------------------------------------------------------------------------------------------
-# -None
+options:
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
-# Relative files are relative to this components folder if not using an absolute path
-abricate_plasmidfinder_database: "resources/abricate_plasmidfinder_db" 
-ariba_plasmidfinder_database: "resources/ariba_plasmidfinder_db"
+resources:
+  database_path: "/bifrost_resources/plasmidfinder/ref_db/"
 #---------------------------------------------------------------------------------------------------
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
   sample:
-    reads:
-      R1:
-      R2:
+    properties:
+      datafiles:
+        paired_reads:
+#---------------------------------------------------------------------------------------------------
+
 #-DB Value changes (excluding component output)-----------------------------------------------------
-# None
+db_values_changes:
+  files:
+    - "ariba_plasmidfinder/plasmid/report.tsv"
+  sample:
+    properties:
+      plasmid:
+        summary: 
+        component:
+          _id: 
+          date: "ObjectId"
+    report:
+      plasmid:
+        title: Plasmid
+        info: *dockerfile
+        columns:  # headers, these values are statically present in datadump
+          - {id: "gene", name: "gene"}
+          - {id: "coverage", name: "%cov"}
+          - {id: "identity", name: "%id"}
+          - {id: "variants", name: "# of variants"}
+        data: []  # list of dicts parsed in datadump
+  sample_component:
+    summary:
+    results:
+      ariba_plasmidfinder/plasmid/report.tsv: {}
 #---------------------------------------------------------------------------------------------------
