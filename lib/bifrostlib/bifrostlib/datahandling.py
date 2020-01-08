@@ -10,6 +10,7 @@ import pymongo
 import traceback
 import sys
 import subprocess
+from typing import List, Set, Dict, Tuple, Optional
 
 
 ObjectId.yaml_tag = u'!bson.objectid.ObjectId'
@@ -78,6 +79,225 @@ class stamperTestObj:
                 file_handle.write(content)
         else:
             sys.stdout.write(content)
+
+
+# class Component():
+#     def __init__(self) -> None:
+#         self._dict = None
+#         if _id != None:
+#             components = get_components(_id)
+#             if len(components) == 1:
+#                 self._dict = components[0]
+#         elif:
+
+class Category:
+    """
+    Category Object for use in Sample Object and Sample Component Objects
+    A Category is a resulting value from a component which other components may also do
+    an example of this would be 2 different denovo assembly pipelines, both provide contigs but
+    in different ways. They would both be the same category so the user could pull common values
+    with the caveat of different pipelines are not direct apple to apple comparisons.
+        - Summary, should be the same summary as created by the component for the sample_component
+        - Component, a reference id to the component which created the category.
+    """
+    def __init__(self, name: str) -> None:
+        self.name = name # Check for name in list?
+        self._dict = None
+        self._dict = {
+            "summary": {},
+        }
+
+    def get_name(self) -> str:
+        """Returns name of object"""
+        return self.name 
+
+    def get(self, key: str) -> object:
+        """Returns value of the associated key in object (dict)"""
+        return self._dict[key]
+
+    def set_summary(self, summary: dict) -> None:
+        """Sets summary value in object (dict)"""
+        self._dict["summary"] = summary
+
+    def set_component(self, component_id: str) -> None:
+        """Sets component value in object (dict)"""
+        self._dict["component"] = {"_id": component_id}
+
+    def display(self) -> dict:
+        """Return a copy of the object (dict)"""
+        return self._dict.copy()
+
+class Sample:
+    """
+    Sample Object for saving in bifrost DB document "samples"
+    A Sample is a base unit in the bifrost DB. It contains information regarding:
+        - Data files
+        - Sample info (light metadata)
+        - Components that it the sample has been run against and status
+        - Report, or display information for web reporter
+        - Shared category properties for components with similar function
+        - Metadata (for the DB)
+    When Sample.save() is ran the values are committed to the DB. 
+    """
+    def __init__(self, _id: str = None, name: str = None) -> None:
+        self._dict = None
+        if _id is not None:
+            runs = get_runs(run_id=[_id])
+            if len(runs) == 1:
+                self._dict = runs[0]
+        elif name is not None:
+            self._dict = {
+                "_id": None,
+                "name": name,
+                "components": [],
+                "properties": {
+                    "datafiles": {
+                        "summary": {
+                            "paired_reads": []
+                        }
+                    },
+                    "sample_info": {
+                        "summary": {
+                            "emails": "",
+                            "provided_species": "",
+                            "comments": "",
+                            "group": "",
+                            "priority": ""
+                        }
+                    }
+                },
+                "report": {},
+                "metadata": {}
+            }
+    def get(self, key: str) -> object:
+        """Returns value of the associated key in object (dict)"""
+        return self._dict[key]
+
+    def set_name(self, name: str) -> None:
+        """Sets name value in object (dict)"""
+        self._dict["name"] = name
+
+    # def set_components(self, components: list(Components)) -> None:
+    #     self._dict["components"] = []
+    #     if self.get("_id") != None:
+    #         get_sample_component(sample_id=self._dict["_id"])
+    #     for component in components:
+    #         self._dict["components"].append({"_id": component.get_id(), "name": component.get_name(), "status": component.})
+
+    def set_properties_datafiles(self, datafiles: Category) -> None:
+        """Sets name value in object (dict)"""
+        if datafiles.get_name() == "datafiles":
+            self._dict["properties"]["datafiles"] = datafiles.display()
+
+    def set_properties_sample_info(self, meta_data: Category) -> None:
+        """Sets name value in object (dict)"""
+        if meta_data.get_name() == "sample_info":
+            self._dict["properties"]["sample_info"] = meta_data.display()
+
+    def set_report(self, report: dict) -> None:
+        """Sets report value in object (dict)"""
+        self._dict["report"] = report
+
+    def set_metadata(self, metadata: dict) -> None:
+        """Sets metadata value in object (dict)"""
+        self._dict["metadata"] = metadata
+
+    def display(self) -> dict:
+        """Return a copy of the object (dict)"""
+        return self._dict.copy()
+
+    def save(self) -> None:
+        """Saves the in object (dict) to the DB"""
+        self._dict = mongo_interface.dump_sample_info(self._dict)
+
+
+class Run:
+    """
+    Run Object for saving in bifrost DB document "runs"
+    A Run object is a collection of samples primarily for the purpose of quality control.
+    Issues of samples that lack basic information are also saved. Issues include:
+        - Duplicate sample IDs
+        - Modified sample IDs
+        - Unusued sample IDs
+        - Sample IDs with no reads
+    When Run.save() is ran the values are committed to the DB. 
+    Run names are unique in the DB so an error is returned for duplicate values.
+    """
+    def __init__(self, _id: str = None, name: str = None) -> None:
+        self._dict = None
+        if _id is not None:
+            runs = get_runs(run_id=[_id])
+            if len(runs) == 1:
+                self._dict = runs[0]
+        elif name is not None:
+            self._dict = {
+                "_id": None,
+                "name": name,
+                "type": "default",
+                "path": None,
+                "samples": [],
+                "issues": {
+                    "duplicate_samples": [],
+                    "modified_samples": [],
+                    "unused_files": [],
+                    "samples_without_reads": []
+                },
+                "Comments": ""
+            }
+
+    def get(self, key: str) -> object:
+        """Returns value of the associated key in object (dict)"""
+        return self._dict[key]
+
+    def set_name(self, name: str) -> None:
+        """Sets name value in object (dict)"""
+        self._dict["name"] = name
+
+    def set_type(self, type_: str) -> None:
+        """Sets type value in object (dict)"""
+        self._dict["type"] = type_
+
+    def set_path(self, path: str) -> None:
+        """Sets path value in object (dict)"""
+        self._dict["path"] = path
+
+    def set_samples(self, samples: List[Sample]) -> None:
+        """Sets samples value in object (dict) by clearing out values then setting to new values"""
+        self._dict["samples"] = []
+        for sample in samples:
+            self._dict["samples"].append({"_id": sample.get("_id"), "name": sample.get("name")})
+
+    def set_issues(self, duplicate_samples: List[str], modified_samples: List[str], unused_files: List[str], samples_without_reads: List[str]) -> None:
+        """Sets issue(s) value in object (dict), requires all issues to be passed in"""
+        self._dict["issues"]["duplicate_samples"] = duplicate_samples
+        self._dict["issues"]["modified_samples"] = modified_samples
+        self._dict["issues"]["unused_files"] = unused_files
+        self._dict["issues"]["samples_without_reads"] = samples_without_reads
+
+    def set_comments(self, comments: str) -> None:
+        """Sets comments value in object (dict)"""
+        self._dict["Comments"] = comments
+
+    def display(self) -> dict:
+        """Return a copy of the object (dict)"""
+        return self._dict.copy()
+
+    def save(self) -> None:
+        """Saves the in object (dict) to the DB"""
+        self._dict = mongo_interface.dump_run_info(self._dict)
+
+
+
+# class SampleComponent:
+#     def __init__(self, sample_id: str, component_id: str) -> None:
+#         component = Component().load(component_id)
+#         sample = Sample().load(sample_id)
+#         _dict = {
+#             "_id": None,
+#             "component": {
+#                 "name": 
+#             }
+#         }
 
 class SampleComponentObj:
     def __init__(self, sample_id, component_id, path=None):
