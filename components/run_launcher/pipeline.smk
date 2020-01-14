@@ -156,7 +156,7 @@ for sample in samples:
 
 post_script = """
 """
-current_run.
+
 for sample in sample_dict:
     
     datahandling.SampleObj()
