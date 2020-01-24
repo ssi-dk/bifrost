@@ -570,7 +570,7 @@ def rerun_form_button(button, samples, components, run_name):
     Output("rerun-output", "displayed"),
     [Input("rerun-output", "message")],
 )
-def update_run_report(message):
+def display_rerun(message):
     if message != "":
         return True
     return False
