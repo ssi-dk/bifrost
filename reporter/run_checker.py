@@ -224,8 +224,12 @@ def show_comment_box(store, params):
     [Input("sample-store", "data"),
      Input("table-interval", "n_intervals")]
 )
+def update_run_report_p(store, n_intervals):
+    return update_run_report(store)
+
+
 @cache.memoize(timeout=cache_timeout)  # in seconds
-def update_run_report(store, n_intervals):
+def update_run_report(store):
     update_notice = "The table will update every 30s automatically."
     store = json_util.loads(store)
     run = store["run"]
