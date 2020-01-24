@@ -4,6 +4,7 @@ import sys
 import subprocess
 import urllib.parse as urlparse
 
+from flask_caching import Cache
 import dash
 import dash_auth
 import dash_core_components as dcc
@@ -27,6 +28,12 @@ app = dash.Dash()
 
 app.config["suppress_callback_exceptions"] = True
 app.title = "bifrost Run Checker"
+
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': keys.cache_location
+})
+cache_timeout = 30
 
 if hasattr(keys, "pass_protected") and keys.pass_protected:
     dash_auth.BasicAuth(
@@ -217,6 +224,7 @@ def show_comment_box(store, params):
     [Input("sample-store", "data"),
      Input("table-interval", "n_intervals")]
 )
+@cache.memoize(timeout=cache_timeout)  # in seconds
 def update_run_report(store, n_intervals):
     update_notice = "The table will update every 30s automatically."
     store = json_util.loads(store)
