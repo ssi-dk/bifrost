@@ -24,7 +24,6 @@ import dash_scroll_up
 
 import keys
 
-import components.mongo_interface
 import components.import_data as import_data
 from components.table import html_table, html_td_percentage
 from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector, update_collection_button
@@ -36,9 +35,6 @@ from run_checker import pipeline_report, rerun_components_button, update_rerun_t
 from components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
 from components.resequence_report import resequence_report
 from components.link_to_files import link_to_files, link_to_files_div
-
-# Globals
-# also defined in mongo_interface.py
 
 
 def hex_to_rgb(value):
@@ -712,6 +708,9 @@ def link_to_files_f(data):
 
 server = app.server # Required for gunicorn
 
+def main_debug():
+    app.run_server(debug=True, host="0.0.0.0", dev_tools_hot_reload=True)
+
 if __name__ == '__main__':
     # 0.0.0.0 exposes the app to the network.
-    app.run_server(debug=True, host="0.0.0.0", dev_tools_hot_reload=True)
+    main_debug()
