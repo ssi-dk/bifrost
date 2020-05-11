@@ -48,26 +48,16 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
                                     run_name, species, group, qc_list)
     return list(result)
 
-##NOTE SPLIT/SHORTEN THIS FUNCTION
 def filter_all(species=None, species_source=None, group=None,
                qc_list=None, run_names=None, sample_ids=None,
                sample_names=None,
                pagination=None,
                projection=None):
-    if sample_ids is None:
-        query_result = bifrostapi.filter(
-            run_names=run_names, species=species,
-            species_source=species_source, group=group,
-            qc_list=qc_list,
-            sample_names=sample_names,
-            pagination=pagination,
-            projection=projection)
-    else:
-        query_result = bifrostapi.filter(
-            samples=sample_ids, pagination=pagination,
-            projection=projection)
-    return pd.io.json.json_normalize(query_result)
-
+    return pd.io.json.json_normalize(bifrostapi.filter(species, species_source, group,
+                              qc_list, run_names, sample_ids,
+                              sample_names,
+                              pagination,
+                              projection))
 
 def get_assemblies_paths(samples):
     return bifrostapi.get_assemblies_paths(samples)
