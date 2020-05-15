@@ -1,16 +1,12 @@
 import dash_html_components as html
-import dash_core_components as dcc
-import dash_table as dt
 from bifrost_dashboard.components.images import list_of_images
 from bifrost_dashboard.components.table import html_table, html_td_percentage
-import bifrost_dashboard.components.import_data as import_data
 import bifrost_dashboard.components.global_vars as global_vars
 import bifrost_dashboard.components.admin as admin
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
 import math
-import json
 
 SAMPLE_PAGESIZE = 10
 
@@ -236,7 +232,7 @@ def html_test_tables(sample_data):
     ])
 
 
-def html_sample_tables(sample_data, **kwargs):
+def html_sample_tables(sample_data):
     """Generate the tables for each sample containing submitter information,
        detected organisms etc. """
 
@@ -432,7 +428,7 @@ def html_sample_tables(sample_data, **kwargs):
 def children_sample_list_report(dataframe):
     report = []
     row_index = 0
-    for index, sample in \
+    for _, sample in \
             dataframe.iterrows():
         report.append(generate_sample_report(sample,
                                              row_index))

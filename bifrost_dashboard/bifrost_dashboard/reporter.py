@@ -288,7 +288,7 @@ def update_run_name(params, prev_params):
     [Input("url", "pathname")],
     [State("sample-store", "data")]
 )
-def update_run_name(pathname, sample_store):
+def update_view(pathname, sample_store):
 
     if pathname is None or pathname == "/":
         pathname = "/"
@@ -325,7 +325,7 @@ def update_run_name(pathname, sample_store):
     elif section == "sample-report":
         view = sample_report(sample_store)
     elif section == "aggregate":
-        view = aggregate_report(sample_store)
+        view = aggregate_report()  # Doesn't need data
     elif section == "pipeline-report":
         view = pipeline_report(sample_store)
     elif section == "resequence-report":
@@ -369,7 +369,7 @@ def update_run_options(form_species, selected_collection):
     Output("collection-selector", "value"),
     [Input("selected-collection", "data")]
 )
-def update_run_options(selected_collection):
+def update_selected_collection(selected_collection):
     return selected_collection
 
 @app.callback(
@@ -444,19 +444,6 @@ def fill_sample_report(page_n, sample_store):
     ]
 
 
-
-@app.callback(
-    Output("current-report", "children"),
-    [Input("lasso-sample-ids", "children")]
-)
-
-def update_report(lasso_selected):
-    if lasso_selected is None or lasso_selected == "":
-        return []
-    else:
-        sample_n = lasso_selected.count(",") + 1
-
-
 @app.callback(
     Output("sample-store", "data"),
     [Input("apply-filter-button", "n_clicks"),
@@ -528,7 +515,7 @@ def update_selected_samples(n_clicks, param_store, collection_name,
      Input("sample-store", "data")
     ],
 )
-def update_filter_table(ignore, sample_store):
+def update_filter_table(_, sample_store):
     if len(sample_store) == 0:
         return ["0", [{}], False]
     sample_ids = list(
@@ -628,7 +615,7 @@ def aggregate_species_dropdown_f(sample_store, plot_species, selected_species):
     [Input("sample-store", "data"),
      Input("table-interval", "n_intervals")]
 )
-def pipeline_report_data_f(sample_store, ignore):
+def pipeline_report_data_f(sample_store, _):
     return pipeline_report_data(sample_store)
 
 
@@ -697,7 +684,11 @@ def submit_user_feedback(n_clicks_timestamp, user, *args):
                 elif val.startswith("OT_"):
                     feedback_pairs.append((val[3:], "other"))
         if len(feedback_pairs) > 0:
-            import_data.add_batch_user_feedback_and_mail(feedback_pairs, user)
+            email_config = {
+                "email_from": config["email_from"],
+                "email_to": config["email_to"]
+            }
+            import_data.add_batch_user_feedback_and_mail(feedback_pairs, user, email_config)
             return "Feedback saved"
     return []
 

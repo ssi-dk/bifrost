@@ -1,4 +1,3 @@
-from datetime import datetime
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
@@ -8,8 +7,8 @@ import numpy as np
 import bifrost_dashboard.components.import_data as import_data
 import bifrost_dashboard.components.global_vars as global_vars
 
-def aggregate_report(data):
 
+def aggregate_report():
     return html.Div([
         html.Div([
             html.Div([
@@ -23,7 +22,7 @@ def aggregate_report(data):
                     html.Div(
                         [
                             html.Label("Plot species",
-                                        htmlFor="plot-species"),
+                                       htmlFor="plot-species"),
                             dcc.RadioItems(
                                 options=[
                                     {"label": " Provided",
@@ -61,10 +60,9 @@ def aggregate_report(data):
             ], className="card shadow")
         ], className="col-12 col-xl-4")
     ], className="row")
-    
 
 
-#Callbacks
+# Callbacks
 
 def aggregate_species_dropdown(sample_store, plot_species, selected_species):
     sample_ids = [s["_id"] for s in sample_store]
@@ -84,7 +82,7 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
         plot_df[species_col] = np.nan
     plot_df.loc[pd.isnull(plot_df[species_col]), species_col] = "Not classified"
     species_list = plot_df[species_col].unique()
-    species_list = ["All species",] + list(species_list)
+    species_list = ["All species", ] + list(species_list)
     if selected_species == "Not classified" or selected_species is None or selected_species not in species_list:
         if species_list[0] == "Not classified" and len(species_list) > 1:
             selected_species = species_list[1]
@@ -96,6 +94,7 @@ def aggregate_species_dropdown(sample_store, plot_species, selected_species):
             "value": species
         } for species in species_list]
     return [selected_species, species_list_options]
+
 
 def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     if len(sample_store) == 0:
@@ -114,14 +113,13 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     plot_df = import_data.filter_all(
         sample_ids=sample_ids)
 
-
     if "properties.sample_info.summary.provided_species" not in plot_df:
         plot_df["properties.sample_info.summary.provided_species"] = np.nan
 
     plot_df.loc[pd.isnull(plot_df[species_col]),
                 species_col] = "Not classified"
 
-    #Some columns need to have some text extracted
+    # Some columns need to have some text extracted
     for col in global_vars.value_from_test:
         if col in plot_df.columns:
             new = plot_df[col].str.split(":", expand=True)
@@ -129,8 +127,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
             plot_df.insert(loc + 1, col + ".value", new[2])
     sunburst_fig = generate_sunburst(plot_df)
 
-
-    #Convert to string so the id can be shown in the plot.
+    # Convert to string so the id can be shown in the plot.
     plot_df["_id"] = plot_df["_id"].astype(str)
 
     if species_col in plot_df.columns and (selected_species in plot_df[species_col].unique() or
@@ -178,7 +175,7 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
         title=selected_species,
         height=750,
         margin=go.layout.Margin(
-            l=175,
+            l=175,  # noqa
             r=50,
             b=25,
             t=50
@@ -213,7 +210,6 @@ def update_aggregate_fig(selected_species, sample_store, plot_species_source):
     fig["layout"]["yaxis7"].update(domain=(0.03, 0.125))
 
     species_size = import_data.get_species_QC_values(selected_species)
-
 
     annotations = [
         {

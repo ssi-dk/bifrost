@@ -1,17 +1,11 @@
-import os
-import sys
 import math
 import pandas as pd
 from datetime import datetime
 import bifrostapi
-from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
 import bifrost_dashboard.components.global_vars as global_vars
-from bson.json_util import dumps, loads
-import yaml
+
 pd.options.mode.chained_assignment = None
-
-
 
 
 # Utils
@@ -26,22 +20,28 @@ def get_from_path(path_string, response):
 
 # Main functions
 
+
 def check_run_name(name):
     return bifrostapi.check_run_name(name)
 
+
 def get_run_list():
     return bifrostapi.get_run_list()
-    
+
+
 def get_group_list(run_name=None):
     return bifrostapi.get_group_list(run_name)
+
 
 def get_species_list(species_source, run_name=None):
     return bifrostapi.get_species_list(species_source, run_name)
 
+
 def filter_name(species=None, group=None, qc_list=None, run_name=None):
     result = bifrostapi.filter({"name": 1, "sample_sheet.sample_name": 1},
-                                    run_name, species, group, qc_list)
+                               run_name, species, group, qc_list)
     return list(result)
+
 
 def filter_all(species=None, species_source=None, group=None,
                qc_list=None, run_names=None, sample_ids=None,
@@ -49,19 +49,20 @@ def filter_all(species=None, species_source=None, group=None,
                pagination=None,
                projection=None):
     return pd.io.json.json_normalize(bifrostapi.filter(species, species_source, group,
-                              qc_list, run_names, sample_ids,
-                              sample_names,
-                              pagination,
-                              projection))
+                                     qc_list, run_names, sample_ids,
+                                     sample_names,
+                                     pagination,
+                                     projection))
+
 
 def get_assemblies_paths(samples):
     return bifrostapi.get_assemblies_paths(samples)
 
+
 # For run_checker
-
-
 def get_species_QC_values(ncbi_species):
     return bifrostapi.get_species_QC_values(ncbi_species)
+
 
 def get_sample_QC_status(run):
     return bifrostapi.get_sample_QC_status(run)
@@ -69,6 +70,7 @@ def get_sample_QC_status(run):
 
 def get_last_runs(run=None, n=12, runtype=None):
     return bifrostapi.get_last_runs(run, n, runtype)
+
 
 def create_feedback_s_c(user, sample, value):
     if user == "":
@@ -93,7 +95,7 @@ def create_feedback_s_c(user, sample, value):
             "display_name": "User QC feedback",
             "value": value,
             "status": status,
-            "reason": user, #for now its just user
+            "reason": user,  # for now its just user
             "user": user
         }
     }
@@ -124,8 +126,8 @@ def create_feedback_s_c(user, sample, value):
         }
         
     }
-
     return s_c
+
 
 def add_user_feedback_to_properties(sample, s_c):
     """
@@ -154,7 +156,8 @@ def add_user_feedback(user, sample_id, value):
     bifrostapi.save_sample(sample)
     return (sample["name"], old_value)
 
-def add_batch_user_feedback_and_mail(feedback_pairs, user):
+
+def add_batch_user_feedback_and_mail(feedback_pairs, user, email_config):
     """
     Main function called to send sample QC feedback 
     """
@@ -165,7 +168,7 @@ def add_batch_user_feedback_and_mail(feedback_pairs, user):
         run_names = [run["name"] for run in runs]
         if "fail:core facility" in (old_value, value):
             email_pairs.append(name, old_value, value, run_names)
-    send_mail(email_pairs, user)
+    send_mail(email_pairs, user, email_config)
 
 
 def get_component(name=None, version=None):
@@ -190,13 +193,15 @@ def send_mail(sample_info, user, email_config):
     short_samples = ",".join([pair[0] for pair in sample_info])[
         :60]  # Trimmed to 60 chars
     msg = MIMEMultipart("alternative")
-    msg["From"] = email_config.email_from
+    msg["From"] = email_config["email_from"]
     msg['Subject'] = 'Sample status change: "{}"'.format(short_samples)
-    msg['To'] = email_config.email_to
+    msg['To'] = email_config["email_to"]
 
-    email_text = 'Automatic message:\nUser "{}" has changed the status of the following samples:\n\nSample name                Old status            New status            Run name\n'.format(
+    email_text = ('Automatic message:\nUser "{}" has changed the status of the following samples:\n'
+                  '\nSample name                Old status            New status            Run name\n').format(
         user)
-    email_html = '<html><body>Automatic message:\nUser "{}" has changed the status of the following samples:\n\n<pre>Sample name                Old status            New status            Run name\n'.format(
+    email_html = ('<html><body>Automatic message:\nUser "{}" has changed the status of the following samples:\n'
+                  '\n<pre>Sample name                Old status            New status            Run name\n').format(
         user)
     table = ""
     for pair in sample_info:
@@ -221,6 +226,7 @@ def get_comment(run_id):
         return returned.get("Comments", None)
     else:
         return returned
+
 
 def set_comment(run_id, comment):
     return bifrostapi.set_comment(run_id, comment)

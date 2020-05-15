@@ -3,15 +3,17 @@ import dash_html_components as html
 
 import bifrost_dashboard.components.import_data as import_data
 
+
 def link_to_files_div():
     return html.Div(id="link-to-files-div")
+
 
 def link_to_files(sample_store):
     """Generates a script string """
     sample_ids = [str(s["_id"]) for s in sample_store]
     samples = import_data.filter_all(sample_ids=sample_ids,
-                                      projection={"name": 1,
-                                                  "properties.datafiles.summary.paired_reads": 1})
+                                     projection={"name": 1,
+                                                 "properties.datafiles.summary.paired_reads": 1})
     samples["_id"] = samples["_id"].astype(str)
     samples = samples.set_index("_id")
     # Access samples by their id
@@ -21,7 +23,6 @@ def link_to_files(sample_store):
     reads_errors = []
     assemblies_errors = []
 
-
     samples_total = set()
     for _id, sample in samples.iterrows():
         try:
@@ -30,7 +31,7 @@ def link_to_files(sample_store):
                 sample["properties.datafiles.summary.paired_reads"][0],
                 sample["properties.datafiles.summary.paired_reads"][1])
             samples_total.add((sample["name"], sample.name))
-        except (KeyError, TypeError) as e:
+        except (KeyError, TypeError):
             reads_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
                 sample.get("name", "None"),
                 sample.name,
@@ -67,7 +68,7 @@ def link_to_files(sample_store):
 
     samples_assemblies = set()
     for assembly in assemblies:
-        sample = samples.loc[str(assembly["sample"]["_id"]), : ]
+        sample = samples.loc[str(assembly["sample"]["_id"]), :]
         assemblies_script += "#{}\nln -s {} {}\n".format(
             sample["name"],
             assembly["path"] + "/contigs.fasta",

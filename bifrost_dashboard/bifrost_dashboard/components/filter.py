@@ -4,7 +4,6 @@ import dash_table
 import pandas as pd
 import numpy as np
 import bifrost_dashboard.components.import_data as import_data
-import bifrost_dashboard.components.admin as admin
 import dash_bootstrap_components as dbc
 import bifrost_dashboard.components.global_vars as global_vars
 
@@ -25,7 +24,9 @@ def html_collection_selector():
                         [
                             html.Div(
                                 dbc.Label(
-                                    "Select Collection", html_for="collection-selector", className="m-0 font-weight-bold text-primary h6 d-block"),
+                                    "Select Collection",
+                                    html_for="collection-selector",
+                                    className="m-0 font-weight-bold text-primary h6 d-block"),
                                 className="card-header py-3"
                             ),
                             html.Div(
@@ -67,7 +68,8 @@ def html_collection_selector():
         className="row", id="collection-selector-div"
     )
 
-#callback
+
+# callback
 def update_collection_button(collection, pathname):
     if pathname is None or pathname == "/":
         pathname = "/"
@@ -213,7 +215,8 @@ def html_filter_drawer():
                                                 ),
                                                 dbc.Tooltip(
                                                     "Sample name must match exactly. "
-                                                    "Search samples using regex by starting and finishing sample name with the '/' character.",
+                                                    "Search samples using regex by starting and "
+                                                    "finishing sample name with the '/' character.",
                                                     target="sample-names-tooltip",
                                                 )
                                             ], width=12))
@@ -245,8 +248,8 @@ def html_filter_drawer():
 
     return run_filter
 
-def html_div_filter():
 
+def html_div_filter():
     return html.Div([
         html.Div(
             [
@@ -254,7 +257,7 @@ def html_div_filter():
                     html.Div(
                         [
                             html.H6("List view",
-                                className="m-0 font-weight-bold text-primary"),
+                                    className="m-0 font-weight-bold text-primary"),
                         ],
                         className="card-header py-3"
                     ),
@@ -364,15 +367,14 @@ def generate_table(tests_df):
     #     tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     test_cols = [col.split(".")[-2] for col in tests_df.columns
-        if (col.startswith("properties.stamper.summary.") and
-            col != "properties.stamper.summary.stamp.status" and
-            col.endswith(".status"))]
+                 if (col.startswith("properties.stamper.summary.") and
+                 col != "properties.stamper.summary.stamp.status" and
+                 col.endswith(".status"))]
 
     # Round columns:
     for col in global_vars.ROUND_COLUMNS:
         if col in tests_df.columns:
             tests_df[col] = round(tests_df[col], 3)
-
 
     def concatenate_failed(row):
         res = []
@@ -408,8 +410,6 @@ def generate_table(tests_df):
 
     tests_df = tests_df.apply(concatenate_failed, axis="columns")
 
-
-
     COLUMNS = global_vars.COLUMNS
 
     # Generate conditional formatting:
@@ -417,8 +417,8 @@ def generate_table(tests_df):
     conditional_columns = ["properties.stamper.summary.stamp.value"]
 
     for status, color in ("fail", "#ea6153"), ("undefined", "#f1c40f"):
-        style_data_conditional += list(map(lambda x: {"if": {
-            "column_id": x, "filter": '{} eq "{}"'.format(x, status)}, "backgroundColor": color}, conditional_columns))
+        style_data_conditional += list(map(lambda x, s=status, c=color: {"if": {
+            "column_id": x, "filter": '{} eq "{}"'.format(x, s)}, "backgroundColor": c}, conditional_columns))
 
     for status, color in ("core facility", "#ea6153"), ("warning: supplying lab", "#f1c40f"):
         style_data_conditional += [{"if": {
@@ -426,7 +426,7 @@ def generate_table(tests_df):
 
     tests_df["_id"] = tests_df["_id"].astype(str)
 
-    tests_df = tests_df.filter([ c["id"] for c in COLUMNS])
+    tests_df = tests_df.filter([c["id"] for c in COLUMNS])
 
     return tests_df
 
