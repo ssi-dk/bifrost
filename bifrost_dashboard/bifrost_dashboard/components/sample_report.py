@@ -11,6 +11,9 @@ import math
 SAMPLE_PAGESIZE = 10
 
 def get(dict_o, field, default=None):
+    """
+    Internal function to get an element, returning None even if it'd return a numpy None.
+    """
     r = dict_o.get(field, default)
     
     if not isinstance(r, (list, np.ndarray)) and pd.isna(r):
