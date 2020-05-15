@@ -1,7 +1,7 @@
 
 import dash_html_components as html
 
-import components.import_data as import_data
+import bifrost_dashboard.components.import_data as import_data
 
 # def resequence_report():
 

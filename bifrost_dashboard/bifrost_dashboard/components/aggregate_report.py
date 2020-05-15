@@ -5,8 +5,8 @@ import plotly.graph_objs as go
 from plotly import tools
 import pandas as pd
 import numpy as np
-import components.import_data as import_data
-import components.global_vars as global_vars
+import bifrost_dashboard.components.import_data as import_data
+import bifrost_dashboard.components.global_vars as global_vars
 
 def aggregate_report(data):
 

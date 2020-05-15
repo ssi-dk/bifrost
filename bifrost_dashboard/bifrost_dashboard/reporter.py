@@ -19,23 +19,25 @@ from plotly import tools
 from dash.dependencies import Input, Output, State
 
 from flask import request   # To get client IP for pass/fail stamp
+import bifrostapi
 
-import dash_scroll_up
+import bifrost_dashboard.components.import_data as import_data
+from bifrost_dashboard.components.table import html_table, html_td_percentage
+from bifrost_dashboard.components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector, update_collection_button
+from bifrost_dashboard.components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
+from bifrost_dashboard.components.images import list_of_images, static_image_route, image_directory
+import bifrost_dashboard.components.global_vars as global_vars
+import bifrost_dashboard.components.admin as admin
+from bifrost_dashboard.run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
+from bifrost_dashboard.components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
+from bifrost_dashboard.components.resequence_report import resequence_report
+from bifrost_dashboard.components.link_to_files import link_to_files, link_to_files_div
 
-import keys
+import yaml
+config = yaml.safe_load(open(os.environ["BIFROST_DASH_CONFIG"]))
 
-import components.import_data as import_data
-from components.table import html_table, html_td_percentage
-from components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector, update_collection_button
-from components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
-from components.images import list_of_images, static_image_route, image_directory
-import components.global_vars as global_vars
-import components.admin as admin
-from run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
-from components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
-from components.resequence_report import resequence_report
-from components.link_to_files import link_to_files, link_to_files_div
 
+bifrostapi.add_URI(config["mongodb_key"])
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
@@ -104,8 +106,9 @@ external_stylesheets = [
     "https://fonts.googleapis.com/css?family=Lato",
     dbc.themes.BOOTSTRAP
 ]
-
+assets = os.path.dirname(os.path.abspath(__file__)) + "/data/assets"
 app = dash.Dash(__name__,
+    assets_folder=assets,
     external_stylesheets=external_stylesheets,
     external_scripts=external_scripts
 )
@@ -113,14 +116,14 @@ app.title = "bifrost"
 app.config["suppress_callback_exceptions"] = True
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': keys.cache_location
+    'CACHE_DIR': config["cache_location"]
 })
 cache_timeout = 60
 
-if hasattr(keys, "pass_protected") and keys.pass_protected:
+if config.get("pass_protected"):
     dash_auth.BasicAuth(
         app,
-        keys.USERNAME_PASSWORD
+        config.USERNAME_PASSWORD
     )
 
 # Temp css to make it look nice

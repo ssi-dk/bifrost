@@ -3,10 +3,10 @@ import dash_core_components as dcc
 import dash_table
 import pandas as pd
 import numpy as np
-import components.import_data as import_data
-import components.admin as admin
+import bifrost_dashboard.components.import_data as import_data
+import bifrost_dashboard.components.admin as admin
 import dash_bootstrap_components as dbc
-import components.global_vars as global_vars
+import bifrost_dashboard.components.global_vars as global_vars
 
 TABLE_PAGESIZE = 100
 

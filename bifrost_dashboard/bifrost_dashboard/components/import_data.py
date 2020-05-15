@@ -6,18 +6,13 @@ from datetime import datetime
 import bifrostapi
 from pandas.io.json import json_normalize
 from bson.objectid import ObjectId
-import components.global_vars as global_vars
+import bifrost_dashboard.components.global_vars as global_vars
 from bson.json_util import dumps, loads
-
+import yaml
 pd.options.mode.chained_assignment = None
 
 
-#Initializing:
 
-mongo_db_key = os.getenv("BIFROST_DB_KEY", None)
-if mongo_db_key is None:
-    exit("BIFROST_DB_KEY env variable is not set.")
-bifrostapi.connect(mongo_db_key)
 
 # Utils
 
@@ -181,12 +176,11 @@ def get_run(run_name):
     return bifrostapi.get_run(run_name)
 
 
-def send_mail(sample_info, user):
+def send_mail(sample_info, user, email_config):
     """
     Sends email about sample feedback updates.
     """
     import smtplib
-    import keys  # keys.py in reporter/keys.py
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
@@ -196,9 +190,9 @@ def send_mail(sample_info, user):
     short_samples = ",".join([pair[0] for pair in sample_info])[
         :60]  # Trimmed to 60 chars
     msg = MIMEMultipart("alternative")
-    msg["From"] = keys.email_from
+    msg["From"] = email_config.email_from
     msg['Subject'] = 'Sample status change: "{}"'.format(short_samples)
-    msg['To'] = keys.email_to
+    msg['To'] = email_config.email_to
 
     email_text = 'Automatic message:\nUser "{}" has changed the status of the following samples:\n\nSample name                Old status            New status            Run name\n'.format(
         user)

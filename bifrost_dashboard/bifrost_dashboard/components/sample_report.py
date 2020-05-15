@@ -1,11 +1,11 @@
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table as dt
-from components.images import list_of_images
-from components.table import html_table, html_td_percentage
-import components.import_data as import_data
-import components.global_vars as global_vars
-import components.admin as admin
+from bifrost_dashboard.components.images import list_of_images
+from bifrost_dashboard.components.table import html_table, html_td_percentage
+import bifrost_dashboard.components.import_data as import_data
+import bifrost_dashboard.components.global_vars as global_vars
+import bifrost_dashboard.components.admin as admin
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np

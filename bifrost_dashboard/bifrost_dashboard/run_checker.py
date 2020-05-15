@@ -14,11 +14,8 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 from dash.dependencies import Input, Output, State
-import keys
 
-import dash_scroll_up
-
-import components.import_data as import_data
+import bifrost_dashboard.components.import_data as import_data
 from datetime import datetime
 
 import json
@@ -306,7 +303,7 @@ def pipeline_report_data(sample_data):
     return rows, columns, style_data_conditional, rerun_form_components, rerun_form_samples
 
 
-def rerun_components_button(button, table_data):
+def rerun_components_button(button, table_data, rerun_conf):
     if button == 0:
         return "", False
     out = []
@@ -322,7 +319,7 @@ def rerun_components_button(button, table_data):
     samples_by_id = {str(s["_id"]): s for s in sample_dbs}
 
     bifrost_components_dir = os.path.join(
-        keys.rerun["bifrost_dir"], "components/")
+        rerun_conf["bifrost_dir"], "components/")
 
     for sample, components in to_rerun.items():
         sample_db = samples_by_id[sample]
@@ -349,16 +346,16 @@ def rerun_components_button(button, table_data):
                                  r"--config sample_id={} component_id={} {}; ")
             # unlock first
             command += snakemake_command.format(
-                sing_args, keys.rerun["singularity_prefix"], component_path, sample_id, component_id, "--unlock")
+                sing_args, rerun_conf["singularity_prefix"], component_path, sample_id, component_id, "--unlock")
             command += snakemake_command.format(
-                sing_args, keys.rerun["singularity_prefix"], component_path, sample_id, component_id, "")
+                sing_args, rerun_conf["singularity_prefix"], component_path, sample_id, component_id, "")
             sample_command += command
 
-        if keys.rerun["grid"] == "slurm":
+        if rerun_conf["grid"] == "slurm":
             process_command = ('sbatch --mem={memory}G -p {priority} -c {threads} '
                                '-t {walltime} -J "bifrost_{sample_name}" --wrap'
                                ' "{command}"').format(
-                **keys.rerun,
+                **rerun_conf,
                 sample_name=sample_name,
                 command=sample_command)
             process = subprocess.Popen(
@@ -370,11 +367,11 @@ def rerun_components_button(button, table_data):
                 cwd=sample_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, process_out, process_err))
-        elif keys.rerun["grid"] == "torque":
+        elif rerun_conf["grid"] == "torque":
 
-            if "advres" in keys.rerun:
+            if "advres" in rerun_conf:
                 advres = ",advres={}".format(
-                    keys.rerun["advres"])
+                    rerun_conf["advres"])
             else:
                 advres = ''
             script_path = os.path.join(sample_path, "manual_rerun.sh")
@@ -382,7 +379,7 @@ def rerun_components_button(button, table_data):
                 command += ("#PBS -V -d . -w . -l mem={memory}gb,nodes=1:"
                             "ppn={threads},walltime={walltime}{advres} -N "
                             "'bifrost_{sample_name}' -W group_list={group}"
-                            " -A {group} \n").format(**keys.rerun,
+                            " -A {group} \n").format(**rerun_conf,
                                                      sample_name=sample_name)
                 script.write(command)
             process = subprocess.Popen('qsub {}'.format(script_path),
@@ -393,11 +390,11 @@ def rerun_components_button(button, table_data):
                                        cwd=sample_path)
             process_out, process_err = process.communicate()
             out.append((sample_name, process_out, process_err))
-        elif keys.rerun["grid"] == "slurm.mock":
+        elif rerun_conf["grid"] == "slurm.mock":
             print(('sbatch --mem={memory}G -p {priority} -c {threads} '
                    '-t {walltime} -J "bifrost_{sample_name}" --wrap'
                    ' "{command}"').format(
-                **keys.rerun,
+                **rerun_conf,
                 sample_name=sample_name,
                 command=sample_command))
 

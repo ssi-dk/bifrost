@@ -8,11 +8,26 @@ setup(
     author="Martin Basterrechea",
     author_email="mbas@ssi.dk",
     packages=find_packages(),
-    install_requires=['pymongo'],
+    package_data={
+        "bifrost_dashboard": ['data/assets/*.css', 'data/assets/*.js']
+    },
+    include_package_data=True,
+    install_requires=[
+        # 'pymongo',
+        'dash',
+        'bifrostapi',
+        'Flask-Caching',
+        'dash-auth',
+        'requests',
+        'dash-bootstrap-components',
+        'pyyaml'
+        # 'uWSGI' #doesnt work for me
+        ],
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
-            'run=bifrost_dashboard.reporter:main'
+            'bifrost_dashboard_dev=bifrost_dashboard.reporter:main'
         ]
-    }
+    },
+    scripts=['bin/bifrost_dashboard_start']
 )
