@@ -39,65 +39,6 @@ config = yaml.safe_load(open(os.environ["BIFROST_DASH_CONFIG"]))
 
 bifrostapi.add_URI(config["mongodb_key"])
 
-def hex_to_rgb(value):
-    value = value.lstrip("#")
-    lv = len(value)
-    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-
-def samples_list(active, collection_name=None):
-    links = [
-        {
-            "icon": "fa-list",
-            "href": ""
-        },
-        {
-            "icon": "fa-money-check",
-            "href": "sample-report"
-        },
-        {
-            "icon": "fa-chart-pie",
-            "href": "aggregate"
-        },
-        {
-            "icon": "fa-traffic-light",
-            "href": "pipeline-report"
-        },
-        {
-            "icon": "fa-link",
-            "href": "link-to-files"
-        }
-    ]
-    link_list = []
-    for item in links:
-        href = "/" + item["href"]
-        if collection_name is not None:
-            href = "/collection/{}/{}".format(collection_name, item["href"])
-        if active == item['href']:
-            link_list.append(dcc.Link(
-                html.I(className="fas {} fa-fw".format(item['icon'])),
-                className="btn btn-outline-secondary active",
-                href=href
-            ))
-        else:
-            link_list.append(dcc.Link(
-                html.I(className="fas {} fa-fw".format(item['icon'])),
-                className="btn btn-outline-secondary",
-                href=href
-            ))
-    return link_list
-
-
-
-def short_species(species):
-    if species is None or pd.isna(species):
-        return None
-    words = species.split(" ")
-    if len(words) == 1:
-        return species
-    return "{}. {}".format(words[0][0], " ".join(words[1:]))
-
-
-
 external_scripts = [
     'https://kit.fontawesome.com/24170a81ff.js',
 ]
@@ -252,8 +193,8 @@ app.layout = html.Div([
     [Input("filter_toggle", "n_clicks")],
     [State("filter_panel", "is_open")]
 )
-def sidebar_toggle(n, is_open):
-    if n:
+def sidebar_toggle(n_clicks, is_open):
+    if n_clicks:
         if is_open:
             return [False, "btn btn-outline-secondary shadow-sm mx-auto d-block"]
         else:
@@ -655,7 +596,7 @@ def update_rerun_table_f(active, table_data, n_click_comp, n_click_samp,
     [State("pipeline-rerun", "derived_viewport_data")]
 )
 def rerun_components_button_f(n_clicks, data):
-    return rerun_components_button(n_clicks, data)
+    return rerun_components_button(n_clicks, data, config["rerun_conf"])
 
 
 @app.callback(Output('qc-confirm', 'displayed'),
@@ -672,7 +613,7 @@ def display_confirm_feedback(button):
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
                                      for n in range(SAMPLE_PAGESIZE)]
 )
-def submit_user_feedback(n_clicks_timestamp, user, *args):
+def submit_user_feedback(_, user, *args):
     if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
         feedback_pairs = []
         for val in args:
@@ -699,6 +640,49 @@ def submit_user_feedback(n_clicks_timestamp, user, *args):
 )
 def link_to_files_f(data):
     return link_to_files(data)
+
+
+def samples_list(active, collection_name=None):
+    links = [
+        {
+            "icon": "fa-list",
+            "href": ""
+        },
+        {
+            "icon": "fa-money-check",
+            "href": "sample-report"
+        },
+        {
+            "icon": "fa-chart-pie",
+            "href": "aggregate"
+        },
+        {
+            "icon": "fa-traffic-light",
+            "href": "pipeline-report"
+        },
+        {
+            "icon": "fa-link",
+            "href": "link-to-files"
+        }
+    ]
+    link_list = []
+    for item in links:
+        href = "/" + item["href"]
+        if collection_name is not None:
+            href = "/collection/{}/{}".format(collection_name, item["href"])
+        if active == item['href']:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary active",
+                href=href
+            ))
+        else:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary",
+                href=href
+            ))
+    return link_list
 
 server = app.server # Required for gunicorn
 
