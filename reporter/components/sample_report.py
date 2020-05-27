@@ -109,7 +109,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 def html_test_tables(sample_data, **kwargs):
-    stamps_to_check = ["ssi_stamper", "supplying_lab_check"]
+    stamps_to_check = ["ssi_stamper","reslab_stamper" ,"supplying_lab_check"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("ssi_stamper.whats_my_species") \
