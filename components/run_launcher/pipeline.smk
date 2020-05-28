@@ -72,7 +72,7 @@ def initialize_run(input_folder: str = ".", sample_sheet: str = "run_metadata.tx
             sample_info = datahandling.Category(name="sample_info")
             sample_info.set_summary(df.iloc[df[df[sample_key] == sample].index[0]].to_dict())
             sampleObj.set_properties_sample_info(sample_info)
-            sample.save()
+            sampleObj.save()
             # pp.pprint(sampleObj.display())
             samples.append(sampleObj)
         else:
