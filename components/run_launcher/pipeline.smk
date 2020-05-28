@@ -92,9 +92,9 @@ def initialize_run(input_folder: str = ".", sample_sheet: str = "run_metadata.tx
     )
     run.set_comments("Hello")
     # Note when you save the run you create the ID's
-    # run.save() 
+    run.save() 
     pp.pprint(run.display())
-    df.to_csv("test.txt")
+    # df.to_csv("test.txt")
 
     return (run, samples)
 
