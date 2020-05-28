@@ -3,6 +3,7 @@
 Initialization program for paired end Illumina reads
 """
 import re
+import sys
 import os
 import pandas
 import traceback
