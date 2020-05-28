@@ -146,7 +146,7 @@ def generate_run_script(run: object, samples: object, pre_script_location: str, 
     return script
 
 
-def main():
+def main(argv):
     run, samples = initialize_run(input_folder = argv[1])
     script =generate_run_script(run, samples, argv[2], argv[3], argv[4])
     print(script)
