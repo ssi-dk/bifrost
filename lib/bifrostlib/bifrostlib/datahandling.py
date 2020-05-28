@@ -169,6 +169,11 @@ class Sample:
                 "report": {},
                 "metadata": {}
             }
+
+    def load(self, _id: str) -> None:
+        """Load a sample via id from database"""
+        self._dict = mongo_interface.get_runs(sample_id=_id)
+
     def get(self, key: str) -> object:
         """Returns value of the associated key in object (dict)"""
         return self._dict[key]
@@ -240,10 +245,15 @@ class Run:
                     "duplicate_samples": [],
                     "modified_samples": [],
                     "unused_files": [],
-                    "samples_without_reads": []
+                    "samples_without_reads": [],
+                    "samples_without_metadata": []
                 },
                 "Comments": ""
             }
+
+    def load(self, _id: str) -> None:
+        """Load a run via id from database"""
+        self._dict = mongo_interface.get_runs(run_id=_id)
 
     def get(self, key: str) -> object:
         """Returns value of the associated key in object (dict)"""
@@ -267,12 +277,13 @@ class Run:
         for sample in samples:
             self._dict["samples"].append({"_id": sample.get("_id"), "name": sample.get("name")})
 
-    def set_issues(self, duplicate_samples: List[str], modified_samples: List[str], unused_files: List[str], samples_without_reads: List[str]) -> None:
+    def set_issues(self, duplicate_samples: List[str], modified_samples: List[str], unused_files: List[str], samples_without_reads: List[str], samples_without_metadata: List[str]) -> None:
         """Sets issue(s) value in object (dict), requires all issues to be passed in"""
         self._dict["issues"]["duplicate_samples"] = duplicate_samples
         self._dict["issues"]["modified_samples"] = modified_samples
         self._dict["issues"]["unused_files"] = unused_files
         self._dict["issues"]["samples_without_reads"] = samples_without_reads
+        self._dict["issues"]["samples_without_metadata"] = samples_without_metadata
 
     def set_comments(self, comments: str) -> None:
         """Sets comments value in object (dict)"""
