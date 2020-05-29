@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import re
 import urllib.parse as urlparse
 import datetime
 from io import StringIO
@@ -70,6 +71,48 @@ if config.get("pass_protected"):
 # Temp css to make it look nice
 # Lato font
 
+
+def samples_list(active, collection_name=None):
+    links = [
+        {
+            "icon": "fa-list",
+            "href": ""
+        },
+        {
+            "icon": "fa-money-check",
+            "href": "sample-report"
+        },
+        {
+            "icon": "fa-chart-pie",
+            "href": "aggregate"
+        },
+        {
+            "icon": "fa-traffic-light",
+            "href": "pipeline-report"
+        },
+        {
+            "icon": "fa-link",
+            "href": "link-to-files"
+        }
+    ]
+    link_list = []
+    for item in links:
+        href = "/" + item["href"]
+        if collection_name is not None:
+            href = "/collection/{}/{}".format(collection_name, item["href"])
+        if active == item['href']:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary active",
+                href=href
+            ))
+        else:
+            link_list.append(dcc.Link(
+                html.I(className="fas {} fa-fw".format(item['icon'])),
+                className="btn btn-outline-secondary",
+                href=href
+            ))
+    return link_list
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
@@ -397,13 +440,20 @@ def fill_sample_report(page_n, sample_store):
      State("qc-list", "value"),
      State("samples-form", "value"),
      State("sample-store", "data"),
-     
+     State("date-sequenced", "start_date"),
+     State("date-sequenced", "end_date"),
      ]
 )
 def update_selected_samples(n_clicks, param_store, collection_name,
                             run_names, species_list,
                             species_source, group_list, qc_list,
-                            sample_names, prev_sample_store):
+                            sample_names, prev_sample_store,
+                            date_seq_start, date_seq_end):
+    date_range = [date_seq_start, date_seq_end]
+    for i in range(2):
+        if date_range[i] is not None:
+            date_range[i] = datetime.datetime.strptime(re.split('T| ', date_range[i])[0], '%Y-%m-%d')
+
     if sample_names is not None and sample_names != "":
         sample_names = sample_names.split("\n")
     else:
@@ -416,6 +466,10 @@ def update_selected_samples(n_clicks, param_store, collection_name,
         species_list = param_store.get("species", [])
     if not qc_list:
         qc_list = param_store.get("qc", [])
+    if not date_range[0]:
+        date_range[0] = param_store.get("date_seq_start", None)
+    if not date_range[1]:
+        date_range[1] = param_store.get("date_seq_end", None)
 
     #override if selected collection
     if collection_name is not None:
@@ -426,7 +480,9 @@ def update_selected_samples(n_clicks, param_store, collection_name,
         run_names == [] and
         group_list == [] and
         species_list == [] and
-        qc_list == []):
+        qc_list == [] and
+        date_range[0] == None and
+        date_range[1] == None):
         samples = prev_sample_store
     else:
         
@@ -435,6 +491,7 @@ def update_selected_samples(n_clicks, param_store, collection_name,
             group=group_list, qc_list=qc_list,
             run_names=run_names,
             sample_names=sample_names,
+            date_range=date_range,
             projection={"name": 1})
 
         if "_id" in samples:
@@ -642,47 +699,7 @@ def link_to_files_f(data):
     return link_to_files(data)
 
 
-def samples_list(active, collection_name=None):
-    links = [
-        {
-            "icon": "fa-list",
-            "href": ""
-        },
-        {
-            "icon": "fa-money-check",
-            "href": "sample-report"
-        },
-        {
-            "icon": "fa-chart-pie",
-            "href": "aggregate"
-        },
-        {
-            "icon": "fa-traffic-light",
-            "href": "pipeline-report"
-        },
-        {
-            "icon": "fa-link",
-            "href": "link-to-files"
-        }
-    ]
-    link_list = []
-    for item in links:
-        href = "/" + item["href"]
-        if collection_name is not None:
-            href = "/collection/{}/{}".format(collection_name, item["href"])
-        if active == item['href']:
-            link_list.append(dcc.Link(
-                html.I(className="fas {} fa-fw".format(item['icon'])),
-                className="btn btn-outline-secondary active",
-                href=href
-            ))
-        else:
-            link_list.append(dcc.Link(
-                html.I(className="fas {} fa-fw".format(item['icon'])),
-                className="btn btn-outline-secondary",
-                href=href
-            ))
-    return link_list
+
 
 server = app.server # Required for gunicorn
 

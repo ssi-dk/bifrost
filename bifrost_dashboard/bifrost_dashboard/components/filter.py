@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
@@ -193,6 +195,20 @@ def html_filter_drawer():
                                                                     placeholder="All values selected",
                                                                     value=[]
                                                                 ),
+                                                            ]
+                                                        ),
+                                                        width=6,
+                                                    ),
+                                                    dbc.Col(
+                                                        dbc.FormGroup(
+                                                            [
+                                                                dbc.Label(
+                                                                    "Date sequenced", html_for="date-sequenced"),
+                                                                html.Div(
+                                                                    dcc.DatePickerRange(
+                                                                        id='date-sequenced'
+                                                                    ),
+                                                                )
                                                             ]
                                                         ),
                                                         width=6,

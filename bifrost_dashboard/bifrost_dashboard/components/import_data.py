@@ -46,13 +46,20 @@ def filter_name(species=None, group=None, qc_list=None, run_name=None):
 def filter_all(species=None, species_source=None, group=None,
                qc_list=None, run_names=None, sample_ids=None,
                sample_names=None,
+               date_range=None,
                pagination=None,
                projection=None):
-    return pd.io.json.json_normalize(bifrostapi.filter(species, species_source, group,
-                                     qc_list, run_names, sample_ids,
-                                     sample_names,
-                                     pagination,
-                                     projection))
+    return pd.io.json.json_normalize(bifrostapi.filter(
+        species=species,
+        species_source=species_source,
+        group=group,
+        qc_list=qc_list,
+        run_names=run_names,
+        sample_ids=sample_ids,
+        sample_names=sample_names,
+        date_range=date_range,
+        pagination=pagination,
+        projection=projection))
 
 
 def get_assemblies_paths(samples):
