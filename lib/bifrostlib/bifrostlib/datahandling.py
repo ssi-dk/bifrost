@@ -147,7 +147,6 @@ class Sample:
                 self._dict = runs[0]
         elif name is not None:
             self._dict = {
-                "_id": None,
                 "name": name,
                 "components": [],
                 "properties": {
@@ -236,7 +235,6 @@ class Run:
                 self._dict = runs[0]
         elif name is not None:
             self._dict = {
-                "_id": None,
                 "name": name,
                 "type": "default",
                 "path": None,
