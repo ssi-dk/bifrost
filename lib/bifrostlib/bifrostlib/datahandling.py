@@ -151,9 +151,7 @@ class Sample:
                 "components": [],
                 "properties": {
                     "datafiles": {
-                        "summary": {
-                            "paired_reads": []
-                        }
+                        "paired_reads": []
                     },
                     "sample_info": {
                         "summary": {
