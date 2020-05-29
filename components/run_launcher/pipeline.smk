@@ -5,6 +5,7 @@ Initialization program for paired end Illumina reads
 import re
 import sys
 import os
+import numpy
 import pandas
 import traceback
 from bifrostlib import datahandling
