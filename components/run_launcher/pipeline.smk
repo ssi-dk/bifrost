@@ -75,7 +75,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             for key in metadata_dict:
                 if type(metadata_dict[key]) == numpy.bool_:
                     metadata_dict[key] = bool(metadata_dict[key])
-            sample_info.set_summary(df.iloc[df[df[sample_key] == sample].index[0]].to_dict())
+            sample_info.set_summary(metadata_dict)
             sampleObj.set_properties_sample_info(sample_info)
             sampleObj.save()
             # pp.pprint(sampleObj.display())
