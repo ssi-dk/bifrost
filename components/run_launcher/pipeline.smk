@@ -125,6 +125,8 @@ def replace_sample_info_in_script(script: str, sample: object) -> str:
             else:
                 level = level[value]
         if(level is not None):
+            if not isinstance(level, str):
+                level = str(level)
             script = script.replace(item, level)
     return script
 
@@ -153,7 +155,7 @@ def generate_run_script(run: object, samples: object, pre_script_location: str, 
 
 def main(argv) -> None:
     run, samples = initialize_run(input_folder = argv[1], run_metadata = argv[2])
-    script =generate_run_script(run, samples, argv[3], argv[4], argv[5])
+    script = generate_run_script(run, samples, argv[3], argv[4], argv[5])
     print(script)
 
 
