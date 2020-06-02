@@ -150,8 +150,10 @@ class Sample:
                 "name": name,
                 "components": [],
                 "properties": {
-                    "datafiles": {
-                        "paired_reads": []
+                    "paired_reads": {
+                        "summary": {
+                            "data": []
+                        }
                     },
                     "sample_info": {
                         "summary": {
@@ -186,10 +188,10 @@ class Sample:
     #     for component in components:
     #         self._dict["components"].append({"_id": component.get_id(), "name": component.get_name(), "status": component.})
 
-    def set_properties_datafiles(self, datafiles: Category) -> None:
+    def set_properties_paired_reads(self, paired_reads: Category) -> None:
         """Sets name value in object (dict)"""
-        if datafiles.get_name() == "datafiles":
-            self._dict["properties"]["datafiles"] = datafiles.display()
+        if paired_reads.get_name() == "paired_reads":
+            self._dict["properties"]["paired_reads"] = paired_reads.display()
 
     def set_properties_sample_info(self, meta_data: Category) -> None:
         """Sets name value in object (dict)"""
@@ -350,9 +352,9 @@ class SampleComponentObj:
             return None
 
     def get_reads(self):
-        datafiles = self.get_sample_properties_by_category("datafiles")
-        if "paired_reads" in datafiles:
-            return (datafiles["paired_reads"][0], datafiles["paired_reads"][1])
+        paired_reads = self.get_sample_properties_by_category("paired_reads")
+        if "summary" in paired_reads and "data" in paired_reads["summary"]:
+            return (paired_reads["summary"]["data"][0], paired_reads["summary"]["data"][1])
         else:
             return ("/dev/null", "/dev/null")
 
@@ -445,12 +447,20 @@ class SampleComponentObj:
         self.write_log_out(log, "{} has finished\n".format(rule_name))
 
     def start_data_dump(self, log=None):
-        self.sample_component_db["properties"] = {
-            "summary": {},
-            "component": {
-                "_id": self.component_db["_id"]
+        if "properties" in sample_component_db:
+            self.sample_component_db["properties"] = {
+                "summary": {},
+                "component": {
+                    "_id": self.component_db["_id"]
+                }
             }
-        }
+        else:
+            self.sample_component_db["properties"] = {
+                "summary": {},
+                "component": {
+                    "_id": self.component_db["_id"]
+                }
+            }
         self.sample_component_db["results"] = {}
         if self.component_db["db_values_changes"]["sample"].get("report", None) is not None:
             self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]

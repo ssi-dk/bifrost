@@ -68,7 +68,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             df.loc[df[sample_key] == sample, "haveReads"] = True
             sampleObj = datahandling.Sample(name=sample)
             datafiles = datahandling.Category(name="datafiles")
-            datafiles.set_summary({"paired_data": [sample_dict[sample][0], sample_dict[sample][1]]})
+            datafiles.set_summary({"paired_data": [os.path.abspath(os.path.join(input_folder, sample_dict[sample][0])), os.path.abspath(os.path.join(input_folder, sample_dict[sample][1]))]})
             sampleObj.set_properties_datafiles(datafiles)
             sample_info = datahandling.Category(name="sample_info")
             metadata_dict = df.iloc[df[df[sample_key] == sample].index[0]].to_dict()
