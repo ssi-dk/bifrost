@@ -366,7 +366,7 @@ class SampleComponentObj:
     def check_requirements(self, output_file="requirements_met", log=None):
         no_failures = True
         if self.component_db["requirements"] is not None:
-            requirements = pandas.io.json.json_normalize(self.component_db["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from component_db, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
+            requirements = pandas.json_normalize(self.component_db["requirements"], sep=".").to_dict(orient='records')[0]  # a little loaded of a line, get requirements from component_db, use the pandas json function to turn it into a 2d dataframe, then convert that to a dict of known depth 2, 0 is for our 1 and only sheet
             for requirement in requirements:
                 category = requirement.split(".")[0]
                 if category == "sample":
