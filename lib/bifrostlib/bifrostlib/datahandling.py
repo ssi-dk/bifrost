@@ -352,7 +352,7 @@ class SampleComponentObj:
 
     def get_reads(self):
         paired_reads = self.get_sample_properties_by_category("paired_reads")
-        if "data" in paired_reads["summary"]:
+        if "data" in paired_reads:
             return (paired_reads["data"][0], paired_reads["data"][1])
         else:
             return ("/dev/null", "/dev/null")
