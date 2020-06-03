@@ -446,7 +446,7 @@ class SampleComponentObj:
         self.write_log_out(log, "{} has finished\n".format(rule_name))
 
     def start_data_dump(self, log=None):
-        if "properties" in sample_component_db:
+        if "properties" in self.sample_component_db:
             self.sample_component_db["properties"] = {
                 "summary": {},
                 "component": {
