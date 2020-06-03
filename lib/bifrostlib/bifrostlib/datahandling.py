@@ -189,14 +189,14 @@ class Sample:
     #         self._dict["components"].append({"_id": component.get_id(), "name": component.get_name(), "status": component.})
 
     def set_properties_paired_reads(self, paired_reads: Category) -> None:
-        """Sets name value in object (dict)"""
+        """Sets paired reads value in object (dict)"""
         if paired_reads.get_name() == "paired_reads":
             self._dict["properties"]["paired_reads"] = paired_reads.display()
 
-    def set_properties_sample_info(self, meta_data: Category) -> None:
-        """Sets name value in object (dict)"""
-        if meta_data.get_name() == "sample_info":
-            self._dict["properties"]["sample_info"] = meta_data.display()
+    def set_properties_sample_info(self, sample_info: Category) -> None:
+        """Sets sample_info value in object (dict)"""
+        if sample_info.get_name() == "sample_info":
+            self._dict["properties"]["sample_info"] = sample_info.display()
 
     def set_report(self, report: dict) -> None:
         """Sets report value in object (dict)"""
@@ -294,7 +294,6 @@ class Run:
     def save(self) -> None:
         """Saves the in object (dict) to the DB"""
         self._dict = mongo_interface.dump_run_info(self._dict)
-
 
 
 # class SampleComponent:
