@@ -71,10 +71,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             datafiles.set_summary({"data": [os.path.abspath(os.path.join(input_folder, sample_dict[sample][0])), os.path.abspath(os.path.join(input_folder, sample_dict[sample][1]))]})
             sampleObj.set_properties_paired_reads(datafiles)
             sample_info = datahandling.Category(name="sample_info")
-            metadata_dict = df.iloc[df[df[sample_key] == sample].index[0]].to_dict()
-            for key in metadata_dict:
-                if type(metadata_dict[key]) == numpy.bool_:
-                    metadata_dict[key] = bool(metadata_dict[key])
+            metadata_dict = pandas.io.json.dumps(df.iloc[df[df[sample_key] == sample].index[0]])
             sample_info.set_summary(metadata_dict)
             sampleObj.set_properties_sample_info(sample_info)
             sampleObj.save()
