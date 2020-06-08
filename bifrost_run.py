@@ -57,7 +57,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
     df["temp_sample_name"] = df[sample_key]
     df[sample_key] = df[sample_key].apply(lambda x: x.strip())
     df[sample_key] = df[sample_key].str.replace(re.compile("[^a-zA-Z0-9\-\_]"),"_")
-    df["changed+sample_names"] = df['sample_name'] != df['temp_sample_name']
+    df["changed_sample_names"] = df['sample_name'] != df['temp_sample_name']
     df["duplicated_sample_names"] = df.duplicated(subset=sample_key,keep="first")
     valid_sample_names = list(set(df[sample_key].tolist()))
     df["haveReads"] = False
