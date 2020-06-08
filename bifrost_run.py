@@ -75,6 +75,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             datafiles.set_summary({"data": [os.path.abspath(os.path.join(input_folder, sample_dict[sample][0])), os.path.abspath(os.path.join(input_folder, sample_dict[sample][1]))]})
             sampleObj.set_properties_paired_reads(datafiles)
             sample_info = datahandling.Category(name="sample_info")
+            # This statement is a bit hacky, it converts to json and decodes json. This is chosen over .to_dict as that maintains numpy datatypes and I want python data types
             metadata_dict = json.loads(df.iloc[df[df[sample_key] == sample].index[0]].to_json())
             sample_info.set_summary(metadata_dict)
             sampleObj.set_properties_sample_info(sample_info)
