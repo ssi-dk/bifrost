@@ -8,6 +8,7 @@ import os
 import numpy
 import pandas
 import traceback
+import json
 from bifrostlib import datahandling
 import pprint
 
@@ -15,7 +16,7 @@ os.umask(0o2)
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.txt", regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
+def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.txt", rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
     all_items_in_dir = os.listdir(input_folder)
     potential_samples = [(i, re.search(regex_pattern,i).group("sample_name"),  re.search(regex_pattern,i).group("paired_read_number")) for i in all_items_in_dir if re.search(regex_pattern,i)]
     potential_samples.sort()
@@ -45,6 +46,9 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             unused_files.pop(unused_files.index(run_metadata))
 
     df = pandas.read_table(run_metadata)
+    if rename_column_file != None:
+        with open(rename_column_file, "r") as rename_file:
+            df = df.rename(columns=json.load(rename_file))
     sample_key = "SampleID"
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     samples_no_index = df[df[sample_key].isna()].index
@@ -151,8 +155,8 @@ def generate_run_script(run: object, samples: object, pre_script_location: str, 
 
 
 def main(argv) -> None:
-    run, samples = initialize_run(input_folder = argv[1], run_metadata = argv[2])
-    script = generate_run_script(run, samples, argv[3], argv[4], argv[5])
+    run, samples = initialize_run(input_folder = argv[1], run_metadata = argv[2], rename_column_file = argv[3])
+    script = generate_run_script(run, samples, argv[4], argv[5], argv[6])
     print(script)
 
 
