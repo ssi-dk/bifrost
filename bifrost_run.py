@@ -49,16 +49,16 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
     if rename_column_file != None:
         with open(rename_column_file, "r") as rename_file:
             df = df.rename(columns=json.load(rename_file))
-    sample_key = "SampleID"
+    sample_key = "sample_name"
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     samples_no_index = df[df[sample_key].isna()].index
     df = df.drop(samples_no_index)
     df[sample_key] = df[sample_key].astype('str')
-    df["tempSampleID"] = df[sample_key]
+    df["temp_sample_name"] = df[sample_key]
     df[sample_key] = df[sample_key].apply(lambda x: x.strip())
     df[sample_key] = df[sample_key].str.replace(re.compile("[^a-zA-Z0-9\-\_]"),"_")
-    df["changedSampleIDs"] = df['SampleID'] != df['tempSampleID']
-    df["duplicatedSampleIDs"] = df.duplicated(subset=sample_key,keep="first")
+    df["changed+sample_names"] = df['sample_name'] != df['temp_sample_name']
+    df["duplicated_sample_names"] = df.duplicated(subset=sample_key,keep="first")
     valid_sample_names = list(set(df[sample_key].tolist()))
     df["haveReads"] = False
     df["haveMetaData"] = True
@@ -82,7 +82,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             # pp.pprint(sampleObj.display())
             samples.append(sampleObj)
         else:
-            new_row_df = pandas.DataFrame({'SampleID':[sample], 'haveReads':[True], 'haveMetaData':[False]})
+            new_row_df = pandas.DataFrame({'sample_name':[sample], 'haveReads':[True], 'haveMetaData':[False]})
             df = df.append(new_row_df, ignore_index=True, sort=False)
 
     run = datahandling.Run(name=os.getcwd().split("/")[-1])
@@ -90,11 +90,11 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
     run.set_path = os.getcwd()
     run.set_samples(samples)
     run.set_issues(
-        duplicate_samples = list(df[df['duplicatedSampleIDs']==True]['SampleID']),
-        modified_samples = list(df[df['changedSampleIDs']==True]['SampleID']),
+        duplicate_samples = list(df[df['duplicated_sample_names']==True]['sample_name']),
+        modified_samples = list(df[df['changed_sample_names']==True]['sample_name']),
         unused_files = unused_files,
-        samples_without_reads = list(df[df['haveReads']==True]['SampleID']),
-        samples_without_metadata = list(df[df['haveMetaData']==False]['SampleID'])
+        samples_without_reads = list(df[df['haveReads']==True]['sample_name']),
+        samples_without_metadata = list(df[df['haveMetaData']==False]['sample_name'])
     )
     run.set_comments("Hello")
     # Note when you save the run you create the ID's
