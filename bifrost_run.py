@@ -186,7 +186,7 @@ def setup_run(args: object) -> str:
     if run_name is None:
         run_name = os.getcwd().split("/")[-1]
     runs = mongo_interface.get_runs(names=[args.run_name])
-    if runs is not None or len(runs) > 0:
+    if len(runs) > 0:
         print(run_name+" already in DB, please correct before attempting to run again")
     else:
         run, samples = initialize_run(
