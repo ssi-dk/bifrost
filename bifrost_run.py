@@ -186,22 +186,23 @@ def setup_run(args: object) -> str:
     if run_name is None:
         run_name = os.getcwd().split("/")[-1]
     runs = mongo_interface.get_runs(names=[args.run_name])
-    if runs is not None:
+    if runs is not None or len(runs) > 0:
         print(run_name+" already in DB, please correct before attempting to run again")
-    run, samples = initialize_run(
-        args.run_name,
-        input_folder=args.reads_folder,
-        run_metadata=args.run_metadata,
-        rename_column_file=args.run_metadata_column_remap)
-    script = generate_run_script(
-        run,
-        samples,
-        args.pre_script,
-        args.per_sample_script,
-        args.post_script)
-    print(script)
-    print(run)
-    print(samples)
+    else:
+        run, samples = initialize_run(
+            args.run_name,
+            input_folder=args.reads_folder,
+            run_metadata=args.run_metadata,
+            rename_column_file=args.run_metadata_column_remap)
+        script = generate_run_script(
+            run,
+            samples,
+            args.pre_script,
+            args.per_sample_script,
+            args.post_script)
+        print(script)
+        print(run)
+        print(samples)
 
 
 if __name__ == "__main__":
