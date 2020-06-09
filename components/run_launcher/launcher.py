@@ -27,20 +27,27 @@ def parse_args():
         f" -v <input_path>:/input \ \n"
         f" -v <output_path>:/output \ \n"
         f" {COMPONENT['dockerfile']} \ \n"
-        f"    -id <sample_id>\n"
         f"************************************************\n"
     )
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-id', '--sample_id',
-                        action='store',
-                        type=str,
-                        help='Sample ID of sample in bifrost, sample has already been added to the bifrost DB')
     parser.add_argument('--install',
                         action='store_true',
                         help='Install component')
     parser.add_argument('-info', '--info',
                         action='store_true',
                         help='Provides basic information on component')
+    parser.add_argument('-pre', '--pre_script',
+                        help='Pre script template run before sample script')
+    parser.add_argument('-per', '--per_sample_script',
+                        help='Per sample script template run on each sample')
+    parser.add_argument('-post', '--post_sample_script',
+                        help='Post script template run after sample script')
+    parser.add_argument('-meta', '--run_metadata',
+                        required=True,
+                        help='Run metadata tsv')
+    parser.add_argument('-metamap', '--run_metadata_column_remap',
+                        help='Remaps metadata tsv columns to bifrost values')
+
     args: argparse.Namespace = parser.parse_args()
 
     if not datahandling.check_db_connection_exists():
@@ -57,7 +64,7 @@ def parse_args():
     elif args.install:
         install_component()
     elif args.sample_id is not None:
-        run_sample(args)
+        run_pipeline(args)
 
 
 def show_info():
@@ -88,9 +95,9 @@ def install_component():
             exit()
 
 
-def run_sample(args: object):
+def run_pipeline(args: object):
     """
-    Runs sample ID through snakemake pipeline
+    Runs pipeline
     """
     sample: list[dict] = datahandling.get_samples(sample_ids=[args.sample_id])
     component: list[dict] = datahandling.get_components(component_names=[COMPONENT['name']], component_versions=[COMPONENT['version']])
@@ -102,19 +109,11 @@ def run_sample(args: object):
             print(f"Error with installation of {COMPONENT['name']} v:{COMPONENT['version']} \n")
             exit()
 
-    if len(sample) == 0:
-        # Invalid sample id
-        print(f"sample_id not found in DB")
-        pass
-    elif len(sample) != 1:
-        print(f"Error with sample_id")
-    elif len(component) != 1:
-        print(f"Error with component_id")
     else:
         print(f"snakemake -s /bifrost/{COMPONENT['name']}/pipeline.smk --config sample_id={str(sample[0]['_id'])} component_id={str(component[0]['_id'])}")
         try:
             process: subprocess.Popen = subprocess.Popen(
-                f"snakemake -s /bifrost/{COMPONENT['name']}/pipeline.smk --config sample_id={str(sample[0]['_id'])} component_id={str(component[0]['_id'])}",
+                f"pipeline.smk sample_id={str(sample[0]['_id'])} component_id={str(component[0]['_id'])}",
                 stdout=sys.stdout,
                 stderr=sys.stderr,
                 shell=True

@@ -19,15 +19,7 @@ dockerfile: &dockerfile "docker://ssidk/bifrost-run_launcher:2.0.5"
 
 #-Options-------------------------------------------------------------------------------------------
 options:
-  # For processing sample sheets
-  samplesheet_column_mapping:
-    sample_name: "SampleID"
-    group: "SupplyingLab" 
-    emails: "Initials"
-    run_name: "ExperimentName"
-    priority: "Priority"
-    provided_species: "Organism" # a required name
-    Comments: "Comments"
+# None
 #---------------------------------------------------------------------------------------------------
 
 #-Required resource files---------------------------------------------------------------------------
@@ -37,31 +29,20 @@ resources:
 
 #-Requirements to run component---------------------------------------------------------------------
 requirements:
-# None
+# Non-DB file requirements
+#  files:
+#    -samples_folder
+#    -"run_metadata.tsv"
+#    -"rename.json"
+#    -"pre_script.sh"
+#    -"per_sample_script.sh"
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------
 db_values_changes:
   files: []
   run:
-    properties:
-      mlst:
-        summary:  # see sample_component summary
-        component:
-          _id: 
-          date:  # ObjectId
-    results:
-      cge_mlst/data_yaml: {}
+    # new run object
   sample:
-    _id: # sample creation
-    name:
-    properties:
-      paired_reads:
-        summary:
-          data: # [String, String]
-      sample_info:
-        summary: 
-          SampleID:
-          provided_species:
-          # Other columns in run_metadata.tsv
+    # a new sample object for each one in the run
 #---------------------------------------------------------------------------------------------------

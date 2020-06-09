@@ -2,20 +2,48 @@
 """
 Initialization program for paired end Illumina reads
 """
+import argparse
 import re
 import sys
 import os
 import numpy
 import pandas
 import traceback
+import json
+import subprocess
 from bifrostlib import datahandling
+from bifrostlib import mongo_interface
 import pprint
 
 os.umask(0o2)
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.txt", regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
+def parse_args() -> object:
+    parser: argparse.ArgumentParser = argparse.ArgumentParser()
+    parser.add_argument('-pre', '--pre_script',
+                        help='Pre script template run before sample script')
+    parser.add_argument('-per', '--per_sample_script',
+                        help='Per sample script template run on each sample')
+    parser.add_argument('-post', '--post_script',
+                        help='Post script template run after sample script')
+    parser.add_argument('-meta', '--run_metadata',
+                        required=True,
+                        help='Run metadata tsv')
+    parser.add_argument('-reads', '--reads_folder',
+                        required=True,
+                        help='Run metadata tsv')
+    parser.add_argument('-name', '--run_name',
+                        default=None,
+                        help='Run name, if not provided it will default to current folder name')
+    parser.add_argument('-metamap', '--run_metadata_column_remap',
+                        help='Remaps metadata tsv columns to bifrost values')
+    args: argparse.Namespace = parser.parse_args()
+
+    setup_run(args)
+
+
+def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "run_metadata.txt", rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
     all_items_in_dir = os.listdir(input_folder)
     potential_samples = [(i, re.search(regex_pattern,i).group("sample_name"),  re.search(regex_pattern,i).group("paired_read_number")) for i in all_items_in_dir if re.search(regex_pattern,i)]
     potential_samples.sort()
@@ -45,60 +73,60 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             unused_files.pop(unused_files.index(run_metadata))
 
     df = pandas.read_table(run_metadata)
-    sample_key = "SampleID"
+    if rename_column_file != None:
+        with open(rename_column_file, "r") as rename_file:
+            df = df.rename(columns=json.load(rename_file))
+    sample_key = "sample_name"
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     samples_no_index = df[df[sample_key].isna()].index
     df = df.drop(samples_no_index)
     df[sample_key] = df[sample_key].astype('str')
-    df["tempSampleID"] = df[sample_key]
+    df["temp_sample_name"] = df[sample_key]
     df[sample_key] = df[sample_key].apply(lambda x: x.strip())
     df[sample_key] = df[sample_key].str.replace(re.compile("[^a-zA-Z0-9\-\_]"),"_")
-    df["changedSampleIDs"] = df['SampleID'] != df['tempSampleID']
-    df["duplicatedSampleIDs"] = df.duplicated(subset=sample_key,keep="first")
+    df["changed_sample_names"] = df['sample_name'] != df['temp_sample_name']
+    df["duplicated_sample_names"] = df.duplicated(subset=sample_key,keep="first")
     valid_sample_names = list(set(df[sample_key].tolist()))
     df["haveReads"] = False
     df["haveMetaData"] = True
 
     samples = []
-    run = datahandling.Run(name=os.getcwd().split("/")[-1])
+    run = datahandling.Run(name=run_name)
 
     for sample in sample_dict:
         if sample in valid_sample_names:
             df.loc[df[sample_key] == sample, "haveMetaData"] = True
             df.loc[df[sample_key] == sample, "haveReads"] = True
             sampleObj = datahandling.Sample(name=sample)
-            datafiles = datahandling.Category(name="datafiles")
-            datafiles.set_summary({"summary":{"data": [os.path.abspath(os.path.join(input_folder, sample_dict[sample][0])), os.path.abspath(os.path.join(input_folder, sample_dict[sample][1]))]}})
+            datafiles = datahandling.Category(name="paired_reads")
+            datafiles.set_summary({"data": [os.path.abspath(os.path.join(input_folder, sample_dict[sample][0])), os.path.abspath(os.path.join(input_folder, sample_dict[sample][1]))]})
             sampleObj.set_properties_paired_reads(datafiles)
             sample_info = datahandling.Category(name="sample_info")
-            metadata_dict = df.iloc[df[df[sample_key] == sample].index[0]].to_dict()
-            for key in metadata_dict:
-                if type(metadata_dict[key]) == numpy.bool_:
-                    metadata_dict[key] = bool(metadata_dict[key])
+            # This statement is a bit hacky, it converts to json and decodes json. This is chosen over .to_dict as that maintains numpy datatypes and I want python data types
+            metadata_dict = json.loads(df.iloc[df[df[sample_key] == sample].index[0]].to_json())
             sample_info.set_summary(metadata_dict)
             sampleObj.set_properties_sample_info(sample_info)
             sampleObj.save()
             # pp.pprint(sampleObj.display())
             samples.append(sampleObj)
         else:
-            new_row_df = pandas.DataFrame({'SampleID':[sample], 'haveReads':[True], 'haveMetaData':[False]})
+            new_row_df = pandas.DataFrame({'sample_name':[sample], 'haveReads':[True], 'haveMetaData':[False]})
             df = df.append(new_row_df, ignore_index=True, sort=False)
 
-    run = datahandling.Run(name=os.getcwd().split("/")[-1])
     run.set_type = "routine"
     run.set_path = os.getcwd()
     run.set_samples(samples)
     run.set_issues(
-        duplicate_samples = list(df[df['duplicatedSampleIDs']==True]['SampleID']),
-        modified_samples = list(df[df['changedSampleIDs']==True]['SampleID']),
+        duplicate_samples = list(df[df['duplicated_sample_names']==True]['sample_name']),
+        modified_samples = list(df[df['changed_sample_names']==True]['sample_name']),
         unused_files = unused_files,
-        samples_without_reads = list(df[df['haveReads']==True]['SampleID']),
-        samples_without_metadata = list(df[df['haveMetaData']==False]['SampleID'])
+        samples_without_reads = list(df[df['haveReads']==True]['sample_name']),
+        samples_without_metadata = list(df[df['haveMetaData']==False]['sample_name'])
     )
     run.set_comments("Hello")
     # Note when you save the run you create the ID's
     run.save() 
-    pp.pprint(run.display())
+    # pp.pprint(run.display())
     # df.to_csv("test.txt")
 
     return (run, samples)
@@ -153,11 +181,34 @@ def generate_run_script(run: object, samples: object, pre_script_location: str, 
     return script
 
 
-def main(argv) -> None:
-    run, samples = initialize_run(input_folder = argv[1], run_metadata = argv[2])
-    script = generate_run_script(run, samples, argv[3], argv[4], argv[5])
-    print(script)
+def setup_run(args: object) -> str:
+    run_name = args.run_name
+    if run_name is None:
+        run_name = os.getcwd().split("/")[-1]
+    runs = mongo_interface.get_runs(names=[run_name])
+    print(run_name)
+    if len(runs) > 0:
+        print(run_name+" already in DB, please correct before attempting to run again")
+    else:
+        run, samples = initialize_run(
+            run_name,
+            input_folder=args.reads_folder,
+            run_metadata=args.run_metadata,
+            rename_column_file=args.run_metadata_column_remap)
+        script = generate_run_script(
+            run,
+            samples,
+            args.pre_script,
+            args.per_sample_script,
+            args.post_script)
+        with open("run_script.sh", "w") as fh:
+            fh.write(script)
+        with open("run.yaml", "w") as fh:
+            fh.write(pprint.pformat(run.display()))
+        with open("samples.yaml", "w") as fh:
+            for sample in samples:
+                fh.write(pprint.pformat(sample.display()))
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    parse_args()

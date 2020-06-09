@@ -142,9 +142,9 @@ class Sample:
     def __init__(self, _id: str = None, name: str = None) -> None:
         self._dict = None
         if _id is not None:
-            runs = get_runs(run_id=[_id])
-            if len(runs) == 1:
-                self._dict = runs[0]
+            samples = mongo_interface.get_samples(sample_ids=[ObjectId(_id)])
+            if len(samples) == 1:
+                self._dict = samples[0]
         elif name is not None:
             self._dict = {
                 "name": name,
@@ -168,10 +168,6 @@ class Sample:
                 "report": {},
                 "metadata": {}
             }
-
-    def load(self, _id: str) -> None:
-        """Load a sample via id from database"""
-        self._dict = mongo_interface.get_runs(sample_id=_id)
 
     def get(self, key: str) -> object:
         """Returns value of the associated key in object (dict)"""
@@ -230,28 +226,28 @@ class Run:
     def __init__(self, _id: str = None, name: str = None) -> None:
         self._dict = None
         if _id is not None:
-            runs = get_runs(run_id=[_id])
+            runs = mongo_interface.get_runs(run_id=ObjectId(_id))
             if len(runs) == 1:
                 self._dict = runs[0]
         elif name is not None:
-            self._dict = {
-                "name": name,
-                "type": "default",
-                "path": None,
-                "samples": [],
-                "issues": {
-                    "duplicate_samples": [],
-                    "modified_samples": [],
-                    "unused_files": [],
-                    "samples_without_reads": [],
-                    "samples_without_metadata": []
-                },
-                "Comments": ""
-            }
-
-    def load(self, _id: str) -> None:
-        """Load a run via id from database"""
-        self._dict = mongo_interface.get_runs(run_id=_id)
+            runs = mongo_interface.get_runs(names=[name])
+            if len(runs) == 1:
+                self._dict = runs[0]
+            elif runs is None:
+                self._dict = {
+                    "name": name,
+                    "type": "default",
+                    "path": None,
+                    "samples": [],
+                    "issues": {
+                        "duplicate_samples": [],
+                        "modified_samples": [],
+                        "unused_files": [],
+                        "samples_without_reads": [],
+                        "samples_without_metadata": []
+                    },
+                    "Comments": ""
+                }
 
     def get(self, key: str) -> object:
         """Returns value of the associated key in object (dict)"""
