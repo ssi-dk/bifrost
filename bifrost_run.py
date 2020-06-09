@@ -185,12 +185,13 @@ def setup_run(args: object) -> str:
     run_name = args.run_name
     if run_name is None:
         run_name = os.getcwd().split("/")[-1]
-    runs = mongo_interface.get_runs(names=[args.run_name])
+    runs = mongo_interface.get_runs(names=[run_name])
+    print(run_name)
     if len(runs) > 0:
         print(run_name+" already in DB, please correct before attempting to run again")
     else:
         run, samples = initialize_run(
-            args.run_name,
+            run_name,
             input_folder=args.reads_folder,
             run_metadata=args.run_metadata,
             rename_column_file=args.run_metadata_column_remap)
@@ -200,9 +201,13 @@ def setup_run(args: object) -> str:
             args.pre_script,
             args.per_sample_script,
             args.post_script)
-        print(script)
-        print(run)
-        print(samples)
+        with open("run_script.sh", "w") as fh:
+            fh.write(script)
+        with open("run.yaml", "w") as fh:
+            fh.write(pprint.pformat(run.display()))
+        with open("samples.yaml", "w") as fh:
+            for sample in samples:
+                fh.write(pprint.pformat(sample.display()))
 
 
 if __name__ == "__main__":
