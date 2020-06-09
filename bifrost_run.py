@@ -2,6 +2,7 @@
 """
 Initialization program for paired end Illumina reads
 """
+import argparse
 import re
 import sys
 import os
@@ -9,14 +10,40 @@ import numpy
 import pandas
 import traceback
 import json
+import subprocess
 from bifrostlib import datahandling
+from bifrostlib import mongo_interface
 import pprint
 
 os.umask(0o2)
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.txt", rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
+def parse_args() -> object:
+    parser: argparse.ArgumentParser = argparse.ArgumentParser()
+    parser.add_argument('-pre', '--pre_script',
+                        help='Pre script template run before sample script')
+    parser.add_argument('-per', '--per_sample_script',
+                        help='Per sample script template run on each sample')
+    parser.add_argument('-post', '--post_script',
+                        help='Post script template run after sample script')
+    parser.add_argument('-meta', '--run_metadata',
+                        required=True,
+                        help='Run metadata tsv')
+    parser.add_argument('-reads', '--reads_folder',
+                        required=True,
+                        help='Run metadata tsv')
+    parser.add_argument('-name', '--run_name',
+                        default=None,
+                        help='Run name, if not provided it will default to current folder name')
+    parser.add_argument('-metamap', '--run_metadata_column_remap',
+                        help='Remaps metadata tsv columns to bifrost values')
+    args: argparse.Namespace = parser.parse_args()
+
+    setup_run(args)
+
+
+def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "run_metadata.txt", rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
     all_items_in_dir = os.listdir(input_folder)
     potential_samples = [(i, re.search(regex_pattern,i).group("sample_name"),  re.search(regex_pattern,i).group("paired_read_number")) for i in all_items_in_dir if re.search(regex_pattern,i)]
     potential_samples.sort()
@@ -64,7 +91,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
     df["haveMetaData"] = True
 
     samples = []
-    run = datahandling.Run(name=os.getcwd().split("/")[-1])
+    run = datahandling.Run(name=run_name)
 
     for sample in sample_dict:
         if sample in valid_sample_names:
@@ -86,7 +113,6 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
             new_row_df = pandas.DataFrame({'sample_name':[sample], 'haveReads':[True], 'haveMetaData':[False]})
             df = df.append(new_row_df, ignore_index=True, sort=False)
 
-    run = datahandling.Run(name=os.getcwd().split("/")[-1])
     run.set_type = "routine"
     run.set_path = os.getcwd()
     run.set_samples(samples)
@@ -100,7 +126,7 @@ def initialize_run(input_folder: str = ".", run_metadata: str = "run_metadata.tx
     run.set_comments("Hello")
     # Note when you save the run you create the ID's
     run.save() 
-    pp.pprint(run.display())
+    # pp.pprint(run.display())
     # df.to_csv("test.txt")
 
     return (run, samples)
@@ -155,11 +181,28 @@ def generate_run_script(run: object, samples: object, pre_script_location: str, 
     return script
 
 
-def main(argv) -> None:
-    run, samples = initialize_run(input_folder = argv[1], run_metadata = argv[2], rename_column_file = argv[3])
-    script = generate_run_script(run, samples, argv[4], argv[5], argv[6])
+def setup_run(args: object) -> str:
+    run_name = args.run_name
+    if run_name is None:
+        run_name = os.getcwd().split("/")[-1]
+    runs = mongo_interface.get_runs(names=[args.run_name])
+    if runs is not None:
+        print(run_name+" already in DB, please correct before attempting to run again")
+    run, samples = initialize_run(
+        args.run_name,
+        input_folder=args.reads_folder,
+        run_metadata=args.run_metadata,
+        rename_column_file=args.run_metadata_column_remap)
+    script = generate_run_script(
+        run,
+        samples,
+        args.pre_script,
+        args.per_sample_script,
+        args.post_script)
     print(script)
+    print(run)
+    print(samples)
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    parse_args()
