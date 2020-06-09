@@ -36,7 +36,7 @@ sample_folder = config["sample_folder"]
 sample_sheet = config["sample_sheet"]
 group = config["group"]
 partition = config["partition"]
-num_of_threads, memory_in_GB = config["threads"], config["memory"]
+
 
 
 onsuccess:
@@ -126,10 +126,6 @@ rule copy_run_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -158,10 +154,6 @@ rule initialize_components:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -205,10 +197,6 @@ rule initialize_samples_from_sample_folder:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -278,10 +266,6 @@ rule check__provided_sample_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -355,10 +339,6 @@ rule set_samples_from_sample_info:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -425,10 +405,6 @@ rule set_sample_species:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -489,10 +465,6 @@ rule add_components_to_samples:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -556,10 +528,6 @@ rule initialize_sample_components_for_each_sample:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -623,10 +591,6 @@ rule initialize_run:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -707,10 +671,6 @@ rule setup_sample_components_to_run:
     # Static
     message:
         "Running step:" + rule_name
-    threads:
-        num_of_threads
-    resources:
-        memory_in_GB = memory_in_GB
     log:
         out_file = component + "/log/" + rule_name + ".out.log",
         err_file = component + "/log/" + rule_name + ".err.log",
@@ -783,35 +743,54 @@ rule setup_sample_components_to_run:
                                 command.write("#SBATCH --mem={}G -p {} -c {} -t {} -J '{}_{}'\n".format(
                                     config["memory"], partition, config["threads"], config["walltime"], component, sample_name))
 
+                            # TODO: this is a temp fix for allowing dockerized components, bifrost.smk has to be remade from scratch to follow new methods.
+                            component_map = {
+                                "ariba_mlst": "bifrost-ariba_mlst_2.0.5.sif",
+                                "ariba_plasmidfinder": "bifrost-ariba_plasmidfinder_2.0.5.sif",
+                                "ariba_resfinder": "bifrost-ariba_resfinder_2.0.5.sif",
+                                "ariba_virulencefinder": "bifrost-ariba_virulencefinder_2.0.5.sif",
+                                "assemblatron": "bifrost-assemblatron_2.0.5.sif",
+                                "cge_mlst": "bifrost-cge_mlst_2.0.5.sif",
+                                "cge_resfinder": "bifrost-cge_resfinder_2.0.5.sif",
+                                "min_read_check": "bifrost-min_read_check_2.0.5.sif",
+                                "ssi_stamper": "bifrost-ssi_stamper_2.0.5.sif",
+                                "whats_my_species": "bifrost-whats_my_species_2.0.5.sif"
+                            }
+
                             for component_name in components:
-                                component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
+                                # component_file = os.path.dirname(workflow.snakefile) + "/components/" + component_name + "/pipeline.smk"
                                 if sample_name in config["samples_to_ignore"]:
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
                                     sample_component_db["status"] = "skipped"
                                     sample_component_db["setup_date"] = current_time
                                     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                elif os.path.isfile(component_file):
-                                    unlock = ""
-                                    if config["unlock"]:
-                                        unlock = "--unlock"
-                                    else:
-                                        # Only delete directory on non unlock mode
-                                        if config.get("overwrite", False):
-                                            command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
-                                    sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
-                                    sample_component_db["status"] = "Queued"
-                                    sample_component_db["setup_date"] = current_time
-                                    datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                elif component_name in component_map:
+                                    if config.get("overwrite", False):
+                                        command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
                                     reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
-                                    command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format(
-                                        "-B " + reads[0] + "," + reads[1] + "," + os.getcwd(),
-                                        config["singularity_prefix"],
-                                        config["restart_times"],
-                                        config["threads"],
-                                        component_file,
-                                        unlock,
-                                        sample_component_db["sample"]["_id"],
-                                        sample_component_db["component"]["_id"]))
+                                    command.write(f"singularity run -B {','.join(reads)} {os.path.join(config['singularity_prefix'], component_map[component_name])} -id {sample_db['_id']};\n")
+                                # elif os.path.isfile(component_file):
+                                #     unlock = ""
+                                #     if config["unlock"]:
+                                #         unlock = "--unlock"
+                                #     else:
+                                #         # Only delete directory on non unlock mode
+                                #         if config.get("overwrite", False):
+                                #             command.write("if [ -d \"{}\" ]; then rm -r {}; fi;\n".format(component_name, component_name))
+                                #     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                #     sample_component_db["status"] = "Queued"
+                                #     sample_component_db["setup_date"] = current_time
+                                #     datahandling.save_sample_component_to_file(sample_component_db, sample_name + "/" + sample_name + "__" + component_name + ".yaml")
+                                #     reads = sample_db["properties"]["datafiles"]["summary"]["paired_reads"]
+                                #     command.write("snakemake --use-singularity  --singularity-args \"{}\" --singularity-prefix \"{}\" --restart-times {} --cores {} -s {} {} --config sample_id={} component_id={}; \n".format(
+                                #         "-B " + reads[0] + "," + reads[1] + "," + os.getcwd(),
+                                #         config["singularity_prefix"],
+                                #         config["restart_times"],
+                                #         config["threads"],
+                                #         component_file,
+                                #         unlock,
+                                #         sample_component_db["sample"]["_id"],
+                                #         sample_component_db["component"]["_id"]))
                                 else:
                                     datahandling.write_log(log_err, "Error component not found:{} {}".format(component_name, component_file))
                                     sample_component_db = datahandling.load_sample_component(sample_name + "/" + sample_name + "__" + component_name + ".yaml")
