@@ -55,7 +55,7 @@ def dump_run_info(data_dict):
     now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
-    if "_id" in data_dict:
+    if "_id" in data_dict and data_dict["_id"] is not None:
         data_dict = runs_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
@@ -84,7 +84,7 @@ def dump_sample_info(data_dict):
     now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
-    if "_id" in data_dict:
+    if "_id" in data_dict and data_dict["_id"] is not None:
         data_dict = samples_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},
@@ -126,7 +126,7 @@ def dump_component_info(data_dict):
     now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {"schema_version": GLOBAL_schema_version, "created_at": now})
     data_dict["metadata"]["updated_at"] = now
-    if "_id" in data_dict:
+    if "_id" in data_dict and data_dict["_id"] is not None:
         data_dict = components_db.find_one_and_update(
             filter={"_id": data_dict["_id"]},
             update={"$set": data_dict},

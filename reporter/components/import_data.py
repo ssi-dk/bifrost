@@ -86,7 +86,7 @@ def filter_all(species=None, species_source=None, group=None, qc_list=None, run_
 
     # Other adaptations:
     for sample in old_schema:
-        datafiles = {"summary": {"paired_reads": [sample["reads"]["R1"],
+        datafiles = {"summary": {"data": [sample["reads"]["R1"],
                                                   sample["reads"]["R2"]]}}
         sample["properties"]["datafiles"] = datafiles
         sample["properties"]["species_detection"] = {"summary": {"provided_species": sample["properties"]["provided_species"],

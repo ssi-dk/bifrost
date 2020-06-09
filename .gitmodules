@@ -1,0 +1,30 @@
+[submodule "components/min_read_check"]
+	path = components/min_read_check
+	url = git@github.com:ssi-dk/bifrost-min_read_check.git
+[submodule "components/ariba_resfinder"]
+	path = components/ariba_resfinder
+	url = git@github.com:ssi-dk/bifrost-ariba_resfinder.git
+[submodule "components/ariba_virulencefinder"]
+	path = components/ariba_virulencefinder
+	url = git@github.com:ssi-dk/bifrost-ariba_virulencefinder.git
+[submodule "components/assemblatron"]
+	path = components/assemblatron
+	url = git@github.com:ssi-dk/bifrost-assemblatron.git
+[submodule "components/cge_mlst"]
+	path = components/cge_mlst
+	url = git@github.com:ssi-dk/bifrost-cge_mlst.git
+[submodule "components/cge_resfinder"]
+	path = components/cge_resfinder
+	url = git@github.com:ssi-dk/bifrost-cge_resfinder.git
+[submodule "components/ssi_stamper"]
+	path = components/ssi_stamper
+	url = git@github.com:ssi-dk/bifrost-ssi_stamper.git
+[submodule "components/whats_my_species"]
+	path = components/whats_my_species
+	url = git@github.com:ssi-dk/bifrost-whats_my_species.git
+[submodule "components/ariba_mlst"]
+	path = components/ariba_mlst
+	url = git@github.com:ssi-dk/bifrost-ariba_mlst.git
+[submodule "components/ariba_plasmidfinder"]
+	path = components/ariba_plasmidfinder
+	url = git@github.com:ssi-dk/bifrost-ariba_plasmidfinder.git

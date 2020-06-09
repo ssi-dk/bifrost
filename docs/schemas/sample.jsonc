@@ -49,5 +49,5 @@
     "min_read_check": "size_check",
     "ssi_stamper": "stamper",
     "whats_my_species": "species_detection",
-    "bifrost": ["datafiles", "sample_info"]
+    "bifrost": ["paired_reads", "sample_info"]
 }]
