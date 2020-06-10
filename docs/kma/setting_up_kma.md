@@ -67,7 +67,7 @@ pkgs_dirs:
 
 ### 6.1 KMA config
 
-Create a config.yaml file in the config directory with the following:
+Create a config.yaml file in the config directory (/home/projects/KMA_project/data/bifrost/config) with the following:
 
 ```yaml
 grid: "torque"

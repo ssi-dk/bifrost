@@ -1,8 +1,12 @@
 import pandas as pd
 import dash_html_components as html
 
-def html_table(data, **kwargs):
+def html_table(data, header=None, **kwargs):
     rows = []
+    if header is not None:
+        thead = html.Thead(html.Tr([html.Th(h) for h in header]))
+    else:
+        thead = None
     for data_row in data:
         if isinstance(data_row, list):
             rows.append(
@@ -10,7 +14,7 @@ def html_table(data, **kwargs):
         else:
             rows.append(html.Tr([html.Td(data_cell, className="cell") for data_cell in data_row["list"]],
                                className=data_row["className"] + " trow"))
-    return html.Table(rows, **kwargs)
+    return html.Table([thead, html.Tbody(rows)], className="bifrost-table", **kwargs)
 
 
 def html_td_percentage(value, color):

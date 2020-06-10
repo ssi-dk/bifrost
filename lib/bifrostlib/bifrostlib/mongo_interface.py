@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import datetime
 import ruamel.yaml
+from datetime import datetime
 import traceback
 import atexit
 import magic
@@ -23,7 +24,6 @@ def date_now():
     return d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
 CONNECTION = None
-
 
 def close_connection():
     global CONNECTION

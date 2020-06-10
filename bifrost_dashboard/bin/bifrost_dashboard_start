@@ -1,0 +1,4 @@
+#!/bin/bash
+# conda activate bifrost
+export REPORTER_ADMIN=True
+uwsgi -s /tmp/reporter.sock --processes 3 --manage-script-name --mount /=bifrost_dashboard.reporter:server --http :8050
