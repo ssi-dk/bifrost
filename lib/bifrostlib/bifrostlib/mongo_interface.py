@@ -5,7 +5,6 @@ import os
 import sys
 from datetime import datetime
 import ruamel.yaml
-from datetime import datetime
 import traceback
 import atexit
 import magic
