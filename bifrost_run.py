@@ -36,6 +36,9 @@ def parse_args() -> object:
     parser.add_argument('-name', '--run_name',
                         default=None,
                         help='Run name, if not provided it will default to current folder name')
+    parser.add_argument('-type', '--run_type',
+                        default=None,
+                        help='Run type for metadata organization')
     parser.add_argument('-metamap', '--run_metadata_column_remap',
                         help='Remaps metadata tsv columns to bifrost values')
     args: argparse.Namespace = parser.parse_args()
@@ -43,7 +46,7 @@ def parse_args() -> object:
     setup_run(args)
 
 
-def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "run_metadata.txt", rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
+def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "run_metadata.txt", run_type: str = None, rename_column_file = None, regex_pattern: str ="^(?P<sample_name>[a-zA-Z0-9\_\-]+?)(_S[0-9]+)?(_L[0-9]+)?_(R?)(?P<paired_read_number>[1|2])(_[0-9]+)?(\.fastq\.gz)$") -> object:
     all_items_in_dir = os.listdir(input_folder)
     potential_samples = [(i, re.search(regex_pattern,i).group("sample_name"),  re.search(regex_pattern,i).group("paired_read_number")) for i in all_items_in_dir if re.search(regex_pattern,i)]
     potential_samples.sort()
@@ -113,8 +116,8 @@ def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "
             new_row_df = pandas.DataFrame({'sample_name':[sample], 'haveReads':[True], 'haveMetaData':[False]})
             df = df.append(new_row_df, ignore_index=True, sort=False)
 
-    run.set_type = "routine"
-    run.set_path = os.getcwd()
+    run.set_type(run_type)
+    run.set_path(os.getcwd())
     run.set_samples(samples)
     run.set_issues(
         duplicate_samples = list(df[df['duplicated_sample_names']==True]['sample_name']),
@@ -194,7 +197,8 @@ def setup_run(args: object) -> str:
             run_name,
             input_folder=args.reads_folder,
             run_metadata=args.run_metadata,
-            rename_column_file=args.run_metadata_column_remap)
+            rename_column_file=args.run_metadata_column_remap,
+            run_type=args.run_type)
         script = generate_run_script(
             run,
             samples,
