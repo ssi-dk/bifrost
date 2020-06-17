@@ -126,7 +126,6 @@ def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "
         samples_without_reads = list(df[df['haveReads']==True]['sample_name']),
         samples_without_metadata = list(df[df['haveMetaData']==False]['sample_name'])
     )
-    run.set_comments("Hello")
     # Note when you save the run you create the ID's
     run.save() 
     # pp.pprint(run.display())
