@@ -123,7 +123,7 @@ def initialize_run(run_name: str, input_folder: str = ".", run_metadata: str = "
         duplicate_samples = list(df[df['duplicated_sample_names']==True]['sample_name']),
         modified_samples = list(df[df['changed_sample_names']==True]['sample_name']),
         unused_files = unused_files,
-        samples_without_reads = list(df[df['haveReads']==True]['sample_name']),
+        samples_without_reads = list(df[df['haveReads']==False]['sample_name']),
         samples_without_metadata = list(df[df['haveMetaData']==False]['sample_name'])
     )
     # Note when you save the run you create the ID's

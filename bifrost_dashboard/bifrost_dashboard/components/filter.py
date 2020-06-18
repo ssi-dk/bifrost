@@ -360,10 +360,6 @@ def generate_table(tests_df):
     # Convert to string for comparison later on
     tests_df = tests_df.astype({user_stamp_col: str})
 
-    values = {r1_col: ""}
-    tests_df = tests_df.fillna(value=values)
-    no_reads_mask = tests_df[r1_col] == ""
-    tests_df.loc[no_reads_mask, qc_action] = "core facility (no reads)"
     mask = pd.isnull(tests_df[qc_action])
     tests_df.loc[mask, qc_action] = "not tested"
     slmask = tests_df[qc_action] == "supplying lab"
