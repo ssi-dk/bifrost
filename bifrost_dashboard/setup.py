@@ -21,8 +21,8 @@ setup(
         'dash-auth',
         'requests',
         'dash-bootstrap-components',
-        'pyyaml'
-        'uwsgi'  # doesnt work for me
+        'pyyaml',
+        #'uwsgi'  # doesnt work for me
         ],
     python_requires='>=3.6',
     entry_points={
