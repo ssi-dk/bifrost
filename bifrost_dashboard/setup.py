@@ -14,6 +14,7 @@ setup(
     include_package_data=True,
     install_requires=[
         # 'pymongo',
+        'pandas'
         'dash',
         'bifrostapi',
         'Flask-Caching',
@@ -21,7 +22,7 @@ setup(
         'requests',
         'dash-bootstrap-components',
         'pyyaml'
-        # 'uWSGI' #doesnt work for me
+        'uwsgi'  # doesnt work for me
         ],
     python_requires='>=3.6',
     entry_points={
