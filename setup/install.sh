@@ -11,6 +11,6 @@ wget http://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_8GB.tgz; \
 tar -xzf minikraken_20171019_8GB.tgz; \
 rm minikraken_20171019_8GB.tgz; \
 cd minikraken_20171019_8GB; \
-wget https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt; \
+wget -q https://ccb.jhu.edu/software/bracken/dl/minikraken_8GB_100mers_distrib.txt; \
 cd ../../bifrost; \
 ln -s ../bifrost_resources resources; \

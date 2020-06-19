@@ -58,3 +58,16 @@ Possibilities:
 ## Anonymizer approach
 
 New DB table with mapping from ID to name, names are internally saved as ID both in DB and in server a mirrored directory could exist linking the IDs to dynamix names which the DB mapping table would provide, updating the table should update the name in all locations then. If you don't have a mapping a name would be assigned. If you want to export data you could choose which to anonymize and which to leave.
+
+## Why bifrost and mongo db for beOne
+The data structure for the database has been determined to be based off of Bifrost, a platform developed and in use internally at  SSI. The main difference between SSI’s implementation and more standard DB implementations is the use of a noSQL database (mongoDB) compared to a relational database (like SQL), the notable differences in this are:
+- Structure is enforced via software and is not intrinsic to the database. This allows us to store results in different formats depending on the analysis being done, without being tied to a particular pre-defined format.
+- The data model is flexible. This means that the database will not enforce a specific schema. Changes in the schema can be made if required by new features or new types of analysis. To avoid issues a general base structure has been decided that accommodates the data model and improves performance.
+- Data is stored in collections with each entry being a document. The relationships are not intrinsic to the database itself. This means the relationships are enforced by queries and software.
+- Due to the data being stored in collections and documents users can choose not to share information by not providing access to certain documents. This enables us fine level control that we plan to utilize for our data sharing model which will not have to be software controlled.
+- Additional data protection for mongoDB can be done on the field level through encryption so that even DB admins cannot see the decrypted data
+The sharing model that we plan on implementing is decentralized meaning we want each collaborator to control what they have privately and what is made public. A relational DB approach would require that queries must be done against the whole of the database which would make decentralizing more challenging. Here we plan on each institute having a private DB and a public DB and that the queries are done against your own private DB and other’s public DB. As the data is stored in documents and collections we can gather the results from multiple databases then interpolate their relationships after.
+
+Additional benefits of using specifically the bifrost implementation of the database are:
+- The development has already been done on the Bifrost platform for many aspects
+- It is under active development at SSI https://github.com/ssi-dk/bifrost and is ready to be implemented at the other collaborators

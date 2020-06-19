@@ -5,7 +5,6 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - snakemake>=5.2
   - python
   - pandas
   - cyvcf2
@@ -21,7 +20,7 @@ dependencies:
   - pip
   - uwsgi # Required for the web server
   - mongodb # Required for the DB mode
-  - python-magic
   - pip:
     - dash-table-experiments
-    - dash_scroll_up
+    - dash-bootstrap-components
+    - dash-caching
