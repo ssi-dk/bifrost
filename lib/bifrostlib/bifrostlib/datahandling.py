@@ -233,7 +233,7 @@ class Run:
             runs = mongo_interface.get_runs(names=[name])
             if len(runs) == 1:
                 self._dict = runs[0]
-            elif runs is None:
+            elif not runs:
                 self._dict = {
                     "name": name,
                     "type": "default",
