@@ -1,6 +1,6 @@
-FROM ssidk/bifrost-base:2.0.6
+FROM ssidk/bifrost-base:2.0.7
 
-ARG version="2.0.6"
+ARG version="2.0.7"
 ARG last_updated="08/06/2020"
 ARG name="run_launcher"
 ARG full_name="bifrost-${name}"
