@@ -363,10 +363,10 @@ def delete_component(component_id):
 
 
 # /species
-def get_mlst_species_DB(file_yaml):
+def get_mlst_species_DB(file_yaml, species_field="species"):
     with open(file_yaml, "r") as file_handle:
         sample = yaml.load(file_handle)
-        species = sample["properties"].get("species", None)
+        species = sample["properties"].get(species_field, None)
         return mongo_interface.query_mlst_species(species)
 
 
