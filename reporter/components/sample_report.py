@@ -415,14 +415,14 @@ def html_sample_tables(sample_data, **kwargs):
                         plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("MLST ({})".format(mlst_detected_db),
+                        html.H6("MLST ({})".format(mlst_db),
                                 className="table-header"),
                         mlst_div
                     ], className="six columns")
                 ], className="row"),
                 html.Div([
                     html.Div([
-                        html.H6("MLST on detected species ({})".format(mlst_db),
+                        html.H6("MLST on detected species ({})".format(mlst_detected_db),
                                 className="table-header"),
                         mlst_detected_div
                     ], className="six columns")
