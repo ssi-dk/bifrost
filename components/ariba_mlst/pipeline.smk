@@ -125,7 +125,7 @@ rule ariba_mlst:
             # Detected species hack
             mlst_detected_species_DB_name = datahandling.get_mlst_species_DB(sample, "detected_species")
             if mlst_species_DB != mlst_detected_species_DB_name and mlst_detected_species_DB_name is not None:
-                datahandling.log(log_out, "(provided) Species and detected species mismatch. Running mlst for both."))
+                datahandling.log(log_out, "(provided) Species and detected species mismatch. Running mlst for both.")
                 mlst_detected_species_DB = os.path.join(os.path.dirname(workflow.snakefile), db_component["mlst_database_path"], mlst_detected_species_DB_name)
                 datahandling.log(log_out, "mlst detected species path: {}\n".format(mlst_detected_species_DB))
                 shell("ariba run {} {} {} {} 1> {} 2> {}".format(
