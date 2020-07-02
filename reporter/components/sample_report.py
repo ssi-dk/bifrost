@@ -442,7 +442,7 @@ def html_sample_tables(sample_data, **kwargs):
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type = mlst_text_split[0].split(":",1)[1]
     if "ariba_mlst.mlst_report_detected" in sample_data and sample_data["ariba_mlst.mlst_report_detected"] is not None:
-        mlst_report_string = sample_data["ariba_mlst.mlst_report"]
+        mlst_report_string = sample_data["ariba_mlst.mlst_report_detected"]
         if "," in mlst_report_string:
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type_detected = mlst_text_split[0].split(":", 1)[1]
