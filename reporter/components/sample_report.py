@@ -357,6 +357,35 @@ def html_sample_tables(sample_data, **kwargs):
 
     mlst_db = sample_data.get("ariba_mlst.mlst_db", "")
 
+    # Detected species mlst hack
+    mlst_detected_data = sample_data.get(
+        'ariba_mlst.mlst_report_detected', "")
+    if type(mlst_detected_data) == str and len(mlst_detected_data):
+        resresults = True
+        mlst_detected_dict = {}
+        mlst_detected_fields = mlst_detected_data.split(",")
+        for field in mlst_detected_fields:
+            key, value = field.split(":")
+            mlst_detected_dict[key] = value
+
+        columns = [{"name": i, "id": i} for i in mlst_detected_dict.keys()]
+        mlst_detected_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+                columns=columns,
+                data=[mlst_detected_dict],
+                page_action='none'
+            ), className="grey-border")
+    else:
+        mlst_detected_div = html.P("Not run (detected species same as provided, or detected has no MLST schema).")
+
+    mlst_detected_db = sample_data.get("ariba_mlst.mlst_db_detected", "")
+    # End detected species mlst hack
+
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if (sample_data.get("ariba_resfinder.status", "") == "Success" or
         sample_data.get("ariba_plasmidfinder.status", "") == "Success" or
@@ -386,8 +415,16 @@ def html_sample_tables(sample_data, **kwargs):
                         plasmidfinder_div
                     ], className="six columns"),
                     html.Div([
-                        html.H6("MLST ({})".format(mlst_db), className="table-header"),
+                        html.H6("MLST ({})".format(mlst_detected_db),
+                                className="table-header"),
                         mlst_div
+                    ], className="six columns")
+                ], className="row")
+                html.Div([
+                    html.Div([
+                        html.H6("MLST on detected species ({})".format(mlst_db),
+                                className="table-header"),
+                        mlst_detected_div
                     ], className="six columns")
                 ], className="row")
             ])
@@ -404,7 +441,13 @@ def html_sample_tables(sample_data, **kwargs):
         if "," in mlst_report_string:
             mlst_text_split = mlst_report_string.split(",", 1)
             mlst_type = mlst_text_split[0].split(":",1)[1]
-
+    if "ariba_mlst.mlst_report_detected" in sample_data and sample_data["ariba_mlst.mlst_report_detected"] is not None:
+        mlst_report_string = sample_data["ariba_mlst.mlst_report"]
+        if "," in mlst_report_string:
+            mlst_text_split = mlst_report_string.split(",", 1)
+            mlst_type_detected = mlst_text_split[0].split(":", 1)[1]
+            if mlst_type_detected != mlst_type:
+                mlst_type += " (detected species: " + mlst_type_detected + ")"
 
     return html.Div([
         html.Div([
