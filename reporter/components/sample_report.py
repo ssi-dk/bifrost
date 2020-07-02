@@ -453,7 +453,7 @@ def generate_sample_folder(sample_ids):
         try:
             assemblies_script += "#{}\nln -s {} {}\n".format(
                 sample["name"],
-                assembly["path"] + "/contigs.fasta",
+                assembly["path"] + "/{}.fasta".format(sample["name"]),
                 sample["name"] + "_contigs.fasta")
         except KeyError as e:
             assemblies_errors.append("Missing data for sample: {} - {}. In database:\n{}".format(
