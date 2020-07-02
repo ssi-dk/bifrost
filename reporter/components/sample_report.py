@@ -419,7 +419,7 @@ def html_sample_tables(sample_data, **kwargs):
                                 className="table-header"),
                         mlst_div
                     ], className="six columns")
-                ], className="row")
+                ], className="row"),
                 html.Div([
                     html.Div([
                         html.H6("MLST on detected species ({})".format(mlst_db),
