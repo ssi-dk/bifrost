@@ -1,0 +1,19 @@
+name: Build and push Docker images
+on:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v1.1.0
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }} # optional
+        password: ${{ secrets.DOCKER_PASSWORD }} # optional
+        repository: ssidk/bifrost-base
+        tags: latest
+        path: components/base # optional, default is .
