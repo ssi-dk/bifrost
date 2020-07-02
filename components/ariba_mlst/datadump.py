@@ -58,23 +58,24 @@ def script__datadump_ariba_mlst(folder, sample, sample_yaml):
 
     # Detected species hack
     mlst_database_detected = datahandling.get_mlst_species_DB(sample_yaml, "detected_species")
-    datadump_dict["results"]["mlst_db_detected"] = mlst_database_detected
-    datadump_dict["summary"]["mlst_db_detected"] = mlst_database_detected
+    if mlst_database_detected != mlst_database and mlst_database_detected is not None:
+        datadump_dict["results"]["mlst_db_detected"] = mlst_database_detected
+        datadump_dict["summary"]["mlst_db_detected"] = mlst_database_detected
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst_detected/report.tsv")
+        datadump_dict = extract_tsv(
+            datadump_dict, folder, "ariba_mlst_detected/report.tsv")
 
-    datadump_dict = extract_tsv(
-        datadump_dict, folder, "ariba_mlst_detected/mlst_report.tsv")
+        datadump_dict = extract_tsv(
+            datadump_dict, folder, "ariba_mlst_detected/mlst_report.tsv")
 
-    # Summary:
-    try:
-        datadump_dict["summary"]["mlst_report_detected"] = ",".join(
-            ["{}:{}".format(key, val) for key, val in
-                datadump_dict["results"]["ariba_mlst_detected/mlst_report_tsv"]["values"][0].items()])
-    except KeyError as e:
-        datadump_dict["summary"]["mlst_report_detected"] = "KeyError: {}".format(
-            e)
+        # Summary:
+        try:
+            datadump_dict["summary"]["mlst_report_detected"] = ",".join(
+                ["{}:{}".format(key, val) for key, val in
+                    datadump_dict["results"]["ariba_mlst_detected/mlst_report_tsv"]["values"][0].items()])
+        except KeyError as e:
+            datadump_dict["summary"]["mlst_report_detected"] = "KeyError: {}".format(
+                e)
     # End detected species hack
 
     datahandling.save_sample_component(datadump_dict, sample)
