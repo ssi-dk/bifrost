@@ -28,3 +28,6 @@
 [submodule "components/ariba_plasmidfinder"]
 	path = components/ariba_plasmidfinder
 	url = git@github.com:ssi-dk/bifrost-ariba_plasmidfinder.git
+[submodule "components/run_launcher"]
+	path = components/run_launcher
+	url = git@github.com:ssi-dk/bifrost-run_launcher.git
