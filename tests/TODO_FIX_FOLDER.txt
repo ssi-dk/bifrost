@@ -1,0 +1,3 @@
+This folder is out of date and isn't doing anything currently. It will house the tests we want to 
+test against. This should contain all general tests. Tests for components should reside with each
+component.
