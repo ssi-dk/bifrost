@@ -1,9 +1,0 @@
-{
-    "SampleID": "sample_name",
-    "SupplyingLab": "group",
-    "Initials": "emails",
-    "ExperimentName": "run_name",
-    "Priority": "priority",
-    "Organism": "provided_species",
-    "Comments": "Comments"
-}

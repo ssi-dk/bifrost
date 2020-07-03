@@ -1,3 +1,0 @@
-sample_name	provided_species	run_name	priority	comments	optional_field_name	another_optional_field
-Sample1	E. coli	run_A	1	Looks good	Option1	Some option
-Sample2	S. aureus	run_A	2	Looks good	Option2	Another option
