@@ -475,17 +475,21 @@ def update_selected_samples(n_clicks, param_store, collection_name,
     if collection_name is not None:
         run_names = [collection_name]
 
+    if (date_range[0] is None and
+            date_range[1] is None):
+        date_range = None
+
     if (n_clicks == 0 and
         sample_names == [] and
         run_names == [] and
         group_list == [] and
         species_list == [] and
         qc_list == [] and
-        date_range[0] == None and
-        date_range[1] == None):
+        date_range is None):
         samples = prev_sample_store
     else:
         
+
         samples = import_data.filter_all(
             species=species_list, species_source=species_source,
             group=group_list, qc_list=qc_list,
