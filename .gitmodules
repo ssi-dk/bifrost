@@ -31,3 +31,6 @@
 [submodule "components/run_launcher"]
 	path = components/run_launcher
 	url = git@github.com:ssi-dk/bifrost-run_launcher.git
+[submodule "components/assembly_qc_type"]
+	path = components/assembly_qc_type
+	url = git@github.com:ssi-dk/bifrost-assembly_qc_type.git
