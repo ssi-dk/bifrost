@@ -163,7 +163,7 @@ feedback_component = {
     "name": "user_feedback",
     "version": "1.0",
     "details": {
-        "category": "stamper",
+        "category": "user_feedback",
         "schema_version": 2,
         "target": "sample",
         "type": "stamper",

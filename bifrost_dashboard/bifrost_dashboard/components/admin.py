@@ -2,10 +2,11 @@ import os
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
-
+import yaml
+config = yaml.safe_load(open(os.environ["BIFROST_DASH_CONFIG"]))
 
 def html_qc_expert_form():
-    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+    if (config["feedback_enabled"]):
         return html.Div([
             dbc.Row([
                 dbc.Col(html.H5("Submit Supplying Lab Feedback:",
@@ -37,25 +38,32 @@ def html_qc_expert_form():
 
 
 def sample_radio_feedback(sample, n_sample):
-    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+    if (config["feedback_enabled"]):
         return (html.Div([
-            html.Label("Supplying Lab Feedback:", className="mr-4",
-                       style={'display': 'inline-block'}),
-            dcc.RadioItems(
-                options=[
-                    {'label': ' Accept', 'value': 'OK_{}'.format(
-                                        sample["_id"])},
-                    {'label': ' Resequence', 'value': 'CF_{}'.format(
-                        sample["_id"])},
-                    {'label': ' Other', 'value': 'O_{}'.format(
-                        sample["_id"])},
-                    {'label': ' No action', 'value': 'noaction'}
-                ],
-                value='noaction',
-                id="sample-radio-{}".format(n_sample),
-                labelStyle={
-                    'margin': '0 0.5rem 0.5rem 0'},
-                style={'display': 'inline-block'}),
+            html.Div([
+                html.Label("Supplying Lab Feedback:", className="mr-4",
+                       style={'display': 'inline-block'}, htmlFor=f"sample_radio-{n_sample}"),
+                dcc.RadioItems(
+                    options=[
+                        {'label': ' Accept', 'value': 'OK_{}'.format(
+                                            sample["_id"])},
+                        {'label': ' Resequence', 'value': 'CF_{}'.format(
+                            sample["_id"])},
+                        {'label': ' Other', 'value': 'OT_{}'.format(
+                            sample["_id"])},
+                        {'label': ' No action', 'value': 'noaction'}
+                    ],
+                    value='noaction',
+                    id="sample-radio-{}".format(n_sample),
+                    labelStyle={
+                        'margin': '0 0.5rem 0.5rem 0'},
+                    style={'display': 'inline-block'})
+            ]),
+            html.Div([
+                html.Label("Reason:", htmlFor=f"sample_reason-{n_sample}", className="mr-4",
+                           style={'display': 'inline-block'}),
+                dcc.Input(id=f"sample_reason-{n_sample}", type="text")
+            ])
         ]))
     else:
         return None

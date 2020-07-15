@@ -49,7 +49,7 @@ external_stylesheets = [
     dbc.themes.BOOTSTRAP
 ]
 assets = os.path.dirname(os.path.abspath(__file__)) + "/data/assets"
-app = dash.Dash(__name__,
+app = dash.Dash("bifrost_dashboard",
     assets_folder=assets,
     external_stylesheets=external_stylesheets,
     external_scripts=external_scripts
@@ -520,6 +520,7 @@ def update_selected_samples(n_clicks, param_store, collection_name,
 def update_filter_table(_, sample_store):
     if len(sample_store) == 0:
         return ["0", [{}], False]
+    print('s',sample_store)
     sample_ids = list(
         map(lambda x: x["_id"], sample_store))
 
@@ -672,19 +673,24 @@ def display_confirm_feedback(button):
     Output("qc-feedback", "children"),
     [Input("qc-confirm", "submit_n_clicks")],
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
-                                     for n in range(SAMPLE_PAGESIZE)]
+                                     for n in range(SAMPLE_PAGESIZE)] +
+                                    [State("sample_reason-{}".format(n), "value")
+                                     for n in range(SAMPLE_PAGESIZE)],
+    prevent_initial_call=True
 )
 def submit_user_feedback(_, user, *args):
-    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+    if (config["feedback_enabled"]):
         feedback_pairs = []
-        for val in args:
+        for i in range(int(len(args)/2)):
+            val = args[i]
+            reason = args[int(len(args)/2) + i]
             if val != "noaction":
                 if val.startswith("OK_"):
-                    feedback_pairs.append((val[3:], "OK"))
+                    feedback_pairs.append((val[3:], "OK", reason))
                 elif val.startswith("CF_"):
-                    feedback_pairs.append((val[3:], "core facility"))
+                    feedback_pairs.append((val[3:], "resequence", reason))
                 elif val.startswith("OT_"):
-                    feedback_pairs.append((val[3:], "other"))
+                    feedback_pairs.append((val[3:], "other", reason))
         if len(feedback_pairs) > 0:
             email_config = {
                 "email_from": config["email_from"],

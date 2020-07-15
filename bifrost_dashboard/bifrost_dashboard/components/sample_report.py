@@ -178,7 +178,7 @@ def html_organisms_table(sample_data, **kwargs):
     ], **kwargs)
 
 def html_test_tables(sample_data):
-    qc_to_check = ["stamper"]
+    qc_to_check = ["stamper", "user_feedback"]
     rows = []
     for key, value in sample_data.items():
         if key.startswith("properties.stamper.summary.whats_my_species") \
