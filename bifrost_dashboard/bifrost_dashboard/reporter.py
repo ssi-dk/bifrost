@@ -542,7 +542,8 @@ def update_filter_table(_, sample_store):
      State("form-species-source", "value"),
      State("group-list", "value"),
      State("qc-list", "value"),
-     State("samples-form", "value")]
+     State("samples-form", "value")],
+    prevent_initial_call=True
 )
 def generate_download_button(download_button,
                             run_names, species_list,
@@ -655,14 +656,16 @@ def update_rerun_table_f(active, table_data, n_click_comp, n_click_samp,
     [Output("rerun-output", "children"),
      Output("rerun-output", "is_open")],
     [Input("rerun-button", "n_clicks")],
-    [State("pipeline-rerun", "derived_viewport_data")]
+    [State("pipeline-rerun", "derived_viewport_data")],
+    prevent_initial_call=True
 )
 def rerun_components_button_f(n_clicks, data):
-    return rerun_components_button(n_clicks, data, config["rerun_conf"])
+    return rerun_components_button(n_clicks, data, config["rerun"])
 
 
 @app.callback(Output('qc-confirm', 'displayed'),
-              [Input('feedback-button', 'n_clicks_timestamp')])
+              [Input('feedback-button', 'n_clicks_timestamp')],
+              prevent_initial_call=True)
 def display_confirm_feedback(button):
     if button is not None:
         return True

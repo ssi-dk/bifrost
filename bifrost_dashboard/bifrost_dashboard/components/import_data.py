@@ -49,7 +49,7 @@ def filter_all(species=None, species_source=None, group=None,
                date_range=None,
                pagination=None,
                projection=None):
-    return pd.io.json.json_normalize(bifrostapi.filter(
+    return pd.json_normalize(bifrostapi.filter(
         species=species,
         species_source=species_source,
         group=group,
@@ -206,10 +206,10 @@ def send_mail(sample_info, user, email_config):
     msg['To'] = email_config["email_to"]
 
     email_text = ('Automatic message:\nUser "{}" has changed the status of the following samples:\n'
-                  '\nSample name                Old status            New status            Reason            Run name\n').format(
+                  '\nSample name                Previous status            New status            Reason            Run name\n').format(
         user)
     email_html = ('<html><body>Automatic message:\nUser "{}" has changed the status of the following samples:\n'
-                  '\n<pre>Sample name                Old status            New status            Reason            Run name\n').format(
+                  '\n<pre>Sample name                Previous status            New status            Reason            Run name\n').format(
         user)
     table = ""
     for pair in sample_info:
