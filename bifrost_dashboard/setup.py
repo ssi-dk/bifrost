@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bifrost-dashboard',
-    version='0.0.1',
+    version='0.0.3',
     description='Dashboard for displaying bifrost information',
     url='https://github.com/ssi-dk/bifrost',
     author="Martin Basterrechea",

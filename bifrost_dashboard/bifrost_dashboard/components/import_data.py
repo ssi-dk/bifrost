@@ -49,7 +49,7 @@ def filter_all(species=None, species_source=None, group=None,
                date_range=None,
                pagination=None,
                projection=None):
-    return pd.io.json.json_normalize(bifrostapi.filter(
+    return pd.json_normalize(bifrostapi.filter(
         species=species,
         species_source=species_source,
         group=group,
@@ -79,7 +79,7 @@ def get_last_runs(run=None, n=12, runtype=None):
     return bifrostapi.get_last_runs(run, n, runtype)
 
 
-def create_feedback_s_c(user, sample, value):
+def create_feedback_s_c(user, sample, value, reason):
     if user == "":
         raise ValueError("Missing user value")
     component = get_component(name="user_feedback", version="1.0")
@@ -88,7 +88,7 @@ def create_feedback_s_c(user, sample, value):
     d = datetime.utcnow()
     now = d.replace(microsecond=math.floor(d.microsecond/1000)*1000)
 
-    if value not in ("OK", "other", "core facility"):
+    if value not in ("OK", "other", "resequence"):
         raise ValueError("Feedback value {} not valid".format(value))
 
     if value == "OK":
@@ -102,7 +102,7 @@ def create_feedback_s_c(user, sample, value):
             "display_name": "User QC feedback",
             "value": value,
             "status": status,
-            "reason": user,  # for now its just user
+            "reason": reason,
             "user": user
         }
     }
@@ -140,24 +140,25 @@ def add_user_feedback_to_properties(sample, s_c):
     """
     Adds/updates user feedback to sample properties
     """
-    stamper = sample.get("properties", {}).get("stamper", {})
-    stamper["component"] = s_c["properties"]["component"]
-    summary = stamper.get("summary", {})
+    stamp_result = {
+        "component": {"_id": s_c["properties"]["component"]["_id"]},
+        "summary": s_c["properties"]["summary"]
+    }
 
+    summary = sample.get("properties", {}).get("stamper", {}).get("summary", {})
     old_value = summary.get("stamp").get("value")
 
-    summary["stamp"] = s_c["properties"]["summary"]["stamp"]
     sample["properties"] = sample.get("properties", {})
-    sample["properties"]["stamper"] = stamper
+    sample["properties"]["user_feedback"] = stamp_result
     return sample, old_value
 
 
-def add_user_feedback(user, sample_id, value):
+def add_user_feedback(user, sample_id, value, reason):
     """
     Submits user feedback to a sample
     """
     sample = bifrostapi.get_sample(ObjectId(sample_id))
-    s_c = create_feedback_s_c(user, sample, value)
+    s_c = create_feedback_s_c(user, sample, value, reason)
     sample, old_value = add_user_feedback_to_properties(sample, s_c)
     bifrostapi.save_sample_component(s_c)
     bifrostapi.save_sample(sample)
@@ -169,12 +170,12 @@ def add_batch_user_feedback_and_mail(feedback_pairs, user, email_config):
     Main function called to send sample QC feedback 
     """
     email_pairs = []
-    for sample_id, value in feedback_pairs:
-        name, old_value = add_user_feedback(user, sample_id, value)
+    for sample_id, value, reason in feedback_pairs:
+        name, old_value = add_user_feedback(user, sample_id, value, reason)
         runs = bifrostapi.get_sample_runs([ObjectId(sample_id)])
         run_names = [run["name"] for run in runs]
-        if "fail:core facility" in (old_value, value):
-            email_pairs.append(name, old_value, value, run_names)
+        if "fail:resequence" in (old_value, value):
+            email_pairs.append(name, old_value, value, reason, run_names)
     send_mail(email_pairs, user, email_config)
 
 
@@ -205,15 +206,15 @@ def send_mail(sample_info, user, email_config):
     msg['To'] = email_config["email_to"]
 
     email_text = ('Automatic message:\nUser "{}" has changed the status of the following samples:\n'
-                  '\nSample name                Old status            New status            Run name\n').format(
+                  '\nSample name                Previous status            New status            Reason            Run name\n').format(
         user)
     email_html = ('<html><body>Automatic message:\nUser "{}" has changed the status of the following samples:\n'
-                  '\n<pre>Sample name                Old status            New status            Run name\n').format(
+                  '\n<pre>Sample name                Previous status            New status            Reason            Run name\n').format(
         user)
     table = ""
     for pair in sample_info:
-        table += "{:27s}{:22s}{:22s}{}\n".format(
-            pair[0], pair[1], pair[2], ",".join(pair[3]))
+        table += "{:27s}{:22s}{:22s}{:22s}{}\n".format(
+            pair[0], pair[1], pair[2], pair[3], ",".join(pair[4]))
     email_text += table
     email_html += table + "</pre></body></html>"
     msg.attach(MIMEText(email_text, 'plain'))

@@ -304,7 +304,7 @@ def pipeline_report_data(sample_data):
 
 
 def rerun_components_button(button, table_data, rerun_conf):
-    if button == 0:
+    if button == 0 or table_data is None:
         return "", False
     out = []
     to_rerun = {}

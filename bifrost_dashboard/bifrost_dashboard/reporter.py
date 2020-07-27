@@ -49,7 +49,7 @@ external_stylesheets = [
     dbc.themes.BOOTSTRAP
 ]
 assets = os.path.dirname(os.path.abspath(__file__)) + "/data/assets"
-app = dash.Dash(__name__,
+app = dash.Dash("bifrost_dashboard",
     assets_folder=assets,
     external_stylesheets=external_stylesheets,
     external_scripts=external_scripts
@@ -520,6 +520,7 @@ def update_selected_samples(n_clicks, param_store, collection_name,
 def update_filter_table(_, sample_store):
     if len(sample_store) == 0:
         return ["0", [{}], False]
+    print('s',sample_store)
     sample_ids = list(
         map(lambda x: x["_id"], sample_store))
 
@@ -541,7 +542,8 @@ def update_filter_table(_, sample_store):
      State("form-species-source", "value"),
      State("group-list", "value"),
      State("qc-list", "value"),
-     State("samples-form", "value")]
+     State("samples-form", "value")],
+    prevent_initial_call=True
 )
 def generate_download_button(download_button,
                             run_names, species_list,
@@ -654,14 +656,16 @@ def update_rerun_table_f(active, table_data, n_click_comp, n_click_samp,
     [Output("rerun-output", "children"),
      Output("rerun-output", "is_open")],
     [Input("rerun-button", "n_clicks")],
-    [State("pipeline-rerun", "derived_viewport_data")]
+    [State("pipeline-rerun", "derived_viewport_data")],
+    prevent_initial_call=True
 )
 def rerun_components_button_f(n_clicks, data):
-    return rerun_components_button(n_clicks, data, config["rerun_conf"])
+    return rerun_components_button(n_clicks, data, config["rerun"])
 
 
 @app.callback(Output('qc-confirm', 'displayed'),
-              [Input('feedback-button', 'n_clicks_timestamp')])
+              [Input('feedback-button', 'n_clicks_timestamp')],
+              prevent_initial_call=True)
 def display_confirm_feedback(button):
     if button is not None:
         return True
@@ -672,19 +676,24 @@ def display_confirm_feedback(button):
     Output("qc-feedback", "children"),
     [Input("qc-confirm", "submit_n_clicks")],
     [State("qc-user-1", "value")] + [State("sample-radio-{}".format(n), "value")
-                                     for n in range(SAMPLE_PAGESIZE)]
+                                     for n in range(SAMPLE_PAGESIZE)] +
+                                    [State("sample_reason-{}".format(n), "value")
+                                     for n in range(SAMPLE_PAGESIZE)],
+    prevent_initial_call=True
 )
 def submit_user_feedback(_, user, *args):
-    if ("REPORTER_ADMIN" in os.environ and os.environ["REPORTER_ADMIN"] == "True"):
+    if (config["feedback_enabled"]):
         feedback_pairs = []
-        for val in args:
+        for i in range(int(len(args)/2)):
+            val = args[i]
+            reason = args[int(len(args)/2) + i]
             if val != "noaction":
                 if val.startswith("OK_"):
-                    feedback_pairs.append((val[3:], "OK"))
+                    feedback_pairs.append((val[3:], "OK", reason))
                 elif val.startswith("CF_"):
-                    feedback_pairs.append((val[3:], "core facility"))
+                    feedback_pairs.append((val[3:], "resequence", reason))
                 elif val.startswith("OT_"):
-                    feedback_pairs.append((val[3:], "other"))
+                    feedback_pairs.append((val[3:], "other", reason))
         if len(feedback_pairs) > 0:
             email_config = {
                 "email_from": config["email_from"],
