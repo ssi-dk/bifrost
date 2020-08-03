@@ -322,7 +322,7 @@ class SampleComponentObj:
         self.initialized()
 
     def load(self):
-        return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
+        return (self.sample_db["name"], self.component_db["name"], self.component_db["install"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
         summary = self.sample_component_db["properties"]["summary"]
