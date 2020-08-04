@@ -322,7 +322,8 @@ class SampleComponentObj:
         self.initialized()
 
     def load(self):
-        return (self.sample_db["name"], self.component_db["name"], self.component_db["install"], self.component_db["options"], self.component_db["resources"])
+        #HACK: NOTE: Changed name to display name, obviously more needs to change. Leaving this here as a temp fix as the main fix is refactoring this object
+        return (self.sample_db["name"], self.component_db["display_name"], self.component_db["install"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
         summary = self.sample_component_db["properties"]["summary"]
