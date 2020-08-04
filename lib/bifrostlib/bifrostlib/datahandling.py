@@ -314,7 +314,7 @@ class SampleComponentObj:
         if self.sample_component_db == None:
             save_sample_component({
                 "sample": {"_id": self.sample_db["_id"], "name": self.sample_db["name"]},
-                "component": {"_id": self.component_db["_id"], "name": self.component_db["name"]},
+                "component": {"_id": self.component_db["_id"], "name": self.component_db["display_name"]},
                 "path": path,
                 "status": "initialized"
             })
@@ -382,7 +382,7 @@ class SampleComponentObj:
                 else:
                     no_failures = False
         if no_failures:
-            open(os.path.join(self.component_db["name"], output_file), "w+").close()
+            open(os.path.join(self.component_db["display_name"], output_file), "w+").close()
         else:
             self.requirements_not_met()
 
@@ -400,7 +400,7 @@ class SampleComponentObj:
                 component["status"] = status
                 status_set = True
         if not status_set:
-            self.sample_db["components"].append({"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status})
+            self.sample_db["components"].append({"_id": self.component_db["_id"], "name":self.component_db["display_name"], "status":status})
         self.save()
 
     def requirements_not_met(self):
@@ -431,7 +431,7 @@ class SampleComponentObj:
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
-        return (self.component_db["name"], self.component_db["options"], self.component_db["resources"])
+        return (self.component_db["display_name"], self.component_db["options"], self.component_db["resources"])
 
     def rule_run_cmd(self, command, log):
         self.write_log_out(log, "Running:{}\n".format(command))
@@ -470,7 +470,7 @@ class SampleComponentObj:
         self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
 
     def get_component_name(self):
-        return self.component_db["name"]
+        return self.component_db["display_name"]
 
     def run_data_dump_on_function(self, data_extraction_function, log=None):
         (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
@@ -485,7 +485,7 @@ class SampleComponentObj:
         self.write_log_err(log, str(traceback.format_exc()))
         self.save()
         self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
-        open(os.path.join(self.component_db["name"], output_file), "w+").close()
+        open(os.path.join(self.component_db["display_name"], output_file), "w+").close()
         self.write_log_out(log, "Done datadump\n")
         self.success()
 
