@@ -4,6 +4,7 @@
 name: Upload Python Package to PyPI and TestPyPI
 on:
   push:
+  release:
 
 jobs:
     build-n-publish:
@@ -29,6 +30,7 @@ jobs:
         with: 
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
+          packages_dir: lib/bifrostlib/dist
           repository_url: https://test.pypi.org/legacy/
       - name: Publish to PyPI
         if: startsWith(github.ref, 'refs/tags')
@@ -36,3 +38,4 @@ jobs:
         with: 
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
+          packages_dir: lib/bifrostlib/dist
