@@ -33,7 +33,6 @@ jobs:
           packages_dir: lib/bifrostlib/dist
           repository_url: https://test.pypi.org/legacy/
       - name: Publish to PyPI
-        if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.3.1
         with: 
           user: ${{ secrets.PYPI_USERNAME }}
