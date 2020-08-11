@@ -296,6 +296,8 @@ class Run:
 #     def __init__(self, sample_id: str, component_id: str) -> None:
 #         component = Component().load(component_id)
 #         sample = Sample().load(sample_id)
+#         categories = list[Category] #summary output for each category it belongs to, under properties and report, results would be cumulative,
+#                                     # Category/Property object would have a summary and report, component id is uneccesary as it's from the same component
 #         _dict = {
 #             "_id": None,
 #             "component": {
@@ -458,7 +460,8 @@ class SampleComponentObj:
             }
         self.sample_component_db["results"] = {}
         if self.component_db["db_values_changes"]["sample"].get("report", None) is not None:
-            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+            # HACK: Right now we only support 1 category, thus the index 0 ref, when this is refactored we can support multiple. Config is already being adjusted to handle multiple
+            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["category"][0]] 
         else:
             self.sample_component_db["report"] = {}
         self.write_log_out(log, "Starting datadump\n")
@@ -475,12 +478,13 @@ class SampleComponentObj:
         (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
 
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
-        self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
+        # HACK: Right now we only support 1 category, thus the index 0 ref, when this is refactored we can support multiple. Config is already being adjusted to handle multiple
+        self.sample_db["properties"][self.component_db["category"][0]] = self.sample_component_db["properties"]
         report_data = generate_report_function(self)
         if report_data is not None:
-            self.sample_db["report"][self.component_db["details"]["category"]] = self.sample_component_db["report"]
-            self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
-            assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
+            self.sample_db["report"][self.component_db["category"][0]] = self.sample_component_db["report"]
+            self.sample_db["report"][self.component_db["category"][0]]["data"] = report_data
+            assert(type(self.sample_db["report"][self.component_db["category"][0]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
         self.save()
         self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
