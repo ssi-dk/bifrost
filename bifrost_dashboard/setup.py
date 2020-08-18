@@ -9,7 +9,8 @@ setup(
     author_email="mbas@ssi.dk",
     packages=find_packages(),
     package_data={
-        "bifrost_dashboard": ['data/assets/*.css', 'data/assets/*.js']
+        "bifrost_dashboard": ['data/assets/*.css', 'data/assets/*.js',
+                              'data/assets/img/*.png', 'data/assets/img/*.svg']
     },
     include_package_data=True,
     install_requires=[

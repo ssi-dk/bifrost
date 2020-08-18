@@ -25,8 +25,8 @@ def check_run_name(name):
     return bifrostapi.check_run_name(name)
 
 
-def get_run_list():
-    return bifrostapi.get_run_list()
+def get_run_list(run_type):
+    return bifrostapi.get_run_list(run_type)
 
 
 def get_group_list(run_name=None):

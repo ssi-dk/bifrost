@@ -1,38 +1,32 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import re
 import urllib.parse as urlparse
 import datetime
-from io import StringIO
 from flask_caching import Cache
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_auth
-import pandas as pd
 import numpy as np
-from bson import json_util
-import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
-from plotly import tools
-from dash.dependencies import Input, Output, State
+from dash.dependencies import ClientsideFunction, Input, Output, State
+import dash_table
 
-from flask import request   # To get client IP for pass/fail stamp
+
 import bifrostapi
 
 import bifrost_dashboard.components.import_data as import_data
-from bifrost_dashboard.components.table import html_table, html_td_percentage
 from bifrost_dashboard.components.filter import html_div_filter, generate_table, filter_update_run_options, filter_update_filter_values, html_filter_drawer, html_collection_selector, update_collection_button
 from bifrost_dashboard.components.sample_report import SAMPLE_PAGESIZE, sample_report, children_sample_list_report, samples_next_page
-from bifrost_dashboard.components.images import list_of_images, static_image_route, image_directory
 import bifrost_dashboard.components.global_vars as global_vars
 import bifrost_dashboard.components.admin as admin
 from bifrost_dashboard.run_checker import pipeline_report, rerun_components_button, update_rerun_table, pipeline_report_data
 from bifrost_dashboard.components.aggregate_report import aggregate_report, update_aggregate_fig, aggregate_species_dropdown
 from bifrost_dashboard.components.resequence_report import resequence_report
 from bifrost_dashboard.components.link_to_files import link_to_files, link_to_files_div
+import bifrost_dashboard.components.virtual_runs as virtual_runs
 
 import yaml
 config = yaml.safe_load(open(os.environ["BIFROST_DASH_CONFIG"]))
@@ -119,7 +113,6 @@ app.layout = html.Div([
     # To store url param values
     dcc.Store(id="sample-store", data=[], storage_type='session'),
     dcc.Store(id="param-store", data={}),
-    dcc.Store(id="removed-samples-store", data=None),
     dcc.Store(id="selected-collection", data=None),
     html.Ul(
         [
@@ -209,9 +202,20 @@ app.layout = html.Div([
                                 id="filter_toggle"
                             ),
                         ], className="col-4"),
+                        html.Div([
+                            html.Button(
+                                [
+                                    html.I(className="fas fa-shopping-cart fa-sm mr-2"),
+                                    html.Span(0, id="selection-count")
+                                ],
+                                className="btn btn-outline-secondary shadow-sm mx-auto d-block",
+                                id="selection-modal-open"
+                            ),
+                        ], className="col-4"),
                     ], className="row mb-4"),
                 ], id="samples-panel", className="d-none"),
                 html.Div(id="selected-view"),
+                virtual_runs.modal,
                 html.Footer([
                     "Created with 🔬 at SSI. Bacteria icons from ",
                     html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -342,11 +346,13 @@ def update_view(pathname, sample_store):
      Output("group-list", "options"),
      Output("species-list", "options")],
     [Input("form-species-source", "value"),
-    Input("selected-collection", "data")]
+    Input("selected-collection", "data"),
+    Input("form-run-show-custom", "value")
+    ]
 )
 @cache.memoize(timeout=cache_timeout)  # in seconds
-def update_run_options(form_species, selected_collection):
-    return filter_update_run_options(form_species, selected_collection)
+def update_run_options(form_species, selected_collection, run_type):
+    return filter_update_run_options(form_species, selected_collection, run_type)
 
 
 @app.callback(
@@ -520,7 +526,6 @@ def update_selected_samples(n_clicks, param_store, collection_name,
 def update_filter_table(_, sample_store):
     if len(sample_store) == 0:
         return ["0", [{}], False]
-    print('s',sample_store)
     sample_ids = list(
         map(lambda x: x["_id"], sample_store))
 
@@ -711,8 +716,93 @@ def submit_user_feedback(_, user, *args):
 def link_to_files_f(data):
     return link_to_files(data)
 
+app.clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='update_selection_count'
+    ),
+    Output("selection-count", "children"),
+    [Input("selected-samples-table", "data")],
+)
+
+app.clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='enable_selection_button'
+    ),
+    Output("add-selection-button", "disabled"),
+    [Input("datatable-ssi_stamper", "derived_viewport_selected_rows")]
+)
+
+@app.callback(
+    [Output("selected-samples-table", "data"),
+     Output("selection-modal-status", "children"),
+     Output("selection-modal-create", "disabled")],
+    [Input("add-selection-button", "n_clicks_timestamp"),
+     Input("selection-modal-create", "n_clicks_timestamp")],
+    [State("selected-samples-table", "data"),
+     State("datatable-ssi_stamper", "derived_viewport_selected_rows"),
+     State("datatable-ssi_stamper", "derived_viewport_data"),
+     State("virtual_run_name", "value")
+    ],
+    prevent_initial_call=True
+)
+def selected_samples_management(add_timestamp, create_timestamp, data, selected_rows, row_data, name):
+    if add_timestamp > create_timestamp:
+        if (selected_rows is not None and len(selected_rows)):
+            for e in selected_rows:
+                row = {
+                    "name": row_data[e]["name"],
+                    "id": row_data[e]["id"]
+                }
+                if (row not in data):
+                    data.append(row);
+        if len(data):
+            disabled = False
+        else:
+            disabled = True
+        return [data, None, disabled]
+    elif create_timestamp > add_timestamp:
+        message, disabled = virtual_runs.create_run(data, name)
+        return [[], message, disabled]
+    else:
+        if len(data):
+            disabled = False
+        else:
+            disabled = True
+        return [data, None, disabled]
 
 
+# app.clientside_callback(
+#     ClientsideFunction(
+#         namespace='clientside',
+#         function_name='open_close_selection_modal'
+#     ),
+#     [Output("selection-modal", "is_open"), Output("selection-modal-body", "children")],
+#     [Input("selection-modal-open", "n_clicks"), Input("selection-modal-close", "n_clicks")],
+#     [State("selection-modal", "is_open"),
+#      State("selected-samples", "data"),
+#     ]
+# )
+@app.callback(
+    Output("selection-modal", "is_open"),
+    [Input("selection-modal-open", "n_clicks"), Input("selection-modal-close", "n_clicks")],
+    [State("selection-modal", "is_open")]
+)
+def open_close_selection_modal(n1, n2, is_open):
+    if (n1 or n2):
+        return not is_open
+    
+    return is_open
+
+app.clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='fill_full_virtual_name'
+    ),
+    Output("virtual_run_full_name", "children"),
+    [Input("virtual_run_name", "value")],
+)
 
 server = app.server # Required for gunicorn
 

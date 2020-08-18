@@ -98,7 +98,7 @@ COLUMNS = [
     },
     {
         "name": "DB_ID",
-        "id": "_id"
+        "id": "id"
     },
     {
         "name": "Failed_tests",
