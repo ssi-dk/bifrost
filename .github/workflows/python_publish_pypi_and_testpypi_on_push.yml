@@ -31,6 +31,7 @@ jobs:
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
           packages_dir: lib/bifrostlib/dist
+          skip_existing: true
     build-n-publish-bifrost-dashboard:
       name: Publish Bifrost Dashboard 📦 to PyPI
       runs-on: ubuntu-latest
@@ -55,3 +56,4 @@ jobs:
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
           packages_dir: bifrost_dashboard/dist
+          skip_existing: true
