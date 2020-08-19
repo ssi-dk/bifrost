@@ -121,7 +121,7 @@ def html_filter_drawer():
                                                                     options=[
                                                                         {"label": " Routine",
                                                                          "value": "routine"},
-                                                                        {"label": "Custom",
+                                                                        {"label": " Custom",
                                                                          "value": "custom"},
                                                                     ],
                                                                     value="routine",
