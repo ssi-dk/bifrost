@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bifrost-dashboard',
-    version='0.0.3',
+    version='0.0.4',
     description='Dashboard for displaying bifrost information',
     url='https://github.com/ssi-dk/bifrost',
     author="Martin Basterrechea",
@@ -17,7 +17,7 @@ setup(
         # 'pymongo',
         'pandas',
         'dash',
-        'bifrostapi',
+        'bifrostapi==0.1.0',
         'Flask-Caching',
         'dash-auth',
         'requests',
