@@ -1,5 +1,3 @@
-from datetime import datetime as dt
-
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
@@ -119,6 +117,21 @@ def html_filter_drawer():
                                                             [
                                                                 dbc.Label(
                                                                     "Run", html_for="run-list"),
+                                                                dcc.RadioItems(
+                                                                    options=[
+                                                                        {"label": " Routine",
+                                                                         "value": "routine"},
+                                                                        {"label": "Custom",
+                                                                         "value": "custom"},
+                                                                    ],
+                                                                    value="routine",
+                                                                    labelStyle={
+                                                                        'margin': '0 0 0.5rem 0.5rem'},
+                                                                    id="form-run-show-custom",
+                                                                    style={
+                                                                        "display": "inline-block"}
+
+                                                                ),
                                                                 dcc.Dropdown(
                                                                     id="run-list",
                                                                     multi=True,
@@ -282,10 +295,12 @@ def html_div_filter():
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    # dbc.Button("Remove selected",
-                                    #            id="remove-selected",
-                                    #            n_clicks=0,
-                                    #            size="sm")
+                                    dbc.Button("Add to selection",
+                                               id="add-selection-button",
+                                               n_clicks=0,
+                                               n_clicks_timestamp=-1,
+                                               size="sm",
+                                               disabled=False)
                                 ]),
                             ], className="col-auto mr-auto"),
                             html.Div([
@@ -327,7 +342,7 @@ def html_div_filter():
                                 }
                             ],
                             fixed_rows={'headers': True},
-                            # row_selectable='multi',
+                            row_selectable='multi',
                             # filtering=True,  # Front end filtering
                             # sorting=True,
                             selected_rows=[],
@@ -367,16 +382,6 @@ def generate_table(tests_df):
 
     user_mask = tests_df[user_stamp_col] == "user_feedback"
     tests_df.loc[user_mask, qc_action] = "👤 " + tests_df.loc[user_mask, qc_action]
-
-    # user_stamp_col = "stamp.supplying_lab_check.value"
-    # # Overload user stamp to ssi_stamper
-    # if user_stamp_col in tests_df.columns:
-    #     user_OK_mask = tests_df[user_stamp_col] == "pass:OK"
-    #     tests_df.loc[user_OK_mask, qc_action] = "*OK"
-    #     user_sl_mask = tests_df[user_stamp_col] == "fail:supplying lab"
-    #     tests_df.loc[user_sl_mask, qc_action] = "*warning: supplying lab"
-    #     user_cf_mask = tests_df[user_stamp_col] == "fail:core facility"
-    #     tests_df.loc[user_cf_mask, qc_action] = "*core facility"
 
     test_cols = [col.split(".")[-2] for col in tests_df.columns
                  if (col.startswith("properties.stamper.summary.") and
@@ -436,7 +441,8 @@ def generate_table(tests_df):
         style_data_conditional += [{"if": {
             "column_id": qc_action, "filter": 'QC_action eq "{}"'.format(status)}, "backgroundColor": color}]
 
-    tests_df["_id"] = tests_df["_id"].astype(str)
+    tests_df = tests_df.rename({"_id": "id"}, axis="columns")
+    tests_df["id"] = tests_df["id"].astype(str)
 
     tests_df = tests_df.filter([c["id"] for c in COLUMNS])
 
@@ -444,9 +450,13 @@ def generate_table(tests_df):
 
 
 # callback
-def filter_update_run_options(form_species, selected_collection):
+def filter_update_run_options(form_species, selected_collection, run_type):
     # Runs
-    run_list = import_data.get_run_list()
+    if run_type == "custom":
+        run_type = ["project", "external", "virtual"]
+    else:
+        run_type = "routine"
+    run_list = import_data.get_run_list(run_type)
     run_options = [
         {
             "label": "{} ({})".format(run["name"],

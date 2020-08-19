@@ -2,21 +2,22 @@ from setuptools import setup, find_packages
 
 setup(
     name='bifrost-dashboard',
-    version='0.0.3',
+    version='0.0.4',
     description='Dashboard for displaying bifrost information',
     url='https://github.com/ssi-dk/bifrost',
     author="Martin Basterrechea",
     author_email="mbas@ssi.dk",
     packages=find_packages(),
     package_data={
-        "bifrost_dashboard": ['data/assets/*.css', 'data/assets/*.js']
+        "bifrost_dashboard": ['data/assets/*.css', 'data/assets/*.js',
+                              'data/assets/img/*.png', 'data/assets/img/*.svg']
     },
     include_package_data=True,
     install_requires=[
         # 'pymongo',
         'pandas',
         'dash',
-        'bifrostapi',
+        'bifrostapi==0.1.0',
         'Flask-Caching',
         'dash-auth',
         'requests',

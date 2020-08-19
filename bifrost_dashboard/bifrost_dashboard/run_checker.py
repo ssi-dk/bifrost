@@ -1,25 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import subprocess
-import urllib.parse as urlparse
 
 import dash
-import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
-import plotly.graph_objs as go
-import plotly.figure_factory as ff
-from dash.dependencies import Input, Output, State
 
 import bifrost_dashboard.components.import_data as import_data
-from datetime import datetime
-
-import json
-from bson import json_util
 
 components_order = [
     "min_read_check", "whats_my_species", "assemblatron", "ssi_stamper",
