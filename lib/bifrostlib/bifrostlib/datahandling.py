@@ -296,6 +296,8 @@ class Run:
 #     def __init__(self, sample_id: str, component_id: str) -> None:
 #         component = Component().load(component_id)
 #         sample = Sample().load(sample_id)
+#         categories = list[Category] #summary output for each category it belongs to, under properties and report, results would be cumulative,
+#                                     # Category/Property object would have a summary and report, component id is uneccesary as it's from the same component
 #         _dict = {
 #             "_id": None,
 #             "component": {
@@ -314,7 +316,7 @@ class SampleComponentObj:
         if self.sample_component_db == None:
             save_sample_component({
                 "sample": {"_id": self.sample_db["_id"], "name": self.sample_db["name"]},
-                "component": {"_id": self.component_db["_id"], "name": self.component_db["name"]},
+                "component": {"_id": self.component_db["_id"], "name": self.component_db["display_name"]},
                 "path": path,
                 "status": "initialized"
             })
@@ -322,7 +324,8 @@ class SampleComponentObj:
         self.initialized()
 
     def load(self):
-        return (self.sample_db["name"], self.component_db["name"], self.component_db["dockerfile"], self.component_db["options"], self.component_db["resources"])
+        #HACK: NOTE: Changed name to display name, obviously more needs to change. Leaving this here as a temp fix as the main fix is refactoring this object
+        return (self.sample_db["name"], self.component_db["display_name"], self.component_db["install"], self.component_db["options"], self.component_db["resources"])
 
     def start_data_extraction(self, file_location=None):
         summary = self.sample_component_db["properties"]["summary"]
@@ -373,15 +376,14 @@ class SampleComponentObj:
                 elif category == "component":
                     field = requirement.split(".")[2:]
                     expected_value = requirements[requirement]
-                    c_name = requirement.split(".")[1]
                     s_c_db = get_sample_component(sample_id=self.sample_id,
-                                                  component_name=c_name)
+                                                  component_id=self.component_id)
                     if not self.requirement_met(s_c_db, field, expected_value, log):
                         no_failures = False
                 else:
                     no_failures = False
         if no_failures:
-            open(os.path.join(self.component_db["name"], output_file), "w+").close()
+            open(os.path.join(self.component_db["display_name"], output_file), "w+").close()
         else:
             self.requirements_not_met()
 
@@ -399,7 +401,7 @@ class SampleComponentObj:
                 component["status"] = status
                 status_set = True
         if not status_set:
-            self.sample_db["components"].append({"_id": self.component_db["_id"], "name":self.component_db["name"], "status":status})
+            self.sample_db["components"].append({"_id": self.component_db["_id"], "name":self.component_db["display_name"], "status":status})
         self.save()
 
     def requirements_not_met(self):
@@ -430,7 +432,7 @@ class SampleComponentObj:
 
     def start_rule(self, rule_name, log=None):
         self.write_log_out(log, "{} has started\n".format(rule_name))
-        return (self.component_db["name"], self.component_db["options"], self.component_db["resources"])
+        return (self.component_db["display_name"], self.component_db["options"], self.component_db["resources"])
 
     def rule_run_cmd(self, command, log):
         self.write_log_out(log, "Running:{}\n".format(command))
@@ -458,7 +460,8 @@ class SampleComponentObj:
             }
         self.sample_component_db["results"] = {}
         if self.component_db["db_values_changes"]["sample"].get("report", None) is not None:
-            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["details"]["category"]]
+            # HACK: Right now we only support 1 category, thus the index 0 ref, when this is refactored we can support multiple. Config is already being adjusted to handle multiple
+            self.sample_component_db["report"] = self.component_db["db_values_changes"]["sample"]["report"][self.component_db["category"][0]] 
         else:
             self.sample_component_db["report"] = {}
         self.write_log_out(log, "Starting datadump\n")
@@ -469,22 +472,23 @@ class SampleComponentObj:
         self.write_log_out(log, "Files saved: {}\n".format(",".join(self.component_db["db_values_changes"]["files"])))
 
     def get_component_name(self):
-        return self.component_db["name"]
+        return self.component_db["display_name"]
 
     def run_data_dump_on_function(self, data_extraction_function, log=None):
         (self.sample_component_db["properties"]["summary"], self.sample_component_db["results"]) = data_extraction_function(self)
 
     def end_data_dump(self, output_file="datadump_complete", generate_report_function=lambda x: None, log=None):
-        self.sample_db["properties"][self.component_db["details"]["category"]] = self.sample_component_db["properties"]
+        # HACK: Right now we only support 1 category, thus the index 0 ref, when this is refactored we can support multiple. Config is already being adjusted to handle multiple
+        self.sample_db["properties"][self.component_db["category"][0]] = self.sample_component_db["properties"]
         report_data = generate_report_function(self)
         if report_data is not None:
-            self.sample_db["report"][self.component_db["details"]["category"]] = self.sample_component_db["report"]
-            self.sample_db["report"][self.component_db["details"]["category"]]["data"] = report_data
-            assert(type(self.sample_db["report"][self.component_db["details"]["category"]]["data"])==list)
+            self.sample_db["report"][self.component_db["category"][0]] = self.sample_component_db["report"]
+            self.sample_db["report"][self.component_db["category"][0]]["data"] = report_data
+            assert(type(self.sample_db["report"][self.component_db["category"][0]]["data"])==list)
         self.write_log_err(log, str(traceback.format_exc()))
         self.save()
         self.write_log_out(log, "sample {} saved\nsample_component {} saved\n".format(self.sample_db["_id"], self.sample_component_db["_id"]))
-        open(os.path.join(self.component_db["name"], output_file), "w+").close()
+        open(os.path.join(self.component_db["display_name"], output_file), "w+").close()
         self.write_log_out(log, "Done datadump\n")
         self.success()
 

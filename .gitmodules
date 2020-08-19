@@ -1,5 +1,5 @@
 [submodule "components/min_read_check"]
-	path = components/min_read_check
+	path = components/bifrost_min_read_check
 	url = git@github.com:ssi-dk/bifrost-min_read_check.git
 [submodule "components/ariba_resfinder"]
 	path = components/ariba_resfinder
@@ -29,7 +29,7 @@
 	path = components/ariba_plasmidfinder
 	url = git@github.com:ssi-dk/bifrost-ariba_plasmidfinder.git
 [submodule "components/run_launcher"]
-	path = components/run_launcher
+	path = components/bifrost_run_launcher
 	url = git@github.com:ssi-dk/bifrost-run_launcher.git
 [submodule "components/assembly_qc_type"]
 	path = components/assembly_qc_type
