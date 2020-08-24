@@ -202,20 +202,11 @@ app.layout = html.Div([
                                 id="filter_toggle"
                             ),
                         ], className="col-4"),
-                        html.Div([
-                            html.Button(
-                                [
-                                    html.I(className="fas fa-shopping-cart fa-sm mr-2"),
-                                    html.Span(0, id="selection-count")
-                                ],
-                                className="btn btn-outline-secondary shadow-sm mx-auto d-block",
-                                id="selection-modal-open"
-                            ),
-                        ], className="col-4"),
                     ], className="row mb-4"),
                 ], id="samples-panel", className="d-none"),
                 html.Div(id="selected-view"),
-                virtual_runs.modal,
+                virtual_runs.modal_add(),
+                virtual_runs.modal_remove(),
                 html.Footer([
                     "Created with 🔬 at SSI. Bacteria icons from ",
                     html.A("Flaticon", href="https://www.flaticon.com/"),
@@ -309,7 +300,11 @@ def update_view(pathname, sample_store):
 
 
     if section == "":
-        view = html_div_filter()
+        run = bifrostapi.get_run(collection_name)
+        if collection_view and run is not None and run["type"] == "virtual":
+            view = html_div_filter(True)
+        else:
+            view = html_div_filter(False)
     elif section == "sample-report":
         view = sample_report(sample_store)
     elif section == "aggregate":
@@ -346,13 +341,12 @@ def update_view(pathname, sample_store):
      Output("group-list", "options"),
      Output("species-list", "options")],
     [Input("form-species-source", "value"),
-    Input("selected-collection", "data"),
-    Input("form-run-show-custom", "value")
+    Input("selected-collection", "data")
     ]
 )
 @cache.memoize(timeout=cache_timeout)  # in seconds
-def update_run_options(form_species, selected_collection, run_type):
-    return filter_update_run_options(form_species, selected_collection, run_type)
+def update_run_options(form_species, selected_collection):
+    return filter_update_run_options(form_species, selected_collection)
 
 
 @app.callback(
@@ -716,61 +710,66 @@ def submit_user_feedback(_, user, *args):
 def link_to_files_f(data):
     return link_to_files(data)
 
-app.clientside_callback(
-    ClientsideFunction(
-        namespace='clientside',
-        function_name='update_selection_count'
-    ),
-    Output("selection-count", "children"),
-    [Input("selected-samples-table", "data")],
-)
 
 app.clientside_callback(
     ClientsideFunction(
         namespace='clientside',
         function_name='enable_selection_button'
     ),
-    Output("add-selection-button", "disabled"),
+    [Output("add-collection-button", "disabled"),
+     Output("remove-collection-button", "disabled")],
     [Input("datatable-ssi_stamper", "derived_viewport_selected_rows")]
 )
 
 @app.callback(
-    [Output("selected-samples-table", "data"),
-     Output("selection-modal-status", "children"),
-     Output("selection-modal-create", "disabled")],
-    [Input("add-selection-button", "n_clicks_timestamp"),
-     Input("selection-modal-create", "n_clicks_timestamp")],
-    [State("selected-samples-table", "data"),
-     State("datatable-ssi_stamper", "derived_viewport_selected_rows"),
+    Output("selection-modal-status", "children"),
+    [Input("selection-modal-create", "n_clicks")],
+    [State("datatable-ssi_stamper", "derived_viewport_selected_rows"),
      State("datatable-ssi_stamper", "derived_viewport_data"),
+     State("virtual-run-selector", "value"),
      State("virtual_run_name", "value")
     ],
     prevent_initial_call=True
 )
-def selected_samples_management(add_timestamp, create_timestamp, data, selected_rows, row_data, name):
-    if add_timestamp > create_timestamp:
-        if (selected_rows is not None and len(selected_rows)):
-            for e in selected_rows:
-                row = {
-                    "name": row_data[e]["name"],
-                    "id": row_data[e]["id"]
-                }
-                if (row not in data):
-                    data.append(row);
-        if len(data):
-            disabled = False
+def add_selected_to_collection(n_clicks, selected_rows, row_data, selected_virtual, name):
+    data = []
+    message = ""
+    if (selected_rows is not None and len(selected_rows)):
+        for e in selected_rows:
+            row = {
+                "name": row_data[e]["name"],
+                "_id": row_data[e]["id"]
+            }
+            if (row not in data):
+                data.append(row);
+    if n_clicks > 0:
+        if selected_virtual == "_new":
+            message = virtual_runs.create_run(data, name)
         else:
-            disabled = True
-        return [data, None, disabled]
-    elif create_timestamp > add_timestamp:
-        message, disabled = virtual_runs.create_run(data, name)
-        return [[], message, disabled]
-    else:
-        if len(data):
-            disabled = False
-        else:
-            disabled = True
-        return [data, None, disabled]
+            message = virtual_runs.add_samples_to_virtual_run(data, selected_virtual)
+
+    return message
+
+@app.callback(
+    Output("remove-modal-status", "children"),
+    [Input("remove-collection-modal-remove", "n_clicks")],
+    [State("datatable-ssi_stamper", "derived_viewport_selected_rows"),
+     State("datatable-ssi_stamper", "derived_viewport_data"),
+     State("selected-collection", "data")
+    ],
+    prevent_initial_call=True
+)
+def remove_selected_from_collection(n_clicks, selected_rows, row_data, name):
+    data = []
+    message = ""
+    if (selected_rows is not None and len(selected_rows)):
+        for e in selected_rows:
+            if (row_data[e]["id"] not in data):
+                data.append(row_data[e]["id"]);
+    if n_clicks > 0:
+        message = virtual_runs.remove_samples_from_virtual_run(data, name)
+
+    return message
 
 
 # app.clientside_callback(
@@ -785,14 +784,25 @@ def selected_samples_management(add_timestamp, create_timestamp, data, selected_
 #     ]
 # )
 @app.callback(
-    Output("selection-modal", "is_open"),
-    [Input("selection-modal-open", "n_clicks"), Input("selection-modal-close", "n_clicks")],
-    [State("selection-modal", "is_open")]
+    Output("add-collection-modal", "is_open"),
+    [Input("add-collection-button", "n_clicks"), Input("add-collection-modal-close", "n_clicks")],
+    [State("add-collection-modal", "is_open")]
 )
-def open_close_selection_modal(n1, n2, is_open):
+def open_close_add_modal(n1, n2, is_open):
+    trigger = dash.callback_context.triggered[0]
+
+    if (n1 or n2) and trigger["value"] is not None:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("remove-collection-modal", "is_open"),
+    [Input("remove-collection-button", "n_clicks"), Input("remove-collection-modal-close", "n_clicks")],
+    [State("remove-collection-modal", "is_open")]
+)
+def open_close_remove_modal(n1, n2, is_open):
     if (n1 or n2):
         return not is_open
-    
     return is_open
 
 app.clientside_callback(

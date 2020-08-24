@@ -117,21 +117,6 @@ def html_filter_drawer():
                                                             [
                                                                 dbc.Label(
                                                                     "Run", html_for="run-list"),
-                                                                dcc.RadioItems(
-                                                                    options=[
-                                                                        {"label": " Routine",
-                                                                         "value": "routine"},
-                                                                        {"label": " Custom",
-                                                                         "value": "custom"},
-                                                                    ],
-                                                                    value="routine",
-                                                                    labelStyle={
-                                                                        'margin': '0 0 0.5rem 0.5rem'},
-                                                                    id="form-run-show-custom",
-                                                                    style={
-                                                                        "display": "inline-block"}
-
-                                                                ),
                                                                 dcc.Dropdown(
                                                                     id="run-list",
                                                                     multi=True,
@@ -278,7 +263,11 @@ def html_filter_drawer():
     return run_filter
 
 
-def html_div_filter():
+def html_div_filter(display_remove_button):
+    if display_remove_button:
+        display_remove_button = ""
+    else: 
+        display_remove_button = " d-none"
     return html.Div([
         html.Div(
             [
@@ -295,12 +284,15 @@ def html_div_filter():
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    dbc.Button("Add to selection",
-                                               id="add-selection-button",
-                                               n_clicks=0,
-                                               n_clicks_timestamp=-1,
+                                    dbc.Button("Add to collection",
+                                               id="add-collection-button",
                                                size="sm",
-                                               disabled=False)
+                                               disabled=False),
+                                    dbc.Button("Remove from collection",
+                                               id="remove-collection-button",
+                                               size="sm",
+                                               disabled=False,
+                                               className="ml-2" + display_remove_button)
                                 ]),
                             ], className="col-auto mr-auto"),
                             html.Div([
@@ -450,12 +442,9 @@ def generate_table(tests_df):
 
 
 # callback
-def filter_update_run_options(form_species, selected_collection, run_type):
+def filter_update_run_options(form_species, selected_collection):
     # Runs
-    if run_type == "custom":
-        run_type = ["project", "external", "virtual"]
-    else:
-        run_type = "routine"
+    run_type = ["routine", "project", "external", "virtual"]
     run_list = import_data.get_run_list(run_type)
     run_options = [
         {

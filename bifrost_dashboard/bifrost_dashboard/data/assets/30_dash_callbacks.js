@@ -3,14 +3,11 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         large_params_function: function (largeValue1, largeValue2) {
             return someTransform(largeValue1, largeValue2);
         },
-        update_selection_count: function (data) {
-            return data.length
-        },
         enable_selection_button: function (indices) {
             if (indices !== undefined && indices.length) {
-                return false
+                return [false, false]
             } else {
-                return true
+                return [true, true]
             }
         },
         // add_sample_to_selection: function (n_clicks, data, selected_rows, row_data) {

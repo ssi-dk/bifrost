@@ -9,3 +9,6 @@ Add "reason" field to user feedback
 
 0.0.4
 Add virtual runs capabilities
+
+0.0.5
+Add and remove samples from virtual runs
