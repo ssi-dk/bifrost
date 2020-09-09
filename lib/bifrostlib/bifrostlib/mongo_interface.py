@@ -399,3 +399,21 @@ def delete_sample(sample_id):
     except Exception:
         print(traceback.format_exc())
         return None
+
+def get_sample_assembly_and_reads(sample_ids):
+    connection = get_connection()
+    db = connection.get_database()
+    samples = {}
+    assemblies = db.sample_components.find({
+        "sample._id": {"$in": sample_ids},
+        "component.name": "assemblatron"
+    }, {"path": 1})
+    for a in assemblies:
+        samples[str(a["_id"])] = {"assembly": a["path"]}
+
+    reads = list(db.samples.find({"_id": {"$in": sample_ids}}, {"reads": 1}))
+    for r in reads:
+        d = samples.get(str(r["_id"]), {})
+        d["reads"] = r["reads"]
+        samples[str(r["_id"])] = d
+    return samples
