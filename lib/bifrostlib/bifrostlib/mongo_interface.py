@@ -409,7 +409,7 @@ def get_sample_assembly_and_reads(sample_ids):
         "component.name": "assemblatron"
     }, {"path": 1})
     for a in assemblies:
-        samples[str(a["_id"])] = {"assembly": a["path"]}
+        samples[str(a["_id"])] = {"assembly": a["path"] + "/contigs.fasta"}
 
     reads = list(db.samples.find({"_id": {"$in": sample_ids}}, {"reads": 1}))
     for r in reads:
