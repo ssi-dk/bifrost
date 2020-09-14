@@ -1,0 +1,412 @@
+{
+    "definitions": {
+        "version": {
+            "type": "object",
+            "required": [
+                "schema"
+            ],
+            "properties": {
+                "schema": {
+                    "type": "array"
+                },
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                    "type": "string"
+                },
+                "code": "string",
+                "resources": "string"
+            }
+        },
+        "file": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "timestamp"
+                },
+                "updated_at": {
+                    "type": "timestamp"
+                }
+            }
+        },
+        "references": {
+            "component": { //pipeline
+                "type": "object",
+                "required": [
+                    "_id",
+                    "name"
+                ],
+                "properties": {
+                    "_id": {
+                        "type": "objectId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                }
+            },
+            "sample": { //genomicsample
+                "type": "object",
+                "required": [
+                    "_id",
+                    "name"
+                ],
+                "properties": {
+                    "_id": {
+                        "type": "objectId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                }
+            },
+            "run": { //collection
+                "type": "object",
+                "required": [
+                    "_id",
+                    "name"
+                ],
+                "properties": {
+                    "_id": {
+                        "type": "objectId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                }
+            },
+            "host": {
+                "type": "object",
+                "required": [
+                    "_id",
+                    "name"
+                ],
+                "properties": {
+                    "_id": {
+                        "type": "objectId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                }
+            },
+            "category": { 
+                //TODO 
+            }
+        },
+        "status": {
+            "properties": {
+                "status": {
+                    "enum": [
+                        "Success",
+                        "Failure",
+                        "Initialized",
+                        "Requirements not met",
+                        "Queued",
+                        "Running"
+                    ]
+                }
+            }
+        },
+        "summary": {
+
+        },
+        "report": {
+
+        },
+        "category": { // properties
+            "anyOf": [
+                {"paired_reads": {}},
+                {"species_detection": {}},
+                {"denovo_assembly": {}},
+                {"stamper": {}},
+                {"mlst": {}},
+                {"plasmid": {}},
+                {"resistance": {}},
+                {"virulence": {}},
+                {"size_check": {}}
+            ]
+        },
+        "sample": { // genomicsample
+            "type": "object",
+            "required": [
+                "_id",
+                "name"
+            ],
+            "properties": {
+                "_id": {
+                    "type": "objectId"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "version": {
+                    "$ref": "#/definitions/version"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/metadata"
+                },
+                "components": { //pipelines
+                    "type": "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/references/component" //pipeline
+                            },
+                            {
+                                "$ref": "#/definitions/status"
+                            }
+                        ]
+                    }
+                },
+                "properties": {
+                     "$ref": "#/definitions/category"
+                }
+            }
+        },
+        "run": { //collection
+            "type": "object",
+            "required": [
+                "_id",
+                "name"
+            ],
+            "properties": {
+                "_id": {
+                    "type": "objectId"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "path": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "version": {
+                    "$ref": "#/definitions/version"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/metadata"
+                },
+                "issues": {
+                    "type": [
+                        "object"
+                    ],
+                    "properties": {
+                        "duplicate_samples": {
+                            "type": [
+                                "array"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string"
+                                ]
+                            }
+                        },
+                        "modified_samples": {
+                            "type": [
+                                "array"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string"
+                                ]
+                            }
+                        },
+                        "unused_files": {
+                            "type": [
+                                "array"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string"
+                                ]
+                            }
+                        },
+                        "samples_without_reads": {
+                            "type": [
+                                "array"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string"
+                                ]
+                            }
+                        },
+                        "samples_without_metadata": {
+                            "type": [
+                                "array"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "samples": { // genomicsamples
+                    "type": "array",
+                    "items": {
+                        "allOf": {
+                            "$ref": "#/definitions/references/sample" //genomicsample
+                        }
+                    }
+                },
+                "components": { //pipelines
+                    "type": "array",
+                    "items": {
+                        "allOf": {
+                            "$ref": "#/definitions/references/component" //pipeline
+                        }
+                    }
+                },
+                "hosts": {
+                    "type": "array",
+                    "items": {
+                        "allOf": {
+                            "$ref": "#/definitions/references/host"
+                        }
+                    }
+                }
+            }
+        },
+        "component": { // pipeline
+            "type": "object",
+            "required": [
+                "_id",
+                "name"
+            ],
+            "properties": {
+                "_id": {
+                    "type": "objectId"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "version": {
+                    "$ref": "#/definitions/version"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/metadata"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/references/category"
+                    }
+                },
+                "db_values_changed": {
+                    "type": "object",
+                    "properties": {
+                        "files": { 
+                            "$ref": "#/files" 
+                        },
+                        "sample": { //genomicsample
+                            //TODO
+                        },
+                        "sample_component": { //results_of_pipeline_on_genomicsample
+                            //TODO
+                        },
+                        "run": { //collection
+                            //TODO
+                        },
+                        "run_component": { //results_of_pipeline_on_collection
+                            //TODO
+                        }
+                    }
+                },
+                "details": {
+                    "type": "object",
+                    "properties": {
+                        "target": {
+                            "type": "array",
+                            "items": {
+                                "enum": [
+                                    "sample", //genomicsample
+                                    "component" //pipeline
+                                ]
+                            },
+                            "uniqueItems": true
+                        }
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "options": {
+                    // TODO
+                },
+                "resources": {
+                    // TODO
+                },
+                "requirements": {
+                    // TODO
+                },
+                "install": {
+
+                }
+            }
+        },
+        "host": { //epi
+            "_id": {
+                "type": "objectId"
+            },
+            "name": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "version": {
+                "$ref": "#/definitions/version"
+            },
+            "metadata": {
+                "$ref": "#/definitions/metadata"
+            },
+            "samples": { //genomicsamples
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/references/sample" //genomicsample
+                }
+            },
+            "events": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/event"
+                }
+            }
+            //TODO 
+        },
+        "event":{ //host event
+            //TODO
+        },
+        "sample_component": { 
+            // results_of_pipeline_on_genomicsample
+        },
+        "run_component": { 
+            //results_of_pipeline_on_collection 
+        }
+    }
+}
