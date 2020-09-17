@@ -373,11 +373,12 @@ class SampleComponentObj:
                     expected_value = requirements[requirement]
                     if not self.requirement_met(self.sample_db, field, expected_value, log):
                         no_failures = False
-                elif category == "component":
-                    field = requirement.split(".")[2:]
-                    expected_value = requirements[requirement]
-                    s_c_db = get_sample_component(sample_id=self.sample_id,
-                                                  component_id=self.component_id)
+                    elif category == "component":
+                        component_to_check = requirement.split(".")[1]
+                        field = requirement.split(".")[2:]
+                        expected_value = requirements[requirement]
+                        s_c_db = get_sample_component(sample_id=self.sample_id,
+                                                  component_name=component_to_check)
                     if not self.requirement_met(s_c_db, field, expected_value, log):
                         no_failures = False
                 else:
