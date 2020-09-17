@@ -1,3 +1,0 @@
-This folder is out of date and isn't doing anything currently. This will have the files for 
-initializing your mongoDB instance. The species file currently found here may go into components 
-which require them to ensure the values are installed
