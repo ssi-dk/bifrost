@@ -40,3 +40,6 @@
 [submodule "test_data"]
 	path = test_data
 	url = git@github.com:ssi-dk/bifrost_test_data.git
+[submodule "bifrost_dashboard"]
+	path = bifrost_dashboard
+	url = git@github.com:ssi-dk/bifrost_dashboard.git
