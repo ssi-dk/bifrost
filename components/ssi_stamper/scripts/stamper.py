@@ -10,7 +10,7 @@ def run_test(sample_dict, stamp):
         component_names = ["whats_my_species", "assemblatron"]
         comps = {}
         for component in component_names:
-            comps[component] = datahandling.get_sample_component(
+            comps[component] = datahandling.get_sample_components(
                 sample_ids=[str(sample_dict["_id"])],
                 component_names=[component])[0]
         species = datahandling.load_species(sample_dict["properties"].get("species", None))
