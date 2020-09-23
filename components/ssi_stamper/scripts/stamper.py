@@ -90,7 +90,7 @@ def main():
 
     for sample_id in sample_ids:
         print("Testing sample: " + sample_id)
-        sample_db = datahandling.get_samples(sample_ids=[sample_id])
+        sample_db = datahandling.get_samples(sample_ids=[sample_id])[0]
         results, summary, stamp = run_test(sample_db, stamp_name)
 
         print("Tested sample {}.\n{}\n\n".format(sample_id, stamp))
