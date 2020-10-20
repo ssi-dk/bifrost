@@ -1,283 +1,237 @@
-# `bifrostlib.datahandling`
+"bifrostlib.datahandling"
+*************************
+
+
+Module Contents
+===============
+
+
+Classes
+-------
+
++------------+--------------------------------------------------------------------------------------------+
+| "BifrostO  | For schema datatypes                                                                       |
+| bjectData  |                                                                                            |
+| Type"      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "ObjectID" | For schema datatypes                                                                       |
++------------+--------------------------------------------------------------------------------------------+
+| "BifrostO  |                                                                                            |
+| bjectRefe  |                                                                                            |
+| rence"     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "BifrostO  |                                                                                            |
+| bject"     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Category" |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Sample"   |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Run"      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Componen  |                                                                                            |
+| t"         |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Host"     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "SampleCo  |                                                                                            |
+| mponent"   |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "RunCompo  |                                                                                            |
+| nent"      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+
+
+Functions
+---------
+
++------------+--------------------------------------------------------------------------------------------+
+| "load_sch  | loads BIFROST_SCHEMA from bifrost.jsonc which is the basis for objects                     |
+| ema"() →   |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "get_sche  | Get a object schema from the BIFROST_SCHEMA                                                |
+| ma_object  |                                                                                            |
+| "(object_  |                                                                                            |
+| type: str, |                                                                                            |
+| schema_ve  |                                                                                            |
+| rsion:     |                                                                                            |
+| str) →     |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "get_sche  | Get a datatype schema from the BIFROST_SCHEMA                                              |
+| ma_dataty  |                                                                                            |
+| pes"(prog  |                                                                                            |
+| ram_type:  |                                                                                            |
+| str,       |                                                                                            |
+| datatype:  |                                                                                            |
+| str) →     |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "get_sche  | Get the reference schema of from the BIFROST_SCHEMA                                        |
+| ma_refere  |                                                                                            |
+| nce"(refe  |                                                                                            |
+| rence_typ  |                                                                                            |
+| e: str, s  |                                                                                            |
+| chema_ver  |                                                                                            |
+| sion: str) |                                                                                            |
+| → Dict     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
 
-## Module Contents
+bifrostlib.datahandling.BIFROST_SCHEMA
 
-### Classes
+bifrostlib.datahandling.load_schema() -> Dict
 
-| `BifrostObjectDataType`
- | For schema datatypes
+   loads BIFROST_SCHEMA from bifrost.jsonc which is the basis for
+   objects
 
- |
-| `ObjectID`
-                                            | For schema datatypes
+   Other Parameters:
+      BIFROST_SCHEMA (dict): GLOBAL storing the BIFROST_SCHEMA
 
-                                                                            |
-| `BifrostObjectReference`
-                              | 
+   Returns:
+      Dict: json formatted schema
 
-                                                                                                |
-| `BifrostObject`
-                                       | 
+bifrostlib.datahandling.get_schema_object(object_type: str, schema_version: str) -> Dict
 
-                                                                                                |
-| `Category`
-                                            | 
+   Get a object schema from the BIFROST_SCHEMA
 
-                                                                                                |
-| `Sample`
-                                              | 
+   Note:
+      With how it’s organized references and datatypes need to be
+      included with object
 
-                                                                                                |
-| `Run`
-                                                 | 
+   Args:
+      object_type (str): object type based on available objects in
+      schema schema_version (str): the version of the object you want
+      to work with
 
-                                                                                                |
-| `Component`
-                                           | 
+   Other Parameters:
+      BIFROST_SCHEMA (dict): GLOBAL storing the BIFROST_SCHEMA
 
-                                                                                                |
-| `Host`
-                                                | 
+   Returns:
+      Dict: The object schema with datatypes schema and references
+      schema it may need
 
-                                                                                                |
-| `SampleComponent`
-                                     | 
+bifrostlib.datahandling.get_schema_datatypes(program_type: str, datatype: str) -> Dict
 
-                                                                                                |
-| `RunComponent`
-                                        | 
+   Get a datatype schema from the BIFROST_SCHEMA
 
-                                                                                                |
-### Functions
+   Args:
+      reference_type (str): reference type based on available
+      references to objects in schema
 
-| `load_schema`() → Dict
+   Other Parameters:
+      BIFROST_SCHEMA (dict): GLOBAL storing the BIFROST_SCHEMA
 
-                                | loads BIFROST_SCHEMA from bifrost.jsonc which is the basis for objects
+   Returns:
+      Dict: The datatype schema
 
-                          |
-| `get_schema_object`(object_type: str, schema_version: str) → Dict
+bifrostlib.datahandling.get_schema_reference(reference_type: str, schema_version: str) -> Dict
 
- | Get a object schema from the BIFROST_SCHEMA
+   Get the reference schema of from the BIFROST_SCHEMA
 
-                                                     |
-| `get_schema_datatypes`(program_type: str, datatype: str) → Dict
+   Args:
+      reference_type (str): [description] schema_version (str):
+      [description]
 
-   | Get a datatype schema from the BIFROST_SCHEMA
+   Returns:
+      Dict: [description]
 
-                                                   |
-| `get_schema_reference`(reference_type: str, schema_version: str) → Dict
+class bifrostlib.datahandling.BifrostObjectDataType(program_type: str, datatype: str, _json: Dict)
 
- | Get the reference schema of from the BIFROST_SCHEMA
+   For schema datatypes
 
-                                             |
+   __repr__(self)
 
-### bifrostlib.datahandling.BIFROST_SCHEMA()
+      Return repr(self).
 
-### bifrostlib.datahandling.load_schema()
-loads BIFROST_SCHEMA from bifrost.jsonc which is the basis for objects
+   __getitem__(self, key)
 
+   __setitem__(self, key, value)
 
-* **Other Parameters**
+   __delitem__(self, key)
 
-    **BIFROST_SCHEMA** (*dict*) – GLOBAL storing the BIFROST_SCHEMA
+class bifrostlib.datahandling.ObjectID(_id: str)
 
+   Bases: "bifrostlib.datahandling.BifrostObjectDataType"
 
+   For schema datatypes
 
-* **Returns**
+class bifrostlib.datahandling.BifrostObjectReference(reference_type: str, value: Dict, schema_version: str)
 
-    json formatted schema
+   reference_type
 
+   __repr__(self)
 
+      Return repr(self).
 
-* **Return type**
+   __getitem__(self, key)
 
-    Dict
+   __setitem__(self, key, value)
 
+   __delitem__(self, key)
 
+class bifrostlib.datahandling.BifrostObject(object_type: str, value: Dict, schema_version: str)
 
-### bifrostlib.datahandling.get_schema_object(object_type: [str](https://docs.python.org/3/library/stdtypes.html#str), schema_version: [str](https://docs.python.org/3/library/stdtypes.html#str))
-Get a object schema from the BIFROST_SCHEMA
+   json
 
-**NOTE**: With how it’s organized references and datatypes need to be included with object
+   __repr__(self)
 
+      Return repr(self).
 
-* **Parameters**
+   __getitem__(self, key)
 
-    
-    * **object_type** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – object type based on available objects in schema
+   __setitem__(self, key, value)
 
+   __delitem__(self, key)
 
-    * **schema_version** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – the version of the object you want to work with
+   load(self, _id: ObjectID)
 
+   load_from_reference(self, reference: BifrostObjectReference)
 
+   save(self)
 
-* **Other Parameters**
+   delete(self)
 
-    **BIFROST_SCHEMA** (*dict*) – GLOBAL storing the BIFROST_SCHEMA
+   to_reference(self, additional_requirements: Dict = {})
 
+class bifrostlib.datahandling.Category(schema_version='2.1')
 
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
-* **Returns**
+class bifrostlib.datahandling.Sample(name: str = None, schema_version='2.1')
 
-    The object schema with datatypes schema and references schema it may need
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
+   properties :Category
 
+   components :List[BifrostObjectReference]
 
-* **Return type**
+   get_category(self, key: str)
 
-    Dict
+   set_category(self, category: Category)
 
+class bifrostlib.datahandling.Run(name: str = None, schema_version='2.1')
 
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
-### bifrostlib.datahandling.get_schema_datatypes(program_type: [str](https://docs.python.org/3/library/stdtypes.html#str), datatype: [str](https://docs.python.org/3/library/stdtypes.html#str))
-Get a datatype schema from the BIFROST_SCHEMA
+   samples :List[BifrostObjectReference]
 
+   components :List[BifrostObjectReference]
 
-* **Parameters**
+   hosts :List[BifrostObjectReference]
 
-    **reference_type** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – reference type based on available references to objects in schema
+class bifrostlib.datahandling.Component(name: str = None, schema_version='2.1')
 
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
+class bifrostlib.datahandling.Host(name: str = None, schema_version='2.1')
 
-* **Other Parameters**
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
-    **BIFROST_SCHEMA** (*dict*) – GLOBAL storing the BIFROST_SCHEMA
+class bifrostlib.datahandling.SampleComponent(sample_ref: BifrostObjectReference, component_ref: BifrostObjectReference, schema_version='2.1')
 
+   Bases: "bifrostlib.datahandling.BifrostObject"
 
+class bifrostlib.datahandling.RunComponent(run_ref: BifrostObjectReference, component_ref: BifrostObjectReference, schema_version='2.1')
 
-* **Returns**
-
-    The datatype schema
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-### bifrostlib.datahandling.get_schema_reference(reference_type: [str](https://docs.python.org/3/library/stdtypes.html#str), schema_version: [str](https://docs.python.org/3/library/stdtypes.html#str))
-Get the reference schema of from the BIFROST_SCHEMA
-
-
-* **Parameters**
-
-    
-    * **reference_type** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – [description]
-
-
-    * **schema_version** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – [description]
-
-
-
-* **Returns**
-
-    [description]
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-### class bifrostlib.datahandling.BifrostObjectDataType(program_type: [str](https://docs.python.org/3/library/stdtypes.html#str), datatype: [str](https://docs.python.org/3/library/stdtypes.html#str), _json: Dict)
-For schema datatypes
-
-
-#### \__repr__(self)
-Return repr(self).
-
-
-#### \__getitem__(self, key)
-
-#### \__setitem__(self, key, value)
-
-#### \__delitem__(self, key)
-
-### class bifrostlib.datahandling.ObjectID(_id: [str](https://docs.python.org/3/library/stdtypes.html#str))
-Bases: `bifrostlib.datahandling.BifrostObjectDataType`
-
-For schema datatypes
-
-
-### class bifrostlib.datahandling.BifrostObjectReference(reference_type: [str](https://docs.python.org/3/library/stdtypes.html#str), value: Dict, schema_version: [str](https://docs.python.org/3/library/stdtypes.html#str))
-
-#### \__repr__(self)
-Return repr(self).
-
-
-#### \__getitem__(self, key)
-
-#### \__setitem__(self, key, value)
-
-#### \__delitem__(self, key)
-
-#### property reference_type(self)
-
-### class bifrostlib.datahandling.BifrostObject(object_type: [str](https://docs.python.org/3/library/stdtypes.html#str), value: Dict, schema_version: [str](https://docs.python.org/3/library/stdtypes.html#str))
-
-#### \__repr__(self)
-Return repr(self).
-
-
-#### \__getitem__(self, key)
-
-#### \__setitem__(self, key, value)
-
-#### \__delitem__(self, key)
-
-#### property json(self)
-
-#### load(self, _id: ObjectID)
-
-#### load_from_reference(self, reference: BifrostObjectReference)
-
-#### save(self)
-
-#### delete(self)
-
-#### to_reference(self, additional_requirements: Dict = {})
-
-### class bifrostlib.datahandling.Category(schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-### class bifrostlib.datahandling.Sample(name: [str](https://docs.python.org/3/library/stdtypes.html#str) = None, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-#### property properties(self)
-
-#### property components(self)
-
-#### get_category(self, key: [str](https://docs.python.org/3/library/stdtypes.html#str))
-
-#### set_category(self, category: Category)
-
-### class bifrostlib.datahandling.Run(name: [str](https://docs.python.org/3/library/stdtypes.html#str) = None, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-#### property samples(self)
-
-#### property components(self)
-
-#### property hosts(self)
-
-### class bifrostlib.datahandling.Component(name: [str](https://docs.python.org/3/library/stdtypes.html#str) = None, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-### class bifrostlib.datahandling.Host(name: [str](https://docs.python.org/3/library/stdtypes.html#str) = None, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-### class bifrostlib.datahandling.SampleComponent(sample_ref: BifrostObjectReference, component_ref: BifrostObjectReference, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
-
-
-### class bifrostlib.datahandling.RunComponent(run_ref: BifrostObjectReference, component_ref: BifrostObjectReference, schema_version='2.1')
-Bases: `bifrostlib.datahandling.BifrostObject`
+   Bases: "bifrostlib.datahandling.BifrostObject"

@@ -1,9 +1,10 @@
-# `bifrostlib`
-
-## Submodules
-
-
-* `bifrostlib.database_interface`
+"bifrostlib"
+************
 
 
-* `bifrostlib.datahandling`
+Submodules
+==========
+
+* "bifrostlib.database_interface"
+
+* "bifrostlib.datahandling"

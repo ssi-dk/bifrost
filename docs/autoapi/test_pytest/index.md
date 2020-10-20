@@ -1,104 +1,93 @@
-# `test_pytest`
+"test_pytest"
+*************
 
-## Module Contents
 
-### Functions
+Module Contents
+===============
 
-| `test_bifrostlib`()
 
- | 
+Functions
+---------
 
- |
-| `test_post_sample`()
++------------+--------------------------------------------------------------------------------------------+
+| "test_bif  |                                                                                            |
+| rostlib"() |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_pos  |                                                                                            |
+| t_sample"  |                                                                                            |
+| ()         |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_get  |                                                                                            |
+| _sample"() |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_get  |                                                                                            |
+| _sample_u  |                                                                                            |
+| sing_comp  |                                                                                            |
+| onent_id"  |                                                                                            |
+| ()         |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_pos  |                                                                                            |
+| t_compone  |                                                                                            |
+| nt"()      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_del  |                                                                                            |
+| ete_compo  |                                                                                            |
+| nent"()    |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_pos  |                                                                                            |
+| t_sample_  |                                                                                            |
+| component  |                                                                                            |
+| "()        |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_get  |                                                                                            |
+| _sample_c  |                                                                                            |
+| omponents  |                                                                                            |
+| "()        |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_del  |                                                                                            |
+| ete_sampl  |                                                                                            |
+| e"()       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_pos  |                                                                                            |
+| t_run"()   |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_get  |                                                                                            |
+| _run"()    |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_del  |                                                                                            |
+| ete_run"() |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_exp  |                                                                                            |
+| ort_run"() |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "test_imp  |                                                                                            |
+| ort_run"() |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
 
-                                                    | 
+test_pytest.test_bifrostlib()
 
-                                                                                                |
-| `test_get_sample`()
+test_pytest.test_post_sample()
 
-                                                     | 
+test_pytest.test_get_sample()
 
-                                                                                                |
-| `test_get_sample_using_component_id`()
+test_pytest.test_get_sample_using_component_id()
 
-                                  | 
+test_pytest.test_post_component()
 
-                                                                                                |
-| `test_post_component`()
+test_pytest.test_delete_component()
 
-                                                 | 
+test_pytest.test_post_sample_component()
 
-                                                                                                |
-| `test_delete_component`()
+test_pytest.test_get_sample_components()
 
-                                               | 
+test_pytest.test_delete_sample()
 
-                                                                                                |
-| `test_post_sample_component`()
+test_pytest.test_post_run()
 
-                                          | 
+test_pytest.test_get_run()
 
-                                                                                                |
-| `test_get_sample_components`()
+test_pytest.test_delete_run()
 
-                                          | 
+test_pytest.test_export_run()
 
-                                                                                                |
-| `test_delete_sample`()
-
-                                                  | 
-
-                                                                                                |
-| `test_post_run`()
-
-                                                       | 
-
-                                                                                                |
-| `test_get_run`()
-
-                                                        | 
-
-                                                                                                |
-| `test_delete_run`()
-
-                                                     | 
-
-                                                                                                |
-| `test_export_run`()
-
-                                                     | 
-
-                                                                                                |
-| `test_import_run`()
-
-                                                     | 
-
-                                                                                                |
-
-### test_pytest.test_bifrostlib()
-
-### test_pytest.test_post_sample()
-
-### test_pytest.test_get_sample()
-
-### test_pytest.test_get_sample_using_component_id()
-
-### test_pytest.test_post_component()
-
-### test_pytest.test_delete_component()
-
-### test_pytest.test_post_sample_component()
-
-### test_pytest.test_get_sample_components()
-
-### test_pytest.test_delete_sample()
-
-### test_pytest.test_post_run()
-
-### test_pytest.test_get_run()
-
-### test_pytest.test_delete_run()
-
-### test_pytest.test_export_run()
-
-### test_pytest.test_import_run()
+test_pytest.test_import_run()

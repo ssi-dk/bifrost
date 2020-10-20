@@ -1,18 +1,16 @@
-# API Reference
+API Reference
+*************
 
-This page contains auto-generated API reference documentation .
+This page contains auto-generated API reference documentation [1].
 
+* "setup"
 
-* `setup`
+* "bifrostlib"
 
+  * "bifrostlib.database_interface"
 
-* `bifrostlib`
+  * "bifrostlib.datahandling"
 
+* "test_pytest"
 
-    * `bifrostlib.database_interface`
-
-
-    * `bifrostlib.datahandling`
-
-
-* `test_pytest`
+[1] Created with sphinx-autoapi

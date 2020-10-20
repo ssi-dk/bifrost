@@ -1,273 +1,185 @@
-# `bifrostlib.database_interface`
+"bifrostlib.database_interface"
+*******************************
+
+
+Module Contents
+===============
+
+
+Functions
+---------
+
++------------+--------------------------------------------------------------------------------------------+
+| "date_now  | Get the current time as a datetime                                                         |
+| "() → dat  |                                                                                            |
+| etime.dat  |                                                                                            |
+| etime      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "get_conn  | Get a connection to the DB                                                                 |
+| ection"()  |                                                                                            |
+| → pymongo  |                                                                                            |
+| .mongo_cl  |                                                                                            |
+| ient.Mong  |                                                                                            |
+| oClient    |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "close_co  | Closes DB connection                                                                       |
+| nnection"  |                                                                                            |
+| ()         |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "pluraliz  | Turns a string into a pluralized form. For example sample -> samples and property ->       |
+| e"(name:   | properties                                                                                 |
+| str) → str |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "json_to_  | Converts a json dict to bson dict                                                          |
+| bson"(jso  |                                                                                            |
+| n_object:  |                                                                                            |
+| Dict) →    |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "bson_to_  | Converts a bson dict to json dict                                                          |
+| json"(bso  |                                                                                            |
+| n_object:  |                                                                                            |
+| Dict) →    |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "load"(ob  | Loads an object based on it’s id from the DB                                               |
+| ject_type: |                                                                                            |
+| str, _id:  |                                                                                            |
+| Dict) →    |                                                                                            |
+| Dict       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "save"(ob  | Saves a object to the DB                                                                   |
+| ject_type, |                                                                                            |
+| object_va  |                                                                                            |
+| lue: Dict) |                                                                                            |
+| → Dict     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "delete"(  | Deletes a object from the DB based on it’s id                                              |
+| object_ty  |                                                                                            |
+| pe, _id:   |                                                                                            |
+| Dict) →    |                                                                                            |
+| bool       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
 
-## Module Contents
+bifrostlib.database_interface.date_now() -> datetime.datetime
 
-### Functions
+   Get the current time as a datetime
 
-| `date_now`() → datetime.datetime
+   Note:
+      Needed to keep the same date in python and mongo, as mongo
+      rounds to millisecond
 
- | Get the current time as a datetime
+   Returns:
+      Current time rounded to miliseconds
 
- |
-| `get_connection`() → pymongo.mongo_client.MongoClient
+bifrostlib.database_interface.CONNECTION
 
- | Get a connection to the DB
+bifrostlib.database_interface.get_connection() -> pymongo.mongo_client.MongoClient
 
-         |
-| `close_connection`()
+   Get a connection to the DB
 
-                                  | Closes DB connection
+   Other Parameters:
+      CONNECTION (pymongo.MongoClient): GLOBAL storing connection
+      BIFROST_DB_KEY: (ENV) This is a environmental variable taken
+      from the system
 
-               |
-| `pluralize`(name: str) → str
+   Returns:
+      pymongo.mongo_client.MongoClient: Sets global CONNECTION string
+      based on env var BIFROST_DB_KEY
 
-                          | Turns a string into a pluralized form. For example sample -> samples and property -> properties
+   Raises:
+      ValueError: If DB is not set properly
 
- |
-| `json_to_bson`(json_object: Dict) → Dict
+bifrostlib.database_interface.close_connection()
 
-              | Converts a json dict to bson dict
+   Closes DB connection
 
-                                                               |
-| `bson_to_json`(bson_object: Dict) → Dict
+   Other Parameters:
+      CONNECTION (pymongo.MongoClient): GLOBAL storing connection
 
-              | Converts a bson dict to json dict
+bifrostlib.database_interface.pluralize(name: str) -> str
 
-                                                               |
-| `load`(object_type: str, _id: Dict) → Dict
+   Turns a string into a pluralized form. For example sample ->
+   samples and property -> properties
 
-            | Loads an object based on it’s id from the DB
+   Args:
+      name (str): A non plural string to turn into it’s plural
 
-                                                    |
-| `save`(object_type, object_value: Dict) → Dict
+   Returns:
+      str: The pluralized form of the string.
 
-        | Saves a object to the DB
+bifrostlib.database_interface.json_to_bson(json_object: Dict) -> Dict
 
-                                                                        |
-| `delete`(object_type, _id: Dict) → bool
+   Converts a json dict to bson dict
 
-               | Deletes a object from the DB based on it’s id
+   Args:
+      json_object (Dict): A json formatted dict
 
-                                                   |
+   Returns:
+      Dict: A bson formatted dict
 
-### bifrostlib.database_interface.date_now()
-Get the current time as a datetime
+bifrostlib.database_interface.bson_to_json(bson_object: Dict) -> Dict
 
-**NOTE**: Needed to keep the same date in python and mongo, as mongo rounds to millisecond
+   Converts a bson dict to json dict
 
+   Args:
+      bson_object (str): A bson formatted dict
 
-* **Returns**
+   Returns:
+      Dict: A json formatted dict
 
-    Current time rounded to miliseconds
+bifrostlib.database_interface.load(object_type: str, _id: Dict) -> Dict
 
+   Loads an object based on it’s id from the DB
 
+   Note:
+      Inputs and outputs are json dict but database works on bson
+      dicts
 
-### bifrostlib.database_interface.CONNECTION()
+   Args:
+      object_type (str): A bifrost object type found in the database
+      as a collection _id (Dict): json formatted objectid {“$oid”:
+      <value>}
 
-### bifrostlib.database_interface.get_connection()
-Get a connection to the DB
+   Returns:
+      Dict: json formatted dict of the object
 
+   Raises:
+      AssertionError: If db contains a duplicate _id
 
-* **Other Parameters**
+bifrostlib.database_interface.save(object_type, object_value: Dict) -> Dict
 
-    
-    * **CONNECTION** (*pymongo.MongoClient*) – GLOBAL storing connection
+   Saves a object to the DB
 
+   Note:
+      Inputs and outputs are json dict but database works on bson
+      dicts
 
-    * **BIFROST_DB_KEY** – (ENV) This is a environmental variable taken from the system
+   Args:
+      object_type: A bifrost object type found in the database as a
+      collection object_value: json formatted object
 
+   Returns:
+      Dict: json formatted dict of the object with objectid
 
+   Raises:
+      KeyError: If object_type not in DB
 
-* **Returns**
+bifrostlib.database_interface.delete(object_type, _id: Dict) -> bool
 
-    Sets global CONNECTION string based on env var BIFROST_DB_KEY
+   Deletes a object from the DB based on it’s id
 
+   Note:
+      This only removes the objects and doesn’t handle dependencies or
+      dangling objects
 
+   Args:
+      object_type (str): A bifrost object type found in the database
+      as a collection _id (Dict): json formatted objectid {“$oid”:
+      <value>}
 
-* **Return type**
+   Returns:
+      bool: Successfully deleted | Failure to delete
 
-    pymongo.mongo_client.MongoClient
-
-
-
-* **Raises**
-
-    [**ValueError**](https://docs.python.org/3/library/exceptions.html#ValueError) – If DB is not set properly
-
-
-
-### bifrostlib.database_interface.close_connection()
-Closes DB connection
-
-
-* **Other Parameters**
-
-    **CONNECTION** (*pymongo.MongoClient*) – GLOBAL storing connection
-
-
-
-### bifrostlib.database_interface.pluralize(name: [str](https://docs.python.org/3/library/stdtypes.html#str))
-Turns a string into a pluralized form. For example sample -> samples and property -> properties
-
-
-* **Parameters**
-
-    **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – A non plural string to turn into it’s plural
-
-
-
-* **Returns**
-
-    The pluralized form of the string.
-
-
-
-* **Return type**
-
-    [str](https://docs.python.org/3/library/stdtypes.html#str)
-
-
-
-### bifrostlib.database_interface.json_to_bson(json_object: Dict)
-Converts a json dict to bson dict
-
-
-* **Parameters**
-
-    **json_object** (*Dict*) – A json formatted dict
-
-
-
-* **Returns**
-
-    A bson formatted dict
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-### bifrostlib.database_interface.bson_to_json(bson_object: Dict)
-Converts a bson dict to json dict
-
-
-* **Parameters**
-
-    **bson_object** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – A bson formatted dict
-
-
-
-* **Returns**
-
-    A json formatted dict
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-### bifrostlib.database_interface.load(object_type: [str](https://docs.python.org/3/library/stdtypes.html#str), _id: Dict)
-Loads an object based on it’s id from the DB
-
-**NOTE**: Inputs and outputs are json dict but database works on bson dicts
-
-
-* **Parameters**
-
-    
-    * **object_type** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – A bifrost object type found in the database as a collection
-
-
-    * **_id** (*Dict*) – json formatted objectid {“$oid”: <value>}
-
-
-
-* **Returns**
-
-    json formatted dict of the object
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-* **Raises**
-
-    [**AssertionError**](https://docs.python.org/3/library/exceptions.html#AssertionError) – If db contains a duplicate _id
-
-
-
-### bifrostlib.database_interface.save(object_type, object_value: Dict)
-Saves a object to the DB
-
-**NOTE**: Inputs and outputs are json dict but database works on bson dicts
-
-
-* **Parameters**
-
-    
-    * **object_type** – A bifrost object type found in the database as a collection
-
-
-    * **object_value** – json formatted object
-
-
-
-* **Returns**
-
-    json formatted dict of the object with objectid
-
-
-
-* **Return type**
-
-    Dict
-
-
-
-* **Raises**
-
-    [**KeyError**](https://docs.python.org/3/library/exceptions.html#KeyError) – If object_type not in DB
-
-
-
-### bifrostlib.database_interface.delete(object_type, _id: Dict)
-Deletes a object from the DB based on it’s id
-
-**NOTE**: This only removes the objects and doesn’t handle dependencies or dangling objects
-
-
-* **Parameters**
-
-    
-    * **object_type** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – A bifrost object type found in the database as a collection
-
-
-    * **_id** (*Dict*) – json formatted objectid {“$oid”: <value>}
-
-
-
-* **Returns**
-
-    Successfully deleted | Failure to delete
-
-
-
-* **Return type**
-
-    [bool](https://docs.python.org/3/library/functions.html#bool)
-
-
-
-* **Raises**
-
-    [**KeyError**](https://docs.python.org/3/library/exceptions.html#KeyError) – If object_type not in DB
+   Raises:
+      KeyError: If object_type not in DB
