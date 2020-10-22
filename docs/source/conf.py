@@ -4,6 +4,17 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Kim's notes
+# This was created by installing
+#   - Sphinx >= 3.2.1
+#   - sphinx-rtd_theme >= 0.5.0
+#   - sphinc-autoapi >= 1.5.1 # This generates docs from python api
+#   - recommonmark >= 0.6.0 # This allows the use of .md files
+# Run with
+# make html && open build/html/index.html
+
+
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
