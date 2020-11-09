@@ -43,9 +43,9 @@ if hasattr(keys, "pass_protected") and keys.pass_protected:
 
 # Temp css to make it look nice
 # Lato font
-app.css.append_css(
-    {"external_url": "https://fonts.googleapis.com/css?family=Lato"})
-
+external_stylesheets = [
+    "https://fonts.googleapis.com/css?family=Lato"
+]
 
 app.layout = html.Div([
     html.Div(className="container", children=[
