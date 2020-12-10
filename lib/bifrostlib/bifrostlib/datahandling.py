@@ -407,7 +407,7 @@ def get_sample_assembly_and_reads(sample_ids):
 
 
 def mark_sample_as_sent(sample_id):
-    return mongo_interface.mark_sample_as_sent()
+    return mongo_interface.mark_sample_as_sent(sample_id)
 
 
 def test():
