@@ -417,3 +417,10 @@ def get_sample_assembly_and_reads(sample_ids):
         d["reads"] = r["reads"]
         samples[str(r["_id"])] = d
     return samples
+
+
+def mark_sample_as_sent(sample_id):
+    connection = get_connection()
+    db = connection.get_database()
+    return db.samples.update({"_id": sample_id}, 
+                             {"$set": {"metadata.sent_to_kma": True}})
