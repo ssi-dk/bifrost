@@ -1,0 +1,14 @@
+# The extra index is used with development where the bifrostlib is updated on TestPyPI and not PyPI
+pytest
+pytest-cov
+pytest-profiling
+coverage
+pyyaml
+argh
+watchdog
+wget
+# If you want to edit bifrostlib for development you have to mount the volume to the docker 
+# container and "pip install -e bifrostlib" from there. I attempted to do it via docker but you 
+# can't access volumes at build-time. It doesn't matter for the main package as it's the reference
+-e /bifrost/lib/bifrostlib/
+-e /bifrost/components/bifrost_run_launcher/

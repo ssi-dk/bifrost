@@ -1,0 +1,163 @@
+version: '3.8'
+services:
+  bifrost_db:
+    image: mongo:4.4.2
+    container_name: 'bifrost_db'
+    restart: unless-stopped
+    volumes:
+      - ./bifrost_db:/data/db
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGODB_DATA_DIR=/bifrost/bifrost_db
+      - MONGO_INITDB_DATABASE=/bifrost_test_db # NOTE: testing requires the word 'test' to be in the DB name
+      - MONGODB_LOG_DIR=/dev/null
+    networks:
+      - backend
+  bifrostlib:
+    build:
+      context: '.'
+      dockerfile: './lib/bifrostlib/Dockerfile'
+      args:
+        BUILD_ENV: dev
+    volumes:
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/lib/bifrostlib
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py" --directory="/bifrost/lib/bifrostlib" -- pytest
+  bifrost_run_launcher:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_run_launcher/Dockerfile'
+      args: 
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_run_launcher
+    volumes:
+      - ./components/bifrost_run_launcher:/bifrost/components/bifrost_run_launcher
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_run_launcher
+    entrypoint:
+      # bash
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_run_launcher" -- pytest
+  bifrost_min_read_check:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_min_read_check/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_min_read_check
+    volumes:
+      - ./components/bifrost_min_read_check:/bifrost/components/bifrost_min_read_check
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_min_read_check
+    entrypoint:
+      # bash
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_min_read_check" -- pytest
+  bifrost_whats_my_species:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_whats_my_species/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_whats_my_species
+        FORCE_DOWNLOAD: 'false'
+    volumes:
+      - ./components/bifrost_whats_my_species:/bifrost/components/bifrost_whats_my_species
+      # Note the resources file is ignored by .dockerignore due to it's size which is why it's mounted again.
+      # - ./components/bifrost_whats_my_species/resources/:/bifrost/components/bifrost_whats_my_species/resources
+      # NOTE: Docker ignore not working with context currently https://github.com/docker/compose/issues/1607, current hack used instead
+      - $HOME/playground/bifrost/resources/bifrost_whats_my_species:/bifrost/components/bifrost_whats_my_species/resources
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_whats_my_species
+    entrypoint:
+      # bash
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_whats_my_species" -- pytest
+  bifrost_assemblatron:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_assemblatron/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_assemblatron
+        FORCE_DOWNLOAD: 'false'
+    volumes:
+      - ./components/bifrost_assemblatron:/bifrost/components/bifrost_assemblatron
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_assemblatron
+    entrypoint:
+      # bash
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_assemblatron" -- pytest
+  bifrost_ssi_stamper:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_ssi_stamper/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_ssi_stamper
+        FORCE_DOWNLOAD: 'false'
+    volumes:
+      - ./components/bifrost_ssi_stamper:/bifrost/components/bifrost_ssi_stamper
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_ssi_stamper
+    entrypoint:
+      # bash
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_ssi_stamper" -- pytest
+
+networks:
+  backend:
+    driver: bridge
+volumes:
+  bifrost_db:
+    driver: local

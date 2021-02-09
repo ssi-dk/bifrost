@@ -1,5 +1,5 @@
 /bifrost_db/*
-*/resources/*
+resources/*
 components/private__*
 # Temporary for SSI
 components/sp_cdiff_fbi
@@ -48,7 +48,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -102,7 +101,7 @@ docs/_build/
 target/
 
 # Cookiecutter
-output/*
+output/
 python_boilerplate/
 cookiecutter-pypackage-env/
 
