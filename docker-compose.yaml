@@ -76,7 +76,6 @@ services:
     working_dir: 
       /bifrost/components/bifrost_min_read_check
     entrypoint:
-      # bash
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_min_read_check" -- pytest
   bifrost_whats_my_species:
     build: 
@@ -104,7 +103,6 @@ services:
     working_dir: 
       /bifrost/components/bifrost_whats_my_species
     entrypoint:
-      # bash
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_whats_my_species" -- pytest
   bifrost_assemblatron:
     build: 
@@ -128,7 +126,6 @@ services:
     working_dir: 
       /bifrost/components/bifrost_assemblatron
     entrypoint:
-      # bash
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_assemblatron" -- pytest
   bifrost_ssi_stamper:
     build: 
@@ -152,7 +149,6 @@ services:
     working_dir: 
       /bifrost/components/bifrost_ssi_stamper
     entrypoint:
-      # bash
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_ssi_stamper" -- pytest
 
 networks:
