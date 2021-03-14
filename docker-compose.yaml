@@ -150,6 +150,30 @@ services:
       /bifrost/components/bifrost_ssi_stamper
     entrypoint:
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_ssi_stamper" -- pytest
+  bifrost_cge_mlst:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_cge_mlst/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_cge_mlst
+        FORCE_DOWNLOAD: 'false'
+    volumes:
+      - ./components/bifrost_cge_mlst/bifrost_cge_mlst:/bifrost/components/bifrost_cge_mlst/bifrost_cge_mlst
+      - ./components/bifrost_cge_mlst/test:/bifrost/components/bifrost_cge_mlst/test
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_cge_mlst
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_cge_mlst" -- pytest
 
 networks:
   backend:
