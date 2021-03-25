@@ -1,9 +1,6 @@
 [submodule "components/min_read_check"]
 	path = components/bifrost_min_read_check
 	url = git@github.com:ssi-dk/bifrost-min_read_check.git
-[submodule "components/seqsero"]
-	path = components/bifrost_seqsero
-	url = git@github.com:ssi-dk/bifrost-seqsero.git
 [submodule "components/ariba_resfinder"]
 	path = components/bifrost_ariba_resfinder
 	url = git@github.com:ssi-dk/bifrost-ariba_resfinder.git
