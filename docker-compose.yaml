@@ -150,6 +150,28 @@ services:
       /bifrost/components/bifrost_ssi_stamper
     entrypoint:
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_ssi_stamper" -- pytest
+  bifrost_seqsero:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_seqsero/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_seqsero
+    volumes:
+      - ./components/bifrost_seqsero:/bifrost/components/bifrost_seqsero
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_seqsero
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_seqsero" -- pytest
 
 networks:
   backend:
