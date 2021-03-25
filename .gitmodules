@@ -46,3 +46,6 @@
 [submodule "bifrost_dashboard"]
 	path = bifrost_dashboard
 	url = git@github.com:ssi-dk/bifrost_dashboard.git
+[submodule "components/bifrost_seqsero"]
+	path = components/bifrost_seqsero
+	url = git@github.com:ssi-dk/bifrost_seqsero
