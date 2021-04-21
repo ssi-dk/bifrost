@@ -46,3 +46,6 @@
 [submodule "components/bifrost_seqsero"]
 	path = components/bifrost_seqsero
 	url = git@github.com:ssi-dk/bifrost_seqsero
+[submodule "components/bifrost_cge_virulencefinder"]
+	path = components/bifrost_cge_virulencefinder
+	url = https://github.com/ssi-dk/bifrost_cge_virulencefinder
