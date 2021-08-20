@@ -172,6 +172,53 @@ services:
       /bifrost/components/bifrost_seqsero
     entrypoint:
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_seqsero" -- pytest
+  bifrost_enterobase:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_enterobase/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_enterobase
+    volumes:
+      - ./components/bifrost_enterobase:/bifrost/components/bifrost_enterobase
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+      - ENTEROBASE_USERNAME
+      - ENTEROBASE_PASSWORD
+      - ENTEROBASE_SERVER
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_enterobase
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_enterobase" -- pytest
+  bifrost_salmonella_subspecies_dtartrate:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_salmonella_subspecies_dtartrate/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_salmonella_subspecies_dtartrate
+    volumes:
+      - ./components/bifrost_salmonella_subspecies_dtartrate:/bifrost/components/bifrost_salmonella_subspecies_dtartrate
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_salmonella_subspecies_dtartrate
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_salmonella_subspecies_dtartrate" -- pytest
   bifrost_cge_mlst:
     build: 
       context: '.'

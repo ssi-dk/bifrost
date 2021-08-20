@@ -46,3 +46,9 @@
 [submodule "components/bifrost_seqsero"]
 	path = components/bifrost_seqsero
 	url = git@github.com:ssi-dk/bifrost_seqsero
+[submodule "components/bifrost_enterobase"]
+	path = components/bifrost_enterobase
+	url = git@github.com:ssi-dk/bifrost_enterobase.git
+[submodule "components/bifrost_salmonella_subspecies_dtartrate"]
+	path = components/bifrost_salmonella_subspecies_dtartrate
+	url = https://github.com/ssi-dk/bifrost_salmonella_subspecies_dtartrate
