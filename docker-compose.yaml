@@ -77,6 +77,52 @@ services:
       /bifrost/components/bifrost_min_read_check
     entrypoint:
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_min_read_check" -- pytest
+  bifrost_cge_resfinder:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_cge_resfinder/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_cge_resfinder
+    volumes:
+      - ./components/bifrost_cge_resfinder/bifrost_cge_resfinder:/bifrost/components/bifrost_cge_resfinder/bifrost_cge_resfinder
+      - ./components/bifrost_cge_resfinder/tests:/bifrost/components/bifrost_cge_resfinder/tests
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_cge_resfinder
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_cge_resfinder" -- pytest
+  bifrost_cge_virulencefinder:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_cge_virulencefinder/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_cge_virulencefinder
+    volumes:
+      - ./components/bifrost_cge_virulencefinder/bifrost_cge_virulencefinder:/bifrost/components/bifrost_cge_virulencefinder/bifrost_cge_virulencefinder
+      - ./components/bifrost_cge_virulencefinder/tests:/bifrost/components/bifrost_cge_virulencefinder/tests
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_cge_virulencefinder
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_cge_virulencefinder" -- pytest
   bifrost_whats_my_species:
     build: 
       context: '.'
@@ -229,7 +275,7 @@ services:
         FORCE_DOWNLOAD: 'false'
     volumes:
       - ./components/bifrost_cge_mlst/bifrost_cge_mlst:/bifrost/components/bifrost_cge_mlst/bifrost_cge_mlst
-      - ./components/bifrost_cge_mlst/test:/bifrost/components/bifrost_cge_mlst/test
+      - ./components/bifrost_cge_mlst/tests:/bifrost/components/bifrost_cge_mlst/tests
       - ./lib/bifrostlib:/bifrost/lib/bifrostlib
       - ./test_data/:/bifrost/test_data
       - ./bifrost_db:/bifrost/bifrost_db
