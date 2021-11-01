@@ -52,3 +52,6 @@
 [submodule "components/bifrost_salmonella_subspecies_dtartrate"]
 	path = components/bifrost_salmonella_subspecies_dtartrate
 	url = https://github.com/ssi-dk/bifrost_salmonella_subspecies_dtartrate
+[submodule "components/bifrost_cge_virulencefinder"]
+	path = components/bifrost_cge_virulencefinder
+	url = https://github.com/ssi-dk/bifrost_cge_virulencefinder.git
