@@ -55,3 +55,6 @@
 [submodule "components/bifrost_cge_virulencefinder"]
 	path = components/bifrost_cge_virulencefinder
 	url = https://github.com/ssi-dk/bifrost_cge_virulencefinder.git
+[submodule "components/bifrost_chewBBACA"]
+	path = components/bifrost_chewBBACA
+	url = https://github.com/ssi-dk/bifrost_chewBBACA.git
