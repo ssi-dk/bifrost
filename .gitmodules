@@ -58,3 +58,6 @@
 [submodule "components/bifrost_chewBBACA"]
 	path = components/bifrost_chewBBACA
 	url = https://github.com/ssi-dk/bifrost_chewBBACA.git
+[submodule "components/bifrost_amrfinderplus"]
+	path = components/bifrost_amrfinderplus
+	url = https://github.com/ssi-dk/bifrost_amrfinderplus.git
