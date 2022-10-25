@@ -123,6 +123,54 @@ services:
       /bifrost/components/bifrost_cge_virulencefinder
     entrypoint:
       watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_cge_virulencefinder" -- pytest
+  bifrost_chewbbaca:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_chewbbaca/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_chewbbaca
+    volumes:
+      - ./components/bifrost_chewbbaca/bifrost_chewbbaca:/bifrost/components/bifrost_chewbbaca/bifrost_chewbbaca
+      - ./components/bifrost_chewbbaca/tests:/bifrost/components/bifrost_chewbbaca/tests
+      - ./components/bifrost_assemblatron:/bifrost/components/bifrost_assemblatron
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_chewbbaca
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_chewbbaca" -- pytest
+  bifrost_amrfinderplus:
+    build: 
+      context: '.'
+      dockerfile: './components/bifrost_amrfinderplus/Dockerfile'
+      args:
+        BUILD_ENV: dev
+        BIFROST_COMPONENT_NAME: bifrost_amrfinderplus
+    volumes:
+      - ./components/bifrost_amrfinderplus/bifrost_chewbbaca:/bifrost/components/bifrost_amrfinderplus/bifrost_amrfinderplus
+      - ./components/bifrost_amrfinderplus/tests:/bifrost/components/bifrost_amrfinderplus/tests
+      - ./components/bifrost_assemblatron:/bifrost/components/bifrost_assemblatron
+      - ./lib/bifrostlib:/bifrost/lib/bifrostlib
+      - ./test_data/:/bifrost/test_data
+      - ./bifrost_db:/bifrost/bifrost_db
+    environment:
+      - BIFROST_DB_KEY=mongodb://bifrost_db:27017/bifrost_test_db
+    networks:
+      - backend
+    depends_on:
+      - bifrost_db
+    working_dir: 
+      /bifrost/components/bifrost_amrfinderplus
+    entrypoint:
+      watchmedo auto-restart --recursive --pattern="*.py;*.smk" --directory="/bifrost/components/bifrost_amrfinderplus" -- pytest
   bifrost_whats_my_species:
     build: 
       context: '.'
