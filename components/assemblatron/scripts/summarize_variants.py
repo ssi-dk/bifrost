@@ -49,6 +49,7 @@ def script__summarize_vcf(variants_vcf_file, summarize_ambiguous_snp_yaml):
                     frequency = current_frequency
                     if depth > 100:
                         depth = 100
+                    frequency = min([1, frequency])
                     if round(frequency, 2) > 0.5:
                         frequency = 1.00 - frequency
                     frequency = int(round(frequency, 2) * 100)
@@ -65,6 +66,7 @@ def script__summarize_vcf(variants_vcf_file, summarize_ambiguous_snp_yaml):
             frequency = current_frequency
             if depth > 100:
                 depth = 100
+            frequency = min([1, frequency])
             if round(frequency, 2) > 0.5:
                 frequency = 1.00 - frequency
             frequency = int(round(frequency, 2) * 100)

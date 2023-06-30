@@ -288,6 +288,27 @@ def html_sample_tables(sample_data, **kwargs):
         resfinder_div = html.P("No antibiotic resistance genes found")
     else:
         resfinder_div = html.P("Resfinder not run")
+
+    amrfinderplus_fbi = sample_data.get('amrfinderplus_fbi.output_tsv', [])
+    if type(amrfinderplus_fbi) == list and len(amrfinderplus_fbi):
+        resresults = True
+        amrfinderplus_fbi_div = html.Div(
+            dt.DataTable(
+                style_table={
+                    'overflowX': 'scroll',
+                    'overflowY': 'scroll',
+                    'maxHeight': '480'
+                },
+
+                columns=global_vars.amrfinderplus_columns,
+                data=amrfinderplus_fbi,
+                page_action='none'
+            ), className="grey-border")
+    elif (sample_data.get("amrfinderplus_fbi.status", "") == "Success" and
+         (type(amrfinderplus_fbi) == float or amrfinderplus_fbi is None or not len(amrfinderplus_fbi))):
+        amrfinderplus_fbi_div = html.P("No antibiotic resistance genes found")
+    else:
+        amrfinderplus_fbi_div = html.P("AMRFinderplus not run")
     
     plasmidfinder = sample_data.get('ariba_plasmidfinder.ariba_plasmidfinder', [])
     if type(plasmidfinder) == list and len(plasmidfinder):
@@ -388,6 +409,7 @@ def html_sample_tables(sample_data, **kwargs):
 
     # Replace with the ariba_res, ariba_plas and ariba_vir when migrating to them
     if (sample_data.get("ariba_resfinder.status", "") == "Success" or
+        sample_data.get("amrfinderplus_fbi.status", "") == "Success" or
         sample_data.get("ariba_plasmidfinder.status", "") == "Success" or
         sample_data.get("ariba_mlst.status", "") == "Success" or
         sample_data.get("ariba_virulencefinder.status", "") == "Success"):
@@ -397,7 +419,7 @@ def html_sample_tables(sample_data, **kwargs):
 
     if resresults:
         res_div = html.Details([
-            html.Summary("ResFinder/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
+            html.Summary("ResFinder/AMRFinderPlus/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
             html.Div([
                 html.Div([
                     html.Div([
@@ -407,6 +429,12 @@ def html_sample_tables(sample_data, **kwargs):
                     html.Div([
                         html.H6("VirulenceFinder", className="table-header"),
                         virulencefinder_div
+                    ], className="six columns")
+                ], className="row"),
+                html.Div([
+                    html.Div([
+                        html.H6("AMRFinderPlus", className="table-header"),
+                        amrfinderplus_fbi_div
                     ], className="six columns")
                 ], className="row"),
                 html.Div([
@@ -433,7 +461,7 @@ def html_sample_tables(sample_data, **kwargs):
         res_div = html.Div(html.P("No antibiotic resistances, replicons or virulence markers found for this sample."))
     else:
         res_div = html.Div(
-            html.P("Resfinder, plasmidfinder and virulencefinder were not run."))
+            html.P("Resfinder, AMRFinderPlus, plasmidfinder and virulencefinder were not run."))
 
     mlst_type = "ND"
     if "ariba_mlst.mlst_report" in sample_data and sample_data["ariba_mlst.mlst_report"] is not None:

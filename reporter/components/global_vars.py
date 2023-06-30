@@ -186,5 +186,44 @@ finder_columns = [
     }
 ]
 
+amrfinderplus_columns = [
+    {
+        "name": "Gene symbol",
+        "id": "Gene symbol"
+    },
+    {
+        "name": "% Coverage of reference sequence'",
+        "id": "% Coverage of reference sequence'"
+    },
+    {
+        "name": "% Identity to reference sequence",
+        "id": "% Identity to reference sequence"
+    },
+    {
+        "name": "SEQUENCE",
+        "id": "SEQUENCE"
+    },
+    {
+        "name": "Start",
+        "id": "Start"
+    },
+    {
+        "name": "Stop",
+        "id": "Stop"
+    },
+    {
+        "name": "Class",
+        "id": "Class"
+    },
+    {
+        "name": "Scope",
+        "id": "Scope"
+    },
+    {
+        "name": "Accession of closest sequence",
+        "id": "Accession of closest sequence"
+    }
+]
+
 ROUND_COLUMNS = ["whats_my_species.percent_unclassified",
                  "assemblatron.bin_coverage_at_1x"]
