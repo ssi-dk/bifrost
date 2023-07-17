@@ -16,3 +16,6 @@ envs/dev.env
 components/sp_cdiff_fbi
 components/sp_ecoli_fbi
 components/sp_salm_fbi
+components/amrfinderplus_fbi
+components/kma_pointmutations
+components/reslab_stamper

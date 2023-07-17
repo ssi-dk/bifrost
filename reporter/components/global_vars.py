@@ -192,23 +192,19 @@ amrfinderplus_columns = [
         "id": "Gene symbol"
     },
     {
-        "name": "% Coverage of reference sequence'",
-        "id": "% Coverage of reference sequence'"
+        "name": "%Coverage",
+        "id": "% Coverage of reference sequence"
     },
     {
-        "name": "% Identity to reference sequence",
+        "name": "%Identity",
         "id": "% Identity to reference sequence"
-    },
-    {
-        "name": "SEQUENCE",
-        "id": "SEQUENCE"
     },
     {
         "name": "Start",
         "id": "Start"
     },
     {
-        "name": "Stop",
+        "name": "End",
         "id": "Stop"
     },
     {

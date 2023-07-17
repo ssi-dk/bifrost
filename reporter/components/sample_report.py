@@ -419,40 +419,42 @@ def html_sample_tables(sample_data, **kwargs):
 
     if resresults:
         res_div = html.Details([
-            html.Summary("ResFinder/AMRFinderPlus/PlasmidFinder/VirulenceFinder/MLST (click to show)"),
+            html.Summary("MLST/ResFinder/PlasmidFinder/AMRFinderPlus/VirulenceFinder (click to show)"),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.H6("ResFinder", className="table-header"),
-                        resfinder_div
-                    ], className="six columns"),
-                    html.Div([
-                        html.H6("VirulenceFinder", className="table-header"),
-                        virulencefinder_div
-                    ], className="six columns")
-                ], className="row"),
-                html.Div([
-                    html.Div([
-                        html.H6("AMRFinderPlus", className="table-header"),
-                        amrfinderplus_fbi_div
-                    ], className="six columns")
-                ], className="row"),
-                html.Div([
-                    html.Div([
-                        html.H6("PlasmidFinder", className="table-header"),
-                        plasmidfinder_div
-                    ], className="six columns"),
-                    html.Div([
                         html.H6("MLST ({})".format(mlst_db),
-                                className="table-header"),
-                        mlst_div
-                    ], className="six columns")
-                ], className="row"),
-                html.Div([
+                            className="table-header"),
+                            mlst_div
+                    ], className="six columns"),
                     html.Div([
                         html.H6("MLST on detected species ({})".format(mlst_detected_db),
-                                className="table-header"),
-                        mlst_detected_div
+                            className="table-header"),
+                            mlst_detected_div
+                    ], className="six columns")
+                ], className="row"),
+                html.Div([
+                    html.Div([
+                        html.H6("ResFinder",
+                            className="table-header"),
+                            resfinder_div
+                    ], className="six columns"),
+                    html.Div([
+                        html.H6("PlasmidFinder",
+                            className="table-header"),
+                            plasmidfinder_div
+                    ], className="six columns")
+                ], className="row"),
+                html.Div([
+                    html.Div([
+                        html.H6("AMRFinderPlus",
+                            className="table-header"),
+                            amrfinderplus_fbi_div
+                    ], className="six columns"),
+                    html.Div([
+                        html.H6("VirulenceFinder", 
+                            className="table-header"),
+                            virulencefinder_div
                     ], className="six columns")
                 ], className="row")
             ])

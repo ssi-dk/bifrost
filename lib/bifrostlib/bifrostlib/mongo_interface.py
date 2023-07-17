@@ -50,12 +50,35 @@ def dump_run_info(data_dict):
     now = date_now()
     data_dict["metadata"] = data_dict.get("metadata", {})
     data_dict["metadata"]["updated_at"] = now
-    if "_id" in data_dict:
-        data_dict = runs_db.find_one_and_update(
-            filter={"_id": data_dict["_id"]},
-            update={"$set": data_dict},
-            return_document=pymongo.ReturnDocument.AFTER,  # return new doc if one is upserted
-            upsert=True  # This might change in the future  # insert the document if it does not exist
+    old_run = runs_db.find_one({"name": data_dict["name"]})
+    if old_run is not None:
+        for component in data_dict["components"]:
+            for i in range(len(old_run["components"])):
+                if old_run["components"][i]["name"] == component["name"]:
+                    old_run["components"][i]["_id"] = component["_id"]
+                    break
+            else:
+                old_run["components"].append(component)
+        for sample in data_dict["samples"]:
+            for i in range(len(old_run["samples"])):
+                if old_run["samples"][i]["name"] == sample["name"]:
+                    old_run["samples"][i]["_id"] = sample["_id"]
+                    break
+            else:
+                old_run["samples"].append(sample)
+        old_run["metadata"]["updated_at"] = data_dict["metadata"]["updated_at"]
+        runs_db.update(
+            {
+                "name": data_dict["name"]
+            },
+            {
+                "$set":{
+                    'components': old_run["components"],
+                    'samples': old_run["samples"],
+                    'metadata': old_run["metadata"]
+                }
+            },
+            upsert=True
         )
     else:
         data_dict["metadata"]["created_at"] = now
@@ -236,7 +259,6 @@ def get_runs(run_id=None,
              sample_id=None,
              names=None,
              size=0):
-
     size = min(1000, size)
     size = max(-1000, size)
 
